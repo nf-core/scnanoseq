@@ -6,3 +6,5 @@ results/
 testing/
 testing*
 *.pyc
+test.sh
+params.yml
