@@ -33,6 +33,12 @@ ch_multiqc_custom_config = params.multiqc_config ? Channel.fromPath(params.multi
 */
 
 //
+// MODULE: Loaded from modules/local/
+//
+
+include { NANOFILT                   } from "../modules/local/nanofilt"
+
+//
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
 include { INPUT_CHECK                } from '../subworkflows/local/input_check'
@@ -81,10 +87,9 @@ workflow SCNANOSEQ {
 
 
     //
-    // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC
+    // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - pre-trim QC
     //
 
-    //pre-trim QC
     ch_fastqc_multiqc_pretrim = Channel.empty()
     if (!params.skip_qc){
 
@@ -96,6 +101,15 @@ workflow SCNANOSEQ {
         ch_fastqc_multiqc_pretrim = FASTQC_NANOPLOT_PRE_TRIM.out.fastqc_multiqc.ifEmpty([])
     }
 
+    //
+    // Trimming - Modules NANOFILT OR PROWLER
+    //
+
+
+
+    //
+    // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - post-trim QC
+    //
     //TODO: enable below for post-trim QC; change input channel <<<ch_fastq>>>
     /*
     ch_fastqc_multiqc_postrim = Channel.empty()
@@ -107,6 +121,9 @@ workflow SCNANOSEQ {
     }
     */
 
+    //
+    // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - post-extract QC
+    //
     //TODO: enable below for post-extract QC;  change input channel <<<ch_fastq>>>
     /*
     ch_fastqc_multiqc_postextract = Channel.empty()
