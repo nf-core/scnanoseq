@@ -83,6 +83,39 @@
                 }
             }
         },
+        "read_trimming_options": {
+            "title": "Read trimming options",
+            "type": "object",
+            "description": "Options to choose trimming criteria and software",
+            "default": "",
+            "properties": {
+                "trimming_software": {
+                    "type": "string",
+                    "default": "nanofilt",
+                    "description": "Specifies trimming software.",
+                    "fa_icon": "fas fa-cut",
+                    "help_text": "Available long-read trimmers are `nanofilt` or `prowler`"
+                },
+                "min_length": {
+                    "type": "integer",
+                    "default": 500,
+                    "description": "Choose minimum read length.",
+                    "fa_icon": "fas fa-cut"
+                },
+                "min_q_score": {
+                    "type": "integer",
+                    "default": 10,
+                    "description": "Choose minimum average read quality score.",
+                    "fa_icon": "fas fa-cut"
+                },
+                "skip_trimming": {
+                    "type": "boolean",
+                    "description": "Skip quality trimming step.",
+                    "fa_icon": "fas fa-forward"
+                }
+            },
+            "fa_icon": "fas fa-cut"
+        },
         "process_skipping_options": {
             "title": "Process skipping options",
             "type": "object",
@@ -93,17 +126,17 @@
                 "skip_qc": {
                     "type": "boolean",
                     "fa_icon": "fas fa-forward",
-                    "description": "Skip all QC except MultiQC"
+                    "description": "Skip all QC except MultiQC."
                 },
                 "skip_nanoplot": {
                     "type": "boolean",
                     "fa_icon": "fas fa-forward",
-                    "description": "Skip Nanoplot"
+                    "description": "Skip Nanoplot."
                 },
                 "skip_fastqc": {
                     "type": "boolean",
                     "fa_icon": "fas fa-forward",
-                    "description": "Skip FastQC"
+                    "description": "Skip FastQC."
                 }
             },
             "fa_icon": "fas fa-forward"
@@ -290,6 +323,9 @@
         },
         {
             "$ref": "#/definitions/reference_genome_options"
+        },
+        {
+            "$ref": "#/definitions/read_trimming_options"
         },
         {
             "$ref": "#/definitions/process_skipping_options"
