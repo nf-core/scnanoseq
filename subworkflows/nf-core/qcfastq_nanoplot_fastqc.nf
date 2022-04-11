@@ -7,8 +7,8 @@
 params.nanoplot_fastq_options = [:]
 params.fastqc_options         = [:]
 
-include { NANOPLOT     } from '../../modules/nf-core/modules/nanoplot/main'  addParams( options: params.nanoplot_fastq_options )
-include { FASTQC       } from '../../modules/nf-core/modules/fastqc/main'    addParams( options: params.fastqc_options )
+include { NANOPLOT     } from '../../modules/nf-core/modules/nanoplot/main'  //addParams( options: params.nanoplot_fastq_options )
+include { FASTQC       } from '../../modules/nf-core/modules/fastqc/main'    //addParams( options: params.fastqc_options )
 
 workflow QCFASTQ_NANOPLOT_FASTQC {
     take:
@@ -56,7 +56,7 @@ workflow QCFASTQ_NANOPLOT_FASTQC {
             .map { it -> [ it[1] ] }
             .set { fastqc_html_only }
         fastqc_multiqc = fastqc_multiqc.mix( fastqc_zip_only, fastqc_html_only )
-//       fastqc_version = FASTQC.out.versions
+        fastqc_version = FASTQC.out.versions
     }
 
     emit:
