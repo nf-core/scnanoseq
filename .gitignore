@@ -8,3 +8,4 @@ testing*
 *.pyc
 test.sh
 params.yml
+samplesheet.csv
