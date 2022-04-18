@@ -37,6 +37,7 @@ ch_multiqc_custom_config = params.multiqc_config ? Channel.fromPath(params.multi
 //
 
 include { NANOFILT                   } from "../modules/local/nanofilt"
+include { PROWLERTRIMMER             } from "../modules/local/prowlertrimmer"
 
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
@@ -102,10 +103,23 @@ workflow SCNANOSEQ {
     }
 
     //
-    // Trimming - Modules NANOFILT OR PROWLER
+    // MODULE: Trim and filter reads
     //
 
+    // TODO: Throw error if invalid trimming_software provided
+    ch_trimmed_reads = ch_fastq
+    if (!params.skip_trimming){
 
+        if (params.trimming_software == 'nanofilt') {
+
+            NANOFILT ( ch_fastq )
+            ch_trimmed_reads = NANOFILT.out.reads
+        } else if (params.trimming_software == 'prowler') {
+
+            PROWLERTRIMMER ( ch_fastq )
+            ch_trimmed_reads = PROWLERTRIMMER.out.reads
+        }
+    }
 
     //
     // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - post-trim QC
@@ -134,7 +148,6 @@ workflow SCNANOSEQ {
         ch_fastqc_multiqc_postextract = FASTQC_NANOPLOT_POST_EXTRACT.out.fastqc_multiqc.ifEmpty([])
     }
     */
-
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
