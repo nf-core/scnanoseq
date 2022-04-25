@@ -124,16 +124,13 @@ workflow SCNANOSEQ {
     //
     // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - post-trim QC
     //
-    //TODO: enable below for post-trim QC; change input channel <<<ch_fastq>>>
-    /*
     ch_fastqc_multiqc_postrim = Channel.empty()
     if (!params.skip_qc){
 
-        FASTQC_NANOPLOT_POST_TRIM ( <<<ch_fastq>>>, params.skip_nanoplot, params.skip_fastqc)
+        FASTQC_NANOPLOT_POST_TRIM ( ch_trimmed_reads, params.skip_nanoplot, params.skip_fastqc)
 
         ch_fastqc_multiqc_postrim = FASTQC_NANOPLOT_POST_TRIM.out.fastqc_multiqc.ifEmpty([])
     }
-    */
 
     //
     // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - post-extract QC

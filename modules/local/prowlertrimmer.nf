@@ -3,15 +3,12 @@ process PROWLERTRIMMER {
     label 'process_low'
 
     conda (params.enable_conda ? "jdoe062894::prowlertrimmer" : null)
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/YOUR-TOOL-HERE':
-        'quay.io/biocontainers/YOUR-TOOL-HERE' }"
 
     input:
     tuple val(meta), path(reads)
 
     output:
-    tuple val(meta), path("*.fastq"), emit: reads
+    tuple val(meta), path("*.fastq.gz"), emit: reads
     path "versions.yml"                , emit: versions
 
     when:
@@ -23,7 +20,8 @@ process PROWLERTRIMMER {
     
     """
     gunzip -c $reads > ${prefix}.fastq
-    python3 \$(which TrimmerLarge.py) $args -f ${prefix}.fastq -o .
+    python3 \$(which TrimmerLarge.py) $args -f ${prefix}.fastq
+    gzip ${prefix}Trim*
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
