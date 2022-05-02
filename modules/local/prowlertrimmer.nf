@@ -21,7 +21,7 @@ process PROWLERTRIMMER {
     """
     gunzip -c $reads > ${prefix}.fastq
     python3 \$(which TrimmerLarge.py) $args -f ${prefix}.fastq
-    gzip ${prefix}TrimLT-U0-S10W100L500R0.fastq
+    gzip ${prefix}TrimLT-U0-S${params.min_q_score}W100L${params.min_length}R0.fastq
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
