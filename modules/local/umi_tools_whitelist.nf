@@ -26,11 +26,12 @@ process UMI_TOOLS_WHITELIST {
         whitelist \\
         --log2stderr \\
         --stdin=${reads} \\
-        ${args} > ${whitelist} 2> /dev/null
+        --bc-pattern \\
+        ${args} > ${prefix}.whitelist.txt 2> ${prefix}.err
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        umitoolswhitelist: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//' ))
+        umitoolswhitelist: \$(echo \$(umi_tools -v 2>&1) | sed 's/^UMI-tools version: //' ))
     END_VERSIONS
     """
 }
