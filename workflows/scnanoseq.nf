@@ -39,6 +39,7 @@ ch_multiqc_custom_config = params.multiqc_config ? Channel.fromPath(params.multi
 include { NANOFILT                   } from "../modules/local/nanofilt"
 include { PROWLERTRIMMER             } from "../modules/local/prowlertrimmer"
 include { SPLIT_FILE                 } from "../modules/local/split_file"
+include { PIGZ                       } from "../modules/local/pigz"
 
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
@@ -88,7 +89,6 @@ workflow SCNANOSEQ {
 
     ch_fastq = INPUT_CHECK.out.reads
 
-
     //
     // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - pre-trim QC
     //
@@ -103,44 +103,52 @@ workflow SCNANOSEQ {
 
         ch_fastqc_multiqc_pretrim = FASTQC_NANOPLOT_PRE_TRIM.out.fastqc_multiqc.ifEmpty([])
     }
-    
-    //
-    // MODULE: Unzip fastq
-    //
-    GUNZIP( ch_fastq)
-    ch_unzipped_fastqs = GUNZIP.out.gunzip
 
-    //
-    // MODULE: Split fastq
-    //
-    // TODO: Make splitting an optional parameter
-    split_amount = 10
-    ch_split_fastqs = ch_unzipped_fastqs
+    ch_zipped_reads = ch_fastq
 
-    if (split_amount > 0) {
-        SPLIT_FILE( ch_fastq, '.fastq')
-        ch_split_fastqs = SPLIT_FILE.out.split_files
-    }
-
-    //
-    // MODULE: Trim and filter reads
-    //
-
-    // TODO: Throw error if invalid trimming_software provided
-
-
-    ch_trimmed_reads = ch_fastq
     if (!params.skip_trimming){
+        //
+        // MODULE: Unzip fastq
+        //
+        GUNZIP( ch_fastq )
+        ch_unzipped_fastqs = GUNZIP.out.gunzip
+
+        //
+        // MODULE: Split fastq
+        //
+        ch_split_fastqs = ch_unzipped_fastqs
+
+        if (params.split_amount > 0) {
+            SPLIT_FILE( ch_unzipped_fastqs, '.fastq')
+            ch_split_fastqs = SPLIT_FILE.out.split_files
+        }
+
+        ch_fastqs = Channel.empty()
+        ch_split_fastqs.transpose().set { ch_fastqs }
+
+        //
+        // MODULE: Trim and filter reads
+        //
+
+        // TODO: Throw error if invalid trimming_software provided
 
         if (params.trimming_software == 'nanofilt') {
 
-            NANOFILT ( ch_fastq )
+            NANOFILT ( ch_fastqs )
             ch_trimmed_reads = NANOFILT.out.reads
         } else if (params.trimming_software == 'prowler') {
 
-            PROWLERTRIMMER ( ch_fastq )
+            PROWLERTRIMMER ( ch_fastqs )
             ch_trimmed_reads = PROWLERTRIMMER.out.reads
         }
+
+        //
+        // MODULE: Zip fastq
+        //
+
+        ch_grouped_reads = ch_trimmed_reads.groupTuple()
+        PIGZ ( ch_grouped_reads)
+        ch_zipped_reads = PIGZ.out.archive
     }
 
     //
@@ -149,7 +157,7 @@ workflow SCNANOSEQ {
     ch_fastqc_multiqc_postrim = Channel.empty()
     if (!params.skip_qc){
 
-        FASTQC_NANOPLOT_POST_TRIM ( ch_trimmed_reads, params.skip_nanoplot, params.skip_fastqc)
+        FASTQC_NANOPLOT_POST_TRIM ( ch_zipped_reads, params.skip_nanoplot, params.skip_fastqc)
 
         ch_fastqc_multiqc_postrim = FASTQC_NANOPLOT_POST_TRIM.out.fastqc_multiqc.ifEmpty([])
     }

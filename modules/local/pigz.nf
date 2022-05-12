@@ -21,10 +21,12 @@ process PIGZ {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
+    cat ${unzipped_file} > ${prefix}.fastq
     pigz \\
         $args \\
+        -f \\
         -p $task.cpus \\
-        $unzipped_file
+        ${prefix}.fastq
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

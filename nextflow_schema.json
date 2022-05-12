@@ -83,6 +83,20 @@
                 }
             }
         },
+        "fastq_options": {
+            "title": "Fastq options",
+            "type": "object",
+            "description": "Options related to processing fastqs",
+            "default": "",
+            "properties": {
+                "split_amount": {
+                    "type": "integer",
+                    "default": 0,
+                    "description": "The amount of lines to split the fastq into. (Default: 0)"
+                }
+            },
+            "fa_icon": "fas fa-file"
+        },
         "read_trimming_options": {
             "title": "Read trimming options",
             "type": "object",
@@ -323,6 +337,9 @@
         },
         {
             "$ref": "#/definitions/reference_genome_options"
+        },
+        {
+            "$ref": "#/definitions/fastq_options"
         },
         {
             "$ref": "#/definitions/read_trimming_options"
