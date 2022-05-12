@@ -88,14 +88,14 @@
             "type": "object",
             "description": "Options related to processing fastqs",
             "default": "",
+            "fa_icon": "fas fa-file",
             "properties": {
                 "split_amount": {
                     "type": "integer",
-                    "default": 0,
-                    "description": "The amount of lines to split the fastq into. (Default: 0)"
+                    "description": "The amount of lines to split  the fastq into (Default: 0)",
+                    "default": 0
                 }
-            },
-            "fa_icon": "fas fa-file"
+            }
         },
         "read_trimming_options": {
             "title": "Read trimming options",
@@ -129,6 +129,43 @@
                 }
             },
             "fa_icon": "fas fa-cut"
+        },
+        "cell_barcode_options": {
+            "title": "Cell barcode options",
+            "type": "object",
+            "description": "Options related to the barcode and umis",
+            "default": "",
+            "properties": {
+                "cell_barcode_pattern": {
+                    "type": "string",
+                    "description": "Regex for the cell barcode pattern"
+                },
+                "whitelist": {
+                    "type": "string",
+                    "description": "The file containing a list of barcodes"
+                },
+                "cell_amount": {
+                    "type": "integer",
+                    "description": "The esitmated amount of cells in the experiment"
+                },
+                "identifier_pattern": {
+                    "type": "string",
+                    "description": "Human readable reged for the cell barcode pattern"
+                },
+                "cell_barcode_lengths": {
+                    "type": "string",
+                    "description": "The comma delimited list of cell barcode lengths"
+                },
+                "umi_lengths": {
+                    "type": "string",
+                    "description": "The comma delimited list of umi lengths"
+                },
+                "fixed_seqs": {
+                    "type": "string",
+                    "description": "The comma delimited list of fixed barcode sequences"
+                }
+            },
+            "fa_icon": "fas fa-microscope"
         },
         "process_skipping_options": {
             "title": "Process skipping options",
@@ -343,6 +380,9 @@
         },
         {
             "$ref": "#/definitions/read_trimming_options"
+        },
+        {
+            "$ref": "#/definitions/cell_barcode_options"
         },
         {
             "$ref": "#/definitions/process_skipping_options"
