@@ -40,6 +40,7 @@ include { NANOFILT                   } from "../modules/local/nanofilt"
 include { PROWLERTRIMMER             } from "../modules/local/prowlertrimmer"
 include { SPLIT_FILE                 } from "../modules/local/split_file"
 include { PIGZ                       } from "../modules/local/pigz"
+include { UMI_TOOLS_WHITELIST        } from "../modules/local/umi_tools_whitelist"
 
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
@@ -165,6 +166,8 @@ workflow SCNANOSEQ {
     //
     // MODULE: Create estimated whitelist
     //
+
+    UMI_TOOLS_WHITELIST ( ch_zipped_reads)
 
     //
     // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - post-extract QC

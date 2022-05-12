@@ -26,7 +26,7 @@ process UMI_TOOLS_WHITELIST {
         whitelist \\
         --log2stderr \\
         --stdin=${reads} \\
-        --bc-pattern \\
+        --bc-pattern ${params.cell_barcode_pattern} \\
         ${args} > ${prefix}.whitelist.txt 2> ${prefix}.err
 
     cat <<-END_VERSIONS > versions.yml
