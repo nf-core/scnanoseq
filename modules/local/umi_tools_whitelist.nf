@@ -12,8 +12,8 @@ process UMI_TOOLS_WHITELIST {
     tuple val(meta), path(reads)
 
     output:
-    tuple val(meta), path("*.txt"), emit: whitelist
-    path "versions.yml"           , emit: versions
+    tuple val(meta), path(reads), path("*.txt"), emit: whitelist
+    path "versions.yml"                        , emit: versions
 
     when:
     task.ext.when == null || task.ext.when

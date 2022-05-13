@@ -36,11 +36,13 @@ ch_multiqc_custom_config = params.multiqc_config ? Channel.fromPath(params.multi
 // MODULE: Loaded from modules/local/
 //
 
-include { NANOFILT                   } from "../modules/local/nanofilt"
-include { PROWLERTRIMMER             } from "../modules/local/prowlertrimmer"
-include { SPLIT_FILE                 } from "../modules/local/split_file"
-include { PIGZ                       } from "../modules/local/pigz"
-include { UMI_TOOLS_WHITELIST        } from "../modules/local/umi_tools_whitelist"
+include { NANOFILT            } from "../modules/local/nanofilt"
+include { PROWLERTRIMMER      } from "../modules/local/prowlertrimmer"
+include { SPLIT_FILE          } from "../modules/local/split_file"
+include { PIGZ                } from "../modules/local/pigz"
+include { UMI_TOOLS_WHITELIST } from "../modules/local/umi_tools_whitelist"
+include { CREATE_REGEX        } from "../modules/local/create_regex" 
+include { PREEXTRACT_FASTQ    } from "../modules/local/preextract_fastq"
 
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
@@ -63,9 +65,9 @@ include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/modules/custom/
 /*
  * SUBWORKFLOW: Consisting entirely of nf-core/modules
  */
-include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_PRE_TRIM        } from '../subworkflows/nf-core/qcfastq_nanoplot_fastqc'
-include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_POST_TRIM       } from '../subworkflows/nf-core/qcfastq_nanoplot_fastqc'
-include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_POST_EXTRACT    } from '../subworkflows/nf-core/qcfastq_nanoplot_fastqc'
+include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_PRE_TRIM     } from '../subworkflows/nf-core/qcfastq_nanoplot_fastqc'
+include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_POST_TRIM    } from '../subworkflows/nf-core/qcfastq_nanoplot_fastqc'
+include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_POST_EXTRACT } from '../subworkflows/nf-core/qcfastq_nanoplot_fastqc'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -144,11 +146,34 @@ workflow SCNANOSEQ {
         }
 
         //
+        // SUBWORKFLOW: Pre extract the cell barcodes
+        //
+        // TODO: Turn this into a subworkflow
+
+        CREATE_REGEX( )
+        ch_regex_pattern = CREATE_REGEX.out.regex_pattern
+
+        ch_pre_extracted_fqs = ch_fastqs
+
+        if (params.cell_barcode_pattern != null) {
+            ch_fastqs
+                .map {
+                    meta, fastq ->
+                        meta.single_end = false
+                        [ meta, fastq ]
+                }
+
+            PREEXTRACT_FASTQ( ch_fastqs, ch_regex_pattern )
+            ch_pre_extracted_fqs = PREEXTRACT_FASTQ.out.reads
+        }
+        ch_pre_extracted_fqs.view()
+        //
         // MODULE: Zip fastq
         //
 
+        //ch_grouped_reads = ch_pre_extracted_fqs.groupTuple()
         ch_grouped_reads = ch_trimmed_reads.groupTuple()
-        PIGZ ( ch_grouped_reads)
+        PIGZ ( ch_grouped_reads )
         ch_zipped_reads = PIGZ.out.archive
     }
 
@@ -158,7 +183,7 @@ workflow SCNANOSEQ {
     ch_fastqc_multiqc_postrim = Channel.empty()
     if (!params.skip_qc){
 
-        FASTQC_NANOPLOT_POST_TRIM ( ch_zipped_reads, params.skip_nanoplot, params.skip_fastqc)
+        FASTQC_NANOPLOT_POST_TRIM ( ch_zipped_reads, params.skip_nanoplot, params.skip_fastqc )
 
         ch_fastqc_multiqc_postrim = FASTQC_NANOPLOT_POST_TRIM.out.fastqc_multiqc.ifEmpty([])
     }
