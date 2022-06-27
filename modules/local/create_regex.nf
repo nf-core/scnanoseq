@@ -19,7 +19,7 @@ process CREATE_REGEX {
     """
     OUT_FILE="regex_patterns.txt"
 
-    if [[ ${params.cell_barcode_pattern} ]]; then
+    if [[ "${params.cell_barcode_pattern}" ]]; then
        echo -e "REGEX: N/A" > \${OUT_FILE}
        echo -e "BC_PATTERN: ${params.cell_barcode_pattern}" >> \${OUT_FILE}
 

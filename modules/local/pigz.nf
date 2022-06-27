@@ -9,6 +9,7 @@ process PIGZ {
 
     input:
     tuple val(meta), path(unzipped_file)
+    val addl_prefix
 
     output:
     tuple val(meta), path("*.gz"), emit: archive
@@ -19,7 +20,7 @@ process PIGZ {
 
     script:
     def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: "${meta.id}"
+    def prefix = task.ext.prefix ?: "${meta.id}_${addl_prefix}"
     """
     cat ${unzipped_file} > ${prefix}.fastq
     pigz \\

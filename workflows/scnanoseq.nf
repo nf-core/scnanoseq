@@ -39,7 +39,8 @@ ch_multiqc_custom_config = params.multiqc_config ? Channel.fromPath(params.multi
 include { NANOFILT            } from "../modules/local/nanofilt"
 include { PROWLERTRIMMER      } from "../modules/local/prowlertrimmer"
 include { SPLIT_FILE          } from "../modules/local/split_file"
-include { PIGZ                } from "../modules/local/pigz"
+include { PIGZ as ZIP_R1      } from "../modules/local/pigz"
+include { PIGZ as ZIP_R2      } from "../modules/local/pigz"
 include { UMI_TOOLS_WHITELIST } from "../modules/local/umi_tools_whitelist"
 include { CREATE_REGEX        } from "../modules/local/create_regex" 
 include { PREEXTRACT_FASTQ    } from "../modules/local/preextract_fastq"
@@ -109,6 +110,7 @@ workflow SCNANOSEQ {
 
     ch_zipped_reads = ch_fastq
 
+    // TODO: Turn trimming into subworkflow?
     if (!params.skip_trimming){
         //
         // MODULE: Unzip fastq
@@ -134,7 +136,7 @@ workflow SCNANOSEQ {
         //
 
         // TODO: Throw error if invalid trimming_software provided
-
+        ch_trimmed_reads = ch_fastqs
         if (params.trimming_software == 'nanofilt') {
 
             NANOFILT ( ch_fastqs )
@@ -148,33 +150,41 @@ workflow SCNANOSEQ {
         //
         // SUBWORKFLOW: Pre extract the cell barcodes
         //
-        // TODO: Turn this into a subworkflow
+        // TODO: Turn this into a subworkflow?
 
         CREATE_REGEX( )
         ch_regex_pattern = CREATE_REGEX.out.regex_pattern
+        // Preextraction will create paired fastqs in cell ranger format
+        // So we will need to set the fastqs to paired end
+        ch_trimmed_reads
+            .map {
+                meta, fastq ->
+                    meta.single_end = false
+                    [ meta, fastq ]
+            }
 
-        ch_pre_extracted_fqs = ch_fastqs
+        PREEXTRACT_FASTQ( ch_trimmed_reads, ch_regex_pattern )
 
-        if (params.cell_barcode_pattern != null) {
-            ch_fastqs
-                .map {
-                    meta, fastq ->
-                        meta.single_end = false
-                        [ meta, fastq ]
-                }
+        // TODO: Cleaner way to do this and not repeat code?
+        ch_pre_extracted_r1_fqs = Channel.empty()
+        ch_pre_extracted_r2_fqs = Channel.empty()
 
-            PREEXTRACT_FASTQ( ch_fastqs, ch_regex_pattern )
-            ch_pre_extracted_fqs = PREEXTRACT_FASTQ.out.reads
-        }
-        ch_pre_extracted_fqs.view()
+        PREEXTRACT_FASTQ.out.r1_reads
+            .groupTuple()
+            .set{ ch_pre_extracted_r1_fqs }
+
+        PREEXTRACT_FASTQ.out.r2_reads
+            .groupTuple()
+            .set{ ch_pre_extracted_r2_fqs }
         //
         // MODULE: Zip fastq
         //
 
-        //ch_grouped_reads = ch_pre_extracted_fqs.groupTuple()
-        ch_grouped_reads = ch_trimmed_reads.groupTuple()
-        PIGZ ( ch_grouped_reads )
-        ch_zipped_reads = PIGZ.out.archive
+        ZIP_R1 ( ch_pre_extracted_r1_fqs, "R1" )
+        ch_zipped_r1_reads = ZIP_R1.out.archive
+        
+        ZIP_R2 ( ch_pre_extracted_r2_fqs, "R2" )
+        ch_zipped_r2_reads = ZIP_R2.out.archive
     }
 
     //
@@ -183,7 +193,7 @@ workflow SCNANOSEQ {
     ch_fastqc_multiqc_postrim = Channel.empty()
     if (!params.skip_qc){
 
-        FASTQC_NANOPLOT_POST_TRIM ( ch_zipped_reads, params.skip_nanoplot, params.skip_fastqc )
+        FASTQC_NANOPLOT_POST_TRIM ( ch_zipped_r2_reads, params.skip_nanoplot, params.skip_fastqc )
 
         ch_fastqc_multiqc_postrim = FASTQC_NANOPLOT_POST_TRIM.out.fastqc_multiqc.ifEmpty([])
     }
@@ -191,6 +201,17 @@ workflow SCNANOSEQ {
     //
     // MODULE: Create estimated whitelist
     //
+
+    // Merge the R1 and R2 fastqs back together
+    ch_zipped_reads = Channel.empty()
+    ch_zipped_r1_reads
+        .join( ch_zipped_r2_reads )
+        .map{ meta, r1, r2 ->
+            [ meta, [r1, r2]]
+        }
+        .set{ ch_zipped_reads }
+
+    ch_zipped_reads.view()
 
     UMI_TOOLS_WHITELIST ( ch_zipped_reads)
 

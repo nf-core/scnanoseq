@@ -2,15 +2,20 @@ process PREEXTRACT_FASTQ {
     tag "$meta.id"
     label 'process_low'
 
-    conda ( "conda-forge::python=3.8.3 conda-forge::regex=2022.1.18 conda-forge::biopython=1.79" )
+    // TODO: We will need a mulled container for this
+    //conda ( "conda-forge::regex=2022.1.18 conda-forge::biopython=1.79" )
+    //conda ( "conda-forge::python=3.8.3 conda-forge::regex=2022.1.18" )
+    //conda ( " vikky34v::glibc=2.33 conda-forge::biopython=1.79" )
+    conda ( "conda-forge::regex=2022.1.18 conda-forge::biopython=1.79" )
 
     input:
     tuple val(meta), path(reads)
     path regex_pattern
 
     output:
-    tuple val(meta), path("*.fastq"), emit: reads
-    path "versions.yml"             , emit: versions
+    tuple val(meta), path("*.R1.fastq"), emit: r1_reads
+    tuple val(meta), path("*.R2.fastq"), emit: r2_reads
+    path "versions.yml"                , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
