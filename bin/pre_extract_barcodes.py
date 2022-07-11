@@ -38,8 +38,6 @@ def pre_extract_fastq(input_file, regex, output_prefix):
     Returns: None
     """
 
-    print(regex)
-
     with open(f"{output_prefix}.R1.fastq", 'w', encoding = "utf-8") as r1_out, \
         open(f"{output_prefix}.R2.fastq", 'w', encoding = "utf-8") as r2_out:
 
@@ -63,7 +61,7 @@ def pre_extract_fastq(input_file, regex, output_prefix):
                 bc_umi, bc_umi_quals = get_bc_umi_info(matched_seq,
                                                        regex_match,
                                                        qualities)
-
+                
                 no_bc = sequence[regex_match.end() + 1:]
                 no_bc_quals = qualities[regex_match.end() + 1:]
 
@@ -82,7 +80,7 @@ def get_bc_umi_info(seq_substring, regex_match, seq_qualities):
     for group_name in regex_match.groupdict():
         if 'discard' not in group_name:
             seq = regex_match[group_name]
-
+            
             start_idx = seq_substring.find(seq)
             end_idx = start_idx + len(seq)
 

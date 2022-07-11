@@ -20,8 +20,8 @@ process CREATE_REGEX {
     OUT_FILE="regex_patterns.txt"
 
     if [[ "${params.cell_barcode_pattern}" ]]; then
-       echo -e "REGEX: N/A" > \${OUT_FILE}
-       echo -e "BC_PATTERN: ${params.cell_barcode_pattern}" >> \${OUT_FILE}
+       echo -e "REGEX: ${params.cell_barcode_pattern}" > \${OUT_FILE}
+       echo -e "BC_PATTERN: N/A" >> \${OUT_FILE}
 
     else
         python create_regex.py -i ${params.identifier_pattern} \\
