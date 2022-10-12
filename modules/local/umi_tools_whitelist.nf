@@ -1,7 +1,6 @@
-
 process UMI_TOOLS_WHITELIST {
     tag "$meta.id"
-    label 'process_low'
+    label "process_low"
 
     conda (params.enable_conda ? "bioconda::umi_tools=1.1.2" : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -10,6 +9,8 @@ process UMI_TOOLS_WHITELIST {
 
     input:
     tuple val(meta), path(reads)
+    val exp_cell_amount
+    val bc_pattern
 
     output:
     tuple val(meta), path(reads), path("*.txt"), emit: whitelist
@@ -28,8 +29,8 @@ process UMI_TOOLS_WHITELIST {
             whitelist \\
             --log2stderr \\
             --stdin=${reads} \\
-            --bc-pattern "CCCCCCCCCCCCCCCCCCCCCCCCNNNNNNNNNNNNNN" \\
-            --set-cell-number ${params.cell_amount} \\
+            --bc-pattern ${bc_pattern} \\
+            --set-cell-number ${exp_cell_amount} \\
             ${args} > ${prefix}.whitelist.txt 2> ${prefix}.err
 
         cat <<-END_VERSIONS > versions.yml
@@ -43,8 +44,8 @@ process UMI_TOOLS_WHITELIST {
             whitelist \\
             --log2stderr \\
             --stdin=${reads[0]} \\
-            --bc-pattern "CCCCCCCCCCCCCCCCCCCCCCCCNNNNNNNNNNNNNN" \\
-            --set-cell-number ${params.cell_amount} \\
+            --bc-pattern ${bc_pattern} \\
+            --set-cell-number ${exp_cell_amount} \\
             ${args} > ${prefix}.whitelist.txt 2>${prefix}.err
         
         cat <<-END_VERSIONS > versions.yml

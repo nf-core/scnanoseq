@@ -5,6 +5,13 @@ process CREATE_REGEX {
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/python:3.8.3':
         'quay.io/biocontainers/python:3.8.3' }"
+    
+    input:
+    val cell_barcode_pattern
+    val identifier_pattern
+    val cell_barcode_lengths
+    val umi_lengths
+    val fixed_seqs
 
     output:
     path "regex_patterns.txt", emit: regex_pattern
@@ -19,15 +26,15 @@ process CREATE_REGEX {
     """
     OUT_FILE="regex_patterns.txt"
 
-    if [[ "${params.cell_barcode_pattern}" ]]; then
-       echo -e "REGEX: ${params.cell_barcode_pattern}" > \${OUT_FILE}
+    if [[ "${cell_barcode_pattern}" ]]; then
+       echo -e "REGEX: ${cell_barcode_pattern}" > \${OUT_FILE}
        echo -e "BC_PATTERN: N/A" >> \${OUT_FILE}
 
     else
-        python create_regex.py -i ${params.identifier_pattern} \\
-                               -c ${params.cell_barcode_lengths} \\
-                               -u ${params.umi_lengths} \\
-                               -f ${params.fixed_seqs} \\
+        python create_regex.py -i ${identifier_pattern} \\
+                               -c ${cell_barcode_lengths} \\
+                               -u ${umi_lengths} \\
+                               -f ${fixed_seqs} \\
                                -o \${OUT_FILE}
     fi
 
