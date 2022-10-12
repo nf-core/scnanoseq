@@ -5,6 +5,7 @@ process SPLIT_FILE {
     input:
     tuple val(meta), path(unsplit_file)
     val file_ext
+    val split_amount
 
     output:
     // TODO: Make this more generalizable. Gunzip probably a good example
@@ -18,7 +19,7 @@ process SPLIT_FILE {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    split -a4 -l ${params.split_amount} -d --additional-suffix ${file_ext} ${unsplit_file} ${prefix}.
+    split -a4 -l ${split_amount} -d --additional-suffix ${file_ext} ${unsplit_file} ${prefix}.
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

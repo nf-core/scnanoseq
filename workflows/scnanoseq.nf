@@ -121,7 +121,7 @@ workflow SCNANOSEQ {
     ch_split_fastqs = ch_unzipped_fastqs
 
     if (params.split_amount > 0) {
-        SPLIT_FILE( ch_unzipped_fastqs, '.fastq')
+        SPLIT_FILE( ch_unzipped_fastqs, '.fastq', params.split_amount)
         ch_split_fastqs = SPLIT_FILE.out.split_files
     }
 
