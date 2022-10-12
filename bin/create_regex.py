@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import argparse
 import sys
 
@@ -48,6 +46,8 @@ def convert_regex(in_string, cb_lengths, umi_lengths, fixed_seqs, out_file):
     with open(out_file, "w") as f:
         f.write("REGEX: " + regex + '\n')
         f.write("UMI_TOOLS: " + umi_tools_pattern + '\n')
+        f.write("BC_LENGTH: " + str(umi_tools_pattern.count('C')) + '\n')
+        f.write("UMI_LENGTH: " + str(umi_tools_pattern.count('N')) + '\n')
 
     return
 
