@@ -108,35 +108,34 @@ workflow SCNANOSEQ {
         ch_fastqc_multiqc_pretrim = FASTQC_NANOPLOT_PRE_TRIM.out.fastqc_multiqc.ifEmpty([])
     }
 
-    ch_zipped_reads = ch_fastq
-
     // TODO: Turn trimming into subworkflow?
+    //
+    // MODULE: Unzip fastq
+    //
+    GUNZIP( ch_fastq )
+    ch_unzipped_fastqs = GUNZIP.out.gunzip
+
+    //
+    // MODULE: Split fastq
+    //
+    ch_split_fastqs = ch_unzipped_fastqs
+
+    if (params.split_amount > 0) {
+        SPLIT_FILE( ch_unzipped_fastqs, '.fastq')
+        ch_split_fastqs = SPLIT_FILE.out.split_files
+    }
+
+    ch_fastqs = Channel.empty()
+    ch_split_fastqs.transpose().set { ch_fastqs }
+
+    //
+    // MODULE: Trim and filter reads
+    //
+    ch_trimmed_reads = ch_fastqs
+    
     if (!params.skip_trimming){
-        //
-        // MODULE: Unzip fastq
-        //
-        GUNZIP( ch_fastq )
-        ch_unzipped_fastqs = GUNZIP.out.gunzip
-
-        //
-        // MODULE: Split fastq
-        //
-        ch_split_fastqs = ch_unzipped_fastqs
-
-        if (params.split_amount > 0) {
-            SPLIT_FILE( ch_unzipped_fastqs, '.fastq')
-            ch_split_fastqs = SPLIT_FILE.out.split_files
-        }
-
-        ch_fastqs = Channel.empty()
-        ch_split_fastqs.transpose().set { ch_fastqs }
-
-        //
-        // MODULE: Trim and filter reads
-        //
 
         // TODO: Throw error if invalid trimming_software provided
-        ch_trimmed_reads = ch_fastqs
         if (params.trimming_software == 'nanofilt') {
 
             NANOFILT ( ch_fastqs )
@@ -146,46 +145,53 @@ workflow SCNANOSEQ {
             PROWLERTRIMMER ( ch_fastqs )
             ch_trimmed_reads = PROWLERTRIMMER.out.reads
         }
-
-        //
-        // SUBWORKFLOW: Pre extract the cell barcodes
-        //
-        // TODO: Turn this into a subworkflow?
-
-        CREATE_REGEX( )
-        ch_regex_pattern = CREATE_REGEX.out.regex_pattern
-        // Preextraction will create paired fastqs in cell ranger format
-        // So we will need to set the fastqs to paired end
-        ch_trimmed_reads
-            .map {
-                meta, fastq ->
-                    meta.single_end = false
-                    [ meta, fastq ]
-            }
-
-        PREEXTRACT_FASTQ( ch_trimmed_reads, ch_regex_pattern )
-
-        // TODO: Cleaner way to do this and not repeat code?
-        ch_pre_extracted_r1_fqs = Channel.empty()
-        ch_pre_extracted_r2_fqs = Channel.empty()
-
-        PREEXTRACT_FASTQ.out.r1_reads
-            .groupTuple()
-            .set{ ch_pre_extracted_r1_fqs }
-
-        PREEXTRACT_FASTQ.out.r2_reads
-            .groupTuple()
-            .set{ ch_pre_extracted_r2_fqs }
-        //
-        // MODULE: Zip fastq
-        //
-
-        ZIP_R1 ( ch_pre_extracted_r1_fqs, "R1" )
-        ch_zipped_r1_reads = ZIP_R1.out.archive
-        
-        ZIP_R2 ( ch_pre_extracted_r2_fqs, "R2" )
-        ch_zipped_r2_reads = ZIP_R2.out.archive
     }
+
+    //
+    // SUBWORKFLOW: Pre extract the cell barcodes
+    //
+    // TODO: Turn this into a subworkflow?
+
+    // We need to create the regex format
+    CREATE_REGEX( params.cell_barcode_pattern,
+                  params.identifier_pattern,
+                  params.cell_barcode_lengths,
+                  params.umi_lengths,
+                  params.fixed_seqs)
+
+    ch_regex_pattern = CREATE_REGEX.out.regex_pattern
+
+    // Preextraction will create paired fastqs in cell ranger format
+    // So we will need to set the fastqs to paired end
+    ch_trimmed_reads
+        .map {
+            meta, fastq ->
+                meta.single_end = false
+                [ meta, fastq ]
+        }
+
+    PREEXTRACT_FASTQ( ch_trimmed_reads, ch_regex_pattern )
+
+    // TODO: Cleaner way to do this and not repeat code?
+    ch_pre_extracted_r1_fqs = Channel.empty()
+    ch_pre_extracted_r2_fqs = Channel.empty()
+
+    PREEXTRACT_FASTQ.out.r1_reads
+        .groupTuple()
+        .set{ ch_pre_extracted_r1_fqs }
+
+    PREEXTRACT_FASTQ.out.r2_reads
+        .groupTuple()
+        .set{ ch_pre_extracted_r2_fqs }
+    //
+    // MODULE: Zip fastq
+    //
+
+    ZIP_R1 ( ch_pre_extracted_r1_fqs, "R1" )
+    ch_zipped_r1_reads = ZIP_R1.out.archive
+    
+    ZIP_R2 ( ch_pre_extracted_r2_fqs, "R2" )
+    ch_zipped_r2_reads = ZIP_R2.out.archive
 
     //
     // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - post-trim QC
@@ -213,7 +219,7 @@ workflow SCNANOSEQ {
 
     ch_zipped_reads.view()
 
-    UMI_TOOLS_WHITELIST ( ch_zipped_reads)
+    UMI_TOOLS_WHITELIST ( ch_zipped_reads, params.cell_amount, params.cell_barcode_pattern)
 
     //
     // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - post-extract QC
