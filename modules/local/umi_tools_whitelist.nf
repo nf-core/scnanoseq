@@ -29,7 +29,7 @@ process UMI_TOOLS_WHITELIST {
             --log2stderr \\
             --stdin=${reads} \\
             --bc-pattern "CCCCCCCCCCCCCCCCCCCCCCCCNNNNNNNNNNNNNN" \\
-            --plot-prefix "plots_" \\
+            --set-cell-number ${params.cell_amount} \\
             ${args} > ${prefix}.whitelist.txt 2> ${prefix}.err
 
         cat <<-END_VERSIONS > versions.yml
@@ -44,7 +44,7 @@ process UMI_TOOLS_WHITELIST {
             --log2stderr \\
             --stdin=${reads[0]} \\
             --bc-pattern "CCCCCCCCCCCCCCCCCCCCCCCCNNNNNNNNNNNNNN" \\
-            --plot-prefix "plots_" \\
+            --set-cell-number ${params.cell_amount} \\
             ${args} > ${prefix}.whitelist.txt 2>${prefix}.err
         
         cat <<-END_VERSIONS > versions.yml
