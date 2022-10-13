@@ -3,9 +3,6 @@ process PREEXTRACT_FASTQ {
     label 'process_low'
 
     // TODO: We will need a mulled container for this
-    //conda ( "conda-forge::regex=2022.1.18 conda-forge::biopython=1.79" )
-    //conda ( "conda-forge::python=3.8.3 conda-forge::regex=2022.1.18" )
-    //conda ( " vikky34v::glibc=2.33 conda-forge::biopython=1.79" )
     conda ( "conda-forge::regex=2022.1.18 conda-forge::biopython=1.79" )
 
     input:

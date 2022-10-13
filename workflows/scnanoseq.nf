@@ -123,10 +123,13 @@ workflow SCNANOSEQ {
     if (params.split_amount > 0) {
         SPLIT_FILE( ch_unzipped_fastqs, '.fastq', params.split_amount)
         ch_split_fastqs = SPLIT_FILE.out.split_files
+
+        // TODO: Change the ids so they contain the sample_name and index
     }
 
     ch_fastqs = Channel.empty()
     ch_split_fastqs.transpose().set { ch_fastqs }
+
 
     //
     // MODULE: Trim and filter reads
@@ -140,6 +143,7 @@ workflow SCNANOSEQ {
 
             NANOFILT ( ch_fastqs )
             ch_trimmed_reads = NANOFILT.out.reads
+
         } else if (params.trimming_software == 'prowler') {
 
             PROWLERTRIMMER ( ch_fastqs )
@@ -203,11 +207,7 @@ workflow SCNANOSEQ {
 
         ch_fastqc_multiqc_postrim = FASTQC_NANOPLOT_POST_TRIM.out.fastqc_multiqc.ifEmpty([])
     }
-
-    //
-    // MODULE: Create estimated whitelist
-    //
-
+    
     // Merge the R1 and R2 fastqs back together
     ch_zipped_reads = Channel.empty()
     ch_zipped_r1_reads
@@ -216,10 +216,15 @@ workflow SCNANOSEQ {
             [ meta, [r1, r2]]
         }
         .set{ ch_zipped_reads }
-
+    
     ch_zipped_reads.view()
 
-    UMI_TOOLS_WHITELIST ( ch_zipped_reads, params.cell_amount, params.cell_barcode_pattern)
+    //
+    // MODULE: Create estimated whitelist
+    //
+
+    // TODO: How to read lines form the regex_pattern file?
+    UMI_TOOLS_WHITELIST ( ch_zipped_reads, params.cell_amount, ch_regex_pattern)
 
     //
     // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - post-extract QC

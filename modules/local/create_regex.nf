@@ -31,11 +31,11 @@ process CREATE_REGEX {
        echo -e "BC_PATTERN: N/A" >> \${OUT_FILE}
 
     else
-        python create_regex.py -i ${identifier_pattern} \\
-                               -c ${cell_barcode_lengths} \\
-                               -u ${umi_lengths} \\
-                               -f ${fixed_seqs} \\
-                               -o \${OUT_FILE}
+        create_regex.py -i "${identifier_pattern}" \\
+                        -c "${cell_barcode_lengths}" \\
+                        -u "${umi_lengths}" \\
+                        -f "${fixed_seqs}" \\
+                        -o \${OUT_FILE}
     fi
 
     cat <<-END_VERSIONS > versions.yml
