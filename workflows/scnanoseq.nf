@@ -42,8 +42,9 @@ include { SPLIT_FILE          } from "../modules/local/split_file"
 include { PIGZ as ZIP_R1      } from "../modules/local/pigz"
 include { PIGZ as ZIP_R2      } from "../modules/local/pigz"
 include { UMI_TOOLS_WHITELIST } from "../modules/local/umi_tools_whitelist"
-include { CREATE_REGEX        } from "../modules/local/create_regex" 
+include { CREATE_REGEX        } from "../modules/local/create_regex"
 include { PREEXTRACT_FASTQ    } from "../modules/local/preextract_fastq"
+include { PAFTOOLS            } from "../modules/local/paftools.nf"
 
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
@@ -116,6 +117,13 @@ workflow SCNANOSEQ {
     ch_unzipped_fastqs = GUNZIP.out.gunzip
 
     //
+    // MODULE: Generate junction file - paftools
+    //
+    ch_gtf = file(params.gtf)
+    PAFTOOLS ( ch_gtf )
+    ch_bed = PAFTOOLS.out.bed
+
+    //
     // MODULE: Split fastq
     //
     ch_split_fastqs = ch_unzipped_fastqs
@@ -135,7 +143,7 @@ workflow SCNANOSEQ {
     // MODULE: Trim and filter reads
     //
     ch_trimmed_reads = ch_fastqs
-    
+
     if (!params.skip_trimming){
 
         // TODO: Throw error if invalid trimming_software provided
@@ -193,7 +201,7 @@ workflow SCNANOSEQ {
 
     ZIP_R1 ( ch_pre_extracted_r1_fqs, "R1" )
     ch_zipped_r1_reads = ZIP_R1.out.archive
-    
+
     ZIP_R2 ( ch_pre_extracted_r2_fqs, "R2" )
     ch_zipped_r2_reads = ZIP_R2.out.archive
 
@@ -207,7 +215,7 @@ workflow SCNANOSEQ {
 
         ch_fastqc_multiqc_postrim = FASTQC_NANOPLOT_POST_TRIM.out.fastqc_multiqc.ifEmpty([])
     }
-    
+
     // Merge the R1 and R2 fastqs back together
     ch_zipped_reads = Channel.empty()
     ch_zipped_r1_reads
@@ -216,7 +224,7 @@ workflow SCNANOSEQ {
             [ meta, [r1, r2]]
         }
         .set{ ch_zipped_reads }
-    
+
     ch_zipped_reads.view()
 
     //
