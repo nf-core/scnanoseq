@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import argparse
 import sys
 
@@ -75,9 +77,9 @@ def convert_to_regex(in_string, feature_annos):
     """ Converts the in_string to regex """
     regex = ''
 
-    for feature in in_string.split('('):
+    for feature in in_string.split(','):
         if feature:
-            feature = feature.replace(')', '')
+            feature = feature.strip()
             feature_name = '_'.join(feature.split('_')[:-1])
             feature_idx = int(feature.split('_')[-1])
        
