@@ -1,13 +1,12 @@
 process PAFTOOLS {
+    tag "$gtf"
     label 'process_low'
-    // TODO: decide what's best tag after more gtf inputs have been added?
 
     conda (params.enable_conda ? "bioconda::minimap2=2.24" : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/minimap2:2.24--h5bf99c6_0':
         'quay.io/biocontainers/minimap2:2.24--h5bf99c6_0' }"
 
-    // TODO: *** once intron method 1/2 gets added, add conditionals to input below ***
     input:
     path gtf
 

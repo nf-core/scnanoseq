@@ -119,6 +119,7 @@ workflow SCNANOSEQ {
     //
     // MODULE: Generate junction file - paftools
     //
+    // TODO: *** once intron method 1/2 gets added, add conditionals to input gtf below (either param, or output of process) ***
     ch_gtf = file(params.gtf)
     PAFTOOLS ( ch_gtf )
     ch_bed = PAFTOOLS.out.bed
