@@ -41,9 +41,10 @@ include { PROWLERTRIMMER      } from "../modules/local/prowlertrimmer"
 include { SPLIT_FILE          } from "../modules/local/split_file"
 include { PIGZ as ZIP_R1      } from "../modules/local/pigz"
 include { PIGZ as ZIP_R2      } from "../modules/local/pigz"
-include { UMI_TOOLS_WHITELIST } from "../modules/local/umi_tools_whitelist"
 include { CREATE_REGEX        } from "../modules/local/create_regex" 
 include { PREEXTRACT_FASTQ    } from "../modules/local/preextract_fastq"
+include { UMI_TOOLS_WHITELIST } from "../modules/local/umi_tools_whitelist"
+include { UMI_TOOLS_EXTRACT } from "../modules/local/umi_tools_extract"
 
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
@@ -225,6 +226,11 @@ workflow SCNANOSEQ {
 
     // TODO: How to read lines form the regex_pattern file?
     UMI_TOOLS_WHITELIST ( ch_zipped_reads, params.cell_amount, ch_regex_pattern)
+    ch_reads_with_whitelist = UMI_TOOLS_WHITELIST.out.whitelist
+
+    //
+    // MODULE: Extract barcodes
+    UMI_TOOLS_EXTRACT ( ch_reads_with_whitelist, ch_regex_pattern)
 
     //
     // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - post-extract QC

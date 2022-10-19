@@ -1,4 +1,4 @@
-process UMITOOLS_EXTRACT {
+process UMI_TOOLS_EXTRACT {
     tag "$meta.id"
     label "process_low"
 
@@ -8,10 +8,11 @@ process UMITOOLS_EXTRACT {
         'quay.io/biocontainers/umi_tools:1.1.2--py38h4a8c8d9_0' }"
 
     input:
-    tuple val(meta), path(reads)
+    tuple val(meta), path(reads), path(whitelist)
+    path regex_pattern
 
     output:
-    tuple val(meta), path("*.fastq.gz"), emit: reads
+    tuple val(meta), path("*.umi_extract.fastq.gz"), emit: reads
     tuple val(meta), path("*.log")     , emit: log
     path  "versions.yml"               , emit: versions
 
@@ -37,12 +38,16 @@ process UMITOOLS_EXTRACT {
         """
     }  else {
         """
+        BC_PATTERN=\$(grep UMI_TOOLS ${regex_pattern} | sed 's/UMI_TOOLS: //g')
+
         umi_tools \\
             extract \\
+            --bc-pattern \$BC_PATTERN \\
+            --whitelist ${whitelist} \\
             -I ${reads[0]} \\
             --read2-in=${reads[1]} \\
-            -S ${prefix}.umi_extract_1.fastq.gz \\
-            --read2-out=${prefix}.umi_extract_2.fastq.gz \\
+            -S ${prefix}.umi_extract.fastq.gz \\
+            --read2-stdout \\
             $args \\
             > ${prefix}.umi_extract.log
 
