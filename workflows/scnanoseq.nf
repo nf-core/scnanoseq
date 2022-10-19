@@ -230,21 +230,21 @@ workflow SCNANOSEQ {
 
     //
     // MODULE: Extract barcodes
+    //
     UMI_TOOLS_EXTRACT ( ch_reads_with_whitelist, ch_regex_pattern)
+    ch_extracted_reads = UMI_TOOLS_EXTRACT.out.reads
 
     //
     // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - post-extract QC
     //
-    //TODO: enable below for post-extract QC;  change input channel <<<ch_fastq>>>
-    /*
     ch_fastqc_multiqc_postextract = Channel.empty()
     if (!params.skip_qc){
 
-        FASTQC_NANOPLOT_POST_EXTRACT ( <<<ch_fastq>>>, params.skip_nanoplot, params.skip_fastqc)
+        FASTQC_NANOPLOT_POST_EXTRACT ( ch_extracted_reads, params.skip_nanoplot, params.skip_fastqc)
 
         ch_fastqc_multiqc_postextract = FASTQC_NANOPLOT_POST_EXTRACT.out.fastqc_multiqc.ifEmpty([])
     }
-    */
+    
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
