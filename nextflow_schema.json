@@ -66,6 +66,11 @@
                     "help_text": "This parameter is *mandatory* if `--genome` is not specified. If you don't have a BWA index available this will be generated for you automatically. Combine with `--save_reference` to save BWA index for future runs.",
                     "fa_icon": "far fa-file-code"
                 },
+                "gtf": {
+                    "type": "string",
+                    "fa_icon": "far fa-file-code",
+                    "default": "null"
+                },
                 "igenomes_base": {
                     "type": "string",
                     "format": "directory-path",
