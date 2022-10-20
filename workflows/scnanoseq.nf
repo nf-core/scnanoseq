@@ -62,9 +62,9 @@ include { PREPARE_REFERENCE_FILES } from "../subworkflows/local/prepare_referenc
 //
 // MODULE: Installed directly from nf-core/modules
 //
-include { GUNZIP                      } from "../modules/nf-core/modules/gunzip/main"
-include { MULTIQC                     } from '../modules/nf-core/modules/multiqc/main'
-include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/modules/custom/dumpsoftwareversions/main'
+include { GUNZIP                      } from "../modules/nf-core/gunzip/main"
+include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
+include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 
 /*
  * SUBWORKFLOW: Consisting entirely of nf-core/modules
