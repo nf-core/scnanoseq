@@ -4,7 +4,7 @@
 
 include { TRANSCRIPT_TO_EXON } from '../../modules/local/prepare_gtf_transcript_to_exon'
 
-workflow PREPARE_REFERENCE_FILES {
+workflow PREPARE_GTF {
     take:
     gtf_preparation_method
     gtf
@@ -17,7 +17,9 @@ workflow PREPARE_REFERENCE_FILES {
         ch_prepared_gtf = TRANSCRIPT_TO_EXON.out.ch_processed_gtf
 
     } else if (gtf_preparation_method == "2") {
+        ch_prepared_gtf = gtf
         // Get the chromosome sizes
+
         
         // Sort the gtf file
         

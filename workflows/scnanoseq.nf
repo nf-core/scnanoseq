@@ -43,14 +43,15 @@ include { PIGZ as ZIP_R1      } from "../modules/local/pigz"
 include { PIGZ as ZIP_R2      } from "../modules/local/pigz"
 include { PREEXTRACT_FASTQ    } from "../modules/local/preextract_fastq"
 include { UMI_TOOLS_WHITELIST } from "../modules/local/umi_tools_whitelist"
-include { UMI_TOOLS_EXTRACT } from "../modules/local/umi_tools_extract"
+include { UMI_TOOLS_EXTRACT   } from "../modules/local/umi_tools_extract"
 include { PAFTOOLS            } from "../modules/local/paftools.nf"
 
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
-include { INPUT_CHECK  } from '../subworkflows/local/input_check'
-include { CREATE_REGEX_INFO } from "../subworkflows/local/create_regex" 
+include { INPUT_CHECK             } from "../subworkflows/local/input_check"
+include { CREATE_REGEX_INFO       } from "../subworkflows/local/create_regex" 
+include { PREPARE_REFERENCE_FILES } from "../subworkflows/local/prepare_reference_files"
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -110,7 +111,6 @@ workflow SCNANOSEQ {
         ch_fastqc_multiqc_pretrim = FASTQC_NANOPLOT_PRE_TRIM.out.fastqc_multiqc.ifEmpty([])
     }
 
-    // TODO: Turn trimming into subworkflow?
     //
     // MODULE: Unzip fastq
     //
@@ -118,10 +118,20 @@ workflow SCNANOSEQ {
     ch_unzipped_fastqs = GUNZIP.out.gunzip
 
     //
+    // SUBWORKFLOW: Prepare reference files
+    //
+    PREPARE_REFERENCE_FILES ( "",
+                              "",
+                              params.gtf,
+                              params.fasta)
+
+    ch_fasta = PREPARE_REFERENCE_FILES.out.ch_prepared_fasta
+    ch_gtf = PREPARE_REFERENCE_FILES.out.ch_prepared_gtf 
+
+    //
     // MODULE: Generate junction file - paftools
     //
     // TODO: *** once intron method 1/2 gets added, add conditionals to input gtf below (either param, or output of process) ***
-    ch_gtf = file(params.gtf)
     PAFTOOLS ( ch_gtf )
     ch_bed = PAFTOOLS.out.bed
 
