@@ -10,8 +10,7 @@ process UMI_TOOLS_WHITELIST {
     input:
     tuple val(meta), path(reads)
     val exp_cell_amount
-    path regex_pattern
-    //val bc_pattern
+    val regex_pattern
 
     output:
     tuple val(meta), path(reads), path("*.txt"), emit: whitelist
@@ -26,13 +25,11 @@ process UMI_TOOLS_WHITELIST {
 
     if (meta.single_end) {
         """
-        BC_PATTERN=\$(grep UMI_TOOLS ${regex_pattern} | sed 's/UMI_TOOLS: //g')
-
         umi_tools \\
             whitelist \\
             --log2stderr \\
             --stdin=${reads} \\
-            --bc-pattern \$BC_PATTERN \\
+            --bc-pattern ${regex_pattern} \\
             --set-cell-number ${exp_cell_amount} \\
             ${args} > ${prefix}.whitelist.txt 2> ${prefix}.err
 
@@ -43,13 +40,11 @@ process UMI_TOOLS_WHITELIST {
         """
         } else {
         """
-        BC_PATTERN=\$(grep UMI_TOOLS ${regex_pattern} | sed 's/UMI_TOOLS: //g')
-
         umi_tools \\
             whitelist \\
             --log2stderr \\
             --stdin=${reads[0]} \\
-            --bc-pattern \$BC_PATTERN \\
+            --bc-pattern ${regex_pattern} \\
             --set-cell-number ${exp_cell_amount} \\
             ${args} > ${prefix}.whitelist.txt 2>${prefix}.err
         

@@ -7,7 +7,7 @@ process PREEXTRACT_FASTQ {
 
     input:
     tuple val(meta), path(reads)
-    path regex_pattern
+    val regex_pattern
 
     output:
     tuple val(meta), path("*.R1.fastq"), emit: r1_reads
@@ -22,7 +22,6 @@ process PREEXTRACT_FASTQ {
     def prefix = task.ext.prefix ?: "${meta.id}"
     
     """
-    BC_PATTERN=\$(grep REGEX ${regex_pattern} | sed 's/REGEX: //g')
     FILE_PREFIX=${prefix}
 
     if [ ${params.split_amount} -gt 0 ]; then
@@ -31,7 +30,7 @@ process PREEXTRACT_FASTQ {
     fi
 
     pre_extract_barcodes.py -i ${reads} \\
-                            -r \${BC_PATTERN} \\
+                            -r "${regex_pattern}" \\
                             -o \${FILE_PREFIX}
 
     cat <<-END_VERSIONS > versions.yml

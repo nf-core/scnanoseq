@@ -9,7 +9,7 @@ process UMI_TOOLS_EXTRACT {
 
     input:
     tuple val(meta), path(reads), path(whitelist)
-    path regex_pattern
+    val regex_pattern
 
     output:
     tuple val(meta), path("*.umi_extract.fastq.gz"), emit: reads
@@ -38,11 +38,9 @@ process UMI_TOOLS_EXTRACT {
         """
     }  else {
         """
-        BC_PATTERN=\$(grep UMI_TOOLS ${regex_pattern} | sed 's/UMI_TOOLS: //g')
-
         umi_tools \\
             extract \\
-            --bc-pattern \$BC_PATTERN \\
+            --bc-pattern ${regex_pattern} \\
             --whitelist ${whitelist} \\
             -I ${reads[0]} \\
             --read2-in=${reads[1]} \\

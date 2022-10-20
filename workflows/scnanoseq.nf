@@ -41,7 +41,6 @@ include { PROWLERTRIMMER      } from "../modules/local/prowlertrimmer"
 include { SPLIT_FILE          } from "../modules/local/split_file"
 include { PIGZ as ZIP_R1      } from "../modules/local/pigz"
 include { PIGZ as ZIP_R2      } from "../modules/local/pigz"
-include { CREATE_REGEX        } from "../modules/local/create_regex" 
 include { PREEXTRACT_FASTQ    } from "../modules/local/preextract_fastq"
 include { UMI_TOOLS_WHITELIST } from "../modules/local/umi_tools_whitelist"
 include { UMI_TOOLS_EXTRACT } from "../modules/local/umi_tools_extract"
@@ -50,7 +49,8 @@ include { PAFTOOLS            } from "../modules/local/paftools.nf"
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
-include { INPUT_CHECK                } from '../subworkflows/local/input_check'
+include { INPUT_CHECK  } from '../subworkflows/local/input_check'
+include { CREATE_REGEX_INFO } from "../subworkflows/local/create_regex" 
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -121,9 +121,9 @@ workflow SCNANOSEQ {
     // MODULE: Generate junction file - paftools
     //
     // TODO: *** once intron method 1/2 gets added, add conditionals to input gtf below (either param, or output of process) ***
-    ch_gtf = file(params.gtf)
-    PAFTOOLS ( ch_gtf )
-    ch_bed = PAFTOOLS.out.bed
+    //ch_gtf = file(params.gtf)
+    //PAFTOOLS ( ch_gtf )
+    //ch_bed = PAFTOOLS.out.bed
 
     //
     // MODULE: Split fastq
@@ -164,16 +164,15 @@ workflow SCNANOSEQ {
     //
     // SUBWORKFLOW: Pre extract the cell barcodes
     //
-    // TODO: Turn this into a subworkflow?
 
     // We need to create the regex format
-    CREATE_REGEX( params.cell_barcode_pattern,
+    CREATE_REGEX_INFO( params.cell_barcode_pattern,
                   params.identifier_pattern,
                   params.cell_barcode_lengths,
                   params.umi_lengths,
                   params.fixed_seqs)
 
-    ch_regex_pattern = CREATE_REGEX.out.regex_pattern
+    val_regex_info = CREATE_REGEX_INFO.out.regex
 
     // Preextraction will create paired fastqs in cell ranger format
     // So we will need to set the fastqs to paired end
@@ -184,7 +183,7 @@ workflow SCNANOSEQ {
                 [ meta, fastq ]
         }
 
-    PREEXTRACT_FASTQ( ch_trimmed_reads, ch_regex_pattern )
+    PREEXTRACT_FASTQ( ch_trimmed_reads, val_regex_info.regex )
 
     // TODO: Cleaner way to do this and not repeat code?
     ch_pre_extracted_r1_fqs = Channel.empty()
@@ -227,20 +226,18 @@ workflow SCNANOSEQ {
         }
         .set{ ch_zipped_reads }
 
-    ch_zipped_reads.view()
-
     //
     // MODULE: Create estimated whitelist
     //
 
     // TODO: How to read lines form the regex_pattern file?
-    UMI_TOOLS_WHITELIST ( ch_zipped_reads, params.cell_amount, ch_regex_pattern)
+    UMI_TOOLS_WHITELIST ( ch_zipped_reads, params.cell_amount, val_regex_info.umi_tools)
     ch_reads_with_whitelist = UMI_TOOLS_WHITELIST.out.whitelist
 
     //
     // MODULE: Extract barcodes
     //
-    UMI_TOOLS_EXTRACT ( ch_reads_with_whitelist, ch_regex_pattern)
+    UMI_TOOLS_EXTRACT ( ch_reads_with_whitelist, val_regex_info.umi_tools )
     ch_extracted_reads = UMI_TOOLS_EXTRACT.out.reads
 
     //

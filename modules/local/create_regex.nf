@@ -14,7 +14,7 @@ process CREATE_REGEX {
     val fixed_seqs
 
     output:
-    path "regex_patterns.txt", emit: regex_pattern
+    path "regex_patterns.txt", emit: regex_pattern_file
     path "versions.yml"      , emit: versions
 
     when:
