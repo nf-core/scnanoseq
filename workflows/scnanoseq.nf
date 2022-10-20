@@ -45,12 +45,13 @@ include { PREEXTRACT_FASTQ    } from "../modules/local/preextract_fastq"
 include { UMI_TOOLS_WHITELIST } from "../modules/local/umi_tools_whitelist"
 include { UMI_TOOLS_EXTRACT } from "../modules/local/umi_tools_extract"
 include { PAFTOOLS            } from "../modules/local/paftools.nf"
+include { MINIMAP2_INDEX      } from "../modules/local/minimap2_index.nf"
 
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
 include { INPUT_CHECK  } from '../subworkflows/local/input_check'
-include { CREATE_REGEX_INFO } from "../subworkflows/local/create_regex" 
+include { CREATE_REGEX_INFO } from "../subworkflows/local/create_regex"
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -249,6 +250,23 @@ workflow SCNANOSEQ {
         FASTQC_NANOPLOT_POST_EXTRACT ( ch_extracted_reads, params.skip_nanoplot, params.skip_fastqc)
 
         ch_fastqc_multiqc_postextract = FASTQC_NANOPLOT_POST_EXTRACT.out.fastqc_multiqc.ifEmpty([])
+    }
+
+    CUSTOM_DUMPSOFTWAREVERSIONS (
+        ch_versions.unique().collectFile(name: 'collated_versions.yml')
+    )
+
+    //
+    // MINIMAP2_INDEX
+    //
+
+    if (!params.skip_save_minimap2_index) {
+        ch_fasta =  Channel.fromPath(params.fasta, checkIfExists: true)
+        ch_fasta_bed = ch_fasta.mix(ch_bed).collect()
+
+        MINIMAP2_INDEX ( ch_fasta_bed )
+        ch_minimap_index = MINIMAP2_INDEX.out.index
+        ch_minimap_index.view()
     }
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
