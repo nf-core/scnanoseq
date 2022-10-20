@@ -121,9 +121,9 @@ workflow SCNANOSEQ {
     // MODULE: Generate junction file - paftools
     //
     // TODO: *** once intron method 1/2 gets added, add conditionals to input gtf below (either param, or output of process) ***
-    //ch_gtf = file(params.gtf)
-    //PAFTOOLS ( ch_gtf )
-    //ch_bed = PAFTOOLS.out.bed
+    ch_gtf = file(params.gtf)
+    PAFTOOLS ( ch_gtf )
+    ch_bed = PAFTOOLS.out.bed
 
     //
     // MODULE: Split fastq
@@ -250,7 +250,6 @@ workflow SCNANOSEQ {
 
         ch_fastqc_multiqc_postextract = FASTQC_NANOPLOT_POST_EXTRACT.out.fastqc_multiqc.ifEmpty([])
     }
-    
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
