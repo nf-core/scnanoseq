@@ -46,6 +46,7 @@ include { UMI_TOOLS_WHITELIST } from "../modules/local/umi_tools_whitelist"
 include { UMI_TOOLS_EXTRACT } from "../modules/local/umi_tools_extract"
 include { PAFTOOLS            } from "../modules/local/paftools.nf"
 include { MINIMAP2_INDEX      } from "../modules/local/minimap2_index.nf"
+include { MINIMAP2_ALIGN      } from "../modules/local/minimap2_align.nf"
 
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
@@ -262,6 +263,20 @@ workflow SCNANOSEQ {
         MINIMAP2_INDEX ( ch_fasta,  ch_bed)
         ch_minimap_index = MINIMAP2_INDEX.out.index
     }
+
+    //
+    // MINIMAP2_ALIGN
+    //
+
+    if (!params.skip_save_minimap2_index) {
+        ch_reference = ch_minimap_index
+    } else {
+        ch_reference = Channel.fromPath(params.fasta, checkIfExists: true)
+    }
+
+    MINIMAP2_ALIGN ( ch_extracted_reads, ch_bed, ch_reference )
+    ch_minimap_index = MINIMAP2_ALIGN.out.sam
+    ch_minimap_index.view()
 
     //
     // SOFTWARE_VERSIONS
