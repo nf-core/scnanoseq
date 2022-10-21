@@ -172,6 +172,29 @@
             },
             "fa_icon": "fas fa-microscope"
         },
+        "mapping": {
+            "title": "Mapping",
+            "type": "object",
+            "description": "Options related to minimap2",
+            "default": "",
+            "properties": {
+                "stranded": {
+                    "type": "string",
+                    "default": "None"
+                },
+                "kmer_size": {
+                    "type": "integer",
+                    "default": 14,
+                    "description": "Minimizer k-mer length"
+                },
+                "save_secondary_alignment": {
+                    "type": "boolean",
+                    "description": "Save secondary alignment outputs",
+                    "fa_icon": "far fa-save"
+                }
+            },
+            "fa_icon": "far fa-map"
+        },
         "process_skipping_options": {
             "title": "Process skipping options",
             "type": "object",
@@ -193,6 +216,11 @@
                     "type": "boolean",
                     "fa_icon": "fas fa-forward",
                     "description": "Skip FastQC."
+                },
+                "skip_save_minimap2_index": {
+                    "type": "boolean",
+                    "description": "Skip saving minimap2 index",
+                    "fa_icon": "fas fa-forward"
                 }
             },
             "fa_icon": "fas fa-forward"
@@ -388,6 +416,9 @@
         },
         {
             "$ref": "#/definitions/cell_barcode_options"
+        },
+        {
+            "$ref": "#/definitions/mapping"
         },
         {
             "$ref": "#/definitions/process_skipping_options"
