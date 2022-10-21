@@ -1,6 +1,6 @@
 process MINIMAP2_INDEX {
     tag "$fasta"
-    label "process_low"
+    label "process_high"
 
     conda (params.enable_conda ? "bioconda::minimap2=2.24" : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -8,7 +8,8 @@ process MINIMAP2_INDEX {
         'quay.io/biocontainers/minimap2:2.24--h5bf99c6_0' }"
 
     input:
-    tuple path(fasta), path(bed)
+    path fasta
+    path bed
 
     output:
     path "*.mmi"                  , emit: index

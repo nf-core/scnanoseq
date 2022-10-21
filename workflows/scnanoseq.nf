@@ -258,12 +258,14 @@ workflow SCNANOSEQ {
 
     if (!params.skip_save_minimap2_index) {
         ch_fasta =  Channel.fromPath(params.fasta, checkIfExists: true)
-        ch_fasta_bed = ch_fasta.mix(ch_bed).collect()
 
-        MINIMAP2_INDEX ( ch_fasta_bed )
+        MINIMAP2_INDEX ( ch_fasta,  ch_bed)
         ch_minimap_index = MINIMAP2_INDEX.out.index
-        ch_minimap_index.view()
     }
+
+    //
+    // SOFTWARE_VERSIONS
+    //
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
