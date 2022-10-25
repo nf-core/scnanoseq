@@ -41,6 +41,7 @@ include { PROWLERTRIMMER      } from "../modules/local/prowlertrimmer"
 include { SPLIT_FILE          } from "../modules/local/split_file"
 include { PIGZ as ZIP_R1      } from "../modules/local/pigz"
 include { PIGZ as ZIP_R2      } from "../modules/local/pigz"
+include { PIGZ as ZIP_TRIM_QC } from "../modules/local/pigz"
 include { PREEXTRACT_FASTQ    } from "../modules/local/preextract_fastq"
 include { UMI_TOOLS_WHITELIST } from "../modules/local/umi_tools_whitelist"
 include { UMI_TOOLS_EXTRACT   } from "../modules/local/umi_tools_extract"
@@ -52,7 +53,7 @@ include { MINIMAP2_ALIGN      } from "../modules/local/minimap2_align.nf"
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
 include { INPUT_CHECK             } from "../subworkflows/local/input_check"
-include { CREATE_REGEX_INFO       } from "../subworkflows/local/create_regex" 
+include { CREATE_REGEX_INFO       } from "../subworkflows/local/create_regex"
 include { PREPARE_REFERENCE_FILES } from "../subworkflows/local/prepare_reference_files"
 
 /*
@@ -71,9 +72,10 @@ include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoft
 /*
  * SUBWORKFLOW: Consisting entirely of nf-core/modules
  */
-include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_PRE_TRIM     } from '../subworkflows/nf-core/qcfastq_nanoplot_fastqc'
-include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_POST_TRIM    } from '../subworkflows/nf-core/qcfastq_nanoplot_fastqc'
-include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_POST_EXTRACT } from '../subworkflows/nf-core/qcfastq_nanoplot_fastqc'
+include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_PRE_TRIM      } from '../subworkflows/nf-core/qcfastq_nanoplot_fastqc'
+include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_POST_TRIM     } from '../subworkflows/nf-core/qcfastq_nanoplot_fastqc'
+include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_PRE_EXTRACTED } from '../subworkflows/nf-core/qcfastq_nanoplot_fastqc'
+include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_POST_EXTRACT  } from '../subworkflows/nf-core/qcfastq_nanoplot_fastqc'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -128,7 +130,7 @@ workflow SCNANOSEQ {
                               params.fasta)
 
     ch_fasta = PREPARE_REFERENCE_FILES.out.ch_prepared_fasta
-    ch_gtf = PREPARE_REFERENCE_FILES.out.ch_prepared_gtf 
+    ch_gtf = PREPARE_REFERENCE_FILES.out.ch_prepared_gtf
 
     //
     // MODULE: Generate junction file - paftools
@@ -171,6 +173,27 @@ workflow SCNANOSEQ {
             PROWLERTRIMMER ( ch_fastqs )
             ch_trimmed_reads = PROWLERTRIMMER.out.reads
         }
+    }
+
+    ch_trimmed_reads_qc = Channel.empty()
+    ch_trimmed_reads
+        .groupTuple()
+        .set{ ch_trimmed_reads_qc }
+
+    // TODO: may consider making zipped output below temp. since it's only used for QC
+    // leaving it as is for now as we are testing
+    ZIP_TRIM_QC ( ch_trimmed_reads_qc, "filtered" )
+    ch_zipped_trimmed_reads = ZIP_TRIM_QC.out.archive
+
+    //
+    // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - post-trim QC
+    //
+    ch_fastqc_multiqc_postrim = Channel.empty()
+    if (!params.skip_qc){
+
+        FASTQC_NANOPLOT_POST_TRIM ( ch_zipped_trimmed_reads, params.skip_nanoplot, params.skip_fastqc )
+
+        ch_fastqc_multiqc_postrim = FASTQC_NANOPLOT_POST_TRIM.out.fastqc_multiqc.ifEmpty([])
     }
 
     //
@@ -219,14 +242,14 @@ workflow SCNANOSEQ {
     ch_zipped_r2_reads = ZIP_R2.out.archive
 
     //
-    // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - post-trim QC
+    // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - pre-extracted QC
     //
-    ch_fastqc_multiqc_postrim = Channel.empty()
+    ch_fastqc_multiqc_pre_extracted = Channel.empty()
     if (!params.skip_qc){
 
-        FASTQC_NANOPLOT_POST_TRIM ( ch_zipped_r2_reads, params.skip_nanoplot, params.skip_fastqc )
+        FASTQC_NANOPLOT_PRE_EXTRACTED ( ch_zipped_r2_reads, params.skip_nanoplot, params.skip_fastqc )
 
-        ch_fastqc_multiqc_postrim = FASTQC_NANOPLOT_POST_TRIM.out.fastqc_multiqc.ifEmpty([])
+        ch_fastqc_multiqc_pre_extracted = FASTQC_NANOPLOT_PRE_EXTRACTED.out.fastqc_multiqc.ifEmpty([])
     }
 
     // Merge the R1 and R2 fastqs back together
@@ -309,6 +332,7 @@ workflow SCNANOSEQ {
     ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
     ch_multiqc_files = ch_multiqc_files.mix(ch_fastqc_multiqc_pretrim.collect().ifEmpty([]))
     //ch_multiqc_files = ch_multiqc_files.mix(ch_fastqc_multiqc_postrim.collect().ifEmpty([]))
+    //ch_multiqc_files = ch_multiqc_files.mix(ch_fastqc_multiqc_pre_extracted.collect().ifEmpty([]))
     //ch_multiqc_files = ch_multiqc_files.mix(ch_fastqc_multiqc_postextract.collect().ifEmpty([]))
 
 
