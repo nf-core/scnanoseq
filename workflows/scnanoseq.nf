@@ -48,6 +48,7 @@ include { UMI_TOOLS_EXTRACT   } from "../modules/local/umi_tools_extract"
 include { PAFTOOLS            } from "../modules/local/paftools"
 include { MINIMAP2_INDEX      } from "../modules/local/minimap2_index"
 include { MINIMAP2_ALIGN      } from "../modules/local/minimap2_align"
+//include { SAMTOOLS_VIEW       } from "../modules/nf-core/samtools/view/main"
 
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
@@ -55,6 +56,7 @@ include { MINIMAP2_ALIGN      } from "../modules/local/minimap2_align"
 include { INPUT_CHECK             } from "../subworkflows/local/input_check"
 include { CREATE_REGEX_INFO       } from "../subworkflows/local/create_regex"
 include { PREPARE_REFERENCE_FILES } from "../subworkflows/local/prepare_reference_files"
+//include { BAM_SORT_STATS_SAMTOOLS } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
