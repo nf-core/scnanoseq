@@ -41,13 +41,13 @@ include { PROWLERTRIMMER      } from "../modules/local/prowlertrimmer"
 include { SPLIT_FILE          } from "../modules/local/split_file"
 include { PIGZ as ZIP_R1      } from "../modules/local/pigz"
 include { PIGZ as ZIP_R2      } from "../modules/local/pigz"
-include { PIGZ as ZIP_TRIM_QC } from "../modules/local/pigz"
+include { PIGZ as ZIP_TRIM } from "../modules/local/pigz"
 include { PREEXTRACT_FASTQ    } from "../modules/local/preextract_fastq"
 include { UMI_TOOLS_WHITELIST } from "../modules/local/umi_tools_whitelist"
 include { UMI_TOOLS_EXTRACT   } from "../modules/local/umi_tools_extract"
-include { PAFTOOLS            } from "../modules/local/paftools.nf"
-include { MINIMAP2_INDEX      } from "../modules/local/minimap2_index.nf"
-include { MINIMAP2_ALIGN      } from "../modules/local/minimap2_align.nf"
+include { PAFTOOLS            } from "../modules/local/paftools"
+include { MINIMAP2_INDEX      } from "../modules/local/minimap2_index"
+include { MINIMAP2_ALIGN      } from "../modules/local/minimap2_align"
 
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
@@ -180,10 +180,10 @@ workflow SCNANOSEQ {
         .groupTuple()
         .set{ ch_trimmed_reads_qc }
 
-    // TODO: may consider making zipped output below temp. since it's only used for QC
-    // leaving it as is for now as we are testing
-    ZIP_TRIM_QC ( ch_trimmed_reads_qc, "filtered" )
-    ch_zipped_trimmed_reads = ZIP_TRIM_QC.out.archive
+    // TODO: may consider making zipped out below tmp. as it's only QC
+    // NOTE: leaving it as is for now as we are testing
+    ZIP_TRIM ( ch_trimmed_reads_qc, "filtered" )
+    ch_zipped_trimmed_reads = ZIP_TRIM.out.archive
 
     //
     // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - post-trim QC
