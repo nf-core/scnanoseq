@@ -18,7 +18,7 @@ workflow PREPARE_REFERENCE_FILES {
         //
         // SUBWORKFLOW: Prepare GTF
         //
-        PREPARE_GTF (gtf_preparation_method, gtf)
+        PREPARE_GTF (gtf_preparation_method, gtf, fasta)
         ch_prepared_gtf = PREPARE_GTF.out.ch_prepared_gtf
 
     emit:
