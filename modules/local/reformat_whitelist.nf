@@ -19,7 +19,7 @@ process REFORMAT_WHITELIST {
     
     """
     reformat_whitelist.py \\
-        -i ${whitelist}
+        -i ${whitelist} \\
         -o ${prefix}.bc_count.txt
 
     cat <<-END_VERSIONS > versions.yml
