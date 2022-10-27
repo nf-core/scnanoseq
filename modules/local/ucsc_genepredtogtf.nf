@@ -1,10 +1,10 @@
 process UCSC_GENEPREDTOGTF {
     tag "$meta.id"
-    label 'process_medium'
+    label 'process_low'
 
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/ucsc-genepredtogtf:377--h0b8a92a_2' :
-        'quay.io/biocontainers/ucsc-genepredtogtf:377--h0b8a92a_2' }"
+        'https://depot.galaxyproject.org/singularity/ucsc-genepredtogtf:377--h0b8a92a_4' :
+        'quay.io/biocontainers/ucsc-genepredtogtf:377--h0b8a92a_4' }"
 
     input:
     tuple val(meta), path(pred)
@@ -21,7 +21,7 @@ process UCSC_GENEPREDTOGTF {
     def prefix = task.ext.prefix ?: "${meta.id}"
     def VERSION = '377' // WARN: Version information not provided by tool on CLI. Please update this string when bumping container versions.
     """
-    genePredToGtf \\
+    genePredToGtf file \\
         $pred \\
         ${prefix}.gtf
     cat <<-END_VERSIONS > versions.yml

@@ -2,6 +2,8 @@
 // Creates gtfs to that add introns as features
 //
 
+
+// Local modules
 include { TRANSCRIPT_TO_EXON                          } from '../../modules/local/prepare_gtf_transcript_to_exon'
 include { SORT_GTF                                    } from '../../modules/local/sort_gtf'
 include { SORT_GTF as SORT_EXON_GTF                   } from '../../modules/local/sort_gtf'
@@ -10,10 +12,12 @@ include { GTF2BED                                     } from '../../modules/loca
 include { UCSC_BEDTOGENEPRED                          } from '../../modules/local/ucsc_bedtogenepred'
 include { UCSC_GENEPREDTOGTF                          } from '../../modules/local/ucsc_genepredtogtf'
 
+// nf-core modules
 include { CUSTOM_GETCHROMSIZES                        } from '../../modules/nf-core/custom/getchromsizes/main'
 include { BEDTOOLS_COMPLEMENT as COMPLEMENT_GTF       } from '../../modules/nf-core/bedtools/complement/main'
 include { BEDTOOLS_COMPLEMENT as COMPLEMENT_NONINTRON } from '../../modules/nf-core/bedtools/complement/main'
-include { CAT_CAT                                     } from '../../modules/nf-core/cat/cat/main'
+include { CAT_CAT as CAT_BED                          } from '../../modules/nf-core/cat/cat/main'
+include { CAT_CAT as CAT_GTF                          } from '../../modules/nf-core/cat/cat/main'
 
 workflow PREPARE_GTF {
     take:
@@ -29,7 +33,6 @@ workflow PREPARE_GTF {
         ch_prepared_gtf = TRANSCRIPT_TO_EXON.out.ch_processed_gtf
 
     } else if (gtf_preparation_method == "2") {
-        ch_prepared_gtf = gtf
         // Get the chromosome sizes
         CUSTOM_GETCHROMSIZES ( [ ["id":"chr_sizes"], fasta ])
         chr_sizes = CUSTOM_GETCHROMSIZES.out.sizes.map { meta, chr_sizes -> [chr_sizes] }
@@ -80,9 +83,9 @@ workflow PREPARE_GTF {
         // Now we combine the file list with a meta object
         ch_cat_files_in = Channel.of(["id": "not_introns"]).concat(ch_files).collect()
         
-        CAT_CAT( ch_cat_files_in)
+        CAT_BED( ch_cat_files_in)
 
-        ch_not_intron_bed = CAT_CAT.out.file_out
+        ch_not_intron_bed = CAT_BED.out.file_out
 
         COMPLEMENT_NONINTRON ( 
             ch_not_intron_bed
@@ -95,11 +98,30 @@ workflow PREPARE_GTF {
         ch_intron_bed = COMPLEMENT_NONINTRON.out.bed
 
         // Generate the intron gtf
+        UCSC_BEDTOGENEPRED( ch_intron_bed )
+        ch_genepred = UCSC_BEDTOGENEPRED.out.pred
 
-        
-        // Clean up the intron gtf
+        UCSC_GENEPREDTOGTF( ch_genepred )
+        ch_intron_gtf = UCSC_GENEPREDTOGTF.out.gtf
         
         // Cat the the exon and intron gtf
+        ch_gtfs = Channel.empty()
+        ch_sorted_exon_gtf
+            .map { meta, bed -> [bed] }
+            .concat (
+                ch_intron_gtf
+                    .map { meta, bed -> [bed] }
+                )
+            .collect()
+            .toList()
+            .set{ ch_gtfs }
+
+        ch_cat_gtf_in = Channel.of(["id": "exons_introns_merged"]).concat(ch_gtfs).collect()
+        CAT_GTF (ch_cat_gtf_in)
+
+        ch_prepared_gtf = CAT_GTF.out.file_out
+        ch_prepared_gtf = gtf
+
     } else {
         ch_prepared_gtf = gtf
     }

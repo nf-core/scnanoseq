@@ -1,6 +1,6 @@
 process UCSC_BEDTOGENEPRED {
     tag "$meta.id"
-    label 'process_medium'
+    label 'process_low'
 
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/ucsc-bedtogenepred:377--h0b8a92a_2' :
