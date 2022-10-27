@@ -28,6 +28,15 @@ ch_multiqc_custom_config = params.multiqc_config ? Channel.fromPath(params.multi
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    OTHER FILES
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+
+// Dummy file used as optional input where required for __combine operator__
+ch_dummy_file = Channel.fromPath("$projectDir/assets/dummy_file.txt", checkIfExists: true)
+
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     IMPORT LOCAL MODULES/SUBWORKFLOWS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
@@ -48,7 +57,10 @@ include { UMI_TOOLS_EXTRACT   } from "../modules/local/umi_tools_extract"
 include { PAFTOOLS            } from "../modules/local/paftools"
 include { MINIMAP2_INDEX      } from "../modules/local/minimap2_index"
 include { MINIMAP2_ALIGN      } from "../modules/local/minimap2_align"
-//include { SAMTOOLS_VIEW       } from "../modules/nf-core/samtools/view/main"
+include { SAMTOOLS_VIEW as SAMTOOLS_VIEW_BAM     } from "../modules/nf-core/samtools/view/main"
+include { SAMTOOLS_VIEW as SAMTOOLS_VIEW_FILTER  } from "../modules/nf-core/samtools/view/main"
+//include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_DEDUB } from '../../../modules/nf-core/samtools/index/main' // for dedub bams
+//include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_BC_CORRECTED } from '../../../modules/nf-core/samtools/index/main' // for BC corrected bams
 
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
@@ -56,7 +68,6 @@ include { MINIMAP2_ALIGN      } from "../modules/local/minimap2_align"
 include { INPUT_CHECK             } from "../subworkflows/local/input_check"
 include { CREATE_REGEX_INFO       } from "../subworkflows/local/create_regex"
 include { PREPARE_REFERENCE_FILES } from "../subworkflows/local/prepare_reference_files"
-//include { BAM_SORT_STATS_SAMTOOLS } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -78,6 +89,8 @@ include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_PRE_TRIM      } from '../su
 include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_POST_TRIM     } from '../subworkflows/nf-core/qcfastq_nanoplot_fastqc'
 include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_PRE_EXTRACTED } from '../subworkflows/nf-core/qcfastq_nanoplot_fastqc'
 include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_POST_EXTRACT  } from '../subworkflows/nf-core/qcfastq_nanoplot_fastqc'
+include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_MINIMAP  } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
+include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_FILTERED } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -312,8 +325,43 @@ workflow SCNANOSEQ {
     }
 
     MINIMAP2_ALIGN ( ch_extracted_reads, ch_bed, ch_reference )
-    ch_minimap_index = MINIMAP2_ALIGN.out.sam
-    ch_minimap_index.view()
+
+    MINIMAP2_ALIGN.out.sam
+        .combine( ch_dummy_file )
+        .set { ch_minimap_sam }
+
+    //
+    // MODULE: Samtools view
+    //
+    SAMTOOLS_VIEW_BAM ( ch_minimap_sam, [], [] )
+
+    ch_minimap_bam = SAMTOOLS_VIEW_BAM.out.bam
+
+    // acquire only mapped reads from bam for downstream processing
+
+    ch_minimap_bam
+        .combine( ch_dummy_file )
+        .set { ch_minimap_bam_filter }
+
+    SAMTOOLS_VIEW_FILTER ( ch_minimap_bam_filter, [], [] )
+    ch_minimap_mapped_only_bam = SAMTOOLS_VIEW_FILTER.out.bam
+
+    //
+    // SUBWORKFLOW: BAM_SORT_STATS_SAMTOOLS
+    // The subworkflow is called in both the minimap2 bams and filtered (mapped only) version
+    BAM_SORT_STATS_SAMTOOLS_MINIMAP ( ch_minimap_bam, [] )
+    ch_minimap_sorted_bam = BAM_SORT_STATS_SAMTOOLS_MINIMAP.out.bam
+    ch_minimap_sorted_bai = BAM_SORT_STATS_SAMTOOLS_MINIMAP.out.bai
+    // these stats go for multiqc
+    ch_minimap_sorted_stats = BAM_SORT_STATS_SAMTOOLS_MINIMAP.out.stats
+    ch_minimap_sorted_flagstat = BAM_SORT_STATS_SAMTOOLS_MINIMAP.out.flagstat
+    ch_minimap_sorted_idxstats = BAM_SORT_STATS_SAMTOOLS_MINIMAP.out.idxstats
+
+    BAM_SORT_STATS_SAMTOOLS_FILTERED ( ch_minimap_mapped_only_bam, [] )
+    ch_minimap_filtered_sorted_bam = BAM_SORT_STATS_SAMTOOLS_FILTERED.out.bam
+    ch_minimap_filtered_sorted_bai = BAM_SORT_STATS_SAMTOOLS_FILTERED.out.bai
+
+    ch_minimap_filtered_sorted_bam.view()
 
     //
     // SOFTWARE_VERSIONS
@@ -338,6 +386,9 @@ workflow SCNANOSEQ {
     //ch_multiqc_files = ch_multiqc_files.mix(ch_fastqc_multiqc_postrim.collect().ifEmpty([]))
     //ch_multiqc_files = ch_multiqc_files.mix(ch_fastqc_multiqc_pre_extracted.collect().ifEmpty([]))
     //ch_multiqc_files = ch_multiqc_files.mix(ch_fastqc_multiqc_postextract.collect().ifEmpty([]))
+    ch_multiqc_files = ch_multiqc_files.mix(ch_minimap_sorted_stats.collect{it[1]}.ifEmpty([]))
+    ch_multiqc_files = ch_multiqc_files.mix(ch_minimap_sorted_flagstat.collect{it[1]}.ifEmpty([]))
+    ch_multiqc_files = ch_multiqc_files.mix(ch_minimap_sorted_idxstats.collect{it[1]}.ifEmpty([]))
 
 
     MULTIQC (
