@@ -126,10 +126,12 @@ workflow SCNANOSEQ {
     //
     // SUBWORKFLOW: Prepare reference files
     //
+
+    // TODO: Add param to below
     PREPARE_REFERENCE_FILES ( "",
                               "",
-                              params.gtf,
-                              params.fasta)
+                              params.fasta,
+                              params.gtf)
 
     ch_fasta = PREPARE_REFERENCE_FILES.out.ch_prepared_fasta
     ch_gtf = PREPARE_REFERENCE_FILES.out.ch_prepared_gtf
