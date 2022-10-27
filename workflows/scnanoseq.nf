@@ -45,18 +45,18 @@ ch_dummy_file = Channel.fromPath("$projectDir/assets/dummy_file.txt", checkIfExi
 // MODULE: Loaded from modules/local/
 //
 
-include { NANOFILT            } from "../modules/local/nanofilt"
-include { PROWLERTRIMMER      } from "../modules/local/prowlertrimmer"
-include { SPLIT_FILE          } from "../modules/local/split_file"
-include { PIGZ as ZIP_R1      } from "../modules/local/pigz"
-include { PIGZ as ZIP_R2      } from "../modules/local/pigz"
-include { PIGZ as ZIP_TRIM } from "../modules/local/pigz"
-include { PREEXTRACT_FASTQ    } from "../modules/local/preextract_fastq"
-include { UMI_TOOLS_WHITELIST } from "../modules/local/umi_tools_whitelist"
-include { UMI_TOOLS_EXTRACT   } from "../modules/local/umi_tools_extract"
-include { PAFTOOLS            } from "../modules/local/paftools"
-include { MINIMAP2_INDEX      } from "../modules/local/minimap2_index"
-include { MINIMAP2_ALIGN      } from "../modules/local/minimap2_align"
+include { NANOFILT                               } from "../modules/local/nanofilt"
+include { PROWLERTRIMMER                         } from "../modules/local/prowlertrimmer"
+include { SPLIT_FILE                             } from "../modules/local/split_file"
+include { PIGZ as ZIP_R1                         } from "../modules/local/pigz"
+include { PIGZ as ZIP_R2                         } from "../modules/local/pigz"
+include { PIGZ as ZIP_TRIM                       } from "../modules/local/pigz"
+include { PREEXTRACT_FASTQ                       } from "../modules/local/preextract_fastq"
+include { UMI_TOOLS_WHITELIST                    } from "../modules/local/umi_tools_whitelist"
+include { UMI_TOOLS_EXTRACT                      } from "../modules/local/umi_tools_extract"
+include { PAFTOOLS                               } from "../modules/local/paftools"
+include { MINIMAP2_INDEX                         } from "../modules/local/minimap2_index"
+include { MINIMAP2_ALIGN                         } from "../modules/local/minimap2_align"
 include { SAMTOOLS_VIEW as SAMTOOLS_VIEW_BAM     } from "../modules/nf-core/samtools/view/main"
 include { SAMTOOLS_VIEW as SAMTOOLS_VIEW_FILTER  } from "../modules/nf-core/samtools/view/main"
 //include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_DEDUB } from '../../../modules/nf-core/samtools/index/main' // for dedub bams
@@ -85,10 +85,10 @@ include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoft
 /*
  * SUBWORKFLOW: Consisting entirely of nf-core/modules
  */
-include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_PRE_TRIM      } from '../subworkflows/nf-core/qcfastq_nanoplot_fastqc'
-include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_POST_TRIM     } from '../subworkflows/nf-core/qcfastq_nanoplot_fastqc'
-include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_PRE_EXTRACTED } from '../subworkflows/nf-core/qcfastq_nanoplot_fastqc'
-include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_POST_EXTRACT  } from '../subworkflows/nf-core/qcfastq_nanoplot_fastqc'
+include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_PRE_TRIM         } from '../subworkflows/nf-core/qcfastq_nanoplot_fastqc'
+include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_POST_TRIM        } from '../subworkflows/nf-core/qcfastq_nanoplot_fastqc'
+include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_PRE_EXTRACTED    } from '../subworkflows/nf-core/qcfastq_nanoplot_fastqc'
+include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_POST_EXTRACT     } from '../subworkflows/nf-core/qcfastq_nanoplot_fastqc'
 include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_MINIMAP  } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
 include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_FILTERED } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
 
@@ -360,8 +360,6 @@ workflow SCNANOSEQ {
     BAM_SORT_STATS_SAMTOOLS_FILTERED ( ch_minimap_mapped_only_bam, [] )
     ch_minimap_filtered_sorted_bam = BAM_SORT_STATS_SAMTOOLS_FILTERED.out.bam
     ch_minimap_filtered_sorted_bai = BAM_SORT_STATS_SAMTOOLS_FILTERED.out.bai
-
-    ch_minimap_filtered_sorted_bam.view()
 
     //
     // SOFTWARE_VERSIONS
