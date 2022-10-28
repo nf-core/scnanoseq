@@ -1,4 +1,4 @@
-process TAG_BAM {
+process TAG_BARCODES {
     tag "$meta.id"
     label 'process_low'
 
