@@ -61,6 +61,9 @@ include { SAMTOOLS_VIEW as SAMTOOLS_VIEW_BAM     } from "../modules/nf-core/samt
 include { SAMTOOLS_VIEW as SAMTOOLS_VIEW_FILTER  } from "../modules/nf-core/samtools/view/main"
 //include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_DEDUB } from '../../../modules/nf-core/samtools/index/main' // for dedub bams
 //include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_BC_CORRECTED } from '../../../modules/nf-core/samtools/index/main' // for BC corrected bams
+include { REFORMAT_WHITELIST                     } from "../modules/local/reformat_whitelist"
+include { TAG_BARCODES                           } from "../modules/local/tag_barcodes"
+include { CORRECT_BARCODES                       } from "../modules/local/correct_barcodes"
 
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
@@ -218,6 +221,7 @@ workflow SCNANOSEQ {
     //
 
     // We need to create the regex format
+    // TODO: Add this information to the samplesheet to allow sample specific barcode detection?
     CREATE_REGEX_INFO( params.cell_barcode_pattern,
                   params.identifier_pattern,
                   params.cell_barcode_lengths,
@@ -362,38 +366,84 @@ workflow SCNANOSEQ {
     ch_minimap_filtered_sorted_bai = BAM_SORT_STATS_SAMTOOLS_FILTERED.out.bai
 
     //
+    // MODULE: Reformat whitelist
+    //
+    ch_whitelists = Channel.empty()
+    ch_reads_with_whitelist
+        .map{ meta, fastq, whitelist ->[ meta, whitelist ] } 
+        .set{ ch_whitelists }
+
+    REFORMAT_WHITELIST ( ch_whitelists )
+    ch_whitelist_bc_count = REFORMAT_WHITELIST.out.whitelist_bc_count
+    ch_whitelist_bc_list = REFORMAT_WHITELIST.out.whitelist_bc_list
+
+    //
+    // MODULE: Tag Barcodes
+    // 
+
+    ch_tag_barcode_in = Channel.empty()
+    ch_minimap_filtered_sorted_bam
+        .join( ch_zipped_r1_reads, by: 0 )
+        .combine( val_regex_info.bc_length )
+        .combine( val_regex_info.umi_length )
+        .set{ ch_tag_barcode_in }
+
+    TAG_BARCODES( ch_tag_barcode_in )
+    ch_tagged_bam = TAG_BARCODES.out.tagged_bam
+
+    //
+    // MODULE: Correct Barcodes
+    //
+
+    ch_gt_whitelist = Channel.empty()
+    if ( params.whitelist ) {
+        ch_gt_whitelist = params.whitelist
+    } else {
+        ch_gt_whitelist = ch_whitelist_bc_list
+    }
+    
+    ch_correct_barcode_in = Channel.empty()
+    ch_tagged_bam
+        .join ( ch_gt_whitelist, by: 0 )
+        .join ( ch_whitelist_bc_count, by: 0 )
+        .set { ch_correct_barcode_in }
+
+    CORRECT_BARCODES( ch_correct_barcode_in )
+    ch_corrected_bam = CORRECT_BARCODES.out.corrected_bam
+
+    //
     // SOFTWARE_VERSIONS
     //
 
-    CUSTOM_DUMPSOFTWAREVERSIONS (
-        ch_versions.unique().collectFile(name: 'collated_versions.yml')
-    )
+//    CUSTOM_DUMPSOFTWAREVERSIONS (
+//        ch_versions.unique().collectFile(name: 'collated_versions.yml')
+//    )
 
     //
     // MODULE: MultiQC
     //
     workflow_summary    = WorkflowScnanoseq.paramsSummaryMultiqc(workflow, summary_params)
-    ch_workflow_summary = Channel.value(workflow_summary)
-
-    ch_multiqc_files = Channel.empty()
-    ch_multiqc_files = ch_multiqc_files.mix(Channel.from(ch_multiqc_config))
-    ch_multiqc_files = ch_multiqc_files.mix(ch_multiqc_custom_config.collect().ifEmpty([]))
-    ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
-    ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
-    ch_multiqc_files = ch_multiqc_files.mix(ch_fastqc_multiqc_pretrim.collect().ifEmpty([]))
-    //ch_multiqc_files = ch_multiqc_files.mix(ch_fastqc_multiqc_postrim.collect().ifEmpty([]))
-    //ch_multiqc_files = ch_multiqc_files.mix(ch_fastqc_multiqc_pre_extracted.collect().ifEmpty([]))
-    //ch_multiqc_files = ch_multiqc_files.mix(ch_fastqc_multiqc_postextract.collect().ifEmpty([]))
-    ch_multiqc_files = ch_multiqc_files.mix(ch_minimap_sorted_stats.collect{it[1]}.ifEmpty([]))
-    ch_multiqc_files = ch_multiqc_files.mix(ch_minimap_sorted_flagstat.collect{it[1]}.ifEmpty([]))
-    ch_multiqc_files = ch_multiqc_files.mix(ch_minimap_sorted_idxstats.collect{it[1]}.ifEmpty([]))
-
-
-    MULTIQC (
-        ch_multiqc_files.collect()
-    )
-    multiqc_report = MULTIQC.out.report.toList()
-    ch_versions    = ch_versions.mix(MULTIQC.out.versions)
+//    ch_workflow_summary = Channel.value(workflow_summary)
+//
+//    ch_multiqc_files = Channel.empty()
+//    ch_multiqc_files = ch_multiqc_files.mix(Channel.from(ch_multiqc_config))
+//    ch_multiqc_files = ch_multiqc_files.mix(ch_multiqc_custom_config.collect().ifEmpty([]))
+//    ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
+//    //ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
+//    ch_multiqc_files = ch_multiqc_files.mix(ch_fastqc_multiqc_pretrim.collect().ifEmpty([]))
+//    //ch_multiqc_files = ch_multiqc_files.mix(ch_fastqc_multiqc_postrim.collect().ifEmpty([]))
+//    //ch_multiqc_files = ch_multiqc_files.mix(ch_fastqc_multiqc_pre_extracted.collect().ifEmpty([]))
+//    //ch_multiqc_files = ch_multiqc_files.mix(ch_fastqc_multiqc_postextract.collect().ifEmpty([]))
+//    ch_multiqc_files = ch_multiqc_files.mix(ch_minimap_sorted_stats.collect{it[1]}.ifEmpty([]))
+//    ch_multiqc_files = ch_multiqc_files.mix(ch_minimap_sorted_flagstat.collect{it[1]}.ifEmpty([]))
+//    ch_multiqc_files = ch_multiqc_files.mix(ch_minimap_sorted_idxstats.collect{it[1]}.ifEmpty([]))
+//
+//
+//    MULTIQC (
+//        ch_multiqc_files.collect()
+//    )
+//    multiqc_report = MULTIQC.out.report.toList()
+//    ch_versions    = ch_versions.mix(MULTIQC.out.versions)
 }
 
 /*
