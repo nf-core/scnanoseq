@@ -1,4 +1,4 @@
-#!/usr/env/bin python3
+#!/usr/bin/env python3
 
 """ This will take in a bam and will check barcodes that have been added by
     umi_tools and will check them against a whitelist barcode and correct

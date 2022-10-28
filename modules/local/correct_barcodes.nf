@@ -2,6 +2,8 @@ process CORRECT_BARCODES {
     tag "$meta.id"
     label 'process_low'
 
+    conda ("conda-forge::editdistance=0.6.0 bioconda::pysam=0.19.1 conda-forge::pygtrie=2.5.0 conda-forge::biopython=1.79")
+
     input:
     tuple val(meta), path(bam), path(whitelist), path(bc_count_file) 
 
@@ -18,11 +20,11 @@ process CORRECT_BARCODES {
     
     """
     correct_barcodes.py \\
+        ${args} \\
         -i ${bam} \\
         -o ${prefix}.corrected.bam \\
         -w ${whitelist} \\
-        -b ${bc_count_file} \\
-        ${args}
+        -b ${bc_count_file}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
