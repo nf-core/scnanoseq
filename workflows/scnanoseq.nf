@@ -57,10 +57,6 @@ include { UMI_TOOLS_EXTRACT                      } from "../modules/local/umi_to
 include { PAFTOOLS                               } from "../modules/local/paftools"
 include { MINIMAP2_INDEX                         } from "../modules/local/minimap2_index"
 include { MINIMAP2_ALIGN                         } from "../modules/local/minimap2_align"
-include { SAMTOOLS_VIEW as SAMTOOLS_VIEW_BAM     } from "../modules/nf-core/samtools/view/main"
-include { SAMTOOLS_VIEW as SAMTOOLS_VIEW_FILTER  } from "../modules/nf-core/samtools/view/main"
-//include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_DEDUB } from '../../../modules/nf-core/samtools/index/main' // for dedub bams
-//include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_BC_CORRECTED } from '../../../modules/nf-core/samtools/index/main' // for BC corrected bams
 include { REFORMAT_WHITELIST                     } from "../modules/local/reformat_whitelist"
 include { TAG_BARCODES                           } from "../modules/local/tag_barcodes"
 include { CORRECT_BARCODES                       } from "../modules/local/correct_barcodes"
@@ -84,6 +80,11 @@ include { PREPARE_REFERENCE_FILES } from "../subworkflows/local/prepare_referenc
 include { GUNZIP                      } from "../modules/nf-core/gunzip/main"
 include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
+include { UMITOOLS_DEDUP              } from '../modules/nf-core/umitools/dedup/main'
+include { SAMTOOLS_VIEW as SAMTOOLS_VIEW_BAM     } from "../modules/nf-core/samtools/view/main"
+include { SAMTOOLS_VIEW as SAMTOOLS_VIEW_FILTER  } from "../modules/nf-core/samtools/view/main"
+include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_DEDUP } from '../modules/nf-core/samtools/index/main' // for dedub bams
+include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_BC_CORRECTED } from '../modules/nf-core/samtools/index/main' // for BC corrected bams
 
 /*
  * SUBWORKFLOW: Consisting entirely of nf-core/modules
@@ -286,7 +287,6 @@ workflow SCNANOSEQ {
     // MODULE: Create estimated whitelist
     //
 
-    // TODO: How to read lines form the regex_pattern file?
     UMI_TOOLS_WHITELIST ( ch_zipped_reads, params.cell_amount, val_regex_info.umi_tools)
     ch_reads_with_whitelist = UMI_TOOLS_WHITELIST.out.whitelist
 
@@ -410,6 +410,25 @@ workflow SCNANOSEQ {
 
     CORRECT_BARCODES( ch_correct_barcode_in )
     ch_corrected_bam = CORRECT_BARCODES.out.corrected_bam
+
+    SAMTOOLS_INDEX_BC_CORRECTED ( ch_corrected_bam )
+    ch_corrected_bam_bai = SAMTOOLS_INDEX_BC_CORRECTED.out.bai
+
+    //
+    // MODULE: Umitools Dedup
+    //
+
+    ch_dedup_bam = ch_corrected_bam
+    ch_dedup_bam_bai = ch_corrected_bam_bai
+
+    if (!params.skip_dedup) {
+        UMITOOLS_DEDUP ( ch_corrected_bam.join(ch_corrected_bam_bai, by: [0]), true )
+
+        ch_dedup_bam = UMITOOLS_DEDUP.out.bam
+
+        SAMTOOLS_INDEX_DEDUP ( ch_dedup_bam )
+        ch_dedup_bam_bai = SAMTOOLS_INDEX_DEDUP.out.bai
+    }
 
     //
     // SOFTWARE_VERSIONS
