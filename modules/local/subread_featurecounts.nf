@@ -26,12 +26,8 @@ process SUBREAD_FEATURECOUNTS {
     """
     featureCounts \\
         $args \\
-        -L \\
-        -O \\
-        -f \\
         -T $task.cpus \\
         -a $gtf \\
-        -R CORE \\
         -o ${prefix}_assigned \\
         $bams
 
