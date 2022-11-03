@@ -2,6 +2,8 @@ process TAG_BARCODES {
     tag "$meta.id"
     label 'process_low'
 
+    conda ("bioconda::pysam=0.19.1")
+
     input:
     tuple val(meta), path(bam), path(r1_fastq), val(bc_length), val(umi_length)
 
