@@ -5,23 +5,6 @@
     "description": "Single-cell/nuclei pipeline for data derived from Oxford Nanopore",
     "type": "object",
     "definitions": {
-        "analysis_options": {
-            "title": "Analysis options",
-            "type": "object",
-            "description": "",
-            "default": "",
-            "fa_icon": "fas fa-search",
-            "properties": {
-                "analyze_uncorrected_bam": {
-                    "type": "boolean",
-                    "description": "Run downstream steps on the bam that contains reads that could not be corrected. Do not use this if no whitelist is provided"
-                },
-                "intron_retention_method": {
-                    "type": "string",
-                    "description": "Choose which intron retention method to use (Options: 1 or 2)"
-                }
-            }
-        },
         "input_output_options": {
             "title": "Input/output options",
             "type": "object",
@@ -211,6 +194,27 @@
                 }
             },
             "fa_icon": "far fa-map"
+        },
+        "analysis_options": {
+            "title": "Analysis options",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "fa_icon": "fas fa-search",
+            "properties": {
+                "analyze_uncorrected_bam": {
+                    "type": "boolean",
+                    "description": "Run downstream steps on the bam that contains reads that could not be corrected. Do not use this if no whitelist is provided"
+                },
+                "intron_retention_method": {
+                    "type": "string",
+                    "description": "Choose which intron retention method to use (Options: 1 or 2)"
+                },
+                "counts_level": {
+                    "type": "string",
+                    "description": "What level to generate the counts matrix at. Options: 'gene', 'transcript'"
+                }
+            }
         },
         "process_skipping_options": {
             "title": "Process skipping options",
@@ -425,9 +429,6 @@
     },
     "allOf": [
         {
-            "$ref": "#/definitions/analysis_options"
-        },
-        {
             "$ref": "#/definitions/input_output_options"
         },
         {
@@ -444,6 +445,9 @@
         },
         {
             "$ref": "#/definitions/mapping"
+        },
+        {
+            "$ref": "#/definitions/analysis_options"
         },
         {
             "$ref": "#/definitions/process_skipping_options"
