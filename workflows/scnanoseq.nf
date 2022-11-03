@@ -60,6 +60,7 @@ include { MINIMAP2_ALIGN                         } from "../modules/local/minima
 include { REFORMAT_WHITELIST                     } from "../modules/local/reformat_whitelist"
 include { TAG_BARCODES                           } from "../modules/local/tag_barcodes"
 include { CORRECT_BARCODES                       } from "../modules/local/correct_barcodes"
+include { SORT_GTF                               } from "../modules/local/sort_gtf"
 
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
@@ -87,6 +88,8 @@ include { SAMTOOLS_VIEW as SAMTOOLS_VIEW_BAM     } from "../modules/nf-core/samt
 include { SAMTOOLS_VIEW as SAMTOOLS_VIEW_FILTER  } from "../modules/nf-core/samtools/view/main"
 include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_DEDUP } from '../modules/nf-core/samtools/index/main' // for dedub bams
 include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_BC_CORRECTED } from '../modules/nf-core/samtools/index/main' // for BC corrected bams
+include { STRINGTIE_STRINGTIE } from '../modules/nf-core/stringtie/stringtie/main'
+include { STRINGTIE_MERGE } from '../modules/nf-core/stringtie/merge/main'
 
 /*
  * SUBWORKFLOW: Consisting entirely of nf-core/modules
@@ -441,7 +444,7 @@ workflow SCNANOSEQ {
     // SUBWORKFLOW: Gene Level Counts
     //
     //TODO: reminder to change ch_gtf channel below for gtf processed one when needed
-
+    /*
     if (params.counts_level == 'gene' || !params.counts_level ) {
         if (true) {
             if (!params.skip_dedup) {
@@ -459,7 +462,35 @@ workflow SCNANOSEQ {
     //if (true) {
     //    GET_TRANSCRIPT_COUNTS_MTX
     //    ch_gene_transcript_mtx = GET_TRANSCRIPT_COUNTS_MTX.out.ch_counts_mtx
+    */
     //}
+
+    //if (params.counts_level == 'transcript' || !params.counts_level ) {
+    if (true) {
+        //
+        // MODULE: Create a stringtie gtf
+        //
+        STRINGTIE_STRINGTIE ( ch_dedup_bam, ch_gtf )
+        ch_transcript_gtf = STRINGTIE_STRINGTIE.out.transcript_gtf
+
+        //
+        // MODULE: Sort the gtf
+        //
+        SORT_GTF ( ch_transcript_gtf )
+        ch_transcript_gtf_sorted = SORT_GTF.out.gtf
+
+        //
+        // MODULE: Merge the gtfs
+        //
+        // TODO: This currently doesn't take meta, so that means currently it does not work with multiple samples since files will get overwritten constantly. May want to convert this to local
+        STRINGTIE_MERGE ( ch_transcript_gtf_sorted.map { meta, gtf -> gtf }, ch_gtf )
+        ch_transcript_gtf_merged = STRINGTIE_MERGE.out.gtf
+
+        //
+        // SUBWORKFLOW: Transcript Level Counts
+        //
+        GET_TRANSCRIPT_COUNTS_MTX (ch_dedup_bam, ch_transcript_gtf_merged)
+    }
 
 
     //
