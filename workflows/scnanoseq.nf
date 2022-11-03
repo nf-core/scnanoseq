@@ -67,6 +67,8 @@ include { CORRECT_BARCODES                       } from "../modules/local/correc
 include { INPUT_CHECK             } from "../subworkflows/local/input_check"
 include { CREATE_REGEX_INFO       } from "../subworkflows/local/create_regex"
 include { PREPARE_REFERENCE_FILES } from "../subworkflows/local/prepare_reference_files"
+include { GET_COUNTS_MATRIX as GET_GENE_COUNTS_MTX } from "../subworkflows/local/get_counts_matrix"
+include { GET_COUNTS_MATRIX as GET_TRANSCRIPT_COUNTS_MTX } from "../subworkflows/local/get_counts_matrix"
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -429,6 +431,26 @@ workflow SCNANOSEQ {
         SAMTOOLS_INDEX_DEDUP ( ch_dedup_bam )
         ch_dedup_bam_bai = SAMTOOLS_INDEX_DEDUP.out.bai
     }
+
+    ch_dedup_bam
+        .map{ meta, fastq ->
+                meta.strandedness = params.stranded
+                [ meta, fastq ]
+            }
+    //
+    // SUBWORKFLOW: Gene Level Counts
+    //
+    //if (params.counts_level == 'gene' || !params.counts_level ) {
+    if (true) {
+        GET_GENE_COUNTS_MTX ( ch_gtf, ch_dedup_bam )
+    }
+
+    // SUBWORKFLOW: Transcript Level Counts
+    //if (params.counts_level == 'transcript' || !params.counts_level ) {
+    //if (true) {
+    //    GET_TRANSCRIPT_COUNTS_MTX
+    //}
+
 
     //
     // SOFTWARE_VERSIONS
