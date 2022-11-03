@@ -466,8 +466,10 @@ workflow SCNANOSEQ {
         //
         // MODULE: Merge the gtfs
         //
+        STRINGTIE_MERGE ( ch_transcript_gtf_sorted.map { meta, gtf -> gtf }, ch_gtf )
+        ch_transcript_gtf_merged = STRINGTIE_MERGE.out.gtf
 
-        GET_TRANSCRIPT_COUNTS_MTX (ch_dedup_bam, ch_gtf) 
+        GET_TRANSCRIPT_COUNTS_MTX (ch_dedup_bam, ch_transcript_merged_gtf) 
     }
 
 
