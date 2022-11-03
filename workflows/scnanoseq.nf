@@ -466,6 +466,7 @@ workflow SCNANOSEQ {
         //
         // MODULE: Merge the gtfs
         //
+        // TODO: This currently doesn't take meta, so that means currently it does not work with multiple samples since files will get overwritten constantly. May want to convert this to local
         STRINGTIE_MERGE ( ch_transcript_gtf_sorted.map { meta, gtf -> gtf }, ch_gtf )
         ch_transcript_gtf_merged = STRINGTIE_MERGE.out.gtf
 
