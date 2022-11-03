@@ -372,7 +372,7 @@ workflow SCNANOSEQ {
     //
     ch_whitelists = Channel.empty()
     ch_reads_with_whitelist
-        .map{ meta, fastq, whitelist ->[ meta, whitelist ] } 
+        .map{ meta, fastq, whitelist ->[ meta, whitelist ] }
         .set{ ch_whitelists }
 
     REFORMAT_WHITELIST ( ch_whitelists )
@@ -381,7 +381,7 @@ workflow SCNANOSEQ {
 
     //
     // MODULE: Tag Barcodes
-    // 
+    //
 
     ch_tag_barcode_in = Channel.empty()
     ch_minimap_filtered_sorted_bam
@@ -403,7 +403,7 @@ workflow SCNANOSEQ {
     } else {
         ch_gt_whitelist = ch_whitelist_bc_list
     }
-    
+
     ch_correct_barcode_in = Channel.empty()
     ch_tagged_bam
         .join ( ch_gt_whitelist, by: 0 )
@@ -440,15 +440,25 @@ workflow SCNANOSEQ {
     //
     // SUBWORKFLOW: Gene Level Counts
     //
-    //if (params.counts_level == 'gene' || !params.counts_level ) {
-    if (true) {
-        GET_GENE_COUNTS_MTX ( ch_gtf, ch_dedup_bam )
+    //TODO: reminder to change ch_gtf channel below for gtf processed one when needed
+
+    if (params.counts_level == 'gene' || !params.counts_level ) {
+        if (true) {
+            if (!params.skip_dedup) {
+                GET_GENE_COUNTS_MTX ( ch_gtf, ch_dedup_bam )
+                ch_gene_counts_mtx = GET_GENE_COUNTS_MTX.out.ch_counts_mtx
+            } else {
+                GET_GENE_COUNTS_MTX ( ch_gtf, ch_corrected_bam )
+                ch_gene_counts_mtx = GET_GENE_COUNTS_MTX.out.ch_counts_mtx
+            }
+            }
     }
 
     // SUBWORKFLOW: Transcript Level Counts
     //if (params.counts_level == 'transcript' || !params.counts_level ) {
     //if (true) {
     //    GET_TRANSCRIPT_COUNTS_MTX
+    //    ch_gene_transcript_mtx = GET_TRANSCRIPT_COUNTS_MTX.out.ch_counts_mtx
     //}
 
 
