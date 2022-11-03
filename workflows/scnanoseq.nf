@@ -448,7 +448,6 @@ workflow SCNANOSEQ {
     //    GET_GENE_COUNTS_MTX ( ch_gtf, ch_dedup_bam )
     //}
 
-    // SUBWORKFLOW: Transcript Level Counts
     //if (params.counts_level == 'transcript' || !params.counts_level ) {
     if (true) {
         //
@@ -469,8 +468,11 @@ workflow SCNANOSEQ {
         // TODO: This currently doesn't take meta, so that means currently it does not work with multiple samples since files will get overwritten constantly. May want to convert this to local
         STRINGTIE_MERGE ( ch_transcript_gtf_sorted.map { meta, gtf -> gtf }, ch_gtf )
         ch_transcript_gtf_merged = STRINGTIE_MERGE.out.gtf
-
-        GET_TRANSCRIPT_COUNTS_MTX (ch_dedup_bam, ch_transcript_merged_gtf) 
+        
+        //
+        // SUBWORKFLOW: Transcript Level Counts
+        //
+        GET_TRANSCRIPT_COUNTS_MTX (ch_dedup_bam, ch_transcript_gtf_merged) 
     }
 
 
