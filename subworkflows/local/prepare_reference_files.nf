@@ -14,7 +14,7 @@ workflow PREPARE_REFERENCE_FILES {
     main:
         // There's nothing we wish to change about the fasta, so just need to return it
         ch_prepared_fasta = fasta
-        
+
         //
         // SUBWORKFLOW: Prepare GTF
         //

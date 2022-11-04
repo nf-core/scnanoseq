@@ -80,16 +80,16 @@ include { GET_GENE_COUNTS_MATRIX  } from "../subworkflows/local/get_gene_counts_
 //
 // MODULE: Installed directly from nf-core/modules
 //
-include { GUNZIP                      } from "../modules/nf-core/gunzip/main"
-include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
-include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
-include { UMITOOLS_DEDUP              } from '../modules/nf-core/umitools/dedup/main'
-include { SAMTOOLS_VIEW as SAMTOOLS_VIEW_BAM     } from "../modules/nf-core/samtools/view/main"
-include { SAMTOOLS_VIEW as SAMTOOLS_VIEW_FILTER  } from "../modules/nf-core/samtools/view/main"
-include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_DEDUP } from '../modules/nf-core/samtools/index/main' // for dedub bams
-include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_BC_CORRECTED } from '../modules/nf-core/samtools/index/main' // for BC corrected bams
-include { STRINGTIE_STRINGTIE } from '../modules/nf-core/stringtie/stringtie/main'
-include { STRINGTIE_MERGE } from '../modules/nf-core/stringtie/merge/main'
+include { GUNZIP                                        } from "../modules/nf-core/gunzip/main"
+include { MULTIQC                                       } from '../modules/nf-core/multiqc/main'
+include { CUSTOM_DUMPSOFTWAREVERSIONS                   } from '../modules/nf-core/custom/dumpsoftwareversions/main'
+include { UMITOOLS_DEDUP                                } from '../modules/nf-core/umitools/dedup/main'
+include { SAMTOOLS_VIEW as SAMTOOLS_VIEW_BAM            } from "../modules/nf-core/samtools/view/main"
+include { SAMTOOLS_VIEW as SAMTOOLS_VIEW_FILTER         } from "../modules/nf-core/samtools/view/main"
+include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_DEDUP        } from '../modules/nf-core/samtools/index/main'
+include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_BC_CORRECTED } from '../modules/nf-core/samtools/index/main'
+include { STRINGTIE_STRINGTIE                           } from '../modules/nf-core/stringtie/stringtie/main'
+include { STRINGTIE_MERGE                               } from '../modules/nf-core/stringtie/merge/main'
 
 /*
  * SUBWORKFLOW: Consisting entirely of nf-core/modules
@@ -229,10 +229,10 @@ workflow SCNANOSEQ {
     // We need to create the regex format
     // TODO: Add this information to the samplesheet to allow sample specific barcode detection?
     CREATE_REGEX_INFO( params.cell_barcode_pattern,
-                  params.identifier_pattern,
-                  params.cell_barcode_lengths,
-                  params.umi_lengths,
-                  params.fixed_seqs)
+                params.identifier_pattern,
+                params.cell_barcode_lengths,
+                params.umi_lengths,
+                params.fixed_seqs)
 
     val_regex_info = CREATE_REGEX_INFO.out.regex
 
@@ -456,8 +456,6 @@ workflow SCNANOSEQ {
         ch_gene_counts_mtx = GET_GENE_COUNTS_MATRIX.out.gene_counts_mtx
         }
     }
-
-    //ch_gene_counts_mtx.view()
 
     //TODO: bams below should be either dedub or not
     if ( params.counts_level == 'transcript' || !params.counts_level ) {

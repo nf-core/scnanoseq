@@ -27,6 +27,8 @@ workflow PREPARE_GTF {
 
     main:
 
+    //TODO: for gtf_preparation_method == "2" output / chr_sizes,
+    // need to be sorted for bedtools complement
     if (gtf_preparation_method == "1") {
         // Convert the Transcript to exons
         TRANSCRIPT_TO_EXON(gtf)
@@ -40,7 +42,7 @@ workflow PREPARE_GTF {
         // Sort the gtf
         SORT_GTF ( [ [ "id": "base" ], gtf ])
         ch_sorted_gtf = SORT_GTF.out.gtf
-        
+
         // Complement the gtf to the chr sizes to get the intergenic regions
         ch_intergenic_in = Channel.empty()
         ch_sorted_gtf
@@ -51,10 +53,9 @@ workflow PREPARE_GTF {
             }
             .set{ch_intergenic_in}
 
-        COMPLEMENT_GTF ( ch_intergenic_in,
-                              chr_sizes )
+        COMPLEMENT_GTF ( ch_intergenic_in, chr_sizes )
         ch_intergenic_bed = COMPLEMENT_GTF.out.bed
-        
+
         // Get the exon regions
         GET_GTF_FEATURES( [ [ "id": "exon" ], gtf], "exons" )
         ch_exon_gtf = GET_GTF_FEATURES.out.gtf
@@ -67,7 +68,7 @@ workflow PREPARE_GTF {
 
 
         // Get the intron regions
-        
+
         // Need to format the file list so that they are a single list
         ch_files = Channel.empty()
         ch_intergenic_bed
@@ -82,14 +83,14 @@ workflow PREPARE_GTF {
 
         // Now we combine the file list with a meta object
         ch_cat_files_in = Channel.of(["id": "not_introns"]).concat(ch_files).collect()
-        
+
         CAT_BED( ch_cat_files_in)
 
         ch_not_intron_bed = CAT_BED.out.file_out
 
-        COMPLEMENT_NONINTRON ( 
+        COMPLEMENT_NONINTRON (
             ch_not_intron_bed
-                .map { meta, gtf -> 
+                .map { meta, gtf ->
                     meta.id = "intron"
                     [ meta, gtf ]
                 },
@@ -103,8 +104,8 @@ workflow PREPARE_GTF {
 
         UCSC_GENEPREDTOGTF( ch_genepred )
         ch_intron_gtf = UCSC_GENEPREDTOGTF.out.gtf
-        
-        // Cat the the exon and intron gtf
+
+        // Cat the exon and intron gtf
         ch_gtfs = Channel.empty()
         ch_sorted_exon_gtf
             .map { meta, bed -> [bed] }

@@ -11,8 +11,8 @@ process NANOFILT {
     tuple val(meta), path(reads)
 
     output:
-    tuple val(meta), path("*.filtered.fastq"), emit: reads
-    path "versions.yml"                , emit: versions
+    tuple val(meta), path("*.filtered.fastq")   , emit: reads
+    path "versions.yml"                         , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -23,7 +23,7 @@ process NANOFILT {
 
     """
     FILE_PREFIX=${prefix}
-    if [ ${params.split_amount} -gt 0 ]; then 
+    if [ ${params.split_amount} -gt 0 ]; then
         IDX=\$(basename ${reads} | cut -f2 -d'.')
         FILE_PREFIX=\${FILE_PREFIX}.\${IDX}
     fi

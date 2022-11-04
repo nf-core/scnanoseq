@@ -11,8 +11,8 @@ process PAFTOOLS {
     path gtf
 
     output:
-    path "*.bed", emit: bed
-    path "versions.yml"           , emit: versions
+    path "*.bed"        , emit: bed
+    path "versions.yml" , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
