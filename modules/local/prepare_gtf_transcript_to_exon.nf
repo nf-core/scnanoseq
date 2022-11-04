@@ -1,11 +1,11 @@
 process TRANSCRIPT_TO_EXON {
-    tag "$meta.id"
+    tag "$gtf"
     label 'process_low'
 
     //TODO: Figure out what environment is needed
 
     input:
-    ch_gtf
+    path gtf
 
     output:
     path("processed.gtf"), emit: ch_processed_gtf
@@ -17,6 +17,6 @@ process TRANSCRIPT_TO_EXON {
     def args = task.ext.args ?: ''
 
     """
-    awk 'BEGIN{FS="\t"; OFS="\t"} \$3 == "transcript" { \$3="exon"; print}' ${ch_processed_gtf} > processed_gtf.gtf
+    awk 'BEGIN{FS="\t"; OFS="\t"} \$3 == "transcript" { \$3="exon"; print}' $gtf > processed.gtf
     """
 }
