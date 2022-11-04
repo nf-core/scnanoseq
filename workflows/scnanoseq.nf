@@ -61,6 +61,7 @@ include { REFORMAT_WHITELIST                     } from "../modules/local/reform
 include { TAG_BARCODES                           } from "../modules/local/tag_barcodes"
 include { CORRECT_BARCODES                       } from "../modules/local/correct_barcodes"
 include { SORT_GTF                               } from "../modules/local/sort_gtf"
+include { SUBREAD_FEATURECOUNTS as SUBREAD_FEATURECOUNTS_TRANSCRIPT } from '../modules/local/subread_featurecounts'
 
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
@@ -68,8 +69,7 @@ include { SORT_GTF                               } from "../modules/local/sort_g
 include { INPUT_CHECK             } from "../subworkflows/local/input_check"
 include { CREATE_REGEX_INFO       } from "../subworkflows/local/create_regex"
 include { PREPARE_REFERENCE_FILES } from "../subworkflows/local/prepare_reference_files"
-include { GET_COUNTS_MATRIX as GET_GENE_COUNTS_MTX } from "../subworkflows/local/get_counts_matrix"
-include { GET_COUNTS_MATRIX as GET_TRANSCRIPT_COUNTS_MTX } from "../subworkflows/local/get_counts_matrix"
+include { GET_GENE_COUNTS_MATRIX  } from "../subworkflows/local/get_gene_counts_matrix"
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -149,11 +149,11 @@ workflow SCNANOSEQ {
     // SUBWORKFLOW: Prepare reference files
     //
 
-    // TODO: Add param to below
+    // TODO: Add fasta param to below
     PREPARE_REFERENCE_FILES ( "",
-                              "",
-                              params.fasta,
-                              params.gtf)
+                            params.intron_retention_method,
+                            params.fasta,
+                            params.gtf)
 
     ch_fasta = PREPARE_REFERENCE_FILES.out.ch_prepared_fasta
     ch_gtf = PREPARE_REFERENCE_FILES.out.ch_prepared_gtf
@@ -443,29 +443,24 @@ workflow SCNANOSEQ {
     //
     // SUBWORKFLOW: Gene Level Counts
     //
-    //TODO: reminder to change ch_gtf channel below for gtf processed one when needed
-    /*
-    if (params.counts_level == 'gene' || !params.counts_level ) {
+
+    // TODO: add 4th param (intron2 GTF) from PREPARE_REFERENCE_FILES
+    if ( params.counts_level == 'gene' || !params.counts_level ) {
         if (true) {
             if (!params.skip_dedup) {
-                GET_GENE_COUNTS_MTX ( ch_gtf, ch_dedup_bam )
-                ch_gene_counts_mtx = GET_GENE_COUNTS_MTX.out.ch_counts_mtx
-            } else {
-                GET_GENE_COUNTS_MTX ( ch_gtf, ch_corrected_bam )
-                ch_gene_counts_mtx = GET_GENE_COUNTS_MTX.out.ch_counts_mtx
+                GET_GENE_COUNTS_MATRIX ( ch_dedup_bam, ch_gtf, params.intron_retention_method, "" )
+                } else {
+                GET_GENE_COUNTS_MATRIX ( ch_corrected_bam, ch_gtf, params.intron_retention_method, "" )
             }
-            }
+        //TODO: change channed out to tagged matrix
+        ch_gene_counts_mtx = GET_GENE_COUNTS_MATRIX.out.gene_counts_mtx
+        }
     }
 
-    // SUBWORKFLOW: Transcript Level Counts
-    //if (params.counts_level == 'transcript' || !params.counts_level ) {
-    //if (true) {
-    //    GET_TRANSCRIPT_COUNTS_MTX
-    //    ch_gene_transcript_mtx = GET_TRANSCRIPT_COUNTS_MTX.out.ch_counts_mtx
-    */
-    //}
+    //ch_gene_counts_mtx.view()
 
-    //if (params.counts_level == 'transcript' || !params.counts_level ) {
+    //TODO: bams below should be either dedub or not
+    if ( params.counts_level == 'transcript' || !params.counts_level ) {
     if (true) {
         //
         // MODULE: Create a stringtie gtf
@@ -487,10 +482,12 @@ workflow SCNANOSEQ {
         ch_transcript_gtf_merged = STRINGTIE_MERGE.out.gtf
 
         //
-        // SUBWORKFLOW: Transcript Level Counts
+        // MODULE: Transcript Level Counts
         //
-        GET_TRANSCRIPT_COUNTS_MTX (ch_dedup_bam, ch_transcript_gtf_merged)
+        SUBREAD_FEATURECOUNTS_TRANSCRIPT ( ch_dedup_bam, ch_transcript_gtf_merged )
+        ch_gene_transcript_mtx = SUBREAD_FEATURECOUNTS_TRANSCRIPT.out.counts
     }
+}
 
 
     //
