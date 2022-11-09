@@ -5,6 +5,7 @@
 // Local modules
 include { SUBREAD_FEATURECOUNTS as SUBREAD_FEATURECOUNTS_GENE         } from '../../modules/local/subread_featurecounts'
 include { SUBREAD_FEATURECOUNTS as SUBREAD_FEATURECOUNTS_GENE_INTRON2 } from '../../modules/local/subread_featurecounts'
+include { TAG_FEATURES                                                } from '../../modules/local/tag_features'
 
 workflow GET_GENE_COUNTS_MATRIX {
     take:
@@ -15,11 +16,13 @@ workflow GET_GENE_COUNTS_MATRIX {
 
     main:
 
-    // count_featurecounts
+    //
+    // MODULE: Count Features 
+    //
     subread_version = Channel.empty()
 
     SUBREAD_FEATURECOUNTS_GENE ( ch_bam, ch_gtf )
-    gene_counts_mtx = SUBREAD_FEATURECOUNTS_GENE.out.counts
+    ch_counts = SUBREAD_FEATURECOUNTS_GENE.out.counts
 
     //TODO: enable this once we have intron 2 GTF in the workflow
     // for intron method 2, perform a second round for introns count
@@ -30,8 +33,14 @@ workflow GET_GENE_COUNTS_MATRIX {
 
     subread_version = SUBREAD_FEATURECOUNTS_GENE.out.versions
 
-    // tag_counts
+    //
+    // MODULE: Tag Features
+    //
+    TAG_FEATURES ( ch_bam.join(ch_counts, by: 0) )
 
+    ch_tag_bam = TAG_FEATURES.out.feature_bam
+
+    gene_counts_mtx = Channel.empty()
     tag_gene_counts_mtx = Channel.empty()
     tag_gene_counts_intron2_mtx = Channel.empty()
 
