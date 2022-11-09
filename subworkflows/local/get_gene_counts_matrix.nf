@@ -6,6 +6,10 @@
 include { SUBREAD_FEATURECOUNTS as SUBREAD_FEATURECOUNTS_GENE         } from '../../modules/local/subread_featurecounts'
 include { SUBREAD_FEATURECOUNTS as SUBREAD_FEATURECOUNTS_GENE_INTRON2 } from '../../modules/local/subread_featurecounts'
 include { TAG_FEATURES                                                } from '../../modules/local/tag_features'
+include { UMITOOLS_COUNT                                              } from '../../modules/local/umi_tools_count'
+
+// nf-core modules
+include { SAMTOOLS_INDEX } from '../../modules/nf-core/samtools/index/main'
 
 workflow GET_GENE_COUNTS_MATRIX {
     take:
@@ -39,6 +43,18 @@ workflow GET_GENE_COUNTS_MATRIX {
     TAG_FEATURES ( ch_bam.join(ch_counts, by: 0) )
 
     ch_tag_bam = TAG_FEATURES.out.feature_bam
+
+    //
+    // MODULE: Index feature tagged bam
+    //
+    SAMTOOLS_INDEX (ch_tag_bam)
+    ch_tag_bam_bai = SAMTOOLS_INDEX.out.bai
+
+    //
+    // MODULE: Generate the counts matrix
+    //
+
+    UMITOOLS_COUNT ( ch_tag_bam.join(ch_tag_bam_bai, by: 0) )
 
     gene_counts_mtx = Channel.empty()
     tag_gene_counts_mtx = Channel.empty()
