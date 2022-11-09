@@ -17,7 +17,7 @@ process SORT_GTF {
     def prefix = task.ext.prefix ?: "${meta.id}"
 
     """
-    awk '\$1 !~ /^#/ { print \$0 }' ${gtf} | sort -k1,1n -k4,4n -k5,5n > ${prefix}.sorted.gtf
+    cat ${gtf} | awk '\$1 !~ /^#/ { print \$0 }' | sort -k1,1 -k4,4n -k5,5n -V > ${prefix}.sorted.gtf
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

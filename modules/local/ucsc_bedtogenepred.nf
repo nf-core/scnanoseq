@@ -21,8 +21,10 @@ process UCSC_BEDTOGENEPRED {
     def prefix = task.ext.prefix ?: "${meta.id}"
     def VERSION = '377' // WARN: Version information not provided by tool on CLI. Please update this string when bumping container versions.
     """
+    awk '{print \$0"\t."}' ${bed} > ${bed}.processed
+
     bedToGenePred \\
-        $bed \\
+        ${bed}.processed \\
         ${prefix}.pred
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

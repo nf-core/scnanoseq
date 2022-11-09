@@ -7,6 +7,7 @@
 include { TRANSCRIPT_TO_EXON                          } from '../../modules/local/prepare_gtf_transcript_to_exon'
 include { SORT_GTF                                    } from '../../modules/local/sort_gtf'
 include { SORT_GTF as SORT_EXON_GTF                   } from '../../modules/local/sort_gtf'
+include { SORT_GTF as SORT_BEDTOOLS                   } from '../../modules/local/sort_gtf'
 include { GET_GTF_FEATURES                            } from '../../modules/local/get_gtf_features'
 include { GTF2BED                                     } from '../../modules/local/gtf2bed'
 include { UCSC_BEDTOGENEPRED                          } from '../../modules/local/ucsc_bedtogenepred'
@@ -37,7 +38,10 @@ workflow PREPARE_GTF {
     } else if (gtf_preparation_method == "2") {
         // Get the chromosome sizes
         CUSTOM_GETCHROMSIZES ( [ ["id":"chr_sizes"], fasta ])
-        chr_sizes = CUSTOM_GETCHROMSIZES.out.sizes.map { meta, chr_sizes -> [chr_sizes] }
+        chr_sizes = CUSTOM_GETCHROMSIZES.out.sizes
+
+        SORT_BEDTOOLS(chr_sizes)
+        ch_chr_sizes_sorted = SORT_BEDTOOLS.out.gtf.map { meta, chr_sizes -> [chr_sizes] }
 
         // Sort the gtf
         SORT_GTF ( [ [ "id": "base" ], gtf ])
@@ -53,7 +57,7 @@ workflow PREPARE_GTF {
             }
             .set{ch_intergenic_in}
 
-        COMPLEMENT_GTF ( ch_intergenic_in, chr_sizes )
+        COMPLEMENT_GTF ( ch_intergenic_in, ch_chr_sizes_sorted )
         ch_intergenic_bed = COMPLEMENT_GTF.out.bed
 
         // Get the exon regions
@@ -89,12 +93,11 @@ workflow PREPARE_GTF {
         ch_not_intron_bed = CAT_BED.out.file_out
 
         COMPLEMENT_NONINTRON (
-            ch_not_intron_bed
-                .map { meta, gtf ->
+            ch_not_intron_bed.map{
+                meta, bed ->
                     meta.id = "intron"
-                    [ meta, gtf ]
-                },
-            chr_sizes)
+                [ meta, bed ]},
+            ch_chr_sizes_sorted)
 
         ch_intron_bed = COMPLEMENT_NONINTRON.out.bed
 
