@@ -9,6 +9,7 @@ include { TAG_FEATURES                                                } from '..
 include { UMITOOLS_COUNT                                              } from '../../modules/local/umi_tools_count'
 include { SPLIT_FILE_BY_COLUMN                                        } from '../../modules/local/split_file_by_column'
 include { CORRECT_COUNTS_MATRIX                                       } from '../../modules/local/correct_counts_matrix'
+include { MERGE_FILE_BY_COLUMN                                        } from '../../modules/local/merge_file_by_column'
 
 // nf-core modules
 include { SAMTOOLS_INDEX } from '../../modules/nf-core/samtools/index/main'
@@ -71,7 +72,13 @@ workflow GET_GENE_COUNTS_MATRIX {
     //
 
     CORRECT_COUNTS_MATRIX ( ch_split_files )
+    ch_corrected_counts_matrix = CORRECT_COUNTS_MATRIX.out.corrected_counts_matrix
 
+
+    //
+    // MODULE: Concatenate the matrices column-wise
+    //
+    MERGE_FILE_BY_COLUMN ( ch_corrected_counts_matrix.groupTuple() )
 
     gene_counts_mtx = Channel.empty()
     tag_gene_counts_mtx = Channel.empty()
