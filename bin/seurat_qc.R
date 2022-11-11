@@ -15,11 +15,9 @@ library(Seurat)
 params_list <- list(
     make_option(c("-i", "--input_matrix"  ), type="character", default=NULL       , metavar="path"   , help="Count file matrix where rows are genes and columns are cells/nuclei."),
     make_option(c("-s", "--flagstat"      ), type="character", default=NULL       , metavar="path"   , help="Flagstat file from samtools QC."                                     ),
-    make_option(c("-c", "--min_cells"     ), type="integer"  , default=0          , metavar="integer", help="Minimun number of cells to retain during CreateSeuratObject."        ),
-    make_option(c("-f", "--min_features"  ), type="integer"  , default=0          , metavar="integer", help="Minimun number of features to retain during CreateSeuratObject."     ),
     make_option(c("-d", "--id"            ), type="character", default="scnanoseq", metavar="integer", help="Project name for Seurat object."                                     ),
     make_option(c("-o", "--outdir"        ), type="character", default="./"       , metavar="path"   , help="Output directory."                                                   ),
-    make_option(c("-p", "--outprefix"     ), type="character", default="seurat_qc", metavar="string" , help="Output prefix."                                                      )
+    make_option(c("-r", "--outprefix"     ), type="character", default="seurat_qc", metavar="string" , help="Output prefix."                                                      )
 )
 
 opt_parser <- OptionParser(option_list=params_list)
@@ -59,9 +57,10 @@ total_reads <- as.numeric(gsub("([0-9]+).*$", "\\1", flagstat_lines[index_nums])
 #####################
 
 # Create the Seurat object
+#NOTE: we do not perform any pre-filtering at this point
 seurat_obj <- CreateSeuratObject(counts = cell_bc_matrix,
-                                 min.cells = opt$min_cells,
-                                 min_feats = opt$min_features,
+                                 min.cells = 0,
+                                 min.features = 0,
                                  project = opt$id)
 
 ######################
