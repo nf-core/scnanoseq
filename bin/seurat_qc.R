@@ -26,13 +26,13 @@ plotSingleCellDensity <- function(input_obj,
                                   group.by = "orig.ident",
                                   scale_x_axis = FALSE,
                                   geom_density_level = 0.2) {
-  
+
   metadata <- dplyr::select(
     input_obj@meta.data,
     {{ metadata_variable }},
     {{ group.by }}
   )
-  
+
   meta_density <- ggplot2::ggplot(
     metadata,
     aes(
@@ -43,7 +43,7 @@ plotSingleCellDensity <- function(input_obj,
   ) +
     geom_density(alpha = geom_density_level) +
     theme_classic()
-  
+
   if (scale_x_axis == TRUE) {
     return(meta_density + scale_x_log10())
   } else {
@@ -59,7 +59,7 @@ plotSingleCellDensity <- function(input_obj,
 params_list <- list(
     make_option(c("-i", "--input_matrix"  ), type="character", default=NULL       , metavar="path"   , help="Count file matrix where rows are genes and columns are cells/nuclei."),
     make_option(c("-s", "--flagstat"      ), type="character", default=NULL       , metavar="path"   , help="Flagstat file from samtools QC."                                     ),
-    make_option(c("-d", "--id"            ), type="character", default="scnanoseq", metavar="integer", help="Project name for Seurat object."                                     ),
+    make_option(c("-d", "--id"            ), type="character", default="scnanoseq", metavar="string" , help="Project name for Seurat object."                                     ),
     make_option(c("-o", "--outdir"        ), type="character", default="./"       , metavar="path"   , help="Output directory."                                                   ),
     make_option(c("-r", "--outprefix"     ), type="character", default="seurat_qc", metavar="string" , help="Output prefix."                                                      )
 )
