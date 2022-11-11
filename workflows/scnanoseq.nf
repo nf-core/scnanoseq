@@ -61,15 +61,15 @@ include { REFORMAT_WHITELIST                     } from "../modules/local/reform
 include { TAG_BARCODES                           } from "../modules/local/tag_barcodes"
 include { CORRECT_BARCODES                       } from "../modules/local/correct_barcodes"
 include { SORT_GTF                               } from "../modules/local/sort_gtf"
-include { SUBREAD_FEATURECOUNTS as SUBREAD_FEATURECOUNTS_TRANSCRIPT } from '../modules/local/subread_featurecounts'
 
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
-include { INPUT_CHECK             } from "../subworkflows/local/input_check"
-include { CREATE_REGEX_INFO       } from "../subworkflows/local/create_regex"
-include { PREPARE_REFERENCE_FILES } from "../subworkflows/local/prepare_reference_files"
-include { GET_GENE_COUNTS_MATRIX  } from "../subworkflows/local/get_gene_counts_matrix"
+include { INPUT_CHECK                                    } from "../subworkflows/local/input_check"
+include { CREATE_REGEX_INFO                              } from "../subworkflows/local/create_regex"
+include { PREPARE_REFERENCE_FILES                        } from "../subworkflows/local/prepare_reference_files"
+include { GET_COUNTS_MATRIX as GET_GENE_COUNTS_MTX       } from "../subworkflows/local/get_counts_matrix"
+include { GET_COUNTS_MATRIX as GET_TRANSCRIPT_COUNTS_MTX } from "../subworkflows/local/get_counts_matrix"
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -440,22 +440,16 @@ workflow SCNANOSEQ {
                 meta.strandedness = params.stranded
                 [ meta, fastq ]
             }
-    //
-    // SUBWORKFLOW: Gene Level Counts
-    //
 
-    // TODO: add 4th param (intron2 GTF) from PREPARE_REFERENCE_FILES
     if ( params.counts_level == 'gene' || !params.counts_level ) {
-            if (!params.skip_dedup) {
-                GET_GENE_COUNTS_MATRIX ( ch_dedup_bam, ch_gtf, params.intron_retention_method, "" )
-                } else {
-                GET_GENE_COUNTS_MATRIX ( ch_corrected_bam, ch_gtf, params.intron_retention_method, "" )
-            }
-        //TODO: change channed out to tagged matrix
-        ch_gene_counts_mtx = GET_GENE_COUNTS_MATRIX.out.gene_counts_mtx
+
+        //
+        // SUBWORKFLOW: Get the gene level count matrix
+        //
+        GET_GENE_COUNTS_MTX ( ch_dedup_bam, ch_gtf)
+        ch_gene_counts_mtx = GET_GENE_COUNTS_MTX.out.counts_mtx
     }
 
-    //TODO: bams below should be either dedub or not
     if ( params.counts_level == 'transcript' || !params.counts_level ) {
         //
         // MODULE: Create a stringtie gtf
@@ -468,7 +462,7 @@ workflow SCNANOSEQ {
         //
         SORT_GTF ( ch_transcript_gtf )
         ch_transcript_gtf_sorted = SORT_GTF.out.gtf
-
+        
         //
         // MODULE: Merge the gtfs
         //
@@ -477,10 +471,10 @@ workflow SCNANOSEQ {
         ch_transcript_gtf_merged = STRINGTIE_MERGE.out.gtf
 
         //
-        // MODULE: Transcript Level Counts
+        // SUBWORKFLOW: Get the transcript level count matrix
         //
-        SUBREAD_FEATURECOUNTS_TRANSCRIPT ( ch_dedup_bam, ch_transcript_gtf_merged )
-        ch_gene_transcript_mtx = SUBREAD_FEATURECOUNTS_TRANSCRIPT.out.counts
+        GET_TRANSCRIPT_COUNTS_MTX ( ch_dedup_bam, ch_transcript_gtf_merged)
+        ch_transcript_counts_mtx = GET_GENE_COUNTS_MTX.out.counts_mtx
     }
 
 
