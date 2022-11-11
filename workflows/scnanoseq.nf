@@ -446,7 +446,6 @@ workflow SCNANOSEQ {
 
     // TODO: add 4th param (intron2 GTF) from PREPARE_REFERENCE_FILES
     if ( params.counts_level == 'gene' || !params.counts_level ) {
-        if (true) {
             if (!params.skip_dedup) {
                 GET_GENE_COUNTS_MATRIX ( ch_dedup_bam, ch_gtf, params.intron_retention_method, "" )
                 } else {
@@ -454,12 +453,10 @@ workflow SCNANOSEQ {
             }
         //TODO: change channed out to tagged matrix
         ch_gene_counts_mtx = GET_GENE_COUNTS_MATRIX.out.gene_counts_mtx
-        }
     }
 
     //TODO: bams below should be either dedub or not
     if ( params.counts_level == 'transcript' || !params.counts_level ) {
-    if (true) {
         //
         // MODULE: Create a stringtie gtf
         //
@@ -485,7 +482,6 @@ workflow SCNANOSEQ {
         SUBREAD_FEATURECOUNTS_TRANSCRIPT ( ch_dedup_bam, ch_transcript_gtf_merged )
         ch_gene_transcript_mtx = SUBREAD_FEATURECOUNTS_TRANSCRIPT.out.counts
     }
-}
 
 
     //
