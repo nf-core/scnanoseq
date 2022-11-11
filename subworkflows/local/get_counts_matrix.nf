@@ -11,7 +11,8 @@ include { CORRECT_COUNTS_MATRIX } from '../../modules/local/correct_counts_matri
 include { MERGE_FILE_BY_COLUMN  } from '../../modules/local/merge_file_by_column'
 
 // nf-core modules
-include { SAMTOOLS_INDEX } from '../../modules/nf-core/samtools/index/main'
+include { SAMTOOLS_INDEX        } from '../../modules/nf-core/samtools/index/main'
+include { BAM_STATS_SAMTOOLS    } from '../nf-core/bam_stats_samtools/main'
 
 workflow GET_COUNTS_MATRIX {
     take:
@@ -21,7 +22,7 @@ workflow GET_COUNTS_MATRIX {
     main:
 
     //
-    // MODULE: Count Features 
+    // MODULE: Count Features
     //
     subread_version = Channel.empty()
 
@@ -40,13 +41,22 @@ workflow GET_COUNTS_MATRIX {
     // MODULE: Index feature tagged bam
     //
     SAMTOOLS_INDEX (ch_tag_bam)
-    ch_tag_bam_bai = SAMTOOLS_INDEX.out.bai
+    ch_tag_bai = SAMTOOLS_INDEX.out.bai
+
+    ch_tag_bam_bai = ch_tag_bam.join(ch_tag_bai, by: 0)
+
+    //
+    // SUBWORKFLOW: Samtools stats
+    //
+
+    BAM_STATS_SAMTOOLS ( ch_tag_bam_bai, [] )
+    tag_bam_flagstat = BAM_STATS_SAMTOOLS.out.flagstat
 
     //
     // MODULE: Generate the counts matrix
     //
 
-    UMITOOLS_COUNT ( ch_tag_bam.join(ch_tag_bam_bai, by: 0) )
+    UMITOOLS_COUNT ( ch_tag_bam_bai )
     ch_count_mtx = UMITOOLS_COUNT.out.counts_matrix
 
     //
@@ -70,6 +80,7 @@ workflow GET_COUNTS_MATRIX {
     counts_mtx = MERGE_FILE_BY_COLUMN.out.col_merged_file
 
     emit:
+    tag_bam_flagstat
     counts_mtx
     subread_version
 
