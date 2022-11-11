@@ -5,7 +5,7 @@ process SEURAT {
     // TODO: figure out container for this one ; will note the following for now
     // seurat-scripts:4.0.0--hdfd78af_0 (need to test and see if it contains anything else needed)
     // or find alternatives
-    conda ("bioconda::r-seurat=4.1.1")
+    conda ("conda-forge::r-base conda-forge::r-seurat=4.1.1 conda-forge::r-ggplot2 conda-forge::r-optparse")
 
     input:
     tuple val(meta), path(counts), path(flagstat)
@@ -32,7 +32,7 @@ process SEURAT {
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         r-base: \$(echo \$(R --version 2>&1) | sed 's/^.*R version //; s/ .*\$//')
-        bioconductor-deseq2: \$(Rscript -e "library(Seurat); cat(as.character(packageVersion('Seurat')))")
+        r-seurat: \$(Rscript -e "library(Seurat); cat(as.character(packageVersion('Seurat')))")
     END_VERSIONS
     """
 }
