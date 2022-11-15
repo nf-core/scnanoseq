@@ -18,7 +18,7 @@ process GET_GTF_FEATURES {
     def prefix = task.ext.prefix ?: "${meta.id}"
 
     """
-    awk 'OFS="\t", \$1 !~ /^#/ {if (\$3 == "exon") print \$0}' > ${prefix}.gtf
+    awk 'OFS="\\t", \$1 !~ /^#/ {if (\$3 == "exon") print \$0}' ${gtf} > ${prefix}.gtf
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
