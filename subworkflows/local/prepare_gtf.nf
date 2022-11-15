@@ -4,14 +4,15 @@
 
 
 // Local modules
-include { TRANSCRIPT_TO_EXON                          } from '../../modules/local/prepare_gtf_transcript_to_exon'
-include { SORT_GTF                                    } from '../../modules/local/sort_gtf'
-include { SORT_GTF as SORT_EXON_GTF                   } from '../../modules/local/sort_gtf'
-include { SORT_GTF as SORT_BEDTOOLS                   } from '../../modules/local/sort_gtf'
-include { GET_GTF_FEATURES                            } from '../../modules/local/get_gtf_features'
-include { GTF2BED                                     } from '../../modules/local/gtf2bed'
-include { UCSC_BEDTOGENEPRED                          } from '../../modules/local/ucsc_bedtogenepred'
-include { UCSC_GENEPREDTOGTF                          } from '../../modules/local/ucsc_genepredtogtf'
+include { TRANSCRIPT_TO_EXON        } from '../../modules/local/prepare_gtf_transcript_to_exon'
+include { SORT_GTF                  } from '../../modules/local/sort_gtf'
+include { SORT_GTF as SORT_EXON_GTF } from '../../modules/local/sort_gtf'
+include { SORT_GTF as SORT_BEDTOOLS } from '../../modules/local/sort_gtf'
+include { GET_GTF_FEATURES          } from '../../modules/local/get_gtf_features'
+include { GTF2BED                   } from '../../modules/local/gtf2bed'
+include { UCSC_BEDTOGENEPRED        } from '../../modules/local/ucsc_bedtogenepred'
+include { UCSC_GENEPREDTOGTF        } from '../../modules/local/ucsc_genepredtogtf'
+include { CREATE_INTRON_GTF         } from '../../modules/local/create_intron_gtf'
 
 // nf-core modules
 include { CUSTOM_GETCHROMSIZES                        } from '../../modules/nf-core/custom/getchromsizes/main'
@@ -61,7 +62,7 @@ workflow PREPARE_GTF {
         ch_intergenic_bed = COMPLEMENT_GTF.out.bed
 
         // Get the exon regions
-        GET_GTF_FEATURES( [ [ "id": "exon" ], gtf], "exons" )
+        GET_GTF_FEATURES( [ [ "id": "exon" ], gtf], "exon" )
         ch_exon_gtf = GET_GTF_FEATURES.out.gtf
 
         SORT_EXON_GTF(ch_exon_gtf)
@@ -106,7 +107,10 @@ workflow PREPARE_GTF {
         ch_genepred = UCSC_BEDTOGENEPRED.out.pred
 
         UCSC_GENEPREDTOGTF( ch_genepred )
-        ch_intron_gtf = UCSC_GENEPREDTOGTF.out.gtf
+        ch_ucsc_gtf = UCSC_GENEPREDTOGTF.out.gtf
+
+        CREATE_INTRON_GTF ( ch_ucsc_gtf )
+        ch_intron_gtf = CREATE_INTRON_GTF.out.intron_gtf
 
         // Cat the exon and intron gtf
         ch_gtfs = Channel.empty()
@@ -123,8 +127,15 @@ workflow PREPARE_GTF {
         ch_cat_gtf_in = Channel.of(["id": "exons_introns_merged"]).concat(ch_gtfs).collect()
         CAT_GTF (ch_cat_gtf_in)
 
-        ch_prepared_gtf = CAT_GTF.out.file_out
-        ch_prepared_gtf = gtf
+        ch_prepared_gtf = Channel.empty()
+        
+        CAT_GTF.out.file_out
+            .map { 
+                meta, gtf ->
+                [ gtf ]
+            }
+            .set { ch_prepared_gtf }
+        //ch_prepared_gtf = gtf
 
     } else {
         ch_prepared_gtf = gtf

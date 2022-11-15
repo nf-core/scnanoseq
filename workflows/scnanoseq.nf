@@ -65,11 +65,13 @@ include { SORT_GTF                               } from "../modules/local/sort_g
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
-include { INPUT_CHECK                                    } from "../subworkflows/local/input_check"
-include { CREATE_REGEX_INFO                              } from "../subworkflows/local/create_regex"
-include { PREPARE_REFERENCE_FILES                        } from "../subworkflows/local/prepare_reference_files"
-include { GET_COUNTS_MATRIX as GET_GENE_COUNTS_MTX       } from "../subworkflows/local/get_counts_matrix"
-include { GET_COUNTS_MATRIX as GET_TRANSCRIPT_COUNTS_MTX } from "../subworkflows/local/get_counts_matrix"
+include { INPUT_CHECK                                           } from "../subworkflows/local/input_check"
+include { CREATE_REGEX_INFO                                     } from "../subworkflows/local/create_regex"
+include { PREPARE_REFERENCE_FILES                               } from "../subworkflows/local/prepare_reference_files"
+include { GET_COUNTS_MATRIX as GET_GENE_COUNTS_MTX              } from "../subworkflows/local/get_counts_matrix"
+include { GET_COUNTS_MATRIX as GET_TRANSCRIPT_COUNTS_MTX        } from "../subworkflows/local/get_counts_matrix"
+include { GET_COUNTS_MATRIX as GET_INTRON_GENE_COUNTS_MTX       } from "../subworkflows/local/get_counts_matrix"
+include { GET_COUNTS_MATRIX as GET_INTRON_TRANSCRIPT_COUNTS_MTX } from "../subworkflows/local/get_counts_matrix"
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -419,18 +421,20 @@ workflow SCNANOSEQ {
     SAMTOOLS_INDEX_BC_CORRECTED ( ch_corrected_bam )
     ch_corrected_bam_bai = SAMTOOLS_INDEX_BC_CORRECTED.out.bai
 
-    //
-    // MODULE: Umitools Dedup
-    //
-
+    // TODO: Rename the dedup_bam channel to be more descriptive
     ch_dedup_bam = ch_corrected_bam
     ch_dedup_bam_bai = ch_corrected_bam_bai
 
     if (!params.skip_dedup) {
+        //
+        // MODULE: Umitools Dedup
+        //
         UMITOOLS_DEDUP ( ch_corrected_bam.join(ch_corrected_bam_bai, by: [0]), true )
-
         ch_dedup_bam = UMITOOLS_DEDUP.out.bam
 
+        //
+        // MODULE: Index the Dedup'd bam
+        //
         SAMTOOLS_INDEX_DEDUP ( ch_dedup_bam )
         ch_dedup_bam_bai = SAMTOOLS_INDEX_DEDUP.out.bai
     }
@@ -441,20 +445,26 @@ workflow SCNANOSEQ {
                 [ meta, fastq ]
             }
 
-    if ( params.counts_level == 'gene' || !params.counts_level ) {
+    if ( params.counts_level == "gene" || !params.counts_level ) {
 
         //
         // SUBWORKFLOW: Get the gene level count matrix
         //
         GET_GENE_COUNTS_MTX ( ch_dedup_bam, ch_gtf)
         ch_gene_counts_mtx = GET_GENE_COUNTS_MTX.out.counts_mtx
+
+        if ( params.intron_retention_method == "2" ) {
+            GET_INTRON_GENE_COUNTS_MTX ( ch_dedup_bam, ch_gtf )
+            ch_intron_gene_counts_mtx = GET_INTRON_GENE_COUNTS_MTX.out.counts_mtx
+        }
     }
 
     if ( params.counts_level == 'transcript' || !params.counts_level ) {
         //
         // MODULE: Create a stringtie gtf
         //
-        STRINGTIE_STRINGTIE ( ch_dedup_bam, ch_gtf )
+        // TODO: What's wrong with the the intron gtf used below?
+        STRINGTIE_STRINGTIE ( ch_dedup_bam, params.gtf )
         ch_transcript_gtf = STRINGTIE_STRINGTIE.out.transcript_gtf
 
         //
