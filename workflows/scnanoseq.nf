@@ -61,6 +61,8 @@ include { REFORMAT_WHITELIST                     } from "../modules/local/reform
 include { TAG_BARCODES                           } from "../modules/local/tag_barcodes"
 include { CORRECT_BARCODES                       } from "../modules/local/correct_barcodes"
 include { SORT_GTF                               } from "../modules/local/sort_gtf"
+include { SEURAT as SEURAT_GENE                  } from "../modules/local/seurat"
+include { SEURAT as SEURAT_TRANSCRIPT            } from "../modules/local/seurat"
 
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
@@ -450,13 +452,14 @@ workflow SCNANOSEQ {
         //
         // SUBWORKFLOW: Get the gene level count matrix
         //
-        GET_GENE_COUNTS_MTX ( ch_dedup_bam, ch_gtf)
+        GET_GENE_COUNTS_MTX ( ch_dedup_bam, ch_gtf )
         ch_gene_counts_mtx = GET_GENE_COUNTS_MTX.out.counts_mtx
 
         if ( params.intron_retention_method == "2" ) {
             GET_INTRON_GENE_COUNTS_MTX ( ch_dedup_bam, ch_gtf )
             ch_intron_gene_counts_mtx = GET_INTRON_GENE_COUNTS_MTX.out.counts_mtx
         }
+
     }
 
     if ( params.counts_level == 'transcript' || !params.counts_level ) {
@@ -472,7 +475,7 @@ workflow SCNANOSEQ {
         //
         SORT_GTF ( ch_transcript_gtf )
         ch_transcript_gtf_sorted = SORT_GTF.out.gtf
-        
+
         //
         // MODULE: Merge the gtfs
         //
@@ -483,10 +486,24 @@ workflow SCNANOSEQ {
         //
         // SUBWORKFLOW: Get the transcript level count matrix
         //
-        GET_TRANSCRIPT_COUNTS_MTX ( ch_dedup_bam, ch_transcript_gtf_merged)
-        ch_transcript_counts_mtx = GET_GENE_COUNTS_MTX.out.counts_mtx
+        GET_TRANSCRIPT_COUNTS_MTX ( ch_dedup_bam, ch_transcript_gtf_merged )
+        ch_transcript_counts_mtx = GET_TRANSCRIPT_COUNTS_MTX.out.counts_mtx
+        ch_transcript_tag_bam_flagstat = GET_TRANSCRIPT_COUNTS_MTX.out.tag_bam_flagstat
     }
 
+
+    //
+    // MODULE: SEURAT
+    //
+
+    //TODO: may combine these into a single-channel later on
+    ch_gene_counts_flagstat = ch_gene_counts_mtx.join(ch_gene_tag_bam_flagstat, by: 0)
+    ch_transcript_counts_flagstat = ch_transcript_counts_mtx.join(ch_transcript_tag_bam_flagstat, by: 0)
+
+    SEURAT_GENE ( ch_gene_counts_flagstat )
+    SEURAT_TRANSCRIPT ( ch_transcript_counts_flagstat )
+
+    // TODO: combine seurat stats to generat MultiQC table
 
     //
     // SOFTWARE_VERSIONS
