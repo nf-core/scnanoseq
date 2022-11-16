@@ -61,6 +61,7 @@ include { REFORMAT_WHITELIST                     } from "../modules/local/reform
 include { TAG_BARCODES                           } from "../modules/local/tag_barcodes"
 include { CORRECT_BARCODES                       } from "../modules/local/correct_barcodes"
 include { SORT_GTF                               } from "../modules/local/sort_gtf"
+include { MERGE_COUNTS_MTX                       } from "../modules/local/merge_counts_mtx"
 include { SEURAT as SEURAT_GENE                  } from "../modules/local/seurat"
 include { SEURAT as SEURAT_TRANSCRIPT            } from "../modules/local/seurat"
 
@@ -447,17 +448,26 @@ workflow SCNANOSEQ {
                 [ meta, fastq ]
             }
 
+    ch_gene_counts_mtx = Channel.empty()
+    ch_transcript_counts_mtx = Channel.empty()
+
     if ( params.counts_level == "gene" || !params.counts_level ) {
 
         //
         // SUBWORKFLOW: Get the gene level count matrix
         //
         GET_GENE_COUNTS_MTX ( ch_dedup_bam, ch_gtf )
-        ch_gene_counts_mtx = GET_GENE_COUNTS_MTX.out.counts_mtx
+        ch_exon_gene_counts_mtx = GET_GENE_COUNTS_MTX.out.counts_mtx
+        ch_gene_tag_bam_flagstat = GET_GENE_COUNTS_MTX.out.tag_bam_flagstat
 
         if ( params.intron_retention_method == "2" ) {
             GET_INTRON_GENE_COUNTS_MTX ( ch_dedup_bam, ch_gtf )
             ch_intron_gene_counts_mtx = GET_INTRON_GENE_COUNTS_MTX.out.counts_mtx
+
+            MERGE_COUNTS_MTX ( ch_exon_gene_counts_mtx.join ( ch_intron_gene_counts_mtx, by: 0))
+            ch_gene_counts_mtx = MERGE_COUNTS_MTX.out.merged_mtx
+        } else {
+            ch_gene_counts_mtx = ch_exon_gene_counts_mtx
         }
 
     }
