@@ -334,11 +334,10 @@ workflow SCNANOSEQ {
     //
 
     if (!params.skip_save_minimap2_index) {
-        ch_reference = ch_minimap_index
+        ch_reference = ch_minimap_index.toList()
     } else {
-        ch_reference = Channel.fromPath(params.fasta, checkIfExists: true)
+        ch_reference = Channel.fromPath(params.fasta, checkIfExists: true).toList()
     }
-
     MINIMAP2_ALIGN ( ch_extracted_reads, ch_bed, ch_reference )
 
     MINIMAP2_ALIGN.out.sam
