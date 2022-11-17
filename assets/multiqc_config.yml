@@ -9,3 +9,42 @@ report_section_order:
     order: -1001
 
 export_plots: true
+
+top_modules:
+    - general_stats
+    - custom_content
+
+custom_content:
+    seurat_section:
+        parent_id: seurat_section
+        order:
+        - transcript_seurat_stats_module
+        - gene_seurat_stats_module
+
+custom_data:
+
+    gene_seurat_stats_module:
+        parent_id: seurat_section
+        parent_name: "Seurat Section"
+        parent_description: "Quick expression analysis summary completed with
+                            seurat. Note that these numbers are generated
+                            without any filtering done on the dataset"
+        section_name: "Gene Seurat Stats"
+        file_format: "tsv"
+        plot_type: "table"
+
+    transcript_seurat_stats_module:
+        parent_id: seurat_section
+        parent_name: "Seurat Section"
+        parent_description: "Quick expression analysis summary completed with
+                            seurat. Note that these numbers are generated
+                            without any filtering done on the dataset"
+        section_name: "Transcript Seurat Stats"
+        file_format: "tsv"
+        plot_type: "table"
+
+sp:
+    gene_seurat_stats_module:
+        fn: "gene.*.tsv"
+    transcript_seurat_stats_module:
+        fn: "transcript.*.tsv"
