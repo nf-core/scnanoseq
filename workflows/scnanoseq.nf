@@ -155,7 +155,6 @@ workflow SCNANOSEQ {
     // SUBWORKFLOW: Prepare reference files
     //
 
-    // TODO: Add fasta param to below
     PREPARE_REFERENCE_FILES ( "",
                             params.intron_retention_method,
                             params.fasta,
@@ -167,7 +166,6 @@ workflow SCNANOSEQ {
     //
     // MODULE: Generate junction file - paftools
     //
-    // TODO: *** once intron method 1/2 gets added, add conditionals to input gtf below (either param, or output of process) ***
     PAFTOOLS ( ch_gtf )
     ch_bed = PAFTOOLS.out.bed
 
@@ -222,7 +220,6 @@ workflow SCNANOSEQ {
     //
     ch_fastqc_multiqc_postrim = Channel.empty()
     if (!params.skip_qc){
-
         FASTQC_NANOPLOT_POST_TRIM ( ch_zipped_trimmed_reads, params.skip_nanoplot, params.skip_fastqc )
 
         ch_fastqc_multiqc_postrim = FASTQC_NANOPLOT_POST_TRIM.out.fastqc_multiqc.ifEmpty([])
@@ -279,7 +276,6 @@ workflow SCNANOSEQ {
     //
     ch_fastqc_multiqc_pre_extracted = Channel.empty()
     if (!params.skip_qc){
-
         FASTQC_NANOPLOT_PRE_EXTRACTED ( ch_zipped_r2_reads, params.skip_nanoplot, params.skip_fastqc )
 
         ch_fastqc_multiqc_pre_extracted = FASTQC_NANOPLOT_PRE_EXTRACTED.out.fastqc_multiqc.ifEmpty([])
@@ -312,7 +308,6 @@ workflow SCNANOSEQ {
     //
     ch_fastqc_multiqc_postextract = Channel.empty()
     if (!params.skip_qc){
-
         FASTQC_NANOPLOT_POST_EXTRACT ( ch_extracted_reads, params.skip_nanoplot, params.skip_fastqc)
 
         ch_fastqc_multiqc_postextract = FASTQC_NANOPLOT_POST_EXTRACT.out.fastqc_multiqc.ifEmpty([])
@@ -456,6 +451,7 @@ workflow SCNANOSEQ {
         //
         // SUBWORKFLOW: Get the gene level count matrix
         //
+
         GET_GENE_COUNTS_MTX ( ch_dedup_bam, ch_gtf )
         ch_exon_gene_counts_mtx = GET_GENE_COUNTS_MTX.out.counts_mtx
         ch_gene_tag_bam_flagstat = GET_GENE_COUNTS_MTX.out.tag_bam_flagstat
@@ -484,7 +480,6 @@ workflow SCNANOSEQ {
         //
         // MODULE: Create a stringtie gtf
         //
-        // TODO: What's wrong with the the intron gtf used below?
         STRINGTIE_STRINGTIE ( ch_dedup_bam, params.gtf )
         ch_transcript_gtf = STRINGTIE_STRINGTIE.out.transcript_gtf
 
