@@ -1,13 +1,10 @@
 process COMBINE_SEURAT_STATS {
-    tag "$seurat_stats"
     label 'process_low'
 
     //TODO: figure out env.
 
     input:
-    //path(seurat_stats)
-    tuple val(meta), path(seurat_stats) //TODO: remove this, just initial quick test
-
+    path seurat_stats
 
     output:
     path "*.tsv"        , emit: combined_stats
