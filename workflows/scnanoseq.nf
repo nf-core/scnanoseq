@@ -64,6 +64,8 @@ include { SORT_GTF                               } from "../modules/local/sort_g
 include { MERGE_COUNTS_MTX                       } from "../modules/local/merge_counts_mtx"
 include { SEURAT as SEURAT_GENE                  } from "../modules/local/seurat"
 include { SEURAT as SEURAT_TRANSCRIPT            } from "../modules/local/seurat"
+include { COMBINE_SEURAT_STATS as COMBINE_SEURAT_STATS_GENE        } from "../modules/local/combine_seurat_stats"
+include { COMBINE_SEURAT_STATS as COMBINE_SEURAT_STATS_TRANSCRIPT  } from "../modules/local/combine_seurat_stats"
 
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
@@ -475,9 +477,21 @@ workflow SCNANOSEQ {
         //
 
         //TODO: may combine these into a single-channel later on
-    
+
         ch_gene_counts_flagstat = ch_gene_counts_mtx.join(ch_gene_tag_bam_flagstat, by: 0)
         SEURAT_GENE ( ch_gene_counts_flagstat )
+        //**TODO**: work to be done here to consider multiple files (collect etc.)
+        // for input channel into combine process
+        // for now quick test to see if it resolves workflow finilization issue
+        ch_gene_stats = SEURAT_GENE.out.seurat_stats
+
+        ch_gene_stats.view()
+
+        COMBINE_SEURAT_STATS_GENE ( ch_gene_stats )
+        ch_gene_stats_combined = COMBINE_SEURAT_STATS_GENE.out.combined_stats
+
+        //ch_fastqc_multiqc_postrim.collect().ifEmpty([])
+
 
     }
 
@@ -517,11 +531,20 @@ workflow SCNANOSEQ {
 
         SEURAT_TRANSCRIPT ( ch_transcript_counts_flagstat )
 
+        //**TODO**: work to be done here to consider multiple files (collect etc.)
+        // for input channel into combine process
+        // for now quick test to see if it resolves workflow finilization issue
+        ch_transcript_stats = SEURAT_TRANSCRIPT.out.seurat_stats
+
+        //ch_transcript_stats.view()
+        //COMBINE_SEURAT_STATS_TRANSCRIPT ( ch_transcript_stats )
+        //ch_transcript_stats_combined = COMBINE_SEURAT_STATS_TRANSCRIPT.out.combined_stats
+
     }
 
 
     // TODO: combine seurat stats to generat MultiQC table
-    
+
     //
     // SOFTWARE_VERSIONS
     //
@@ -557,13 +580,14 @@ workflow SCNANOSEQ {
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_multiqc_custom_config.collect().ifEmpty([]))
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
-        
+
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_fastqc_multiqc_postrim.collect().ifEmpty([]))
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_fastqc_multiqc_postextract.collect().ifEmpty([]))
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_minimap_sorted_stats.collect{it[1]}.ifEmpty([]))
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_minimap_sorted_flagstat.collect{it[1]}.ifEmpty([]))
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_minimap_sorted_idxstats.collect{it[1]}.ifEmpty([]))
         // TODO: Add combined seurat files here
+        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_gene_stats_combined.collect().ifEmpty([]))
 
         MULTIQC_FINALQC (
             ch_multiqc_finalqc_files.collect()
