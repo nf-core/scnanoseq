@@ -473,13 +473,16 @@ workflow SCNANOSEQ {
 
         //TODO: may combine these into a single-channel later on
 
-        ch_gene_counts_flagstat = ch_gene_counts_mtx.join(ch_gene_tag_bam_flagstat, by: 0)
-        SEURAT_GENE ( ch_gene_counts_flagstat )
+        ch_gene_stats_combined = Channel.empty()
+        if (!params.skip_qc && !params.skip_seurat) {
+            ch_gene_counts_flagstat = ch_gene_counts_mtx.join(ch_gene_tag_bam_flagstat, by: 0)
+            SEURAT_GENE ( ch_gene_counts_flagstat )
 
-        ch_gene_stats = SEURAT_GENE.out.seurat_stats.collect{it[1]}
+            ch_gene_stats = SEURAT_GENE.out.seurat_stats.collect{it[1]}
 
-        COMBINE_SEURAT_STATS_GENE ( ch_gene_stats )
-        ch_gene_stats_combined = COMBINE_SEURAT_STATS_GENE.out.combined_stats
+            COMBINE_SEURAT_STATS_GENE ( ch_gene_stats )
+            ch_gene_stats_combined = COMBINE_SEURAT_STATS_GENE.out.combined_stats
+        }
 
     }
 
@@ -514,14 +517,18 @@ workflow SCNANOSEQ {
         //
 
         //TODO: may combine these into a single-channel later on
-        ch_transcript_counts_flagstat = ch_transcript_counts_mtx.join(ch_transcript_tag_bam_flagstat, by: 0)
 
-        SEURAT_TRANSCRIPT ( ch_transcript_counts_flagstat )
+        ch_transcript_stats_combined = Channel.empty()
+        if (!params.skip_qc && !params.skip_seurat) {
+            ch_transcript_counts_flagstat = ch_transcript_counts_mtx.join(ch_transcript_tag_bam_flagstat, by: 0)
 
-        ch_transcript_stats = SEURAT_TRANSCRIPT.out.seurat_stats.collect{it[1]}
+            SEURAT_TRANSCRIPT ( ch_transcript_counts_flagstat )
 
-        COMBINE_SEURAT_STATS_TRANSCRIPT ( ch_transcript_stats )
-        ch_transcript_stats_combined = COMBINE_SEURAT_STATS_TRANSCRIPT.out.combined_stats
+            ch_transcript_stats = SEURAT_TRANSCRIPT.out.seurat_stats.collect{it[1]}
+
+            COMBINE_SEURAT_STATS_TRANSCRIPT ( ch_transcript_stats )
+            ch_transcript_stats_combined = COMBINE_SEURAT_STATS_TRANSCRIPT.out.combined_stats
+        }
 
     }
 
