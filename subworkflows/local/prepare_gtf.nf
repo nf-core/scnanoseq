@@ -89,7 +89,7 @@ workflow PREPARE_GTF {
         // Now we combine the file list with a meta object
         ch_cat_files_in = Channel.of(["id": "not_introns"]).concat(ch_files).collect()
 
-        CAT_BED( ch_cat_files_in)
+        CAT_BED( ch_cat_files_in )
 
         ch_not_intron_bed = CAT_BED.out.file_out
 
@@ -128,9 +128,9 @@ workflow PREPARE_GTF {
         CAT_GTF (ch_cat_gtf_in)
 
         ch_prepared_gtf = Channel.empty()
-        
+
         CAT_GTF.out.file_out
-            .map { 
+            .map {
                 meta, gtf ->
                 [ gtf ]
             }

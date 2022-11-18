@@ -45,25 +45,25 @@ ch_dummy_file = Channel.fromPath("$projectDir/assets/dummy_file.txt", checkIfExi
 // MODULE: Loaded from modules/local/
 //
 
-include { NANOFILT                               } from "../modules/local/nanofilt"
-include { PROWLERTRIMMER                         } from "../modules/local/prowlertrimmer"
-include { SPLIT_FILE                             } from "../modules/local/split_file"
-include { PIGZ as ZIP_R1                         } from "../modules/local/pigz"
-include { PIGZ as ZIP_R2                         } from "../modules/local/pigz"
-include { PIGZ as ZIP_TRIM                       } from "../modules/local/pigz"
-include { PREEXTRACT_FASTQ                       } from "../modules/local/preextract_fastq"
-include { UMI_TOOLS_WHITELIST                    } from "../modules/local/umi_tools_whitelist"
-include { UMI_TOOLS_EXTRACT                      } from "../modules/local/umi_tools_extract"
-include { PAFTOOLS                               } from "../modules/local/paftools"
-include { MINIMAP2_INDEX                         } from "../modules/local/minimap2_index"
-include { MINIMAP2_ALIGN                         } from "../modules/local/minimap2_align"
-include { REFORMAT_WHITELIST                     } from "../modules/local/reformat_whitelist"
-include { TAG_BARCODES                           } from "../modules/local/tag_barcodes"
-include { CORRECT_BARCODES                       } from "../modules/local/correct_barcodes"
-include { SORT_GTF                               } from "../modules/local/sort_gtf"
-include { MERGE_COUNTS_MTX                       } from "../modules/local/merge_counts_mtx"
-include { SEURAT as SEURAT_GENE                  } from "../modules/local/seurat"
-include { SEURAT as SEURAT_TRANSCRIPT            } from "../modules/local/seurat"
+include { NANOFILT                                                 } from "../modules/local/nanofilt"
+include { PROWLERTRIMMER                                           } from "../modules/local/prowlertrimmer"
+include { SPLIT_FILE                                               } from "../modules/local/split_file"
+include { PIGZ as ZIP_R1                                           } from "../modules/local/pigz"
+include { PIGZ as ZIP_R2                                           } from "../modules/local/pigz"
+include { PIGZ as ZIP_TRIM                                         } from "../modules/local/pigz"
+include { PREEXTRACT_FASTQ                                         } from "../modules/local/preextract_fastq"
+include { UMI_TOOLS_WHITELIST                                      } from "../modules/local/umi_tools_whitelist"
+include { UMI_TOOLS_EXTRACT                                        } from "../modules/local/umi_tools_extract"
+include { PAFTOOLS                                                 } from "../modules/local/paftools"
+include { MINIMAP2_INDEX                                           } from "../modules/local/minimap2_index"
+include { MINIMAP2_ALIGN                                           } from "../modules/local/minimap2_align"
+include { REFORMAT_WHITELIST                                       } from "../modules/local/reformat_whitelist"
+include { TAG_BARCODES                                             } from "../modules/local/tag_barcodes"
+include { CORRECT_BARCODES                                         } from "../modules/local/correct_barcodes"
+include { SORT_GTF                                                 } from "../modules/local/sort_gtf"
+include { MERGE_COUNTS_MTX                                         } from "../modules/local/merge_counts_mtx"
+include { SEURAT as SEURAT_GENE                                    } from "../modules/local/seurat"
+include { SEURAT as SEURAT_TRANSCRIPT                              } from "../modules/local/seurat"
 include { COMBINE_SEURAT_STATS as COMBINE_SEURAT_STATS_GENE        } from "../modules/local/combine_seurat_stats"
 include { COMBINE_SEURAT_STATS as COMBINE_SEURAT_STATS_TRANSCRIPT  } from "../modules/local/combine_seurat_stats"
 
@@ -139,7 +139,7 @@ workflow SCNANOSEQ {
     ch_fastqc_multiqc_pretrim = Channel.empty()
     if (!params.skip_qc){
 
-        FASTQC_NANOPLOT_PRE_TRIM ( ch_fastq, params.skip_nanoplot, params.skip_fastqc)
+        FASTQC_NANOPLOT_PRE_TRIM ( ch_fastq, params.skip_nanoplot, params.skip_fastqc )
 
         ch_versions = ch_versions.mix(FASTQC_NANOPLOT_PRE_TRIM.out.nanoplot_version.first().ifEmpty(null))
         ch_versions = ch_versions.mix(FASTQC_NANOPLOT_PRE_TRIM.out.fastqc_version.first().ifEmpty(null))
@@ -177,7 +177,7 @@ workflow SCNANOSEQ {
     ch_split_fastqs = ch_unzipped_fastqs
 
     if (params.split_amount > 0) {
-        SPLIT_FILE( ch_unzipped_fastqs, '.fastq', params.split_amount)
+        SPLIT_FILE( ch_unzipped_fastqs, '.fastq', params.split_amount )
         ch_split_fastqs = SPLIT_FILE.out.split_files
 
         // TODO: Change the ids so they contain the sample_name and index
@@ -296,7 +296,7 @@ workflow SCNANOSEQ {
     // MODULE: Create estimated whitelist
     //
 
-    UMI_TOOLS_WHITELIST ( ch_zipped_reads, params.cell_amount, val_regex_info.umi_tools)
+    UMI_TOOLS_WHITELIST ( ch_zipped_reads, params.cell_amount, val_regex_info.umi_tools )
     ch_reads_with_whitelist = UMI_TOOLS_WHITELIST.out.whitelist
 
     //
@@ -310,7 +310,7 @@ workflow SCNANOSEQ {
     //
     ch_fastqc_multiqc_postextract = Channel.empty()
     if (!params.skip_qc){
-        FASTQC_NANOPLOT_POST_EXTRACT ( ch_extracted_reads, params.skip_nanoplot, params.skip_fastqc)
+        FASTQC_NANOPLOT_POST_EXTRACT ( ch_extracted_reads, params.skip_nanoplot, params.skip_fastqc )
 
         ch_fastqc_multiqc_postextract = FASTQC_NANOPLOT_POST_EXTRACT.out.fastqc_multiqc.ifEmpty([])
     }
@@ -462,7 +462,7 @@ workflow SCNANOSEQ {
             GET_INTRON_GENE_COUNTS_MTX ( ch_dedup_bam, ch_gtf )
             ch_intron_gene_counts_mtx = GET_INTRON_GENE_COUNTS_MTX.out.counts_mtx
 
-            MERGE_COUNTS_MTX ( ch_exon_gene_counts_mtx.join ( ch_intron_gene_counts_mtx, by: 0))
+            MERGE_COUNTS_MTX ( ch_exon_gene_counts_mtx.join ( ch_intron_gene_counts_mtx, by: 0 ))
             ch_gene_counts_mtx = MERGE_COUNTS_MTX.out.merged_mtx
         } else {
             ch_gene_counts_mtx = ch_exon_gene_counts_mtx

@@ -12,8 +12,8 @@ process MINIMAP2_INDEX {
     path bed
 
     output:
-    path "*.mmi"                  , emit: index
-    path "versions.yml"           , emit: versions
+    path "*.mmi"        , emit: index
+    path "versions.yml" , emit: versions
 
     when:
     task.ext.when == null || task.ext.when

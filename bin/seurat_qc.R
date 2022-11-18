@@ -7,9 +7,9 @@ library(optparse)
 library(Seurat)
 library(ggplot2)
 
-######################
-### CUSTOM FUNCTION ##
-######################
+#######################
+### CUSTOM FUNCTION ###
+#######################
 
 #' plotSingleCellDensity
 #' This function creates a density plot of the distribution of cells (nFeature) or molecules/UMIs (nCount)
@@ -50,7 +50,6 @@ plotSingleCellDensity <- function(input_obj,
     return(meta_density)
   }
 }
-
 
 ###############################
 ### COMMAND-LINE PARAMETERS ###
@@ -143,7 +142,6 @@ png(out_sample_qc_figs, width = 900, height = 900)
 plot(all_plots)
 
 dev.off()
-
 
 ######################
 ### GENERATE STATS ###

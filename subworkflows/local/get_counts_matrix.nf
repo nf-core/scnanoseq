@@ -40,7 +40,7 @@ workflow GET_COUNTS_MATRIX {
     //
     // MODULE: Index feature tagged bam
     //
-    SAMTOOLS_INDEX (ch_tag_bam)
+    SAMTOOLS_INDEX ( ch_tag_bam )
     ch_tag_bai = SAMTOOLS_INDEX.out.bai
 
     ch_tag_bam_bai = ch_tag_bam.join(ch_tag_bai, by: 0)

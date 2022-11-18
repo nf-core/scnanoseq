@@ -21,6 +21,10 @@ while [[ $# -gt 0 ]]; do
     shift
 done
 
+###############
+### COMBINE ###
+###############
+
 # Print out the header
 echo -e "Sample\tFeature_Type\tEstimated_Cell_Number\tMean_Reads_Per_Cell\tMedian_Genes_Per_Cell" > .header.tmp
 

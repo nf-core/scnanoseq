@@ -13,8 +13,8 @@ process UMI_TOOLS_EXTRACT {
 
     output:
     tuple val(meta), path("*.umi_extract.fastq.gz"), emit: reads
-    tuple val(meta), path("*.log")     , emit: log
-    path  "versions.yml"               , emit: versions
+    tuple val(meta), path("*.log")                 , emit: log
+    path  "versions.yml"                           , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
