@@ -228,15 +228,20 @@
                     "fa_icon": "fas fa-forward",
                     "description": "Skip all QC except MultiQC."
                 },
+                "skip_fastqc": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-forward",
+                    "description": "Skip FastQC."
+                },
                 "skip_nanoplot": {
                     "type": "boolean",
                     "fa_icon": "fas fa-forward",
                     "description": "Skip Nanoplot."
                 },
-                "skip_fastqc": {
+                "skip_seurat": {
                     "type": "boolean",
                     "fa_icon": "fas fa-forward",
-                    "description": "Skip FastQC."
+                    "description": "Skip Seurat QC."
                 },
                 "skip_save_minimap2_index": {
                     "type": "boolean",
