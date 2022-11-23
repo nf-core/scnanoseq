@@ -126,11 +126,6 @@
                     "default": 10,
                     "description": "Choose minimum average read quality score.",
                     "fa_icon": "fas fa-cut"
-                },
-                "skip_trimming": {
-                    "type": "boolean",
-                    "description": "Skip quality trimming step.",
-                    "fa_icon": "fas fa-forward"
                 }
             },
             "fa_icon": "fas fa-cut"
@@ -253,6 +248,11 @@
                     "fa_icon": "fas fa-forward",
                     "description": "Skip Seurat QC."
                 },
+                "skip_trimming": {
+                    "type": "boolean",
+                    "description": "Skip quality trimming step.",
+                    "fa_icon": "fas fa-forward"
+                },
                 "skip_save_minimap2_index": {
                     "type": "boolean",
                     "description": "Skip saving minimap2 index.",
@@ -262,6 +262,11 @@
                     "type": "boolean",
                     "description": "Skip umi dedup.",
                     "fa_icon": "fas fa-forward"
+                },
+                "skip_multiqc": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-forward",
+                    "description": "Skip MultiQC."
                 }
             },
             "fa_icon": "fas fa-forward"
