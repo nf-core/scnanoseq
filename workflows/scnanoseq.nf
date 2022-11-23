@@ -46,6 +46,8 @@ ch_dummy_file = Channel.fromPath("$projectDir/assets/dummy_file.txt", checkIfExi
 //
 
 include { NANOFILT                                                 } from "../modules/local/nanofilt"
+include { NANOCOMP as NANOCOMP_FASTQ                               } from "../modules/local/nanocomp"
+include { NANOCOMP as NANOCOMP_BAM                                 } from "../modules/local/nanocomp"
 include { PROWLERTRIMMER                                           } from "../modules/local/prowlertrimmer"
 include { SPLIT_FILE                                               } from "../modules/local/split_file"
 include { PIGZ as ZIP_R1                                           } from "../modules/local/pigz"
@@ -145,6 +147,18 @@ workflow SCNANOSEQ {
         ch_versions = ch_versions.mix(FASTQC_NANOPLOT_PRE_TRIM.out.fastqc_version.first().ifEmpty(null))
 
         ch_fastqc_multiqc_pretrim = FASTQC_NANOPLOT_PRE_TRIM.out.fastqc_multiqc.ifEmpty([])
+    }
+
+    //
+    // MODULE: NanoComp for FastQ files
+    //
+
+    if (!params.skip_qc && !params.skip_fastq_nanocomp) {
+        ch_nanocomp_fastqs = ch_fastq.collect{it[1]}
+
+        NANOCOMP_FASTQ ( ch_nanocomp_fastqs )
+        ch_versions = ch_versions.mix( NANOCOMP_FASTQ.out.versions )
+
     }
 
     //
@@ -349,6 +363,7 @@ workflow SCNANOSEQ {
     ch_minimap_bam = SAMTOOLS_VIEW_BAM.out.bam
 
     // acquire only mapped reads from bam for downstream processing
+    // NOTE: some QCs steps are performed on the full BAM
 
     ch_minimap_bam
         .combine( ch_dummy_file )
@@ -371,6 +386,20 @@ workflow SCNANOSEQ {
     BAM_SORT_STATS_SAMTOOLS_FILTERED ( ch_minimap_mapped_only_bam, [] )
     ch_minimap_filtered_sorted_bam = BAM_SORT_STATS_SAMTOOLS_FILTERED.out.bam
     ch_minimap_filtered_sorted_bai = BAM_SORT_STATS_SAMTOOLS_FILTERED.out.bai
+
+    //
+    // MODULE: NanoComp for BAM files (unfiltered for QC purposes)
+    //
+
+    ch_minimap_sorted_bam.view()
+
+    if (!params.skip_qc && !params.skip_bam_nanocomp) {
+        ch_nanocomp_bams = ch_minimap_sorted_bam.collect{it[1]}
+
+        NANOCOMP_BAM ( ch_nanocomp_bams )
+        ch_versions = ch_versions.mix( NANOCOMP_BAM.out.versions )
+
+    }
 
     //
     // MODULE: Reformat whitelist
