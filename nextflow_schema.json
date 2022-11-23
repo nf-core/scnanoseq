@@ -143,31 +143,31 @@
             "properties": {
                 "cell_barcode_pattern": {
                     "type": "string",
-                    "description": "Regex for the cell barcode pattern"
+                    "description": "Regex for the cell barcode pattern."
                 },
                 "whitelist": {
                     "type": "string",
-                    "description": "The file containing a list of barcodes"
+                    "description": "The file containing a list of barcodes."
                 },
                 "cell_amount": {
                     "type": "integer",
-                    "description": "The esitmated amount of cells in the experiment"
+                    "description": "The estimated amount of cells in the experiment."
                 },
                 "identifier_pattern": {
                     "type": "string",
-                    "description": "Human readable reged for the cell barcode pattern"
+                    "description": "Human readable regex for the cell barcode pattern."
                 },
                 "cell_barcode_lengths": {
                     "type": "string",
-                    "description": "The comma delimited list of cell barcode lengths"
+                    "description": "The comma delimited list of cell barcode lengths."
                 },
                 "umi_lengths": {
                     "type": "string",
-                    "description": "The comma delimited list of umi lengths"
+                    "description": "The comma delimited list of umi lengths."
                 },
                 "fixed_seqs": {
                     "type": "string",
-                    "description": "The comma delimited list of fixed barcode sequences"
+                    "description": "The comma delimited list of fixed barcode sequences."
                 }
             },
             "fa_icon": "fas fa-microscope"
@@ -185,11 +185,11 @@
                 "kmer_size": {
                     "type": "integer",
                     "default": 14,
-                    "description": "Minimizer k-mer length"
+                    "description": "Minimizer k-mer length."
                 },
                 "save_secondary_alignment": {
                     "type": "boolean",
-                    "description": "Save secondary alignment outputs",
+                    "description": "Save secondary alignment outputs.",
                     "fa_icon": "far fa-save"
                 }
             },
@@ -204,15 +204,15 @@
             "properties": {
                 "analyze_uncorrected_bam": {
                     "type": "boolean",
-                    "description": "Run downstream steps on the bam that contains reads that could not be corrected. Do not use this if no whitelist is provided"
+                    "description": "Run downstream steps on the bam that contains reads that could not be corrected. Do not use this if no whitelist is provided."
                 },
                 "intron_retention_method": {
                     "type": "string",
-                    "description": "Choose which intron retention method to use (Options: 1 or 2)"
+                    "description": "Choose which intron retention method to use (Options: 1 or 2)."
                 },
                 "counts_level": {
                     "type": "string",
-                    "description": "What level to generate the counts matrix at. Options: 'gene', 'transcript'"
+                    "description": "What level to generate the counts matrix at. Options: 'gene', 'transcript'."
                 }
             }
         },
@@ -239,14 +239,12 @@
                     "description": "Skip Nanoplot."
                 },
                 "skip_fastq_nanocomp": {
-                    "type": "string",
-                    "default": "false",
+                    "type": "boolean",
                     "fa_icon": "fas fa-forward",
                     "description": "Skip Nanocomp for raw FASTQs."
                 },
                 "skip_bam_nanocomp": {
-                    "type": "string",
-                    "default": "false",
+                    "type": "boolean",
                     "fa_icon": "fas fa-forward",
                     "description": "Skip Nanocomp for BAMs."
                 },
@@ -257,12 +255,12 @@
                 },
                 "skip_save_minimap2_index": {
                     "type": "boolean",
-                    "description": "Skip saving minimap2 index",
+                    "description": "Skip saving minimap2 index.",
                     "fa_icon": "fas fa-forward"
                 },
                 "skip_dedup": {
                     "type": "boolean",
-                    "description": "Skip umi dedup",
+                    "description": "Skip umi dedup.",
                     "fa_icon": "fas fa-forward"
                 }
             },

@@ -391,8 +391,6 @@ workflow SCNANOSEQ {
     // MODULE: NanoComp for BAM files (unfiltered for QC purposes)
     //
 
-    ch_minimap_sorted_bam.view()
-
     if (!params.skip_qc && !params.skip_bam_nanocomp) {
         ch_nanocomp_bams = ch_minimap_sorted_bam.collect{it[1]}
 
