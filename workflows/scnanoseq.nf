@@ -570,7 +570,7 @@ workflow SCNANOSEQ {
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
     )
 
-    if (!params.skip_qc){
+    if (!params.skip_multiqc){
 
         //
         // MODULE: MultiQC for raw data
