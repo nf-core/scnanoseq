@@ -238,6 +238,18 @@
                     "fa_icon": "fas fa-forward",
                     "description": "Skip Nanoplot."
                 },
+                "skip_fastq_nanocomp": {
+                    "type": "string",
+                    "default": "false",
+                    "fa_icon": "fas fa-forward",
+                    "description": "Skip Nanocomp for raw FASTQs."
+                },
+                "skip_bam_nanocomp": {
+                    "type": "string",
+                    "default": "false",
+                    "fa_icon": "fas fa-forward",
+                    "description": "Skip Nanocomp for BAMs."
+                },
                 "skip_seurat": {
                     "type": "boolean",
                     "fa_icon": "fas fa-forward",
