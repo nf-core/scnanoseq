@@ -69,7 +69,9 @@
                 "gtf": {
                     "type": "string",
                     "fa_icon": "far fa-file-code",
-                    "default": "null"
+                    "default": "null",
+                    "description": "Path to GTF file",
+                    "format": "file-path"
                 },
                 "igenomes_base": {
                     "type": "string",
@@ -86,7 +88,11 @@
                     "hidden": true,
                     "help_text": "Do not load `igenomes.config` when running the pipeline. You may choose this option if you observe clashes between custom parameters and those supplied in `igenomes.config`."
                 }
-            }
+            },
+            "required": [
+                "fasta",
+                "gtf"
+            ]
         },
         "fastq_options": {
             "title": "Fastq options",
@@ -110,10 +116,13 @@
             "properties": {
                 "trimming_software": {
                     "type": "string",
-                    "default": "nanofilt",
                     "description": "Specifies trimming software.",
                     "fa_icon": "fas fa-cut",
-                    "help_text": "Available long-read trimmers are `nanofilt` or `prowler`"
+                    "help_text": "Available long-read trimmers are `nanofilt` or `prowler`",
+                    "enum": [
+                        "prowler",
+                        "nanofilt"
+                    ]
                 },
                 "min_length": {
                     "type": "integer",
@@ -133,7 +142,10 @@
                     "fa_icon": "fas fa-forward"
                 }
             },
-            "fa_icon": "fas fa-cut"
+            "fa_icon": "fas fa-cut",
+            "required": [
+                "trimming_software"
+            ]
         },
         "cell_barcode_options": {
             "title": "Cell barcode options",
@@ -147,11 +159,12 @@
                 },
                 "whitelist": {
                     "type": "string",
-                    "description": "The file containing a list of barcodes"
+                    "description": "The file containing a list of barcodes",
+                    "format": "file-path"
                 },
                 "cell_amount": {
                     "type": "integer",
-                    "description": "The esitmated amount of cells in the experiment"
+                    "description": "The estimated amount of cells in the experiment"
                 },
                 "identifier_pattern": {
                     "type": "string",
@@ -171,7 +184,11 @@
                 },
                 "barcode_preset": {
                     "type": "string",
-                    "description": "Specify a preset option for barcode formatting"
+                    "description": "Specify a preset option for barcode formatting",
+                    "enum": [
+                        "cellranger_3_prime",
+                        "cellranget_5_prime"
+                    ]
                 }
             },
             "fa_icon": "fas fa-microscope"
@@ -184,7 +201,12 @@
             "properties": {
                 "stranded": {
                     "type": "string",
-                    "default": "None"
+                    "default": "None",
+                    "enum": [
+                        "None",
+                        "reverse",
+                        "forward"
+                    ]
                 },
                 "kmer_size": {
                     "type": "integer",
@@ -212,13 +234,25 @@
                 },
                 "intron_retention_method": {
                     "type": "string",
-                    "description": "Choose which intron retention method to use (Options: 1 or 2)"
+                    "description": "Choose which intron retention method to use (Options: 1 or 2)",
+                    "enum": [
+                        "1",
+                        "2"
+                    ]
                 },
                 "counts_level": {
                     "type": "string",
-                    "description": "What level to generate the counts matrix at. Options: 'gene', 'transcript'"
+                    "description": "What level to generate the counts matrix at. Options: 'gene', 'transcript'",
+                    "enum": [
+                        "gene",
+                        "transcript",
+                        "both"
+                    ]
                 }
-            }
+            },
+            "required": [
+                "counts_level"
+            ]
         },
         "process_skipping_options": {
             "title": "Process skipping options",
