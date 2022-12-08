@@ -66,9 +66,7 @@ def write_outfile(outfile, outlines):
         open(outfile + '.bc_only', 'w', encoding = "utf-8") as f_out_main_bcs:
         for key, value in outlines.items():
             for barcode_info in value:
-                if key == 'primary':
-                    f_out_main_bcs.write(barcode_info[0] + '\n')
-
+                f_out_main_bcs.write(barcode_info[0] + '\n')
                 f_out_all_bcs.write('\t'.join(barcode_info) + '\n')
 
 def main():

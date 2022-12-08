@@ -306,17 +306,36 @@ workflow SCNANOSEQ {
         }
         .set{ ch_zipped_reads }
 
-    //
-    // MODULE: Create estimated whitelist
-    //
+    
+    ch_gt_whitelist = Channel.empty()
+    if ( params.whitelist ) {
+        ch_gt_whitelist = params.whitelist
+    } else {
+        //
+        // MODULE: Create estimated whitelist
+        //
 
-    UMI_TOOLS_WHITELIST ( ch_zipped_reads, params.cell_amount, val_regex_info.umi_tools )
-    ch_reads_with_whitelist = UMI_TOOLS_WHITELIST.out.whitelist
+        UMI_TOOLS_WHITELIST ( ch_zipped_reads, params.cell_amount, val_regex_info.umi_tools )
+        ch_reads_with_whitelist = UMI_TOOLS_WHITELIST.out.whitelist
+        
+        //
+        // MODULE: Reformat whitelist
+        //
+        ch_whitelists = Channel.empty()
+        ch_reads_with_whitelist
+            .map{ meta, fastq, whitelist ->[ meta, whitelist ] }
+            .set{ ch_whitelists }
+
+        REFORMAT_WHITELIST ( ch_whitelists )
+        ch_whitelist_bc_count = REFORMAT_WHITELIST.out.bc_list_counts
+        ch_gt_whitelist = REFORMAT_WHITELIST.out.bc_list
+        
+    }
 
     //
     // MODULE: Extract barcodes
     //
-    UMI_TOOLS_EXTRACT ( ch_reads_with_whitelist, val_regex_info.umi_tools )
+    UMI_TOOLS_EXTRACT ( ch_zipped_reads.join(ch_gt_whitelist), val_regex_info.umi_tools )
     ch_extracted_reads = UMI_TOOLS_EXTRACT.out.reads
 
     //
@@ -396,20 +415,8 @@ workflow SCNANOSEQ {
 
         NANOCOMP_BAM ( ch_nanocomp_bams )
         ch_versions = ch_versions.mix( NANOCOMP_BAM.out.versions )
-
     }
 
-    //
-    // MODULE: Reformat whitelist
-    //
-    ch_whitelists = Channel.empty()
-    ch_reads_with_whitelist
-        .map{ meta, fastq, whitelist ->[ meta, whitelist ] }
-        .set{ ch_whitelists }
-
-    REFORMAT_WHITELIST ( ch_whitelists )
-    ch_whitelist_bc_count = REFORMAT_WHITELIST.out.whitelist_bc_count
-    ch_whitelist_bc_list = REFORMAT_WHITELIST.out.whitelist_bc_list
 
     //
     // MODULE: Tag Barcodes
@@ -429,12 +436,6 @@ workflow SCNANOSEQ {
     // MODULE: Correct Barcodes
     //
 
-    ch_gt_whitelist = Channel.empty()
-    if ( params.whitelist ) {
-        ch_gt_whitelist = params.whitelist
-    } else {
-        ch_gt_whitelist = ch_whitelist_bc_list
-    }
 
     ch_correct_barcode_in = Channel.empty()
     ch_tagged_bam

@@ -11,8 +11,8 @@ process REFORMAT_WHITELIST {
     tuple val(meta), path(whitelist)
 
     output:
-    tuple val(meta), path("*.bc_count.txt")        , emit: whitelist_bc_count
-    tuple val(meta), path("*.bc_count.txt.bc_only"), emit: whitelist_bc_list
+    tuple val(meta), path("*.bc_count.txt")        , emit: bc_list_counts
+    tuple val(meta), path("*.bc_count.txt.bc_only"), emit: bc_list
     path "versions.yml"                            , emit: versions
 
     when:
