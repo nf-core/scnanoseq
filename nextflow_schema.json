@@ -249,10 +249,7 @@
                         "both"
                     ]
                 }
-            },
-            "required": [
-                "counts_level"
-            ]
+            }
         },
         "process_skipping_options": {
             "title": "Process skipping options",
