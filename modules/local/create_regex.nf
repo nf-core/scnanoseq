@@ -28,7 +28,7 @@ process CREATE_REGEX {
 
     if [[ "${cell_barcode_pattern}" ]]; then
        echo -e "REGEX: ${cell_barcode_pattern}" > \${OUT_FILE}
-       echo -e "BC_PATTERN: N/A" >> \${OUT_FILE}
+       echo -e "UMI_TOOLS: N/A" >> \${OUT_FILE}
 
     else
         create_regex.py -i "${identifier_pattern}" \\
