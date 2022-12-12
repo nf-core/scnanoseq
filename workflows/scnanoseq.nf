@@ -19,6 +19,43 @@ if (params.input) { ch_input = file(params.input) } else { exit 1, 'Input sample
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    PARAMETER PRESETS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+
+// This is if the user passes in direct regex
+def cell_barcode_pattern = ""
+
+// This is for if the user wants to do more human readable regex
+def identifier_pattern = ""
+def cell_barcode_lengths = ""
+def umi_lengths = ""
+def fixed_seqs = ""
+
+if (params.barcode_preset) {
+    if (params.barcode_preset = "cellranger_3_prime") {
+        identifier_pattern = "fixed_seq_1,cell_barcode_1,umi_1,fixed_seq_2"
+        cell_barcode_lengths = "16"
+        umi_lengths = "12"
+        fixed_seqs = "CTACACGACGCTCTTCCGATCT, TTTTTTTTTT"
+
+    } else if (params.barcode_preset = "cellranger_5_prime") {
+        identifier_pattern = "fixed_seq_1,cell_barcode_1,umi_1,fixed_seq_2"
+        cell_barcode_lengths = "16"
+        umi_lengths = "12"
+        fixed_seqs = "CTACACGACGCTCTTCCGATCT, TTTTTTTTTT"
+    }
+} else {
+    identifier_pattern = params.identifier_pattern
+    cell_barcode_lengths = params.cell_barcode_lengths
+    umi_lengths = params.umi_lengths
+    fixed_seqs = params.fixed_seqs
+
+}
+
+
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     CONFIG FILES
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
@@ -188,95 +225,133 @@ workflow SCNANOSEQ {
     //
     // MODULE: Split fastq
     //
-    ch_split_fastqs = ch_unzipped_fastqs
+    ch_fastqs = ch_unzipped_fastqs
 
     if (params.split_amount > 0) {
         SPLIT_FILE( ch_unzipped_fastqs, '.fastq', params.split_amount )
-        ch_split_fastqs = SPLIT_FILE.out.split_files
 
-        // TODO: Change the ids so they contain the sample_name and index
+        // Temporarily change the meta object so that the id is present on the 
+        // fastq to prevent duplicated names
+        SPLIT_FILE.out.split_files
+            .transpose()
+            .map{
+                meta, fastq ->
+                    def new_meta = [:]
+                    new_meta.id = fastq.name.lastIndexOf('.').with {it != -1 ? fastq.name[0..<it] : fastq.name}
+                    new_meta.single_end = meta.single_end
+                [new_meta, fastq]
+            }
+            .set { ch_fastqs }
     }
-
-    ch_fastqs = Channel.empty()
-    ch_split_fastqs.transpose().set { ch_fastqs }
-
 
     //
     // MODULE: Trim and filter reads
     //
     ch_trimmed_reads = ch_fastqs
-
     if (!params.skip_trimming){
 
-        // TODO: Throw error if invalid trimming_software provided
         if (params.trimming_software == 'nanofilt') {
 
             NANOFILT ( ch_fastqs )
             ch_trimmed_reads = NANOFILT.out.reads
-
         } else if (params.trimming_software == 'prowler') {
 
             PROWLERTRIMMER ( ch_fastqs )
             ch_trimmed_reads = PROWLERTRIMMER.out.reads
         }
+        //
+        // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - post-trim QC
+        //
+        ch_fastqc_multiqc_postrim = Channel.empty()
+        if (!params.skip_qc){
+            // Concating the reads together temporarily for doing trim qc
+            ch_trimmed_reads_qc = Channel.empty()
+            ch_trimmed_reads
+                .map {
+                    meta, fastq ->
+                        new_meta = [:]
+                        new_meta.id = meta.id.split("\\.").with{it.length == 0 ? fastq.name : it[0..<-1].join('.')}
+                        new_meta.single_end = true
+                    [new_meta, fastq]
+                }
+                .groupTuple()
+                .set { ch_trimmed_reads_qc }
+
+            //
+            // MODULE: Zip the reads
+            //
+            ZIP_TRIM (ch_trimmed_reads_qc, "filtered" )
+            ch_zipped_trimmed_reads = ZIP_TRIM.out.archive
+
+            //
+            // MODULE: Run qc on the post trimmed reads
+            //
+            FASTQC_NANOPLOT_POST_TRIM ( ch_zipped_trimmed_reads, params.skip_nanoplot, params.skip_fastqc )
+
+            ch_fastqc_multiqc_postrim = FASTQC_NANOPLOT_POST_TRIM.out.fastqc_multiqc.ifEmpty([])
+        }
     }
 
-    ch_trimmed_reads_qc = Channel.empty()
-    ch_trimmed_reads
-        .groupTuple()
-        .set{ ch_trimmed_reads_qc }
-
-    // TODO: may consider making zipped out below tmp. as it's only QC
-    // NOTE: leaving it as is for now as we are testing
-    ZIP_TRIM ( ch_trimmed_reads_qc, "filtered" )
-    ch_zipped_trimmed_reads = ZIP_TRIM.out.archive
-
     //
-    // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - post-trim QC
-    //
-    ch_fastqc_multiqc_postrim = Channel.empty()
-    if (!params.skip_qc){
-        FASTQC_NANOPLOT_POST_TRIM ( ch_zipped_trimmed_reads, params.skip_nanoplot, params.skip_fastqc )
-
-        ch_fastqc_multiqc_postrim = FASTQC_NANOPLOT_POST_TRIM.out.fastqc_multiqc.ifEmpty([])
-    }
-
-    //
-    // SUBWORKFLOW: Pre extract the cell barcodes
+    // MODULE: Parse the regex info
     //
 
     // We need to create the regex format
     // TODO: Add this information to the samplesheet to allow sample specific barcode detection?
-    CREATE_REGEX_INFO( params.cell_barcode_pattern,
-                params.identifier_pattern,
-                params.cell_barcode_lengths,
-                params.umi_lengths,
-                params.fixed_seqs)
+    CREATE_REGEX_INFO( cell_barcode_pattern,
+                identifier_pattern,
+                cell_barcode_lengths,
+                umi_lengths,
+                fixed_seqs)
 
     val_regex_info = CREATE_REGEX_INFO.out.regex
+    
+    //
+    // MODULE: Pre extract the cell barcodes
+    //
 
     // Preextraction will create paired fastqs in cell ranger format
     // So we will need to set the fastqs to paired end
-    ch_trimmed_reads
-        .map {
-            meta, fastq ->
-                meta.single_end = false
-                [ meta, fastq ]
-        }
 
     PREEXTRACT_FASTQ( ch_trimmed_reads, val_regex_info.regex )
 
-    // TODO: Cleaner way to do this and not repeat code?
-    ch_pre_extracted_r1_fqs = Channel.empty()
-    ch_pre_extracted_r2_fqs = Channel.empty()
+    ch_pre_extracted_r1_fqs = Channel.empty() 
+    ch_pre_extracted_r2_fqs = Channel.empty() 
 
-    PREEXTRACT_FASTQ.out.r1_reads
-        .groupTuple()
-        .set{ ch_pre_extracted_r1_fqs }
+    if ( params.split_amount > 0) {
+        // TODO: Why does below work when the above solution doesn't?
 
-    PREEXTRACT_FASTQ.out.r2_reads
-        .groupTuple()
-        .set{ ch_pre_extracted_r2_fqs }
+        // THe reason we assign these variables is to ensure the order is consistent within the channels
+        // TODO: Might be worth adding in a sorting to further make sure the sorting is correct
+        ch_preextract_out_r1 = PREEXTRACT_FASTQ.out.r1_reads
+        ch_preextract_out_r2 = PREEXTRACT_FASTQ.out.r2_reads
+
+        ch_preextract_out_r1
+            .map {
+                meta, fastq ->
+                    new_meta = ["id": meta.id.split("\\.").with{it.length == 0 ? fastq.name : it[0..<-1].join('.')},
+                                "single_end": false]
+                [new_meta, fastq]
+            }
+            .groupTuple()
+            .set { ch_pre_extracted_r1_fqs }
+
+        ch_preextract_out_r2
+            .map {
+                meta, fastq ->
+                    new_meta = ["id": meta.id.split("\\.").with{it.length == 0 ? fastq.name : it[0..<-1].join('.')},
+                                "single_end": false]
+                [new_meta, fastq]
+            }
+            .groupTuple()
+            .set { ch_pre_extracted_r2_fqs }
+
+    } else {
+        ch_pre_extracted_r1_fqs = PREEXTRACT_FASTQ.out.r1_reads 
+        ch_pre_extracted_r2_fqs = PREEXTRACT_FASTQ.out.r2_reads
+
+    }
+
     //
     // MODULE: Zip fastq
     //

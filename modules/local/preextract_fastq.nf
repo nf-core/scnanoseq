@@ -22,16 +22,9 @@ process PREEXTRACT_FASTQ {
     def prefix = task.ext.prefix ?: "${meta.id}"
     
     """
-    FILE_PREFIX=${prefix}
-
-    if [ ${params.split_amount} -gt 0 ]; then
-        IDX=\$(basename ${reads} | cut -f2 -d'.')
-        FILE_PREFIX=\${FILE_PREFIX}.\${IDX}
-    fi
-
     pre_extract_barcodes.py -i ${reads} \\
                             -r "${regex_pattern}" \\
-                            -o \${FILE_PREFIX}
+                            -o ${prefix}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
