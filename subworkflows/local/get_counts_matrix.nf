@@ -21,6 +21,8 @@ workflow GET_COUNTS_MATRIX {
 
     main:
 
+    ch_versions = Channel.empty()
+
     //
     // MODULE: Count Features
     //
@@ -28,20 +30,30 @@ workflow GET_COUNTS_MATRIX {
 
     SUBREAD_FEATURECOUNTS ( ch_bam, ch_gtf )
     ch_counts = SUBREAD_FEATURECOUNTS.out.counts
-
-    subread_version = SUBREAD_FEATURECOUNTS.out.versions
+    ch_versions = ch_versions.mix(SUBREAD_FEATURECOUNTS.out.versions)
 
     //
     // MODULE: Tag Features
     //
-    TAG_FEATURES ( ch_bam.join(ch_counts, by: 0) )
+
+    ch_bam_with_counts = Channel.empty()
+    ch_bam
+        .map{meta, bam -> [meta.id, meta, bam]}
+        .join(ch_counts
+            .map{meta, bam -> [meta.id, meta, bam]})
+        .map{sample_id, bam_meta, bam, counts_meta, counts -> [bam_meta, bam, counts]}
+        .set { ch_bam_with_counts }
+
+    TAG_FEATURES ( ch_bam_with_counts )
     ch_tag_bam = TAG_FEATURES.out.feature_bam
+    ch_versions = ch_versions.mix(TAG_FEATURES.out.versions)
 
     //
     // MODULE: Index feature tagged bam
     //
     SAMTOOLS_INDEX ( ch_tag_bam )
     ch_tag_bai = SAMTOOLS_INDEX.out.bai
+    ch_versions = ch_versions.mix(SAMTOOLS_INDEX.out.versions)
 
     ch_tag_bam_bai = ch_tag_bam.join(ch_tag_bai, by: 0)
 
@@ -50,7 +62,8 @@ workflow GET_COUNTS_MATRIX {
     //
 
     BAM_STATS_SAMTOOLS ( ch_tag_bam_bai, [] )
-    tag_bam_flagstat = BAM_STATS_SAMTOOLS.out.flagstat
+    ch_tag_bam_flagstat = BAM_STATS_SAMTOOLS.out.flagstat
+    ch_versions = ch_versions.mix(BAM_STATS_SAMTOOLS.out.versions)
 
     //
     // MODULE: Generate the counts matrix
@@ -58,6 +71,7 @@ workflow GET_COUNTS_MATRIX {
 
     UMITOOLS_COUNT ( ch_tag_bam_bai )
     ch_count_mtx = UMITOOLS_COUNT.out.counts_matrix
+    ch_versions = ch_versions.mix(UMITOOLS_COUNT.out.versions)
 
     //
     // MODULE: Split the count matrix
@@ -65,6 +79,7 @@ workflow GET_COUNTS_MATRIX {
 
     SPLIT_FILE_BY_COLUMN ( ch_count_mtx, 10 )
     ch_split_files = SPLIT_FILE_BY_COLUMN.out.split_files.transpose()
+    ch_versions = ch_versions.mix(SPLIT_FILE_BY_COLUMN.out.versions)
 
     //
     // MODULE: Correct the counts matrix
@@ -72,16 +87,18 @@ workflow GET_COUNTS_MATRIX {
 
     CORRECT_COUNTS_MATRIX ( ch_split_files )
     ch_corrected_counts_matrix = CORRECT_COUNTS_MATRIX.out.corrected_counts_matrix
+    ch_versions = ch_versions.mix(CORRECT_COUNTS_MATRIX.out.versions)
 
     //
     // MODULE: Concatenate the matrices column-wise
     //
     MERGE_FILE_BY_COLUMN ( ch_corrected_counts_matrix.groupTuple() )
-    counts_mtx = MERGE_FILE_BY_COLUMN.out.col_merged_file
+    ch_counts_mtx = MERGE_FILE_BY_COLUMN.out.col_merged_file
+    ch_versions = ch_versions.mix(MERGE_FILE_BY_COLUMN.out.versions)
 
     emit:
-    tag_bam_flagstat
-    counts_mtx
-    subread_version
+    tag_bam_flagstat = ch_tag_bam_flagstat
+    counts_mtx = ch_counts_mtx
+    versions = ch_versions
 
 }

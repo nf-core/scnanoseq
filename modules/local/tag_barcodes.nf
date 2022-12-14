@@ -28,7 +28,7 @@ process TAG_BARCODES {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        tag_bam: v1.0 
+        tag_barcodes: 1.0 
     END_VERSIONS
     """
 }

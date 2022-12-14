@@ -12,6 +12,7 @@ process TRANSCRIPT_TO_EXON {
 
     output:
     path("processed.gtf"), emit: ch_processed_gtf
+    path("versions.yml") , emit: ch_versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -21,5 +22,10 @@ process TRANSCRIPT_TO_EXON {
 
     """
     awk 'BEGIN{FS="\t"; OFS="\t"} \$3 == "transcript" { \$3="exon"; print}' $gtf > processed.gtf
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        awk : \$(awk -V | grep Awk | sed 's/GNU Awk //g')
+    END_VERSIONS
     """
 }

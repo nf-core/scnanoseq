@@ -28,7 +28,7 @@ process PREEXTRACT_FASTQ {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        preextractfastq: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//' ))
+        preextractfastq: 1.0.0 
     END_VERSIONS
     """
 }

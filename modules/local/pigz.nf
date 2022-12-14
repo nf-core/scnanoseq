@@ -31,7 +31,7 @@ process PIGZ {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        pigz: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//' ))
+        pigz: \$(echo \$(pigz -V 2>&1) | sed 's/pigz //g' )
     END_VERSIONS
     """
 }

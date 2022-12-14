@@ -28,7 +28,7 @@ process CORRECT_BARCODES {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        correct_barcodes: v1.0 
+        correct_barcodes: 1.0 
     END_VERSIONS
     """
 }

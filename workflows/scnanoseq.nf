@@ -203,6 +203,7 @@ workflow SCNANOSEQ {
     //
     GUNZIP( ch_fastq )
     ch_unzipped_fastqs = GUNZIP.out.gunzip
+    ch_versions = ch_versions.mix( GUNZIP.out.versions )
 
     //
     // SUBWORKFLOW: Prepare reference files
@@ -213,14 +214,16 @@ workflow SCNANOSEQ {
                             params.fasta,
                             params.gtf)
 
-    ch_fasta = PREPARE_REFERENCE_FILES.out.ch_prepared_fasta
-    ch_gtf = PREPARE_REFERENCE_FILES.out.ch_prepared_gtf
+    ch_fasta = PREPARE_REFERENCE_FILES.out.prepped_fasta
+    ch_gtf = PREPARE_REFERENCE_FILES.out.prepped_gtf
+    ch_versions = ch_versions.mix( PREPARE_REFERENCE_FILES.out.versions )
 
     //
     // MODULE: Generate junction file - paftools
     //
     PAFTOOLS ( ch_gtf )
     ch_bed = PAFTOOLS.out.bed
+    ch_versions = ch_versions.mix(PAFTOOLS.out.versions)
 
     //
     // MODULE: Split fastq
@@ -242,6 +245,8 @@ workflow SCNANOSEQ {
                 [new_meta, fastq]
             }
             .set { ch_fastqs }
+
+        ch_versions = ch_versions.mix(SPLIT_FILE.out.versions)
     }
 
     //
@@ -254,10 +259,14 @@ workflow SCNANOSEQ {
 
             NANOFILT ( ch_fastqs )
             ch_trimmed_reads = NANOFILT.out.reads
+            ch_versions = ch_versions.mix(NANOFILT.out.versions)
+
         } else if (params.trimming_software == 'prowler') {
 
             PROWLERTRIMMER ( ch_fastqs )
             ch_trimmed_reads = PROWLERTRIMMER.out.reads
+            ch_versions = ch_versions.mix(PROWLERTRIMMER.out.versions)
+
         }
         //
         // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - post-trim QC
@@ -282,6 +291,7 @@ workflow SCNANOSEQ {
             //
             ZIP_TRIM (ch_trimmed_reads_qc, "filtered" )
             ch_zipped_trimmed_reads = ZIP_TRIM.out.archive
+            ch_versions = ch_versions.mix(ZIP_TRIM.out.versions)
 
             //
             // MODULE: Run qc on the post trimmed reads
@@ -289,6 +299,8 @@ workflow SCNANOSEQ {
             FASTQC_NANOPLOT_POST_TRIM ( ch_zipped_trimmed_reads, params.skip_nanoplot, params.skip_fastqc )
 
             ch_fastqc_multiqc_postrim = FASTQC_NANOPLOT_POST_TRIM.out.fastqc_multiqc.ifEmpty([])
+            ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_TRIM.out.nanoplot_version.first().ifEmpty(null))
+            ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_TRIM.out.fastqc_version.first().ifEmpty(null))
         }
     }
 
@@ -305,6 +317,8 @@ workflow SCNANOSEQ {
                 fixed_seqs)
 
     val_regex_info = CREATE_REGEX_INFO.out.regex
+    // TODO: Why can't we use the below code?
+    //ch_versions = ch_versions.mix(CREATE_REGEX_INFO.out.versions)
     
     //
     // MODULE: Pre extract the cell barcodes
@@ -315,6 +329,7 @@ workflow SCNANOSEQ {
 
     PREEXTRACT_FASTQ( ch_trimmed_reads, val_regex_info.regex )
 
+    ch_versions = ch_versions.mix(PREEXTRACT_FASTQ.out.versions)
     ch_pre_extracted_r1_fqs = Channel.empty() 
     ch_pre_extracted_r2_fqs = Channel.empty() 
 
@@ -358,9 +373,11 @@ workflow SCNANOSEQ {
 
     ZIP_R1 ( ch_pre_extracted_r1_fqs, "R1" )
     ch_zipped_r1_reads = ZIP_R1.out.archive
+    ch_versions = ch_versions.mix(ZIP_R1.out.versions)
 
     ZIP_R2 ( ch_pre_extracted_r2_fqs, "R2" )
     ch_zipped_r2_reads = ZIP_R2.out.archive
+    ch_versions = ch_versions.mix(ZIP_R2.out.versions)
 
     //
     // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - pre-extracted QC
@@ -370,6 +387,8 @@ workflow SCNANOSEQ {
         FASTQC_NANOPLOT_PRE_EXTRACTED ( ch_zipped_r2_reads, params.skip_nanoplot, params.skip_fastqc )
 
         ch_fastqc_multiqc_pre_extracted = FASTQC_NANOPLOT_PRE_EXTRACTED.out.fastqc_multiqc.ifEmpty([])
+        ch_versions = ch_versions.mix(FASTQC_NANOPLOT_PRE_EXTRACTED.out.nanoplot_version.first().ifEmpty(null))
+        ch_versions = ch_versions.mix(FASTQC_NANOPLOT_PRE_EXTRACTED.out.fastqc_version.first().ifEmpty(null))
     }
 
     // Merge the R1 and R2 fastqs back together
@@ -392,6 +411,7 @@ workflow SCNANOSEQ {
 
         UMI_TOOLS_WHITELIST ( ch_zipped_reads, params.cell_amount, val_regex_info.umi_tools )
         ch_reads_with_whitelist = UMI_TOOLS_WHITELIST.out.whitelist
+        ch_versions = ch_versions.mix(UMI_TOOLS_WHITELIST.out.versions)
         
         //
         // MODULE: Reformat whitelist
@@ -404,6 +424,7 @@ workflow SCNANOSEQ {
         REFORMAT_WHITELIST ( ch_whitelists )
         ch_whitelist_bc_count = REFORMAT_WHITELIST.out.bc_list_counts
         ch_gt_whitelist = REFORMAT_WHITELIST.out.bc_list
+        ch_versions = ch_versions.mix(REFORMAT_WHITELIST.out.versions)
         
     }
 
@@ -412,6 +433,7 @@ workflow SCNANOSEQ {
     //
     UMI_TOOLS_EXTRACT ( ch_zipped_reads.join(ch_gt_whitelist), val_regex_info.umi_tools )
     ch_extracted_reads = UMI_TOOLS_EXTRACT.out.reads
+    ch_versions = ch_versions.mix(REFORMAT_WHITELIST.out.versions)
 
     //
     // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - post-extract QC
@@ -421,6 +443,8 @@ workflow SCNANOSEQ {
         FASTQC_NANOPLOT_POST_EXTRACT ( ch_extracted_reads, params.skip_nanoplot, params.skip_fastqc )
 
         ch_fastqc_multiqc_postextract = FASTQC_NANOPLOT_POST_EXTRACT.out.fastqc_multiqc.ifEmpty([])
+        ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_EXTRACT.out.nanoplot_version.first().ifEmpty(null))
+        ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_EXTRACT.out.fastqc_version.first().ifEmpty(null))
     }
 
     //
@@ -432,6 +456,7 @@ workflow SCNANOSEQ {
 
         MINIMAP2_INDEX ( ch_fasta,  ch_bed)
         ch_minimap_index = MINIMAP2_INDEX.out.index
+        ch_versions = ch_versions.mix(MINIMAP2_INDEX.out.versions)
     }
 
     //
@@ -445,6 +470,7 @@ workflow SCNANOSEQ {
     }
     MINIMAP2_ALIGN ( ch_extracted_reads, ch_bed, ch_reference )
 
+    ch_versions = ch_versions.mix(MINIMAP2_ALIGN.out.versions)
     MINIMAP2_ALIGN.out.sam
         .combine( ch_dummy_file )
         .set { ch_minimap_sam }
@@ -455,6 +481,7 @@ workflow SCNANOSEQ {
     SAMTOOLS_VIEW_BAM ( ch_minimap_sam, [], [] )
 
     ch_minimap_bam = SAMTOOLS_VIEW_BAM.out.bam
+    ch_versions = ch_versions.mix(SAMTOOLS_VIEW_BAM.out.versions)
 
     // acquire only mapped reads from bam for downstream processing
     // NOTE: some QCs steps are performed on the full BAM
@@ -465,6 +492,7 @@ workflow SCNANOSEQ {
 
     SAMTOOLS_VIEW_FILTER ( ch_minimap_bam_filter, [], [] )
     ch_minimap_mapped_only_bam = SAMTOOLS_VIEW_FILTER.out.bam
+    ch_versions = ch_versions.mix(SAMTOOLS_VIEW_FILTER.out.versions)
 
     //
     // SUBWORKFLOW: BAM_SORT_STATS_SAMTOOLS
@@ -472,14 +500,17 @@ workflow SCNANOSEQ {
     BAM_SORT_STATS_SAMTOOLS_MINIMAP ( ch_minimap_bam, [] )
     ch_minimap_sorted_bam = BAM_SORT_STATS_SAMTOOLS_MINIMAP.out.bam
     ch_minimap_sorted_bai = BAM_SORT_STATS_SAMTOOLS_MINIMAP.out.bai
+
     // these stats go for multiqc
     ch_minimap_sorted_stats = BAM_SORT_STATS_SAMTOOLS_MINIMAP.out.stats
     ch_minimap_sorted_flagstat = BAM_SORT_STATS_SAMTOOLS_MINIMAP.out.flagstat
     ch_minimap_sorted_idxstats = BAM_SORT_STATS_SAMTOOLS_MINIMAP.out.idxstats
+    ch_versions = ch_versions.mix(BAM_SORT_STATS_SAMTOOLS_MINIMAP.out.versions)
 
     BAM_SORT_STATS_SAMTOOLS_FILTERED ( ch_minimap_mapped_only_bam, [] )
     ch_minimap_filtered_sorted_bam = BAM_SORT_STATS_SAMTOOLS_FILTERED.out.bam
     ch_minimap_filtered_sorted_bai = BAM_SORT_STATS_SAMTOOLS_FILTERED.out.bai
+    ch_versions = ch_versions.mix(BAM_SORT_STATS_SAMTOOLS_FILTERED.out.versions)
 
     //
     // MODULE: NanoComp for BAM files (unfiltered for QC purposes)
@@ -506,6 +537,7 @@ workflow SCNANOSEQ {
 
     TAG_BARCODES( ch_tag_barcode_in )
     ch_tagged_bam = TAG_BARCODES.out.tagged_bam
+    ch_versions = ch_versions.mix(TAG_BARCODES.out.versions)
 
     //
     // MODULE: Correct Barcodes
@@ -520,9 +552,11 @@ workflow SCNANOSEQ {
 
     CORRECT_BARCODES( ch_correct_barcode_in )
     ch_corrected_bam = CORRECT_BARCODES.out.corrected_bam
+    ch_versions = ch_versions.mix(CORRECT_BARCODES.out.versions)
 
     SAMTOOLS_INDEX_BC_CORRECTED ( ch_corrected_bam )
     ch_corrected_bam_bai = SAMTOOLS_INDEX_BC_CORRECTED.out.bai
+//    ch_versions = ch_versions.mix(SAMTOOLS_INDEX_BC_CORRECTED)
 
     // TODO: Rename the dedup_bam channel to be more descriptive
     ch_dedup_bam = ch_corrected_bam
@@ -534,12 +568,14 @@ workflow SCNANOSEQ {
         //
         UMITOOLS_DEDUP ( ch_corrected_bam.join(ch_corrected_bam_bai, by: [0]), true )
         ch_dedup_bam = UMITOOLS_DEDUP.out.bam
+        ch_versions = ch_versions.mix(UMITOOLS_DEDUP.out.versions)
 
         //
         // MODULE: Index the Dedup'd bam
         //
         SAMTOOLS_INDEX_DEDUP ( ch_dedup_bam )
         ch_dedup_bam_bai = SAMTOOLS_INDEX_DEDUP.out.bai
+        ch_versions = ch_versions.mix(SAMTOOLS_INDEX_DEDUP.out.versions)
     }
 
     ch_dedup_bam
@@ -560,13 +596,16 @@ workflow SCNANOSEQ {
         GET_GENE_COUNTS_MTX ( ch_dedup_bam, ch_gtf )
         ch_exon_gene_counts_mtx = GET_GENE_COUNTS_MTX.out.counts_mtx
         ch_gene_tag_bam_flagstat = GET_GENE_COUNTS_MTX.out.tag_bam_flagstat
+        ch_versions = ch_versions.mix(GET_GENE_COUNTS_MTX.out.versions)
 
         if ( params.intron_retention_method == "2" ) {
             GET_INTRON_GENE_COUNTS_MTX ( ch_dedup_bam, ch_gtf )
             ch_intron_gene_counts_mtx = GET_INTRON_GENE_COUNTS_MTX.out.counts_mtx
+            ch_versions = ch_versions.mix(GET_INTRON_GENE_COUNTS_MTX.out.versions)
 
             MERGE_COUNTS_MTX ( ch_exon_gene_counts_mtx.join ( ch_intron_gene_counts_mtx, by: 0 ))
             ch_gene_counts_mtx = MERGE_COUNTS_MTX.out.merged_mtx
+            ch_versions = ch_versions.mix(MERGE_COUNTS_MTX.out.versions)
         } else {
             ch_gene_counts_mtx = ch_exon_gene_counts_mtx
         }
@@ -580,11 +619,13 @@ workflow SCNANOSEQ {
         if (!params.skip_qc && !params.skip_seurat) {
             ch_gene_counts_flagstat = ch_gene_counts_mtx.join(ch_gene_tag_bam_flagstat, by: 0)
             SEURAT_GENE ( ch_gene_counts_flagstat )
+            ch_versions = ch_versions.mix(SEURAT_GENE.out.versions)
 
             ch_gene_stats = SEURAT_GENE.out.seurat_stats.collect{it[1]}
 
             COMBINE_SEURAT_STATS_GENE ( ch_gene_stats )
             ch_gene_stats_combined = COMBINE_SEURAT_STATS_GENE.out.combined_stats
+            ch_versions = ch_versions.mix(COMBINE_SEURAT_STATS_GENE.out.versions)
         }
 
     }
@@ -595,12 +636,14 @@ workflow SCNANOSEQ {
         //
         STRINGTIE_STRINGTIE ( ch_dedup_bam, params.gtf )
         ch_transcript_gtf = STRINGTIE_STRINGTIE.out.transcript_gtf
+        ch_versions = ch_versions.mix(STRINGTIE_STRINGTIE.out.versions)
 
         //
         // MODULE: Sort the gtf
         //
         SORT_GTF ( ch_transcript_gtf )
         ch_transcript_gtf_sorted = SORT_GTF.out.gtf
+        ch_versions = ch_versions.mix(SORT_GTF.out.versions)
 
         //
         // MODULE: Merge the gtfs
@@ -608,6 +651,7 @@ workflow SCNANOSEQ {
         // TODO: This currently doesn't take meta, so that means currently it does not work with multiple samples since files will get overwritten constantly. May want to convert this to local
         STRINGTIE_MERGE ( ch_transcript_gtf_sorted.map { meta, gtf -> gtf }, ch_gtf )
         ch_transcript_gtf_merged = STRINGTIE_MERGE.out.gtf
+        ch_versions = ch_versions.mix(STRINGTIE_MERGE.out.versions)
 
         //
         // SUBWORKFLOW: Get the transcript level count matrix
@@ -615,6 +659,7 @@ workflow SCNANOSEQ {
         GET_TRANSCRIPT_COUNTS_MTX ( ch_dedup_bam, ch_transcript_gtf_merged )
         ch_transcript_counts_mtx = GET_TRANSCRIPT_COUNTS_MTX.out.counts_mtx
         ch_transcript_tag_bam_flagstat = GET_TRANSCRIPT_COUNTS_MTX.out.tag_bam_flagstat
+        ch_versions = ch_versions.mix(GET_TRANSCRIPT_COUNTS_MTX.out.versions)
         //
         // MODULE: SEURAT
         //
@@ -628,9 +673,11 @@ workflow SCNANOSEQ {
             SEURAT_TRANSCRIPT ( ch_transcript_counts_flagstat )
 
             ch_transcript_stats = SEURAT_TRANSCRIPT.out.seurat_stats.collect{it[1]}
+            ch_versions = ch_versions.mix(SEURAT_TRANSCRIPT.out.versions)
 
             COMBINE_SEURAT_STATS_TRANSCRIPT ( ch_transcript_stats )
             ch_transcript_stats_combined = COMBINE_SEURAT_STATS_TRANSCRIPT.out.combined_stats
+            ch_versions = ch_versions.mix(COMBINE_SEURAT_STATS_TRANSCRIPT.out.versions)
         }
 
     }

@@ -12,6 +12,8 @@ workflow PREPARE_REFERENCE_FILES {
         gtf
 
     main:
+        ch_versions = Channel.empty()
+
         // There's nothing we wish to change about the fasta, so just need to return it
         ch_prepared_fasta = fasta
 
@@ -19,9 +21,11 @@ workflow PREPARE_REFERENCE_FILES {
         // SUBWORKFLOW: Prepare GTF
         //
         PREPARE_GTF (gtf_preparation_method, gtf, fasta)
-        ch_prepared_gtf = PREPARE_GTF.out.ch_prepared_gtf
+        ch_prepared_gtf = PREPARE_GTF.out.prepped_gtf
+        ch_versions = ch_versions.mix(PREPARE_GTF.out.versions)
 
     emit:
-        ch_prepared_fasta
-        ch_prepared_gtf
+        prepped_fasta = ch_prepared_fasta
+        prepped_gtf = ch_prepared_gtf
+        versions = ch_versions
 }

@@ -26,7 +26,7 @@ process MERGE_FILE_BY_COLUMN {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        merge_file_by_col: v1.0 
+        merge_file_by_col: 1.0 
     END_VERSIONS
     """
 }

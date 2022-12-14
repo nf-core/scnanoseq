@@ -26,7 +26,7 @@ process SPLIT_FILE_BY_COLUMN {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        split_file_by_col: v1.0 
+        split_file_by_col: 1.0 
     END_VERSIONS
     """
 }

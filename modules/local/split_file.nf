@@ -28,7 +28,7 @@ process SPLIT_FILE {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        split: \$(echo \$(split --version 2>&1) | sed 's#split (GNU coreutils) ##g')
+        split: \$(echo \$(split --version 2>&1 | head -n1 | sed 's#split (GNU coreutils) ##g'))
     END_VERSIONS
     """
 }

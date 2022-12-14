@@ -26,7 +26,7 @@ process GTF2BED {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        sort_gtf: 1.0
+        gtf2bed: 1.0
     END_VERSIONS
     """
 }

@@ -26,7 +26,7 @@ process COMBINE_SEURAT_STATS {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        combine_seurat_stats: v1.0
+        combine_seurat_stats: 1.0
     END_VERSIONS
     """
 }

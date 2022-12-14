@@ -50,7 +50,7 @@ process UMI_TOOLS_WHITELIST {
         
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":
-            umi_tools_whitelist: \$(echo \$(umi_tools -v 2>&1) | sed 's/^UMI-tools version: //' ))
+            umi_tools_whitelist: \$(echo \$(umi_tools -v 2>&1) | sed 's/^UMI-tools version: //' )
         END_VERSIONS
         """
     }

@@ -29,7 +29,7 @@ process REFORMAT_WHITELIST {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        reformat_whitelist: v1.0 
+        reformat_whitelist: 1.0 
     END_VERSIONS
     """
 }
