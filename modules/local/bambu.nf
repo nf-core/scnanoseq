@@ -9,23 +9,27 @@ process BAMBU {
 
     input:
     tuple path(fasta), path(gtf)
-    path bams //TODO: check path channel
+    path bams
 
     output:
-    path "bambu_outs"    , emit: data //TODO: double check on this
-    path "*.rds"         , emit: rds
-    path "versions.yml"  , emit: versions
+    path "*counts_transcript.txt"    , emit: ch_transcript_counts
+    path "*extended_annotations.gtf" , emit: extended_gtf
+    path "*.rds"                     , emit: rds
+    path "versions.yml"              , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
 
     script:
     def args = task.ext.args ?: ''
+    def bams = bams.join(",")
+
+    //TODO add cores option below once implemented in the script
 
     """
     bambu.R \\
         $args \\
-        -i ./ \\
+        -i $bams \\
         -g $fasta \\
         -a $gtf
 
