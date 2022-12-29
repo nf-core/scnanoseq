@@ -9,21 +9,21 @@ library(bambu)
 ###############################
 ### COMMAND-LINE PARAMETERS ###
 ###############################
-
+#TODO: add option for cores and lowMemory
 params_list <- list(
-  make_option(c("-i", "--input_bam_dir" ), type="character", default=NULL    , metavar="path"   , help="Path to input bam file(s)."),
-  make_option(c("-g", "--genome"        ), type="character", default=NULL    , metavar="path"   , help="Path to a fasta genome file."),
-  make_option(c("-a", "--annotation"    ), type="character", default=NULL    , metavar="path"   , help="Path to gtf annotation file."),
-  make_option(c("-o", "--outdir"        ), type="character", default="./"    , metavar="path"   , help="Output directory."),
-  make_option(c("-r", "--outprefix"     ), type="character", default="bambu_", metavar="string" , help="Output prefix.")
+  make_option(c("-i", "--input_bam" ), type="character", default=NULL    , metavar="path"   , help="Comma separated list of bam file(s)."),
+  make_option(c("-g", "--genome"    ), type="character", default=NULL    , metavar="path"   , help="Path to a fasta genome file."),
+  make_option(c("-a", "--annotation"), type="character", default=NULL    , metavar="path"   , help="Path to gtf annotation file."),
+  make_option(c("-o", "--outdir"    ), type="character", default="./"    , metavar="path"   , help="Output directory."),
+  make_option(c("-r", "--outprefix" ), type="character", default="bambu_", metavar="string" , help="Output prefix.")
 )
 
 opt_parser <- OptionParser(option_list=params_list)
 opt <- parse_args(opt_parser)
 
-if (is.null(opt$input_bam_dir)) {
+if (is.null(opt$input_bam)) {
   print_help(opt_parser)
-  stop("Please provide path to bam file(s).", call. = FALSE)
+  stop("Please provide input bam(s)", call. = FALSE)
 }
 
 if (is.null(opt$genome)) {
@@ -41,9 +41,7 @@ if (is.null(opt$annotation)) {
 ################
 
 # vector of path(s) to bam(s)
-bam_files <- list.files(path = opt$input_bam_dir,
-                        pattern = "\\.bam$",
-                        full.names = TRUE)
+bam_files <- strsplit(opt$input_bam, ",")[[1]]
 
 bam_files
 
