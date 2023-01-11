@@ -29,7 +29,7 @@ process REFORMAT_WHITELIST {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        reformat_whitelist: 1.0 
+        python: \$(python --version | sed 's/Python //g')
     END_VERSIONS
     """
 }

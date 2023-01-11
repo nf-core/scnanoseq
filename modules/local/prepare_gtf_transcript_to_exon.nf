@@ -25,7 +25,7 @@ process TRANSCRIPT_TO_EXON {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        awk : \$(awk -V | grep Awk | sed 's/GNU Awk //g')
+        awk : \$(awk --version | grep Awk | sed 's/GNU Awk //g')
     END_VERSIONS
     """
 }

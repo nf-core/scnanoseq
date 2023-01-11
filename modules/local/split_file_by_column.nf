@@ -26,7 +26,8 @@ process SPLIT_FILE_BY_COLUMN {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        split_file_by_col: 1.0 
+        cut: \$(echo \$(cut --version) | sed 's/^.*cut (GNU coreutils) //; s/ .*//')
+        paste: \$(echo \$(paste --version) | sed 's/^.*paste (GNU coreutils) //; s/ .*//')
     END_VERSIONS
     """
 }

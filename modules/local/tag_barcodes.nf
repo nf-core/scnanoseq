@@ -28,7 +28,7 @@ process TAG_BARCODES {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        tag_barcodes: 1.0 
+        python: \$(python --version | sed 's/Python //g')
     END_VERSIONS
     """
 }

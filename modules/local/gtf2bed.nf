@@ -26,7 +26,7 @@ process GTF2BED {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        gtf2bed: 1.0
+        awk: \$(echo \$(awk --version) | sed 's/^.*GNU Awk //; s/ .*//')
     END_VERSIONS
     """
 }

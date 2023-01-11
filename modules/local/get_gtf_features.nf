@@ -27,7 +27,7 @@ process GET_GTF_FEATURES {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        get_gtf_features: 1.0
+        awk: \$(echo \$(awk --version) | sed 's/^.*GNU Awk //; s/ .*//')
     END_VERSIONS
     """
 }

@@ -26,7 +26,9 @@ process MERGE_FILE_BY_COLUMN {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        merge_file_by_col: 1.0 
+        cat: \$(echo \$(cat --version) | sed 's/^.*cat (GNU coreutils) //; s/ .*//')
+        cut: \$(echo \$(cut --version) | sed 's/^.*cut (GNU coreutils) //; s/ .*//')
+        paste: \$(echo \$(paste --version) | sed 's/^.*paste (GNU coreutils) //; s/ .*//')
     END_VERSIONS
     """
 }

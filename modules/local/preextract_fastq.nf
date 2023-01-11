@@ -28,7 +28,7 @@ process PREEXTRACT_FASTQ {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        preextractfastq: 1.0.0 
+        python: \$(python --version | sed 's/Python //g')
     END_VERSIONS
     """
 }

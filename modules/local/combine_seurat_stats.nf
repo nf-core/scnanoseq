@@ -26,7 +26,7 @@ process COMBINE_SEURAT_STATS {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        combine_seurat_stats: 1.0
+        cat: \$(echo \$(cat --version) | sed 's/^.*cat (GNU coreutils) //; s/ .*//')
     END_VERSIONS
     """
 }

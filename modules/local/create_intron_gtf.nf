@@ -2,10 +2,6 @@ process CREATE_INTRON_GTF {
     tag "$meta.id"
     label 'process_low'
 
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/ucsc-genepredtogtf:377--h0b8a92a_4' :
-        'quay.io/biocontainers/ucsc-genepredtogtf:377--h0b8a92a_4' }"
-
     input:
     tuple val(meta), path(gtf)
 
@@ -26,10 +22,12 @@ process CREATE_INTRON_GTF {
         awk -F \$'\\t' 'BEGIN{OFS="\\t"} \$3="intron", \$7="+"'  | \\
         grep -v exon_id > ${prefix}.intron.gtf 
 
-
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        create_intron_gtf: 1.0 
+        awk: \$(echo \$(awk --version) | sed 's/^.*GNU Awk //; s/ .*//') 
+        cat: \$(echo \$(cat --version) | sed 's/^.*cat (GNU coreutils) //; s/ .*//')
+        grep: \$(echo \$(grep --version) | sed 's/^.*grep (GNU grep) //; s/ .*//')
+        tr: \$(echo \$(tr --version) | sed 's/^.*tr (GNU coreutils) //; s/ .*//')
     END_VERSIONS
     """
 }

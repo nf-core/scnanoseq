@@ -27,7 +27,9 @@ process MERGE_COUNTS_MTX {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        merge_counts_mtx: 1.0
+        r-base: \$(echo \$(R --version 2>&1) | sed 's/^.*R version //; s/ .*\$//')
+        r-optparse: \$(Rscript -e "library(optparse); cat(as.character(packageVersion('optparse')))")
+        r-tidyverse: \$(Rscript -e "library(tidyverse); cat(as.character(packageVersion('tidyverse')))")
     END_VERSIONS
     """
 }

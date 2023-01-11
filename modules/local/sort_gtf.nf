@@ -26,7 +26,8 @@ process SORT_GTF {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        sort_gtf: 1.0
+        cat: \$(echo \$(cat --version) | sed 's/^.*cat (GNU coreutils) //; s/ .*//')
+        sort: \$(echo \$(sort --version) | sed 's/^.*sort (GNU coreutils) //; s/ .*//')
     END_VERSIONS
 
     """
