@@ -2,10 +2,10 @@ process SEURAT {
     tag "$meta.id"
     label 'process_low'
 
-    // TODO: figure out container for this one ; will note the following for now
-    // seurat-scripts:4.0.0--hdfd78af_0 (need to test and see if it contains anything else needed)
-    // or find alternatives
-    conda ("conda-forge::r-base conda-forge::r-seurat=4.1.1 conda-forge::r-ggplot2 conda-forge::r-optparse")
+    conda (params.enable_conda ? "conda-forge::r-base conda-forge::r-seurat=4.1.1 conda-forge::r-ggplot2 conda-forge::r-optparse" : null)
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'https://depot.galaxyproject.org/singularity/mulled-v2-b4cd78f1471a75cb2d338d3be506b2352723c0d2:4d30026c33d2809f4bf7b3a62f0e2b8529cb6915-0' :
+        'quay.io/biocontainers/mulled-v2-b4cd78f1471a75cb2d338d3be506b2352723c0d2:4d30026c33d2809f4bf7b3a62f0e2b8529cb6915-0' }"
 
     input:
     tuple val(meta), path(counts), path(flagstat)
