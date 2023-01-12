@@ -239,9 +239,10 @@ workflow SCNANOSEQ {
             .transpose()
             .map{
                 meta, fastq ->
-                    def new_meta = [:]
-                    new_meta.id = fastq.name.lastIndexOf('.').with {it != -1 ? fastq.name[0..<it] : fastq.name}
+                    new_meta = [:]
+                    new_meta.id = meta.id
                     new_meta.single_end = meta.single_end
+                    new_meta.idx = fastq.name.lastIndexOf('.').with {it != -1 ? fastq.name[0..<it] : fastq.name}
                 [new_meta, fastq]
             }
             .set { ch_fastqs }
@@ -278,9 +279,8 @@ workflow SCNANOSEQ {
             ch_trimmed_reads
                 .map {
                     meta, fastq ->
-                        new_meta = [:]
-                        new_meta.id = meta.id.split("\\.").with{it.length == 0 ? fastq.name : it[0..<-1].join('.')}
-                        new_meta.single_end = true
+                        new_meta = ["id": meta.id,
+                                    "single_end": meta.single_end]
                     [new_meta, fastq]
                 }
                 .groupTuple()
@@ -327,12 +327,11 @@ workflow SCNANOSEQ {
     // Preextraction will create paired fastqs in cell ranger format
     // So we will need to set the fastqs to paired end
 
-    PREEXTRACT_FASTQ( ch_trimmed_reads, val_regex_info.regex )
+    PREEXTRACT_FASTQ( ch_trimmed_reads.map{ meta, fastq -> meta.single_end = false; [meta, fastq]}, val_regex_info.regex )
 
     ch_versions = ch_versions.mix(PREEXTRACT_FASTQ.out.versions)
     ch_pre_extracted_r1_fqs = Channel.empty() 
     ch_pre_extracted_r2_fqs = Channel.empty() 
-
     if ( params.split_amount > 0) {
         // TODO: Why does below work when the above solution doesn't?
 
@@ -340,22 +339,21 @@ workflow SCNANOSEQ {
         // TODO: Might be worth adding in a sorting to further make sure the sorting is correct
         ch_preextract_out_r1 = PREEXTRACT_FASTQ.out.r1_reads
         ch_preextract_out_r2 = PREEXTRACT_FASTQ.out.r2_reads
-
         ch_preextract_out_r1
-            .map {
+            .map{
                 meta, fastq ->
-                    new_meta = ["id": meta.id.split("\\.").with{it.length == 0 ? fastq.name : it[0..<-1].join('.')},
-                                "single_end": false]
+                    new_meta = ["id": meta.id,
+                                "single_end": meta.single_end]
                 [new_meta, fastq]
             }
             .groupTuple()
             .set { ch_pre_extracted_r1_fqs }
-
+        
         ch_preextract_out_r2
             .map {
                 meta, fastq ->
-                    new_meta = ["id": meta.id.split("\\.").with{it.length == 0 ? fastq.name : it[0..<-1].join('.')},
-                                "single_end": false]
+                    new_meta = ["id": meta.id,
+                                "single_end": meta.single_end]
                 [new_meta, fastq]
             }
             .groupTuple()
@@ -370,7 +368,6 @@ workflow SCNANOSEQ {
     //
     // MODULE: Zip fastq
     //
-
     ZIP_R1 ( ch_pre_extracted_r1_fqs, "R1" )
     ch_zipped_r1_reads = ZIP_R1.out.archive
     ch_versions = ch_versions.mix(ZIP_R1.out.versions)
@@ -485,7 +482,6 @@ workflow SCNANOSEQ {
 
     // acquire only mapped reads from bam for downstream processing
     // NOTE: some QCs steps are performed on the full BAM
-
     ch_minimap_bam
         .combine( ch_dummy_file )
         .set { ch_minimap_bam_filter }
@@ -500,7 +496,6 @@ workflow SCNANOSEQ {
     BAM_SORT_STATS_SAMTOOLS_MINIMAP ( ch_minimap_bam, [] )
     ch_minimap_sorted_bam = BAM_SORT_STATS_SAMTOOLS_MINIMAP.out.bam
     ch_minimap_sorted_bai = BAM_SORT_STATS_SAMTOOLS_MINIMAP.out.bai
-
     // these stats go for multiqc
     ch_minimap_sorted_stats = BAM_SORT_STATS_SAMTOOLS_MINIMAP.out.stats
     ch_minimap_sorted_flagstat = BAM_SORT_STATS_SAMTOOLS_MINIMAP.out.flagstat
@@ -529,6 +524,7 @@ workflow SCNANOSEQ {
     //
 
     ch_tag_barcode_in = Channel.empty()
+
     ch_minimap_filtered_sorted_bam
         .join( ch_zipped_r1_reads, by: 0 )
         .combine( val_regex_info.bc_length )
