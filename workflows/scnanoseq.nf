@@ -53,6 +53,12 @@ if (params.barcode_preset) {
 
 }
 
+// TODO: Adding this in temporarily. Rethink how we want to represent this
+def blaze_whitelist = file("$baseDir/assets/whitelist/3M-february-2018.zip")
+if (params.whitelist) {
+    blaze_whitelist = whitelist
+}
+
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -91,6 +97,7 @@ include { PIGZ as ZIP_R1                                           } from "../mo
 include { PIGZ as ZIP_R2                                           } from "../modules/local/pigz"
 include { PIGZ as ZIP_TRIM                                         } from "../modules/local/pigz"
 include { PREEXTRACT_FASTQ                                         } from "../modules/local/preextract_fastq"
+include { BLAZE                                                    } from "../modules/local/blaze"
 include { UMI_TOOLS_WHITELIST                                      } from "../modules/local/umi_tools_whitelist"
 include { UMI_TOOLS_EXTRACT                                        } from "../modules/local/umi_tools_extract"
 include { PAFTOOLS                                                 } from "../modules/local/paftools"
@@ -137,6 +144,7 @@ include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_DEDUP        } from '../modules/nf-co
 include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_BC_CORRECTED } from '../modules/nf-core/samtools/index/main'
 include { STRINGTIE_STRINGTIE                           } from '../modules/nf-core/stringtie/stringtie/main'
 include { STRINGTIE_MERGE                               } from '../modules/nf-core/stringtie/merge/main'
+include { CAT_CAT                                       } from "../modules/nf-core/cat/cat/main"
 
 /*
  * SUBWORKFLOW: Consisting entirely of nf-core/modules
@@ -221,6 +229,7 @@ workflow SCNANOSEQ {
     //
     // MODULE: Generate junction file - paftools
     //
+    
     PAFTOOLS ( ch_gtf )
     ch_bed = PAFTOOLS.out.bed
     ch_versions = ch_versions.mix(PAFTOOLS.out.versions)
@@ -303,7 +312,7 @@ workflow SCNANOSEQ {
             ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_TRIM.out.fastqc_version.first().ifEmpty(null))
         }
     }
-
+    
     //
     // MODULE: Parse the regex info
     //
@@ -319,13 +328,14 @@ workflow SCNANOSEQ {
     val_regex_info = CREATE_REGEX_INFO.out.regex
     // TODO: Why can't we use the below code?
     //ch_versions = ch_versions.mix(CREATE_REGEX_INFO.out.versions)
-    
     //
     // MODULE: Pre extract the cell barcodes
     //
 
-    // Preextraction will create paired fastqs in cell ranger format
-    // So we will need to set the fastqs to paired end
+    // Umi tools requires some additional work to get it to work in an efficient matter, for example,
+    //  because of the size of the reads, letting umi tools operate in a single-end matter takes
+    //  an incredibly long time to process the fastq. A quicker option is to turn each read into a
+    //  cellranger style pair, with R1 containing the naive barcode and umi and R2 containing the read
 
     PREEXTRACT_FASTQ( ch_trimmed_reads.map{ meta, fastq -> meta.single_end = false; [meta, fastq]}, val_regex_info.regex )
 
@@ -389,24 +399,25 @@ workflow SCNANOSEQ {
     }
 
     // Merge the R1 and R2 fastqs back together
-    ch_zipped_reads = Channel.empty()
     ch_zipped_r1_reads
         .join( ch_zipped_r2_reads )
         .map{ meta, r1, r2 ->
             [ meta, [r1, r2]]
         }
         .set{ ch_zipped_reads }
-
     
     ch_gt_whitelist = Channel.empty()
-    if ( params.whitelist ) {
+    ch_whitelist_bc_count = Channel.empty()
+
+    if (params.whitelist) {
         ch_gt_whitelist = params.whitelist
-    } else {
+
+    } else if (params.barcode_caller == "umi_tools") {
         //
         // MODULE: Create estimated whitelist
         //
 
-        UMI_TOOLS_WHITELIST ( ch_zipped_reads, params.cell_amount, val_regex_info.umi_tools )
+        UMI_TOOLS_WHITELIST ( ch_zipped_reads, params.cell_amount, val_regex_info.umi_tools)
         ch_reads_with_whitelist = UMI_TOOLS_WHITELIST.out.whitelist
         ch_versions = ch_versions.mix(UMI_TOOLS_WHITELIST.out.versions)
         
@@ -422,7 +433,36 @@ workflow SCNANOSEQ {
         ch_whitelist_bc_count = REFORMAT_WHITELIST.out.bc_list_counts
         ch_gt_whitelist = REFORMAT_WHITELIST.out.bc_list
         ch_versions = ch_versions.mix(REFORMAT_WHITELIST.out.versions)
-        
+
+    } else if (params.barcode_caller == "blaze") {
+
+        //
+        // MODULE: Zip the reads
+        //
+        ch_blaze_in = Channel.empty()
+        if (params.split_amount > 0) {
+
+            CAT_CAT (ch_trimmed_reads
+                .map {
+                    meta, fastq ->
+                        new_meta = ["id": meta.id,
+                                    "single_end": meta.single_end]
+                    [new_meta, fastq]
+                }
+                .groupTuple())
+
+            ch_blaze_in = CAT_CAT.out.file_out
+        } else {
+            ch_blaze_in = ch_trimmed_reads
+        }
+
+        BLAZE ( ch_blaze_in, params.cell_amount, blaze_whitelist)
+
+        ch_putative_bc = BLAZE.out.putative_bc
+        ch_gt_whitelist = BLAZE.out.whitelist
+        ch_whitelist_bc_count = BLAZE.out.bc_count
+        ch_versions = ch_versions.mix(BLAZE.out.versions)
+
     }
 
     //
@@ -430,7 +470,7 @@ workflow SCNANOSEQ {
     //
     UMI_TOOLS_EXTRACT ( ch_zipped_reads.join(ch_gt_whitelist), val_regex_info.umi_tools )
     ch_extracted_reads = UMI_TOOLS_EXTRACT.out.reads
-    ch_versions = ch_versions.mix(REFORMAT_WHITELIST.out.versions)
+    ch_versions = ch_versions.mix(UMI_TOOLS_EXTRACT.out.versions)
 
     //
     // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - post-extract QC

@@ -153,9 +153,13 @@
             "description": "Options related to the barcode and umis",
             "default": "",
             "properties": {
-                "cell_barcode_pattern": {
+                "barcode_caller": {
                     "type": "string",
-                    "description": "Regex for the cell barcode pattern"
+                    "description": "The tool to be used to call barcodes",
+                    "enum": [
+                        "umi_tools",
+                        "blaze"
+                    ]
                 },
                 "whitelist": {
                     "type": "string",
@@ -165,6 +169,10 @@
                 "cell_amount": {
                     "type": "integer",
                     "description": "The estimated amount of cells in the experiment"
+                },
+                "cell_barcode_pattern": {
+                    "type": "string",
+                    "description": "Regex for the cell barcode pattern"
                 },
                 "identifier_pattern": {
                     "type": "string",

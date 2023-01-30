@@ -130,6 +130,7 @@ def tag_barcodes(infile, outfile, whitelist, barcode_count_file, write_filtered_
                 # There were no barcodes that are within the hamming distance
                 needs_filtering = True
                 read.tags += [('NT', 'NO_BCS_IN_EDIT_DIST')]
+
             if not needs_filtering:
                 # Lets fix the read name to contain the correct barcode
                 seq_name.append(read.query_name.split('_')[-1])

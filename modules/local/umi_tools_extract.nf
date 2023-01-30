@@ -28,6 +28,8 @@ process UMI_TOOLS_EXTRACT {
             extract \\
             -I $reads \\
             -S ${prefix}.umi_extract.fastq.gz \\
+            --bc-patterh ${regex_pattern} \\
+            --whitelist ${whitelist} \\
             $args \\
             > ${prefix}.umi_extract.log
 
