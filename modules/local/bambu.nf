@@ -1,11 +1,10 @@
 process BAMBU {
     label 'process_medium'
 
-    conda ("bioconda::bioconductor-bambu=3.0.5 conda-forge::r-optparse")
-    // TODO: add mulled container once PR is merged (PR already present in biocontainers repo)
-    //container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-    //    'https://depot.galaxyproject.org/singularity/YOUR-TOOL-HERE':
-    //    'quay.io/biocontainers/YOUR-TOOL-HERE' }"
+    conda (params.enable_conda ? "bioconda::bioconductor-bambu=3.0.5 conda-forge::r-optparse" : null)
+        container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'https://depot.galaxyproject.org/singularity/mulled-v2-451c38e14eb84db642390085de685f74f02238cb:1c7bc0278b2279671d4eed26b47a68576a78b0a7-0' :
+        'quay.io/biocontainers/mulled-v2-451c38e14eb84db642390085de685f74f02238cb:1c7bc0278b2279671d4eed26b47a68576a78b0a7-0' }"
 
     input:
     tuple path(fasta), path(gtf)
