@@ -22,7 +22,12 @@ process NANOFILT {
     def prefix = task.ext.prefix ?: "${meta.id}"
 
     """
-    cat $reads | NanoFilt $args > ${prefix}.filtered.fastq
+    FILE_PREFIX=${prefix}
+    if [ ${params.split_amount} -gt 0 ]; then
+        IDX=\$(basename ${reads} | cut -f2 -d'.')
+        FILE_PREFIX=\${FILE_PREFIX}.\${IDX}
+    fi
+    cat $reads | NanoFilt $args > \${FILE_PREFIX}.filtered.fastq    
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

@@ -246,14 +246,6 @@ workflow SCNANOSEQ {
         // fastq to prevent duplicated names
         SPLIT_FILE.out.split_files
             .transpose()
-            .map{
-                meta, fastq ->
-                    new_meta = [:]
-                    new_meta.id = meta.id
-                    new_meta.single_end = meta.single_end
-                    new_meta.idx = fastq.name.lastIndexOf('.').with {it != -1 ? fastq.name[0..<it] : fastq.name}
-                [new_meta, fastq]
-            }
             .set { ch_fastqs }
 
         ch_versions = ch_versions.mix(SPLIT_FILE.out.versions)
@@ -286,12 +278,6 @@ workflow SCNANOSEQ {
             // Concating the reads together temporarily for doing trim qc
             ch_trimmed_reads_qc = Channel.empty()
             ch_trimmed_reads
-                .map {
-                    meta, fastq ->
-                        new_meta = ["id": meta.id,
-                                    "single_end": meta.single_end]
-                    [new_meta, fastq]
-                }
                 .groupTuple()
                 .set { ch_trimmed_reads_qc }
 
@@ -350,22 +336,10 @@ workflow SCNANOSEQ {
         ch_preextract_out_r1 = PREEXTRACT_FASTQ.out.r1_reads
         ch_preextract_out_r2 = PREEXTRACT_FASTQ.out.r2_reads
         ch_preextract_out_r1
-            .map{
-                meta, fastq ->
-                    new_meta = ["id": meta.id,
-                                "single_end": meta.single_end]
-                [new_meta, fastq]
-            }
             .groupTuple()
             .set { ch_pre_extracted_r1_fqs }
         
         ch_preextract_out_r2
-            .map {
-                meta, fastq ->
-                    new_meta = ["id": meta.id,
-                                "single_end": meta.single_end]
-                [new_meta, fastq]
-            }
             .groupTuple()
             .set { ch_pre_extracted_r2_fqs }
 
@@ -442,14 +416,7 @@ workflow SCNANOSEQ {
         ch_blaze_in = Channel.empty()
         if (params.split_amount > 0) {
 
-            CAT_CAT (ch_trimmed_reads
-                .map {
-                    meta, fastq ->
-                        new_meta = ["id": meta.id,
-                                    "single_end": meta.single_end]
-                    [new_meta, fastq]
-                }
-                .groupTuple())
+            CAT_CAT (ch_trimmed_reads.groupTuple())
 
             ch_blaze_in = CAT_CAT.out.file_out
         } else {

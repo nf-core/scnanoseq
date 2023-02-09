@@ -19,7 +19,13 @@ process PROWLERTRIMMER {
     def prefix = task.ext.prefix ?: "${meta.id}"
     
     """
-    python3 \$(which TrimmerLarge.py) $args -f ${prefix}.fastq
+    FILE_PREFIX=${prefix}
+    if [ ${params.split_amount} -gt 0 ]; then
+        IDX=\$(basename ${reads} | cut -f2 -d'.')
+        FILE_PREFIX=\${FILE_PREFIX}.\${IDX}
+    fi
+
+    python3 \$(which TrimmerLarge.py) $args -f \${FILE_PREFIX}.fastq
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
