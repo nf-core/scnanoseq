@@ -2,6 +2,11 @@ process CREATE_INTRON_GTF {
     tag "$meta.id"
     label 'process_low'
 
+    conda (params.enable_conda ? "conda-forge::sed=4.7" : null)
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'https://depot.galaxyproject.org/singularity/ubuntu:20.04' :
+        'ubuntu:20.04' }"
+
     input:
     tuple val(meta), path(gtf)
 
@@ -20,11 +25,11 @@ process CREATE_INTRON_GTF {
     cat ${gtf} | \\
         tr -d '\\000'| \\
         awk -F \$'\\t' 'BEGIN{OFS="\\t"} \$3="intron", \$7="+"'  | \\
-        grep -v exon_id > ${prefix}.intron.gtf 
+        grep -v exon_id > ${prefix}.intron.gtf
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        awk: \$(echo \$(awk --version) | sed 's/^.*GNU Awk //; s/ .*//') 
+        awk: \$(echo \$(awk --version) | sed 's/^.*GNU Awk //; s/ .*//')
         cat: \$(echo \$(cat --version) | sed 's/^.*cat (GNU coreutils) //; s/ .*//')
         grep: \$(echo \$(grep --version) | sed 's/^.*grep (GNU grep) //; s/ .*//')
         tr: \$(echo \$(tr --version) | sed 's/^.*tr (GNU coreutils) //; s/ .*//')
