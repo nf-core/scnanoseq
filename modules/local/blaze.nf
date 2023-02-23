@@ -2,7 +2,10 @@ process BLAZE {
     tag "$meta.id"
     label 'process_low'
 
-    conda ("conda-forge::python=3.7 conda-forge::biopython conda-forge::pandas conda-forge::numpy conda-forge::tqdm conda-forge::matplotlib conda-forge::pip conda-forge::python-levenshtein")
+    conda (params.enable_conda ? "conda-forge::python=3.7 conda-forge::biopython conda-forge::pandas conda-forge::numpy conda-forge::tqdm conda-forge::matplotlib conda-forge::pip conda-forge::python-levenshtein" : null)
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'https://depot.galaxyproject.org/singularity/mulled-v2-d7d88ab042b250d0c097b70dc83ce3eb755b9be3:39cb062b9290449cd9de547d494e563502b5e0eb-0' :
+        'quay.io/biocontainers/mulled-v2-d7d88ab042b250d0c097b70dc83ce3eb755b9be3:39cb062b9290449cd9de547d494e563502b5e0eb-0' }"
 
     input:
     tuple val(meta), path(reads)
@@ -10,7 +13,7 @@ process BLAZE {
     val in_whitelist
 
     output:
-    tuple val(meta), path("*.putative_bc.csv") , emit: putative_bc 
+    tuple val(meta), path("*.putative_bc.csv") , emit: putative_bc
     tuple val(meta), path("*.whitelist.csv")   , emit: whitelist
     tuple val(meta), path("*.bc_count.txt")    , emit: bc_count
     path "versions.yml"                        , emit: versions
@@ -29,14 +32,14 @@ process BLAZE {
         --full-bc-whitelist=${in_whitelist} \\
         --out-putative-bc=${prefix}.putative_bc \\
         --out-bc-whitelist=${prefix}.whitelist \\
-       \$(pwd) 
+        \$(pwd)
 
     sed -i 's#-1##g' ${prefix}.whitelist.csv
     cut -f2 -d',' ${prefix}.putative_bc.csv | sort | uniq -c | awk '{if (\$2 != "") {print \$2"\\t\\t"\$1"\\t"}}' > ${prefix}.bc_count.txt
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        blaze: 1.0 
+        blaze: 1.0
     END_VERSIONS
     """
 }
