@@ -66,11 +66,17 @@ The nf-core/scnanoseq pipeline comes with documentation about the pipeline [usag
 
 ## Credits
 
-nf-core/scnanoseq was originally written by Austyn Trull, Lara Ianov.
+nf-core/scnanoseq was originally written by [Austyn Trull](https://github.com/atrull314), and [Dr. Lara Ianov](https://github.com/lianov).
 
 We thank the following people for their extensive assistance in the development of this pipeline:
 
+We would also like to thank the following people and groups for their support, including financial support:
+
+* Dr. Elizabeth Worthey
+* University of Alabama at Birmingham Biological Data Science Core (U-BDS), RRID:SCR_021766, https://github.com/U-BDS
+
 <!-- TODO nf-core: If applicable, make list of people who have also contributed -->
+<!-- TODO from Lara: check that all financial support has been stated -->
 
 ## Contributions and Support
 
