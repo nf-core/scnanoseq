@@ -16,9 +16,9 @@
 
 ## Introduction
 
-<!-- TODO nf-core: Write a 1-2 sentence summary of what data the pipeline is for and what it does -->
+**nf-core/scnanoseq** is a bioinformatics best-practice analysis pipeline for 10X Genomics single-cell/nuclei RNA-seq for data derived from Oxford Nanopore Q20+ chemistry ([R10.4 flow cells (>Q20)](https://nanoporetech.com/about-us/news/oxford-nanopore-announces-technology-updates-nanopore-community-meeting)). Due to the expectation of >Q20 quality, the input data for the pipeline is not dependent on Illumina paired data. 
 
-**nf-core/scnanoseq** is a bioinformatics best-practice analysis pipeline for Single-cell/nuclei pipeline for data derived from Oxford Nanopore.
+<!-- TODO: after test write brief sentence on exon only vs intron method (1 and 2) --->
 
 The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It uses Docker/Singularity containers making installation trivial and results highly reproducible. The [Nextflow DSL2](https://www.nextflow.io/docs/latest/dsl2.html) implementation of this pipeline uses one container per process which makes it much easier to maintain and update software dependencies. Where possible, these processes have been submitted to and installed from [nf-core/modules](https://github.com/nf-core/modules) in order to make them available to all nf-core pipelines, and to everyone within the Nextflow community!
 
@@ -28,10 +28,43 @@ On release, automated continuous integration tests run the pipeline on a full-si
 
 ## Pipeline summary
 
-<!-- TODO nf-core: Fill in short bullet-pointed list of the default steps in the pipeline -->
+<!-- NOTE below doesn't include intron specific path/processing. If we set this as default, can add a couple of points -->
+<!-- TODO add updated subway diagram -->
 
-1. Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/))
-2. Present QC for raw reads ([`MultiQC`](http://multiqc.info/))
+1. Raw read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [`NanoPlot`](https://github.com/wdecoster/NanoPlot) and [`NanoComp`](https://github.com/wdecoster/nanocomp))
+2. Unzip and split FastQ (optional: faster processing if split. [`gunzip`](https://linux.die.net/man/1/gunzip) and [`split`](https://linux.die.net/man/1/split))
+3. Trim and filter reads. One of the following:
+   1. [`Nanofilt`](https://github.com/wdecoster/nanofilt) -> default
+   2. [`ProwlerTrimmer`](https://github.com/ProwlerForNanopore/ProwlerTrimmer)
+4. Post trim QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [`NanoPlot`](https://github.com/wdecoster/NanoPlot))
+5. Prepare reads for barcode extraction. Consists of the following steps:
+    1. Parse FASTQ files into R1 reads containing barcode and UMI and R2 reads containing sequencing without barcode and UMI (custom script `./bin/pre_extract_barcodes.py`)
+    2. Re-zip FASTQs ([`pigz`](https://github.com/madler/pigz))
+6. Pre-extraction QC in the R2 reads ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [`NanoPlot`](https://github.com/wdecoster/NanoPlot))
+7. Generate barcode whitelist. One of the following:
+    1. [`BLAZE`](https://github.com/shimlab/BLAZE) -> default <!-- TODO: current no default yet, but likely will make BLAZE default -->
+    2. [`UMI-tools`](https://github.com/CGATOxford/UMI-tools)
+    3. Accepts user-provided whitelist in parameters
+8. Barcode extraction ([`UMI-tools`](https://github.com/CGATOxford/UMI-tools))
+9. Post-extraction QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [`NanoPlot`](https://github.com/wdecoster/NanoPlot))
+10. Alignment ([`minimap2`](https://github.com/lh3/minimap2))
+11. SAMtools processing including ([`SAMtools`](http://www.htslib.org/doc/samtools.html)):
+    1. SAM to BAM
+    2. Filtering of mapped only reads
+    3. Sorting, indexing and obtain mapping metrics
+12. Post-mapping QC in unfiltered BAM files ([`NanoComp`](https://github.com/wdecoster/nanocomp))
+13. Barcode tagging with read quality, UMI, and UMI quality (custom script `./bin/tag_barcodes.py`)
+14. Barcode correction
+15. UMI-based deduplication [`UMI-tools`](https://github.com/CGATOxford/UMI-tools)
+16. Gene and transcript level matrices generation:
+    1. (Transcript level only): Generate transcript level GTF ([`StringTie`](https://ccb.jhu.edu/software/stringtie/))
+    2. [`Subread featureCounts`](https://subread.sourceforge.net/)
+    3. Tag features in BAM files (custom script `./bin/tag_features.py`)
+    4. Index feature tagged BAMs and obtain stats ([`SAMtools`](http://www.htslib.org/doc/samtools.html))
+    5. Generate counts matrix ([`UMI-tools`](https://github.com/CGATOxford/UMI-tools))
+    6. Data wrangling to generate matrices in the expected single-cell/nuclei format (handles multi overlapping outputs) (custom scripts `./bin/split_file_by_column.sh`, `./bin/correct_counts_matrix.py`, `./bin/merge_files_by_column.sh`)
+17. Preliminary matrix QC ([`Seurat`](https://github.com/satijalab/seurat))
+18. Present QC for raw reads, trimmed reads, pre and post-extracted reads, mapping metrics and preliminary single-cell/nuclei QC ([`MultiQC`](http://multiqc.info/))
 
 ## Quick Start
 
@@ -75,7 +108,6 @@ We would also like to thank the following people and groups for their support, i
 * Dr. Elizabeth Worthey
 * University of Alabama at Birmingham Biological Data Science Core (U-BDS), RRID:SCR_021766, https://github.com/U-BDS
 
-<!-- TODO nf-core: If applicable, make list of people who have also contributed -->
 <!-- TODO from Lara: check that all financial support has been stated -->
 
 ## Contributions and Support
@@ -88,8 +120,6 @@ For further information or help, don't hesitate to get in touch on the [Slack `#
 
 <!-- TODO nf-core: Add citation for pipeline after first release. Uncomment lines below and update Zenodo doi and badge at the top of this file. -->
 <!-- If you use  nf-core/scnanoseq for your analysis, please cite it using the following doi: [10.5281/zenodo.XXXXXX](https://doi.org/10.5281/zenodo.XXXXXX) -->
-
-<!-- TODO nf-core: Add bibliography of tools and data used in your pipeline -->
 
 An extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](CITATIONS.md) file.
 
