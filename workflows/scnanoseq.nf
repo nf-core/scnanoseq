@@ -9,9 +9,12 @@ def summary_params = NfcoreSchema.paramsSummaryMap(workflow, params)
 // Validate input parameters
 WorkflowScnanoseq.initialise(params, log)
 
-// TODO nf-core: Add all file path parameters for the pipeline to the list below
-// Check input path parameters to see if they exist
-def checkPathParamList = [ params.input, params.multiqc_config, params.fasta ]
+// TODO: added param below linked to file paths, but need to check other needs for our params
+// e.g.: fixed_seqs --> likely want to add some checkers here.
+def checkPathParamList = [ 
+    params.input, params.multiqc_config, params.fasta, 
+    params.gtf, params.whitelist
+]
 for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
 
 // Check mandatory parameters
