@@ -10,10 +10,7 @@
             "type": "object",
             "fa_icon": "fas fa-terminal",
             "description": "Define where the pipeline should find input data and save output data.",
-            "required": [
-                "input",
-                "outdir"
-            ],
+            "required": ["input", "outdir"],
             "properties": {
                 "input": {
                     "type": "string",
@@ -70,7 +67,7 @@
                     "type": "string",
                     "fa_icon": "far fa-file-code",
                     "default": "null",
-                    "description": "Path to GTF file",
+                    "description": "Path to GTF file.",
                     "format": "file-path"
                 },
                 "igenomes_base": {
@@ -89,10 +86,7 @@
                     "help_text": "Do not load `igenomes.config` when running the pipeline. You may choose this option if you observe clashes between custom parameters and those supplied in `igenomes.config`."
                 }
             },
-            "required": [
-                "fasta",
-                "gtf"
-            ]
+            "required": ["fasta", "gtf"]
         },
         "fastq_options": {
             "title": "Fastq options",
@@ -111,7 +105,7 @@
         "read_trimming_options": {
             "title": "Read trimming options",
             "type": "object",
-            "description": "Options to choose trimming criteria and software",
+            "description": "Options to choose trimming criteria and software.",
             "default": "",
             "properties": {
                 "trimming_software": {
@@ -119,10 +113,7 @@
                     "description": "Specifies trimming software.",
                     "fa_icon": "fas fa-cut",
                     "help_text": "Available long-read trimmers are `nanofilt` or `prowler`",
-                    "enum": [
-                        "prowler",
-                        "nanofilt"
-                    ]
+                    "enum": ["prowler", "nanofilt"]
                 },
                 "min_length": {
                     "type": "integer",
@@ -143,60 +134,52 @@
                 }
             },
             "fa_icon": "fas fa-cut",
-            "required": [
-                "trimming_software"
-            ]
+            "required": ["trimming_software"]
         },
         "cell_barcode_options": {
             "title": "Cell barcode options",
             "type": "object",
-            "description": "Options related to the barcode and umis",
+            "description": "Options related to the barcode and umis.",
             "default": "",
             "properties": {
                 "barcode_caller": {
                     "type": "string",
-                    "description": "The tool to be used to call barcodes",
-                    "enum": [
-                        "umi_tools",
-                        "blaze"
-                    ]
+                    "description": "The tool to be used to call barcodes.",
+                    "enum": ["umi_tools", "blaze"]
                 },
                 "whitelist": {
                     "type": "string",
-                    "description": "The file containing a list of barcodes",
+                    "description": "The file containing a list of barcodes.",
                     "format": "file-path"
                 },
                 "cell_amount": {
                     "type": "integer",
-                    "description": "The estimated amount of cells in the experiment"
+                    "description": "The estimated amount of cells in the experiment."
                 },
                 "cell_barcode_pattern": {
                     "type": "string",
-                    "description": "Regex for the cell barcode pattern"
+                    "description": "Regex for the cell barcode pattern."
                 },
                 "identifier_pattern": {
                     "type": "string",
-                    "description": "Human readable regex for the cell barcode pattern"
+                    "description": "Human readable regex for the cell barcode pattern."
                 },
                 "cell_barcode_lengths": {
                     "type": "string",
-                    "description": "The comma delimited list of cell barcode lengths"
+                    "description": "The comma delimited list of cell barcode lengths."
                 },
                 "umi_lengths": {
                     "type": "string",
-                    "description": "The comma delimited list of umi lengths"
+                    "description": "The comma delimited list of umi lengths."
                 },
                 "fixed_seqs": {
                     "type": "string",
-                    "description": "The comma delimited list of fixed barcode sequences"
+                    "description": "The comma delimited list of fixed barcode sequences."
                 },
                 "barcode_preset": {
                     "type": "string",
-                    "description": "Specify a preset option for barcode formatting",
-                    "enum": [
-                        "cellranger_3_prime",
-                        "cellranget_5_prime"
-                    ]
+                    "description": "Specify a preset option for barcode formatting.",
+                    "enum": ["cellranger_3_prime", "cellranget_5_prime"]
                 }
             },
             "fa_icon": "fas fa-microscope"
@@ -204,26 +187,23 @@
         "mapping": {
             "title": "Mapping",
             "type": "object",
-            "description": "Options related to minimap2",
+            "description": "Options related to minimap2.",
             "default": "",
             "properties": {
                 "stranded": {
                     "type": "string",
                     "default": "None",
-                    "enum": [
-                        "None",
-                        "reverse",
-                        "forward"
-                    ]
+                    "enum": ["None", "reverse", "forward"],
+                    "description": "Library strandness option."
                 },
                 "kmer_size": {
                     "type": "integer",
                     "default": 14,
-                    "description": "Minimizer k-mer length"
+                    "description": "Minimizer k-mer length."
                 },
                 "save_secondary_alignment": {
                     "type": "boolean",
-                    "description": "Save secondary alignment outputs",
+                    "description": "Save secondary alignment outputs.",
                     "fa_icon": "far fa-save"
                 }
             },
@@ -232,37 +212,29 @@
         "analysis_options": {
             "title": "Analysis options",
             "type": "object",
-            "description": "",
             "default": "",
             "fa_icon": "fas fa-search",
             "properties": {
                 "analyze_uncorrected_bam": {
                     "type": "boolean",
-                    "description": "Run downstream steps on the bam that contains reads that could not be corrected. Do not use this if no whitelist is provided"
+                    "description": "Run downstream steps on the bam that contains reads that could not be corrected. Do not use this if no whitelist is provided."
                 },
                 "intron_retention_method": {
                     "type": "string",
-                    "description": "Choose which intron retention method to use (Options: 1 or 2)",
-                    "enum": [
-                        "1",
-                        "2"
-                    ]
+                    "description": "Choose which intron retention method to use (Options: 1 or 2).",
+                    "enum": ["1", "2"]
                 },
                 "counts_level": {
                     "type": "string",
-                    "description": "What level to generate the counts matrix at. Options: 'gene', 'transcript'",
-                    "enum": [
-                        "gene",
-                        "transcript",
-                        "both"
-                    ]
+                    "description": "What level to generate the counts matrix at. Options: 'gene', 'transcript'.",
+                    "enum": ["gene", "transcript", "both"]
                 }
             }
         },
         "process_skipping_options": {
             "title": "Process skipping options",
             "type": "object",
-            "description": "Options to skip various steps within the workflow",
+            "description": "Options to skip various steps within the workflow.",
             "default": "",
             "help_text": "",
             "properties": {
@@ -281,6 +253,16 @@
                     "fa_icon": "fas fa-forward",
                     "description": "Skip Nanoplot."
                 },
+                "skip_fastq_nanocomp": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-forward",
+                    "description": "Skip NanoComp from FASTQ file(s)."
+                },
+                "skip_bam_nanocomp": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-forward",
+                    "description": "Skip NanoComp from BAM file(s)."
+                },
                 "skip_seurat": {
                     "type": "boolean",
                     "fa_icon": "fas fa-forward",
@@ -288,13 +270,18 @@
                 },
                 "skip_save_minimap2_index": {
                     "type": "boolean",
-                    "description": "Skip saving minimap2 index",
+                    "description": "Skip saving minimap2 index.",
                     "fa_icon": "fas fa-forward"
                 },
                 "skip_dedup": {
                     "type": "boolean",
-                    "description": "Skip umi dedup",
+                    "description": "Skip umi dedup.",
                     "fa_icon": "fas fa-forward"
+                },
+                "skip_multiqc": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-forward",
+                    "description": "Skip MultiQC."
                 }
             },
             "fa_icon": "fas fa-forward"
@@ -401,14 +388,7 @@
                     "description": "Method used to save pipeline results to output directory.",
                     "help_text": "The Nextflow `publishDir` option specifies which intermediate files should be saved to the output directory. This option tells the pipeline what method should be used to move these files. See [Nextflow docs](https://www.nextflow.io/docs/latest/process.html#publishdir) for details.",
                     "fa_icon": "fas fa-copy",
-                    "enum": [
-                        "symlink",
-                        "rellink",
-                        "link",
-                        "copy",
-                        "copyNoFollow",
-                        "move"
-                    ],
+                    "enum": ["symlink", "rellink", "link", "copy", "copyNoFollow", "move"],
                     "hidden": true
                 },
                 "email_on_fail": {
