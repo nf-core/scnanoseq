@@ -12,7 +12,7 @@ process TRANSCRIPT_TO_EXON {
 
     output:
     path("processed.gtf"), emit: ch_processed_gtf
-    path("versions.yml") , emit: ch_versions
+    path("versions.yml") , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
