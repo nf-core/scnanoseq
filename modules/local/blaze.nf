@@ -1,6 +1,6 @@
 process BLAZE {
     tag "$meta.id"
-    label 'process_low'
+    label 'process_medium'
 
     conda (params.enable_conda ? "conda-forge::python=3.7 conda-forge::biopython conda-forge::pandas conda-forge::numpy conda-forge::tqdm conda-forge::matplotlib conda-forge::pip conda-forge::python-levenshtein" : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
