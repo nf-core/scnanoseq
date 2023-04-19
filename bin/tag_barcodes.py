@@ -116,6 +116,8 @@ def tag_bams(in_bam, in_fastq, out_bam, bc_length, umi_length):
             # Add the umi quality
             if not read.has_tag(UMI_QUAL_TAG):
                 read.tags += [(UMI_QUAL_TAG, umi_bc_info.get_umi_qual())]
+
+            read.query_name = '_'.join([parsed_read_name, umi_bc_info.get_bc(), umi_bc_info.get_umi()])
             
             fh_out_bam.write(read)
 

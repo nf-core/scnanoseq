@@ -96,13 +96,11 @@ include { NANOCOMP as NANOCOMP_FASTQ                               } from "../mo
 include { NANOCOMP as NANOCOMP_BAM                                 } from "../modules/local/nanocomp"
 include { PROWLERTRIMMER                                           } from "../modules/local/prowlertrimmer"
 include { SPLIT_FILE                                               } from "../modules/local/split_file"
+include { PIGZ as ZIP_TRIM                                         } from "../modules/local/pigz"
 include { PIGZ as ZIP_R1                                           } from "../modules/local/pigz"
 include { PIGZ as ZIP_R2                                           } from "../modules/local/pigz"
-include { PIGZ as ZIP_TRIM                                         } from "../modules/local/pigz"
-include { PREEXTRACT_FASTQ                                         } from "../modules/local/preextract_fastq"
 include { BLAZE                                                    } from "../modules/local/blaze"
-include { UMI_TOOLS_WHITELIST                                      } from "../modules/local/umi_tools_whitelist"
-include { UMI_TOOLS_EXTRACT                                        } from "../modules/local/umi_tools_extract"
+include { PREEXTRACT_FASTQ as PREEXTRACT_BARCODES                  } from "../modules/local/preextract_fastq.nf"
 include { PAFTOOLS                                                 } from "../modules/local/paftools"
 include { MINIMAP2_INDEX                                           } from "../modules/local/minimap2_index"
 include { MINIMAP2_ALIGN                                           } from "../modules/local/minimap2_align"
@@ -154,7 +152,6 @@ include { CAT_CAT                                       } from "../modules/nf-co
  */
 include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_PRE_TRIM         } from '../subworkflows/nf-core/qcfastq_nanoplot_fastqc'
 include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_POST_TRIM        } from '../subworkflows/nf-core/qcfastq_nanoplot_fastqc'
-include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_PRE_EXTRACTED    } from '../subworkflows/nf-core/qcfastq_nanoplot_fastqc'
 include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_POST_EXTRACT     } from '../subworkflows/nf-core/qcfastq_nanoplot_fastqc'
 include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_MINIMAP  } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
 include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_FILTERED } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
@@ -180,7 +177,7 @@ workflow SCNANOSEQ {
     )
     ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
 
-    ch_fastq = INPUT_CHECK.out.reads
+    ch_fastqs_in = INPUT_CHECK.out.reads
 
     //
     // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - pre-trim QC
@@ -189,7 +186,7 @@ workflow SCNANOSEQ {
     ch_fastqc_multiqc_pretrim = Channel.empty()
     if (!params.skip_qc){
 
-        FASTQC_NANOPLOT_PRE_TRIM ( ch_fastq, params.skip_nanoplot, params.skip_fastqc )
+        FASTQC_NANOPLOT_PRE_TRIM ( ch_fastqs_in, params.skip_nanoplot, params.skip_fastqc )
 
         ch_versions = ch_versions.mix(FASTQC_NANOPLOT_PRE_TRIM.out.nanoplot_version.first().ifEmpty(null))
         ch_versions = ch_versions.mix(FASTQC_NANOPLOT_PRE_TRIM.out.fastqc_version.first().ifEmpty(null))
@@ -202,19 +199,13 @@ workflow SCNANOSEQ {
     //
 
     if (!params.skip_qc && !params.skip_fastq_nanocomp) {
-        ch_nanocomp_fastqs = ch_fastq.collect{it[1]}
+        ch_nanocomp_fastqs = ch_fastqs_in.collect{it[1]}
 
         NANOCOMP_FASTQ ( ch_nanocomp_fastqs )
         ch_versions = ch_versions.mix( NANOCOMP_FASTQ.out.versions )
 
     }
 
-    //
-    // MODULE: Unzip fastq
-    //
-    GUNZIP( ch_fastq )
-    ch_unzipped_fastqs = GUNZIP.out.gunzip
-    ch_versions = ch_versions.mix( GUNZIP.out.versions )
 
     //
     // SUBWORKFLOW: Prepare reference files
@@ -236,29 +227,41 @@ workflow SCNANOSEQ {
     PAFTOOLS ( ch_gtf )
     ch_bed = PAFTOOLS.out.bed
     ch_versions = ch_versions.mix(PAFTOOLS.out.versions)
-
-    //
-    // MODULE: Split fastq
-    //
-    ch_fastqs = ch_unzipped_fastqs
-
-    if (params.split_amount > 0) {
-        SPLIT_FILE( ch_unzipped_fastqs, '.fastq', params.split_amount )
-
-        // Temporarily change the meta object so that the id is present on the 
-        // fastq to prevent duplicated names
-        SPLIT_FILE.out.split_files
-            .transpose()
-            .set { ch_fastqs }
-
-        ch_versions = ch_versions.mix(SPLIT_FILE.out.versions)
-    }
+    
 
     //
     // MODULE: Trim and filter reads
     //
-    ch_trimmed_reads = ch_fastqs
+    ch_trimmed_reads_combined = Channel.empty()
+    ch_zipped_reads = ch_fastqs_in
+    
     if (!params.skip_trimming){
+        // The trimmers require unzipped fastqs, so we'll need to unzip them
+        // to accomodate this requirement
+
+        //
+        // MODULE: Unzip fastq
+        //
+        GUNZIP( ch_fastqs_in )
+        ch_unzipped_fastqs = GUNZIP.out.gunzip
+        ch_versions = ch_versions.mix( GUNZIP.out.versions )
+
+        //
+        // MODULE: Split fastq
+        //
+        ch_fastqs = ch_unzipped_fastqs
+
+        if (params.split_amount > 0) {
+            SPLIT_FILE( ch_unzipped_fastqs, '.fastq', params.split_amount )
+
+            // Temporarily change the meta object so that the id is present on the 
+            // fastq to prevent duplicated names
+            SPLIT_FILE.out.split_files
+                .transpose()
+                .set { ch_fastqs }
+
+            ch_versions = ch_versions.mix(SPLIT_FILE.out.versions)
+        }
 
         if (params.trimming_software == 'nanofilt') {
 
@@ -273,28 +276,32 @@ workflow SCNANOSEQ {
             ch_versions = ch_versions.mix(PROWLERTRIMMER.out.versions)
 
         }
+        
+        // If the fastqs were split, combine them together
+        ch_trimmed_reads_combined = ch_trimmed_reads
+     
+        if (params.split_amount > 0){
+           CAT_CAT(ch_trimmed_reads.groupTuple())
+           ch_trimmed_reads_combined = CAT_CAT.out.file_out
+        }
+
+        //
+        // MODULE: Zip the reads
+        //
+        ZIP_TRIM (ch_trimmed_reads_combined, "filtered" )
+        ch_zipped_reads = ZIP_TRIM.out.archive
+        ch_versions = ch_versions.mix(ZIP_TRIM.out.versions)
+
         //
         // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - post-trim QC
         //
         ch_fastqc_multiqc_postrim = Channel.empty()
         if (!params.skip_qc){
-            // Concating the reads together temporarily for doing trim qc
-            ch_trimmed_reads_qc = Channel.empty()
-            ch_trimmed_reads
-                .groupTuple()
-                .set { ch_trimmed_reads_qc }
-
-            //
-            // MODULE: Zip the reads
-            //
-            ZIP_TRIM (ch_trimmed_reads_qc, "filtered" )
-            ch_zipped_trimmed_reads = ZIP_TRIM.out.archive
-            ch_versions = ch_versions.mix(ZIP_TRIM.out.versions)
 
             //
             // MODULE: Run qc on the post trimmed reads
             //
-            FASTQC_NANOPLOT_POST_TRIM ( ch_zipped_trimmed_reads, params.skip_nanoplot, params.skip_fastqc )
+            FASTQC_NANOPLOT_POST_TRIM ( ch_zipped_reads, params.skip_nanoplot, params.skip_fastqc )
 
             ch_fastqc_multiqc_postrim = FASTQC_NANOPLOT_POST_TRIM.out.fastqc_multiqc.ifEmpty([])
             ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_TRIM.out.nanoplot_version.first().ifEmpty(null))
@@ -317,137 +324,43 @@ workflow SCNANOSEQ {
     val_regex_info = CREATE_REGEX_INFO.out.regex
     // TODO: Why can't we use the below code?
     //ch_versions = ch_versions.mix(CREATE_REGEX_INFO.out.versions)
-    //
-    // MODULE: Pre extract the cell barcodes
-    //
-
-    // Umi tools requires some additional work to get it to work in an efficient matter, for example,
-    //  because of the size of the reads, letting umi tools operate in a single-end matter takes
-    //  an incredibly long time to process the fastq. A quicker option is to turn each read into a
-    //  cellranger style pair, with R1 containing the naive barcode and umi and R2 containing the read
-
-    PREEXTRACT_FASTQ( ch_trimmed_reads.map{ meta, fastq -> meta.single_end = false; [meta, fastq]}, val_regex_info.regex )
-
-    ch_versions = ch_versions.mix(PREEXTRACT_FASTQ.out.versions)
-    ch_pre_extracted_r1_fqs = Channel.empty() 
-    ch_pre_extracted_r2_fqs = Channel.empty() 
-    if ( params.split_amount > 0) {
-        // TODO: Why does below work when the above solution doesn't?
-
-        // THe reason we assign these variables is to ensure the order is consistent within the channels
-        // TODO: Might be worth adding in a sorting to further make sure the sorting is correct
-        ch_preextract_out_r1 = PREEXTRACT_FASTQ.out.r1_reads
-        ch_preextract_out_r2 = PREEXTRACT_FASTQ.out.r2_reads
-        ch_preextract_out_r1
-            .groupTuple()
-            .set { ch_pre_extracted_r1_fqs }
-        
-        ch_preextract_out_r2
-            .groupTuple()
-            .set { ch_pre_extracted_r2_fqs }
-
-    } else {
-        ch_pre_extracted_r1_fqs = PREEXTRACT_FASTQ.out.r1_reads 
-        ch_pre_extracted_r2_fqs = PREEXTRACT_FASTQ.out.r2_reads
-
-    }
 
     //
-    // MODULE: Zip fastq
+    // MODULE: Generate whitelist
     //
-    ZIP_R1 ( ch_pre_extracted_r1_fqs, "R1" )
-    ch_zipped_r1_reads = ZIP_R1.out.archive
-    ch_versions = ch_versions.mix(ZIP_R1.out.versions)
 
-    ZIP_R2 ( ch_pre_extracted_r2_fqs, "R2" )
-    ch_zipped_r2_reads = ZIP_R2.out.archive
-    ch_versions = ch_versions.mix(ZIP_R2.out.versions)
+    BLAZE ( ch_trimmed_reads_combined, params.cell_amount, blaze_whitelist)
 
-    //
-    // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - pre-extracted QC
-    //
-    ch_fastqc_multiqc_pre_extracted = Channel.empty()
-    if (!params.skip_qc){
-        FASTQC_NANOPLOT_PRE_EXTRACTED ( ch_zipped_r2_reads, params.skip_nanoplot, params.skip_fastqc )
-
-        ch_fastqc_multiqc_pre_extracted = FASTQC_NANOPLOT_PRE_EXTRACTED.out.fastqc_multiqc.ifEmpty([])
-        ch_versions = ch_versions.mix(FASTQC_NANOPLOT_PRE_EXTRACTED.out.nanoplot_version.first().ifEmpty(null))
-        ch_versions = ch_versions.mix(FASTQC_NANOPLOT_PRE_EXTRACTED.out.fastqc_version.first().ifEmpty(null))
-    }
-
-    // Merge the R1 and R2 fastqs back together
-    ch_zipped_r1_reads
-        .join( ch_zipped_r2_reads )
-        .map{ meta, r1, r2 ->
-            [ meta, [r1, r2]]
-        }
-        .set{ ch_zipped_reads }
-    
-    ch_gt_whitelist = Channel.empty()
-    ch_whitelist_bc_count = Channel.empty()
-
-    if (params.whitelist) {
-        ch_gt_whitelist = params.whitelist
-
-    } else if (params.barcode_caller == "umi_tools") {
-        //
-        // MODULE: Create estimated whitelist
-        //
-
-        UMI_TOOLS_WHITELIST ( ch_zipped_reads, params.cell_amount, val_regex_info.umi_tools)
-        ch_reads_with_whitelist = UMI_TOOLS_WHITELIST.out.whitelist
-        ch_versions = ch_versions.mix(UMI_TOOLS_WHITELIST.out.versions)
-        
-        //
-        // MODULE: Reformat whitelist
-        //
-        ch_whitelists = Channel.empty()
-        ch_reads_with_whitelist
-            .map{ meta, fastq, whitelist ->[ meta, whitelist ] }
-            .set{ ch_whitelists }
-
-        REFORMAT_WHITELIST ( ch_whitelists )
-        ch_whitelist_bc_count = REFORMAT_WHITELIST.out.bc_list_counts
-        ch_gt_whitelist = REFORMAT_WHITELIST.out.bc_list
-        ch_versions = ch_versions.mix(REFORMAT_WHITELIST.out.versions)
-
-    } else if (params.barcode_caller == "blaze") {
-
-        //
-        // MODULE: Zip the reads
-        //
-        ch_blaze_in = Channel.empty()
-        if (params.split_amount > 0) {
-
-            CAT_CAT (ch_trimmed_reads.groupTuple())
-
-            ch_blaze_in = CAT_CAT.out.file_out
-        } else {
-            ch_blaze_in = ch_trimmed_reads
-        }
-
-        BLAZE ( ch_blaze_in, params.cell_amount, blaze_whitelist)
-
-        ch_putative_bc = BLAZE.out.putative_bc
-        ch_gt_whitelist = BLAZE.out.whitelist
-        ch_whitelist_bc_count = BLAZE.out.bc_count
-        ch_versions = ch_versions.mix(BLAZE.out.versions)
-
-    }
+    ch_putative_bc = BLAZE.out.putative_bc
+    ch_gt_whitelist = BLAZE.out.whitelist
+    ch_whitelist_bc_count = BLAZE.out.bc_count
+    ch_versions = ch_versions.mix(BLAZE.out.versions)
 
     //
     // MODULE: Extract barcodes
     //
-    UMI_TOOLS_EXTRACT ( ch_zipped_reads.join(ch_gt_whitelist), val_regex_info.umi_tools )
-    ch_extracted_reads = UMI_TOOLS_EXTRACT.out.reads
-    ch_versions = ch_versions.mix(UMI_TOOLS_EXTRACT.out.versions)
+
+    PREEXTRACT_BARCODES( ch_trimmed_reads_combined.join(ch_putative_bc))
+    ch_r1_reads = PREEXTRACT_BARCODES.out.r1_reads
+    ch_r2_reads = PREEXTRACT_BARCODES.out.r2_reads
+
+    //
+    // MODULE: Zip fastq
+    //
+    ZIP_R1 ( ch_r1_reads, "R1" )
+    ch_zipped_r1_reads = ZIP_R1.out.archive
+    ch_versions = ch_versions.mix(ZIP_R1.out.versions)
+
+    ZIP_R2 ( ch_r2_reads, "R2" )
+    ch_zipped_r2_reads = ZIP_R2.out.archive
+    ch_versions = ch_versions.mix(ZIP_R2.out.versions)
 
     //
     // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - post-extract QC
     //
     ch_fastqc_multiqc_postextract = Channel.empty()
     if (!params.skip_qc){
-        FASTQC_NANOPLOT_POST_EXTRACT ( ch_extracted_reads, params.skip_nanoplot, params.skip_fastqc )
+        FASTQC_NANOPLOT_POST_EXTRACT ( ch_zipped_r2_reads, params.skip_nanoplot, params.skip_fastqc )
 
         ch_fastqc_multiqc_postextract = FASTQC_NANOPLOT_POST_EXTRACT.out.fastqc_multiqc.ifEmpty([])
         ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_EXTRACT.out.nanoplot_version.first().ifEmpty(null))
@@ -475,7 +388,7 @@ workflow SCNANOSEQ {
     } else {
         ch_reference = Channel.fromPath(params.fasta, checkIfExists: true).toList()
     }
-    MINIMAP2_ALIGN ( ch_extracted_reads, ch_bed, ch_reference )
+    MINIMAP2_ALIGN ( ch_zipped_r2_reads, ch_bed, ch_reference )
 
     ch_versions = ch_versions.mix(MINIMAP2_ALIGN.out.versions)
     MINIMAP2_ALIGN.out.sam
@@ -591,7 +504,9 @@ workflow SCNANOSEQ {
             }
 
     ch_gene_counts_mtx = Channel.empty()
+    ch_gene_stats_combined = Channel.empty()
     ch_transcript_counts_mtx = Channel.empty()
+    ch_transcript_stats_combined = Channel.empty()
 
     if ( params.counts_level == "gene" || !params.counts_level ) {
 
@@ -621,7 +536,6 @@ workflow SCNANOSEQ {
 
         //TODO: may combine these into a single-channel later on
 
-        ch_gene_stats_combined = Channel.empty()
         if (!params.skip_qc && !params.skip_seurat) {
             ch_gene_counts_flagstat = ch_gene_counts_mtx.join(ch_gene_tag_bam_flagstat, by: 0)
             SEURAT_GENE ( ch_gene_counts_flagstat )
@@ -672,7 +586,6 @@ workflow SCNANOSEQ {
 
         //TODO: may combine these into a single-channel later on
 
-        ch_transcript_stats_combined = Channel.empty()
         if (!params.skip_qc && !params.skip_seurat) {
             ch_transcript_counts_flagstat = ch_transcript_counts_mtx.join(ch_transcript_tag_bam_flagstat, by: 0)
 

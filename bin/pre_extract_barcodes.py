@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 
-""" Given a fastq file, this script will find all sequences that match the
-    regex passed in from the command line and output the sequences in cell
-    ranger format, i.e. R1 contains the barcode and UMI, while R2 contains
-    the sequence without the barcode and UMI.
+""" Given a fastq file and a blaze output file, this will extract the barcode
+    and umi and place them in the header of the fastq, as well as stripping
+    them from teh read.
 """
 
 import argparse
@@ -18,102 +17,92 @@ def parse_args():
 
     arg_parser.add_argument('-i', '--input_file', required=True, type=str,
                              help="The input fastq file")
-    arg_parser.add_argument('-r', '--regex', required=True, type=str,
-                            help="The regex for the barcode and umi")
+    arg_parser.add_argument('-b', '--barcode_file', required=True, type=str,
+                            help="The file containing the readname and barcode")
     arg_parser.add_argument('-o', '--output_file', required=True, type=str,
-                            help="The output prefix for the two fastqs")
+                            help="The output fastq")
 
     args = arg_parser.parse_args()
     return args
 
-def pre_extract_fastq(input_file, regex, output_prefix):
-    """ Using the regex, find all the sequences from the fastq that have the
-        regex.
+def read_barcode_list(barcode_file):
+    """ TODO
+    """
+    barcode_list = {}
 
-    Args:
-        input_file (str): The input fastq file
-        regex (str): The barcode and umi regex
-        output_file (str): The output file prefix to output sequences to
+    with open(barcode_file, 'r', encoding = "utf-8") as bc_in:
+        for bc_line in bc_in.readlines():
+            read_name, bc, bc_score = bc_line.split(',')
 
-    Returns: None
+            # Not all reads had barcodes, ignore those that don't
+            if bc:
+                barcode_list[read_name] = bc
+
+    return barcode_list
+
+
+def extract_barcode(input_file, barcode_file, output):
+    """ TODO
     """
 
-    with open(f"{output_prefix}.R1.fastq", 'w', encoding = "utf-8") as r1_out, \
-        open(f"{output_prefix}.R2.fastq", 'w', encoding = "utf-8") as r2_out:
+    barcode_list = read_barcode_list(barcode_file)
+    
+    with open(f"{output}.R1.fastq", 'w', encoding = "utf-8") as r1_out, \
+            open(f"{output}.R2.fastq", 'w', encoding = "utf-8") as r2_out:
 
         for record in SeqIO.parse(input_file, "fastq"):
-
             sequence = str(record.seq)
             qualities = ''.join([chr(score + 33) for score in
                                  record.letter_annotations['phred_quality']])
 
-            # Check if there's a match
-            regex_match, sequence, qualities = find_regex_sequence(regex,
-                                                                   sequence,
-                                                                   qualities)
-
-            if regex_match is not None:
-                # Find the actual start location of the bc and umi
-
-                matched_seq = sequence[regex_match.start():regex_match.end()]
-
-                # Extract the barcode and umi from the sequence
-                bc_umi, bc_umi_quals = get_bc_umi_info(matched_seq,
-                                                       regex_match,
-                                                       qualities)
+            if record.id in barcode_list:
+                bc_index, sequence, qualities = find_seq_indices(barcode_list[record.id], sequence, qualities)
                 
-                no_bc = sequence[regex_match.end() + 1:]
-                no_bc_quals = qualities[regex_match.end() + 1:]
+                # Strip the primer, bc, umi, and poly-T
+                
+                # BC_LENGTH = 16
+                # UMI_LENGTH = 12
+                # POLYT_LENGTH = 10
+                print(sequence)
+                print(qualities)
+                print()
 
-                # Output the barcode and umi into a file
-                r1_out.write(f"@{record.id}\n{bc_umi}\n+\n{bc_umi_quals}\n")
+                bc = sequence[bc_index:bc_index+16]
+                print(bc)
+                bc_quals = qualities[bc_index:bc_index+16]
+                print(bc_quals)
 
+                umi = sequence[bc_index+16:bc_index+16+12]
+                print(umi)
+                umi_quals = qualities[bc_index+16:bc_index+16+12]
+                print(umi_quals)
+                
+                no_bc = sequence[bc_index+16+12+10:]
+                no_bc_quals = qualities[bc_index+16+12+10:]
+                print(no_bc)
+                print(no_bc_quals)
+
+                r1_out.write(f"@{record.id}\n{bc}{umi}\n+\n{bc_quals}{umi_quals}\n")
                 r2_out.write(f"@{record.id}\n{no_bc}\n+\n{no_bc_quals}\n")
 
-def get_bc_umi_info(seq_substring, regex_match, seq_qualities):
-    """ Extract the barcode and umi (and their qualities) from the base
-        sequence """
+def find_seq_indices(barcode, sequence, qualities):
+    # See if the barcode is in the same direction as the read
+    index = sequence.find(barcode)
 
-    bc_umi = ''
-    bc_umi_quals = ''
-
-    for group_name in regex_match.groupdict():
-        if 'discard' not in group_name:
-            seq = regex_match[group_name]
-            
-            start_idx = seq_substring.find(seq)
-            end_idx = start_idx + len(seq)
-
-            bc_umi += seq
-            bc_umi_quals += seq_qualities[start_idx:end_idx]
-
-        else:
-            pass
-
-    return bc_umi, bc_umi_quals
-
-
-def find_regex_sequence(regex, sequence, qualities):
-    """ Find the regex in the sequence """
-
-    reg_ex = re.compile(regex)
-    r_match = reg_ex.search(sequence)
-
-    # If there is no match, check the reverse complement of the sequence
-    if r_match is None:
+    # If barcode not found, check the reverse complement
+    if index <= 0:
         sequence = str(Seq(sequence).reverse_complement())
-        qualities = qualities[::-1] # Also reverse the quality string
+        qualities = qualities[::-1]
 
-        r_match = reg_ex.search(sequence)
+        index = sequence.find(barcode)
 
-    return r_match, sequence, qualities
-
+    return index, sequence, qualities
 
 def main():
     """ Main subroutine """
 
     args = parse_args()
-    pre_extract_fastq(args.input_file, args.regex, args.output_file)
+    extract_barcode(args.input_file, args.barcode_file, args.output_file)
 
 if __name__ == '__main__':
     main()

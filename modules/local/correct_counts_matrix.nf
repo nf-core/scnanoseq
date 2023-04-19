@@ -1,6 +1,6 @@
 process CORRECT_COUNTS_MATRIX {
     tag "$meta.id"
-    label 'process_low'
+    label 'process_long'
 
     conda (params.enable_conda ? "conda-forge::pandas=1.5.1" : null)
     container "docker.io/biocontainers/pandas:1.5.1_cv1" // from PR: https://github.com/BioContainers/containers/pull/504

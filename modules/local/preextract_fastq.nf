@@ -8,8 +8,7 @@ process PREEXTRACT_FASTQ {
         'quay.io/biocontainers/mulled-v2-497e12343495a3e0f3b3459542cc8ad37575d9fa:483e027ac6835fcb80b9cfef4de8c89b67343941-0' }"
 
     input:
-    tuple val(meta), path(reads)
-    val regex_pattern
+    tuple val(meta), path(reads), path(bc_list)
 
     output:
     tuple val(meta), path("*.R1.fastq"), emit: r1_reads
@@ -24,14 +23,9 @@ process PREEXTRACT_FASTQ {
     def prefix = task.ext.prefix ?: "${meta.id}"
 
     """
-    FILE_PREFIX=${prefix}
-    if [ ${params.split_amount} -gt 0 ]; then
-        IDX=\$(basename ${reads} | cut -f2 -d'.')
-        FILE_PREFIX=\${FILE_PREFIX}.\${IDX}
-    fi
     pre_extract_barcodes.py -i ${reads} \\
-                            -r "${regex_pattern}" \\
-                            -o \${FILE_PREFIX}
+                            -b ${bc_list} \\
+                            -o ${prefix}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
