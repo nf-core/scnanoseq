@@ -276,7 +276,7 @@ def get_bc_probability(query_bc, query_bc_qual, potential_bc, bc_probabilities):
         if potential_bc in bc_probabilities:
             potential_bc_prob = bc_probabilities[potential_bc]
 
-        likelihood = (potential_bc_prob + bc_probabilities[query_bc]) * edit_probability
+        likelihood = (potential_bc_prob + bc_probabilities[potential_bc]) * edit_probability
 
     return likelihood
 
