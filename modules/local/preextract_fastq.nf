@@ -25,7 +25,8 @@ process PREEXTRACT_FASTQ {
     """
     pre_extract_barcodes.py -i ${reads} \\
                             -b ${bc_list} \\
-                            -o ${prefix}
+                            -o ${prefix} \\
+                            -f cellranger
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
