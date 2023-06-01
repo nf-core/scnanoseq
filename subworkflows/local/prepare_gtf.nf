@@ -4,15 +4,15 @@
 
 
 // Local modules
-include { TRANSCRIPT_TO_EXON        } from '../../modules/local/prepare_gtf_transcript_to_exon'
-include { SORT_GTF                  } from '../../modules/local/sort_gtf'
-include { SORT_GTF as SORT_EXON_GTF } from '../../modules/local/sort_gtf'
-include { SORT_GTF as SORT_BEDTOOLS } from '../../modules/local/sort_gtf'
-include { GET_GTF_FEATURES          } from '../../modules/local/get_gtf_features'
-include { GTF2BED                   } from '../../modules/local/gtf2bed'
-include { UCSC_BEDTOGENEPRED        } from '../../modules/local/ucsc_bedtogenepred'
-include { UCSC_GENEPREDTOGTF        } from '../../modules/local/ucsc_genepredtogtf'
-include { CREATE_INTRON_GTF         } from '../../modules/local/create_intron_gtf'
+include { TRANSCRIPT_TO_EXON         } from '../../modules/local/prepare_gtf_transcript_to_exon'
+include { SORT_GTF as SORT_INPUT_GTF } from '../../modules/local/sort_gtf'
+include { SORT_GTF as SORT_EXON_GTF  } from '../../modules/local/sort_gtf'
+include { SORT_GTF as SORT_BEDTOOLS  } from '../../modules/local/sort_gtf'
+include { GET_GTF_FEATURES           } from '../../modules/local/get_gtf_features'
+include { GTF2BED                    } from '../../modules/local/gtf2bed'
+include { UCSC_BEDTOGENEPRED         } from '../../modules/local/ucsc_bedtogenepred'
+include { UCSC_GENEPREDTOGTF         } from '../../modules/local/ucsc_genepredtogtf'
+include { CREATE_INTRON_GTF          } from '../../modules/local/create_intron_gtf'
 
 // nf-core modules
 include { CUSTOM_GETCHROMSIZES                        } from '../../modules/nf-core/custom/getchromsizes/main'
@@ -55,9 +55,9 @@ workflow PREPARE_GTF {
         //
         // MODULE: Sort the gtf
         //
-        SORT_GTF ( [ [ "id": "base" ], gtf ])
-        ch_sorted_gtf = SORT_GTF.out.gtf
-        ch_versions = ch_versions.mix(SORT_GTF.out.versions)
+        SORT_INPUT_GTF ( [ [ "id": "base" ], gtf ])
+        ch_sorted_gtf = SORT_INPUT_GTF.out.gtf
+        ch_versions = ch_versions.mix(SORT_INPUT_GTF.out.versions)
 
         //
         // MODULE: Complement the gtf to get the intergenic regions
