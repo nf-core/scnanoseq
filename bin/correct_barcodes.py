@@ -68,7 +68,7 @@ def get_filtered_outfile(outfile):
     filtered_outfile = "filtered.tmp"
 
     if outfile:
-        filtered_outfile = outfile
+        filtered_outfile = outfile + ".filtered"
 
     return filtered_outfile
 
