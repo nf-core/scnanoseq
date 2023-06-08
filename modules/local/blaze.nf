@@ -29,10 +29,10 @@ process BLAZE {
     """
     blaze.py \\
         --expect-cells=${exp_cell_amount} \\
-        --threads=12 \\
         --full-bc-whitelist=${in_whitelist} \\
         --out-putative-bc=${prefix}.putative_bc \\
         --out-bc-whitelist=${prefix}.whitelist \\
+        ${args} \\
         \$(pwd)
 
     sed -i 's#-1##g' ${prefix}.whitelist.csv
