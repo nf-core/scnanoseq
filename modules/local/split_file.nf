@@ -24,7 +24,7 @@ process SPLIT_FILE {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    split -a4 -l ${split_amount} -d --additional-suffix ${file_ext} ${unsplit_file} ${prefix}.
+    split -a10 -l ${split_amount} -d --additional-suffix ${file_ext} ${unsplit_file} ${prefix}.
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
