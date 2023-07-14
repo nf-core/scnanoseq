@@ -21,7 +21,7 @@ top_modules:
         anchor: "fastqc"
         info: "This section of the report shows FastQC results of the raw data"
         path_filters:
-            - "*/fastqc/pre_trim/*"
+            - "*raw*fastqc*"
     - fastqc:
         name: "FastQC (post trimmed)"
         anchor: "fastqc_posttrim"
