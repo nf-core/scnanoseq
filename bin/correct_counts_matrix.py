@@ -98,7 +98,7 @@ def update_counts(multi_feature_row, solo_feature_rows, features, gene_row_idx):
             # Lets get the count for the feature. Per FeatureCounts
             # documentation each feature on the row adds one to the
             # count, e.g. if a row has 3 features, the count will be 3
-            solo_feature_rows.loc[gene_row_idx,field] += int(int(getattr(multi_feature_row, field)) / len(features))
+            solo_feature_rows.loc[gene_row_idx,field] += int(getattr(multi_feature_row, field)) / len(features)
     return solo_feature_rows
 
 def main():
