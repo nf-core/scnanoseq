@@ -46,7 +46,7 @@ class UmiBcRead:
         # This finds where the input sequence starts
         strt_idx = self.sequence.index(src_seq)
 
-        # We use the start index gathered from above to get the 
+        # We use the start index gathered from above to get the
         #   correct quality string we need
         quality = self.qualities[strt_idx:(strt_idx+len(src_seq))]
 
@@ -79,7 +79,7 @@ def parse_args():
 def tag_bams(in_bam, in_fastq, out_bam, bc_length, umi_length):
     """ This will add tags to the read based on the information from the R1
         fastq
-    
+
     Args:
         in_bam (str): The input bam
         in_fastq (str): The input fastq containing only the barcoding
@@ -117,14 +117,16 @@ def tag_bams(in_bam, in_fastq, out_bam, bc_length, umi_length):
             if not read.has_tag(UMI_QUAL_TAG):
                 read.tags += [(UMI_QUAL_TAG, umi_bc_info.get_umi_qual())]
 
-            read.query_name = '_'.join([parsed_read_name, umi_bc_info.get_bc(), umi_bc_info.get_umi()])
-            
+            read.query_name = '_'.join([parsed_read_name,
+                                        umi_bc_info.get_bc(),
+                                        umi_bc_info.get_umi()])
+
             fh_out_bam.write(read)
 
 def read_r1_fastq_info(in_fastq, bc_length, umi_length):
     """ This will read in the input fastq and return the information as a
-        list 
-    
+        list
+
     Args:
         in_fastq (str): The input fastq containing only the barcode sequences
             and qualities

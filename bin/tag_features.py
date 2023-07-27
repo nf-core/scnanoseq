@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 
+""" This script will tag reads in a bam with the featureCounts results. This is
+    needed for processing by umi_tools count
+"""
+
 import sys
-import pysam
 import argparse
+import pysam
 
 def parse_args():
     """ Read in command line arguments """
@@ -15,37 +19,34 @@ def parse_args():
 
     parser.add_argument("--outfile", "-o", default=None, type=str,
                         help='name for output file')
-    
+
     args = parser.parse_args()
     return args
 
 def tag_bam_file(input_file, feature_file, output_file):
     """ Produce a bam file with the tags produced by featureCounts """
-    samfile = pysam.AlignmentFile(input_file, "rb")
-    featurein = open(feature_file, 'rt')
-    outfile = pysam.AlignmentFile(output_file, "wb", template=samfile)
 
+    with pysam.AlignmentFile(input_file, "rb") as samfile, \
+        open(feature_file, 'rt', encoding='UTF-8') as featurein, \
+        pysam.AlignmentFile(output_file, "wb", template=samfile) as outfile:
 
-    for read in samfile:
-        read_name, read_status, feature_count, gene_assignment = featurein.readline().strip('\n').split('\t')
+        for read in samfile:
+            read_name, read_status, feature_count, gene_assignment = \
+                featurein.readline().strip('\n').split('\t')
 
-        # The orders should match, on the off chance they don't, lets error out
-        if read_name != read.query_name:
-            print('{r1} does not match {r2}'.format(r1=read_name, r2=read.query_name))
-            sys.exit(1)
-        
-        read.tags += [('XS', read_status)]
+            # Error out if the order does not match
+            if read_name != read.query_name:
+                print(f'{read_name} does not match {read.query_name}')
+                sys.exit(1)
 
-        # This will mimic the tagging that feature counts would do
-        if not 'Unassigned' in read_status:
-            read.tags += [('XN', feature_count)]
-            read.tags += [('XT', gene_assignment)]
-    
-        outfile.write(read)
-    
-    samfile.close()
-    featurein.close()
-    outfile.close()
+            read.tags += [('XS', read_status)]
+
+            # This will mimic the tagging that feature counts would do
+            if not 'Unassigned' in read_status:
+                read.tags += [('XN', feature_count)]
+                read.tags += [('XT', gene_assignment)]
+
+            outfile.write(read)
 
 def main():
     ''' Main Subroutine '''
