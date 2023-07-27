@@ -32,6 +32,7 @@ process BLAZE {
         --full-bc-whitelist=${in_whitelist} \\
         --out-putative-bc=${prefix}.putative_bc \\
         --out-bc-whitelist=${prefix}.whitelist \\
+        --threads $task.cpus
         ${args} \\
         \$(pwd)
 
