@@ -109,6 +109,7 @@ include { TAG_BARCODES                                             } from "../mo
 include { CORRECT_BARCODES                                         } from "../modules/local/correct_barcodes"
 include { SORT_GTF                                                 } from "../modules/local/sort_gtf"
 include { MERGE_COUNTS_MTX                                         } from "../modules/local/merge_counts_mtx"
+include { ISOQUANT                                                 } from "../modules/local/isoquant"
 include { SEURAT as SEURAT_GENE                                    } from "../modules/local/seurat"
 include { SEURAT as SEURAT_TRANSCRIPT                              } from "../modules/local/seurat"
 include { COMBINE_SEURAT_STATS as COMBINE_SEURAT_STATS_GENE        } from "../modules/local/combine_seurat_stats"
@@ -117,13 +118,9 @@ include { COMBINE_SEURAT_STATS as COMBINE_SEURAT_STATS_TRANSCRIPT  } from "../mo
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
-include { INPUT_CHECK                                           } from "../subworkflows/local/input_check"
-include { CREATE_REGEX_INFO                                     } from "../subworkflows/local/create_regex"
-include { PREPARE_REFERENCE_FILES                               } from "../subworkflows/local/prepare_reference_files"
-include { GET_COUNTS_MATRIX as GET_GENE_COUNTS_MTX              } from "../subworkflows/local/get_counts_matrix"
-include { GET_COUNTS_MATRIX as GET_TRANSCRIPT_COUNTS_MTX        } from "../subworkflows/local/get_counts_matrix"
-include { GET_COUNTS_MATRIX as GET_INTRON_GENE_COUNTS_MTX       } from "../subworkflows/local/get_counts_matrix"
-include { GET_COUNTS_MATRIX as GET_INTRON_TRANSCRIPT_COUNTS_MTX } from "../subworkflows/local/get_counts_matrix"
+include { INPUT_CHECK             } from "../subworkflows/local/input_check"
+include { CREATE_REGEX_INFO       } from "../subworkflows/local/create_regex"
+include { PREPARE_REFERENCE_FILES } from "../subworkflows/local/prepare_reference_files"
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -155,6 +152,8 @@ include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_POST_TRIM        } from '..
 include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_POST_EXTRACT     } from '../subworkflows/nf-core/qcfastq_nanoplot_fastqc'
 include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_MINIMAP  } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
 include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_FILTERED } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
+include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_CORRECTED } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
+include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_DEDUP } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -234,6 +233,7 @@ workflow SCNANOSEQ {
     //
     ch_trimmed_reads_combined = Channel.empty()
     ch_zipped_reads = ch_fastqs_in
+    ch_fastqc_multiqc_postrim = Channel.empty()
     
     if (!params.skip_trimming){
         // The trimmers require unzipped fastqs, so we'll need to unzip them
@@ -295,7 +295,6 @@ workflow SCNANOSEQ {
         //
         // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - post-trim QC
         //
-        ch_fastqc_multiqc_postrim = Channel.empty()
         if (!params.skip_qc){
 
             //
@@ -333,6 +332,7 @@ workflow SCNANOSEQ {
 
     ch_putative_bc = BLAZE.out.putative_bc
     ch_gt_whitelist = BLAZE.out.whitelist
+    //ch_gt_whitelist = Channel.from( file("$baseDir/assets/whitelist/3M-february-2018.txt") )
     ch_whitelist_bc_count = BLAZE.out.bc_count
     ch_versions = ch_versions.mix(BLAZE.out.versions)
 
@@ -462,10 +462,9 @@ workflow SCNANOSEQ {
     // MODULE: Correct Barcodes
     //
 
-
     ch_correct_barcode_in = Channel.empty()
     ch_tagged_bam
-        .join ( ch_gt_whitelist, by: 0 )
+        .join ( ch_gt_whitelist, by: 0)
         .join ( ch_whitelist_bc_count, by: 0 )
         .set { ch_correct_barcode_in }
 
@@ -473,136 +472,73 @@ workflow SCNANOSEQ {
     ch_corrected_bam = CORRECT_BARCODES.out.corrected_bam
     ch_versions = ch_versions.mix(CORRECT_BARCODES.out.versions)
 
-    SAMTOOLS_INDEX_BC_CORRECTED ( ch_corrected_bam )
-    ch_corrected_bam_bai = SAMTOOLS_INDEX_BC_CORRECTED.out.bai
-//    ch_versions = ch_versions.mix(SAMTOOLS_INDEX_BC_CORRECTED)
+    //
+    // SUBWORKFLOW: BAM_SORT_STATS_SAMTOOLS
+    // The subworkflow is called in both the minimap2 bams and filtered (mapped only) version
+    BAM_SORT_STATS_SAMTOOLS_CORRECTED ( ch_corrected_bam, [] )
+    
+    ch_corrected_sorted_bam = BAM_SORT_STATS_SAMTOOLS_CORRECTED.out.bam
+    ch_corrected_sorted_bai = BAM_SORT_STATS_SAMTOOLS_CORRECTED.out.bai
+
+    // these stats go for multiqc
+    ch_corrected_sorted_stats =     BAM_SORT_STATS_SAMTOOLS_CORRECTED.out.stats
+    ch_corrected_sorted_flagstat =  BAM_SORT_STATS_SAMTOOLS_CORRECTED.out.flagstat
+    ch_corrected_sorted_idxstats =  BAM_SORT_STATS_SAMTOOLS_CORRECTED.out.idxstats
+    ch_versions = ch_versions.mix(BAM_SORT_STATS_SAMTOOLS_CORRECTED.out.versions)
 
     // TODO: Rename the dedup_bam channel to be more descriptive
-    ch_dedup_bam = ch_corrected_bam
-    ch_dedup_bam_bai = ch_corrected_bam_bai
+    ch_dedup_sorted_bam = ch_corrected_sorted_bam
+    ch_dedup_sorted_bam_bai = ch_corrected_sorted_bai
+    ch_dedup_sorted_flagstat = ch_corrected_sorted_flagstat
 
     if (!params.skip_dedup) {
         //
         // MODULE: Umitools Dedup
         //
-        UMITOOLS_DEDUP ( ch_corrected_bam.join(ch_corrected_bam_bai, by: [0]), true )
+        UMITOOLS_DEDUP ( ch_corrected_sorted_bam.join(ch_corrected_sorted_bai, by: [0]), true )
         ch_dedup_bam = UMITOOLS_DEDUP.out.bam
         ch_versions = ch_versions.mix(UMITOOLS_DEDUP.out.versions)
 
-        //
-        // MODULE: Index the Dedup'd bam
-        //
-        SAMTOOLS_INDEX_DEDUP ( ch_dedup_bam )
-        ch_dedup_bam_bai = SAMTOOLS_INDEX_DEDUP.out.bai
-        ch_versions = ch_versions.mix(SAMTOOLS_INDEX_DEDUP.out.versions)
+        // SUBWORKFLOW: BAM_SORT_STATS_SAMTOOLS
+        // The subworkflow is called in both the minimap2 bams and filtered (mapped only) version
+        BAM_SORT_STATS_SAMTOOLS_DEDUP ( ch_dedup_bam, [] )
+        
+        ch_dedup_sorted_bam = BAM_SORT_STATS_SAMTOOLS_DEDUP.out.bam
+        ch_dedup_sorted_bai = BAM_SORT_STATS_SAMTOOLS_DEDUP.out.bai
+
+        // these stats go for multiqc
+        ch_dedup_sorted_stats = BAM_SORT_STATS_SAMTOOLS_DEDUP.out.stats
+        ch_dedup_sorted_flagstat = BAM_SORT_STATS_SAMTOOLS_DEDUP.out.flagstat
+        ch_dedup_sorted_idxstats = BAM_SORT_STATS_SAMTOOLS_DEDUP.out.idxstats
+        ch_versions = ch_versions.mix(BAM_SORT_STATS_SAMTOOLS_DEDUP.out.versions)
     }
 
-    ch_dedup_bam
-        .map{ meta, fastq ->
-                meta.strandedness = params.stranded
-                [ meta, fastq ]
-            }
+    //
+    // MODULE: Isoquant
+    //
+    ISOQUANT ( ch_dedup_sorted_bam, params.fasta, params.gtf, 'tag:CB')
+    ch_gene_counts_mtx = ISOQUANT.out.gene_counts_mtx
+    ch_transcript_counts_mtx = ISOQUANT.out.transcript_counts_mtx
 
-    ch_gene_counts_mtx = Channel.empty()
-    ch_gene_stats_combined = Channel.empty()
-    ch_transcript_counts_mtx = Channel.empty()
-    ch_transcript_stats_combined = Channel.empty()
+    //
+    // MODULE: Seurat
+    //
+    ch_seurat_gene_in = Channel.empty()
+    ch_gene_counts_mtx
+        .join(ch_dedup_sorted_flagstat, by: [0])
+        .set { ch_seurat_gene_in }
 
-    if ( params.counts_level == "gene" || !params.counts_level ) {
+    SEURAT_GENE ( ch_seurat_gene_in )
+    ch_gene_seurat_qc = SEURAT_GENE.out.seurat_stats
+    
+    ch_seurat_transcript_in = Channel.empty()
+    ch_transcript_counts_mtx
+        .join(ch_dedup_sorted_flagstat, by: [0])
+        .set { ch_seurat_transcriptin }
 
-        //
-        // SUBWORKFLOW: Get the gene level count matrix
-        //
-
-        GET_GENE_COUNTS_MTX ( ch_dedup_bam, ch_gtf )
-        ch_exon_gene_counts_mtx = GET_GENE_COUNTS_MTX.out.counts_mtx
-        ch_gene_tag_bam_flagstat = GET_GENE_COUNTS_MTX.out.tag_bam_flagstat
-        ch_versions = ch_versions.mix(GET_GENE_COUNTS_MTX.out.versions)
-
-        if ( params.intron_retention_method == "2" ) {
-            GET_INTRON_GENE_COUNTS_MTX ( ch_dedup_bam, ch_gtf )
-            ch_intron_gene_counts_mtx = GET_INTRON_GENE_COUNTS_MTX.out.counts_mtx
-            ch_versions = ch_versions.mix(GET_INTRON_GENE_COUNTS_MTX.out.versions)
-
-            MERGE_COUNTS_MTX ( ch_exon_gene_counts_mtx.join ( ch_intron_gene_counts_mtx, by: 0 ))
-            ch_gene_counts_mtx = MERGE_COUNTS_MTX.out.merged_mtx
-            ch_versions = ch_versions.mix(MERGE_COUNTS_MTX.out.versions)
-        } else {
-            ch_gene_counts_mtx = ch_exon_gene_counts_mtx
-        }
-        //
-        // MODULE: SEURAT
-        //
-
-        //TODO: may combine these into a single-channel later on
-
-        if (!params.skip_qc && !params.skip_seurat) {
-            ch_gene_counts_flagstat = ch_gene_counts_mtx.join(ch_gene_tag_bam_flagstat, by: 0)
-            SEURAT_GENE ( ch_gene_counts_flagstat )
-            ch_versions = ch_versions.mix(SEURAT_GENE.out.versions)
-
-            ch_gene_stats = SEURAT_GENE.out.seurat_stats.collect{it[1]}
-
-            COMBINE_SEURAT_STATS_GENE ( ch_gene_stats )
-            ch_gene_stats_combined = COMBINE_SEURAT_STATS_GENE.out.combined_stats
-            ch_versions = ch_versions.mix(COMBINE_SEURAT_STATS_GENE.out.versions)
-        }
-
-    }
-
-    if ( params.counts_level == 'transcript' || !params.counts_level ) {
-        //
-        // MODULE: Create a stringtie gtf
-        //
-        STRINGTIE_STRINGTIE ( ch_dedup_bam, params.gtf )
-        ch_transcript_gtf = STRINGTIE_STRINGTIE.out.transcript_gtf
-        ch_versions = ch_versions.mix(STRINGTIE_STRINGTIE.out.versions)
-
-        //
-        // MODULE: Sort the gtf
-        //
-        SORT_GTF ( ch_transcript_gtf )
-        ch_transcript_gtf_sorted = SORT_GTF.out.gtf
-        ch_versions = ch_versions.mix(SORT_GTF.out.versions)
-
-        //
-        // MODULE: Merge the gtfs
-        //
-        // TODO: This currently doesn't take meta, so that means currently it does not work with multiple samples since files will get overwritten constantly. May want to convert this to local
-        STRINGTIE_MERGE ( ch_transcript_gtf_sorted.map { meta, gtf -> gtf }, ch_gtf )
-        ch_transcript_gtf_merged = STRINGTIE_MERGE.out.gtf
-        ch_versions = ch_versions.mix(STRINGTIE_MERGE.out.versions)
-
-        //
-        // SUBWORKFLOW: Get the transcript level count matrix
-        //
-        GET_TRANSCRIPT_COUNTS_MTX ( ch_dedup_bam, ch_transcript_gtf_merged )
-        ch_transcript_counts_mtx = GET_TRANSCRIPT_COUNTS_MTX.out.counts_mtx
-        ch_transcript_tag_bam_flagstat = GET_TRANSCRIPT_COUNTS_MTX.out.tag_bam_flagstat
-        ch_versions = ch_versions.mix(GET_TRANSCRIPT_COUNTS_MTX.out.versions)
-        //
-        // MODULE: SEURAT
-        //
-
-        //TODO: may combine these into a single-channel later on
-
-        if (!params.skip_qc && !params.skip_seurat) {
-            ch_transcript_counts_flagstat = ch_transcript_counts_mtx.join(ch_transcript_tag_bam_flagstat, by: 0)
-
-            SEURAT_TRANSCRIPT ( ch_transcript_counts_flagstat )
-
-            ch_transcript_stats = SEURAT_TRANSCRIPT.out.seurat_stats.collect{it[1]}
-            ch_versions = ch_versions.mix(SEURAT_TRANSCRIPT.out.versions)
-
-            COMBINE_SEURAT_STATS_TRANSCRIPT ( ch_transcript_stats )
-            ch_transcript_stats_combined = COMBINE_SEURAT_STATS_TRANSCRIPT.out.combined_stats
-            ch_versions = ch_versions.mix(COMBINE_SEURAT_STATS_TRANSCRIPT.out.versions)
-        }
-
-    }
-
-
-    // TODO: combine seurat stats to generat MultiQC table
+    SEURAT_TRANSCRIPT ( ch_seurat_transcript_in )
+    ch_transcript_seurat_qc = SEURAT_TRANSCRIPT.out.seurat_stats
+    // TODO: Combine seurat stats
 
     //
     // SOFTWARE_VERSIONS
@@ -645,8 +581,8 @@ workflow SCNANOSEQ {
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_minimap_sorted_stats.collect{it[1]}.ifEmpty([]))
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_minimap_sorted_flagstat.collect{it[1]}.ifEmpty([]))
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_minimap_sorted_idxstats.collect{it[1]}.ifEmpty([]))
-        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_gene_stats_combined.collect().ifEmpty([]))
-        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_transcript_stats_combined.collect().ifEmpty([]))
+        //ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_gene_stats_combined.collect().ifEmpty([]))
+        //ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_transcript_stats_combined.collect().ifEmpty([]))
 
         MULTIQC_FINALQC (
             ch_multiqc_finalqc_files.collect()
