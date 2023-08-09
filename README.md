@@ -37,34 +37,24 @@ On release, automated continuous integration tests run the pipeline on a full-si
    1. [`Nanofilt`](https://github.com/wdecoster/nanofilt) -> default
    2. [`ProwlerTrimmer`](https://github.com/ProwlerForNanopore/ProwlerTrimmer)
 4. Post trim QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [`NanoPlot`](https://github.com/wdecoster/NanoPlot))
-5. Prepare reads for barcode extraction. Consists of the following steps:
+5. Pre-extraction QC in the R2 reads ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [`NanoPlot`](https://github.com/wdecoster/NanoPlot))
+6. Barcode detection using a custom whitelist or 10X whitelist. [`BLAZE`](https://github.com/shimlab/BLAZE)
+7. Extract barcodes. Consists of the following steps:
     1. Parse FASTQ files into R1 reads containing barcode and UMI and R2 reads containing sequencing without barcode and UMI (custom script `./bin/pre_extract_barcodes.py`)
     2. Re-zip FASTQs ([`pigz`](https://github.com/madler/pigz))
-6. Pre-extraction QC in the R2 reads ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [`NanoPlot`](https://github.com/wdecoster/NanoPlot))
-7. Generate barcode whitelist. One of the following:
-    1. [`BLAZE`](https://github.com/shimlab/BLAZE) -> default <!-- TODO: current no default yet, but likely will make BLAZE default -->
-    2. [`UMI-tools`](https://github.com/CGATOxford/UMI-tools)
-    3. Accepts user-provided whitelist in parameters
-8. Barcode extraction ([`UMI-tools`](https://github.com/CGATOxford/UMI-tools))
-9. Post-extraction QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [`NanoPlot`](https://github.com/wdecoster/NanoPlot))
-10. Alignment ([`minimap2`](https://github.com/lh3/minimap2))
-11. SAMtools processing including ([`SAMtools`](http://www.htslib.org/doc/samtools.html)):
+8. Post-extraction QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [`NanoPlot`](https://github.com/wdecoster/NanoPlot))
+9. Alignment ([`minimap2`](https://github.com/lh3/minimap2))
+10. SAMtools processing including ([`SAMtools`](http://www.htslib.org/doc/samtools.html)):
     1. SAM to BAM
     2. Filtering of mapped only reads
     3. Sorting, indexing and obtain mapping metrics
-12. Post-mapping QC in unfiltered BAM files ([`NanoComp`](https://github.com/wdecoster/nanocomp))
-13. Barcode tagging with read quality, UMI, and UMI quality (custom script `./bin/tag_barcodes.py`)
-14. Barcode correction
-15. UMI-based deduplication [`UMI-tools`](https://github.com/CGATOxford/UMI-tools)
-16. Gene and transcript level matrices generation:
-    1. (Transcript level only): Generate transcript level GTF ([`StringTie`](https://ccb.jhu.edu/software/stringtie/))
-    2. [`Subread featureCounts`](https://subread.sourceforge.net/)
-    3. Tag features in BAM files (custom script `./bin/tag_features.py`)
-    4. Index feature tagged BAMs and obtain stats ([`SAMtools`](http://www.htslib.org/doc/samtools.html))
-    5. Generate counts matrix ([`UMI-tools`](https://github.com/CGATOxford/UMI-tools))
-    6. Data wrangling to generate matrices in the expected single-cell/nuclei format (handles multi overlapping outputs) (custom scripts `./bin/split_file_by_column.sh`, `./bin/correct_counts_matrix.py`, `./bin/merge_files_by_column.sh`)
-17. Preliminary matrix QC ([`Seurat`](https://github.com/satijalab/seurat))
-18. Present QC for raw reads, trimmed reads, pre and post-extracted reads, mapping metrics and preliminary single-cell/nuclei QC ([`MultiQC`](http://multiqc.info/))
+11. Post-mapping QC in unfiltered BAM files ([`NanoComp`](https://github.com/wdecoster/nanocomp))
+12. Barcode tagging with read quality, BC, BC quality, UMI, and UMI quality (custom script `./bin/tag_barcodes.py`)
+13. Barcode correction
+14. UMI-based deduplication [`UMI-tools`](https://github.com/CGATOxford/UMI-tools)
+15. Gene and transcript level matrices generation. [`IsoQuant`](https://github.com/ablab/IsoQuant)
+16. Preliminary matrix QC ([`Seurat`](https://github.com/satijalab/seurat))
+17. Present QC for raw reads, trimmed reads, pre and post-extracted reads, mapping metrics and preliminary single-cell/nuclei QC ([`MultiQC`](http://multiqc.info/))
 
 ## Quick Start
 
