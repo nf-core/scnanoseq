@@ -100,14 +100,12 @@ include { PIGZ as ZIP_TRIM                                         } from "../mo
 include { PIGZ as ZIP_R1                                           } from "../modules/local/pigz"
 include { PIGZ as ZIP_R2                                           } from "../modules/local/pigz"
 include { BLAZE                                                    } from "../modules/local/blaze"
-include { PREEXTRACT_FASTQ as PREEXTRACT_BARCODES                  } from "../modules/local/preextract_fastq.nf"
+include { PREEXTRACT_FASTQ                                         } from "../modules/local/preextract_fastq.nf"
 include { PAFTOOLS                                                 } from "../modules/local/paftools"
 include { MINIMAP2_INDEX                                           } from "../modules/local/minimap2_index"
 include { MINIMAP2_ALIGN                                           } from "../modules/local/minimap2_align"
-include { REFORMAT_WHITELIST                                       } from "../modules/local/reformat_whitelist"
 include { TAG_BARCODES                                             } from "../modules/local/tag_barcodes"
 include { CORRECT_BARCODES                                         } from "../modules/local/correct_barcodes"
-include { SORT_GTF                                                 } from "../modules/local/sort_gtf"
 include { MERGE_COUNTS_MTX                                         } from "../modules/local/merge_counts_mtx"
 include { ISOQUANT                                                 } from "../modules/local/isoquant"
 include { SEURAT as SEURAT_GENE                                    } from "../modules/local/seurat"
@@ -205,7 +203,6 @@ workflow SCNANOSEQ {
 
     }
 
-
     //
     // SUBWORKFLOW: Prepare reference files
     //
@@ -215,15 +212,17 @@ workflow SCNANOSEQ {
                             params.fasta,
                             params.gtf)
 
-    ch_fasta = PREPARE_REFERENCE_FILES.out.prepped_fasta
-    ch_gtf = PREPARE_REFERENCE_FILES.out.prepped_gtf
+    fasta = PREPARE_REFERENCE_FILES.out.prepped_fasta
+    gtf = PREPARE_REFERENCE_FILES.out.prepped_gtf
+
+
     ch_versions = ch_versions.mix( PREPARE_REFERENCE_FILES.out.versions )
 
     //
     // MODULE: Generate junction file - paftools
     //
     
-    PAFTOOLS ( ch_gtf )
+    PAFTOOLS ( gtf )
     ch_bed = PAFTOOLS.out.bed
     ch_versions = ch_versions.mix(PAFTOOLS.out.versions)
     
@@ -340,9 +339,9 @@ workflow SCNANOSEQ {
     // MODULE: Extract barcodes
     //
 
-    PREEXTRACT_BARCODES( ch_trimmed_reads_combined.join(ch_putative_bc))
-    ch_r1_reads = PREEXTRACT_BARCODES.out.r1_reads
-    ch_r2_reads = PREEXTRACT_BARCODES.out.r2_reads
+    PREEXTRACT_FASTQ( ch_trimmed_reads_combined.join(ch_putative_bc))
+    ch_r1_reads = PREEXTRACT_FASTQ.out.r1_reads
+    ch_r2_reads = PREEXTRACT_FASTQ.out.r2_reads
 
     //
     // MODULE: Zip fastq
@@ -372,9 +371,7 @@ workflow SCNANOSEQ {
     //
 
     if (!params.skip_save_minimap2_index) {
-        ch_fasta =  Channel.fromPath(params.fasta, checkIfExists: true)
-
-        MINIMAP2_INDEX ( ch_fasta,  ch_bed)
+        MINIMAP2_INDEX ( fasta,  ch_bed)
         ch_minimap_index = MINIMAP2_INDEX.out.index
         ch_versions = ch_versions.mix(MINIMAP2_INDEX.out.versions)
     }
@@ -419,6 +416,7 @@ workflow SCNANOSEQ {
     BAM_SORT_STATS_SAMTOOLS_MINIMAP ( ch_minimap_bam, [] )
     ch_minimap_sorted_bam = BAM_SORT_STATS_SAMTOOLS_MINIMAP.out.bam
     ch_minimap_sorted_bai = BAM_SORT_STATS_SAMTOOLS_MINIMAP.out.bai
+
     // these stats go for multiqc
     ch_minimap_sorted_stats = BAM_SORT_STATS_SAMTOOLS_MINIMAP.out.stats
     ch_minimap_sorted_flagstat = BAM_SORT_STATS_SAMTOOLS_MINIMAP.out.flagstat
@@ -446,15 +444,13 @@ workflow SCNANOSEQ {
     // MODULE: Tag Barcodes
     //
 
-    ch_tag_barcode_in = Channel.empty()
+    TAG_BARCODES (
+        ch_minimap_filtered_sorted_bam
+            .join( ch_zipped_r1_reads, by: 0 )
+            .combine( val_regex_info.bc_length )
+            .combine( val_regex_info.umi_length )
+    )
 
-    ch_minimap_filtered_sorted_bam
-        .join( ch_zipped_r1_reads, by: 0 )
-        .combine( val_regex_info.bc_length )
-        .combine( val_regex_info.umi_length )
-        .set{ ch_tag_barcode_in }
-
-    TAG_BARCODES( ch_tag_barcode_in )
     ch_tagged_bam = TAG_BARCODES.out.tagged_bam
     ch_versions = ch_versions.mix(TAG_BARCODES.out.versions)
 
@@ -462,13 +458,12 @@ workflow SCNANOSEQ {
     // MODULE: Correct Barcodes
     //
 
-    ch_correct_barcode_in = Channel.empty()
-    ch_tagged_bam
-        .join ( ch_gt_whitelist, by: 0)
-        .join ( ch_whitelist_bc_count, by: 0 )
-        .set { ch_correct_barcode_in }
+    CORRECT_BARCODES (
+        ch_tagged_bam
+            .join ( ch_gt_whitelist, by: 0)
+            .join ( ch_whitelist_bc_count, by: 0 )
+    )
 
-    CORRECT_BARCODES( ch_correct_barcode_in )
     ch_corrected_bam = CORRECT_BARCODES.out.corrected_bam
     ch_versions = ch_versions.mix(CORRECT_BARCODES.out.versions)
 
@@ -513,32 +508,39 @@ workflow SCNANOSEQ {
         ch_versions = ch_versions.mix(BAM_SORT_STATS_SAMTOOLS_DEDUP.out.versions)
     }
 
+    ch_dedup_sorted_bam 
+
     //
     // MODULE: Isoquant
     //
-    ISOQUANT ( ch_dedup_sorted_bam, params.fasta, params.gtf, 'tag:CB')
-    ch_gene_counts_mtx = ISOQUANT.out.gene_counts_mtx
-    ch_transcript_counts_mtx = ISOQUANT.out.transcript_counts_mtx
+    ISOQUANT ( ch_dedup_sorted_bam.join(ch_dedup_sorted_bai, by: [0]), params.fasta, params.gtf, 'tag:CB')
+    ch_gene_count_mtx = ISOQUANT.out.gene_count_mtx
+    ch_transcript_count_mtx = ISOQUANT.out.transcript_count_mtx
 
-    //
-    // MODULE: Seurat
-    //
-    ch_seurat_gene_in = Channel.empty()
-    ch_gene_counts_mtx
-        .join(ch_dedup_sorted_flagstat, by: [0])
-        .set { ch_seurat_gene_in }
+    if (!params.skip_qc && !params.skip_seurat){
+        //
+        // MODULE: Seurat
+        //
+        SEURAT_GENE ( ch_gene_count_mtx.join(ch_dedup_sorted_flagstat, by: [0]) )
+        ch_gene_seurat_qc = SEURAT_GENE.out.seurat_stats
 
-    SEURAT_GENE ( ch_seurat_gene_in )
-    ch_gene_seurat_qc = SEURAT_GENE.out.seurat_stats
-    
-    ch_seurat_transcript_in = Channel.empty()
-    ch_transcript_counts_mtx
-        .join(ch_dedup_sorted_flagstat, by: [0])
-        .set { ch_seurat_transcriptin }
+        SEURAT_TRANSCRIPT ( ch_transcript_count_mtx.join(ch_dedup_sorted_flagstat, by: [0]) )
+        ch_transcript_seurat_qc = SEURAT_TRANSCRIPT.out.seurat_stats
 
-    SEURAT_TRANSCRIPT ( ch_seurat_transcript_in )
-    ch_transcript_seurat_qc = SEURAT_TRANSCRIPT.out.seurat_stats
-    // TODO: Combine seurat stats
+        //
+        // MODULE: Combine Seurat Stats
+        //
+        
+        ch_gene_stats = SEURAT_GENE.out.seurat_stats.collect{it[1]}
+        COMBINE_SEURAT_STATS_GENE ( ch_gene_stats )
+        ch_gene_stats_combined = COMBINE_SEURAT_STATS_GENE.out.combined_stats
+        ch_versions = ch_versions.mix(COMBINE_SEURAT_STATS_GENE.out.versions)
+
+        ch_transcript_stats = SEURAT_TRANSCRIPT.out.seurat_stats.collect{it[1]}
+        COMBINE_SEURAT_STATS_TRANSCRIPT ( ch_transcript_stats )
+        ch_transcript_stats_combined = COMBINE_SEURAT_STATS_TRANSCRIPT.out.combined_stats
+        ch_versions = ch_versions.mix(COMBINE_SEURAT_STATS_TRANSCRIPT.out.versions)
+    }
 
     //
     // SOFTWARE_VERSIONS
@@ -578,11 +580,13 @@ workflow SCNANOSEQ {
 
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_fastqc_multiqc_postrim.collect().ifEmpty([]))
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_fastqc_multiqc_postextract.collect().ifEmpty([]))
+        
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_minimap_sorted_stats.collect{it[1]}.ifEmpty([]))
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_minimap_sorted_flagstat.collect{it[1]}.ifEmpty([]))
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_minimap_sorted_idxstats.collect{it[1]}.ifEmpty([]))
-        //ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_gene_stats_combined.collect().ifEmpty([]))
-        //ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_transcript_stats_combined.collect().ifEmpty([]))
+        
+        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_gene_stats_combined.collect().ifEmpty([]))
+        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_transcript_stats_combined.collect().ifEmpty([]))
 
         MULTIQC_FINALQC (
             ch_multiqc_finalqc_files.collect()

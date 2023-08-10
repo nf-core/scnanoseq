@@ -46,16 +46,16 @@ workflow PREPARE_GTF {
         //
         // MODULE: Complement the gtf to get the intergenic regions
         //
-        ch_intergenic_in = Channel.empty()
-        gtf
-            .map {
-                meta, gtf ->
-                    meta.id = "intergenic"
-                    [ meta, gtf ]
-            }
-            .set{ch_intergenic_in}
 
-        COMPLEMENT_GTF ( ch_intergenic_in, chr_sizes )
+        COMPLEMENT_GTF (
+            gtf
+                .map {
+                    meta, gtf ->
+                        meta.id = "intergenic"
+                        [meta, gtf]
+                },
+            chr_sizes 
+        )
         ch_intergenic_bed = COMPLEMENT_GTF.out.bed
         ch_versions = ch_versions.mix(COMPLEMENT_GTF.out.versions)
 
