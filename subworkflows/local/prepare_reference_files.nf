@@ -4,6 +4,8 @@
 
 include { PREPARE_GTF } from '../../subworkflows/local/prepare_gtf'
 
+include { SAMTOOLS_FAIDX } from '../../modules/nf-core/samtools/faidx/main'
+
 workflow PREPARE_REFERENCE_FILES {
     take:
         fasta_preparation_method
@@ -24,8 +26,15 @@ workflow PREPARE_REFERENCE_FILES {
         ch_prepared_gtf = PREPARE_GTF.out.prepped_gtf
         ch_versions = ch_versions.mix(PREPARE_GTF.out.versions)
 
+        //
+        // MODULE: Index the fasta
+        //
+        SAMTOOLS_FAIDX( [ [ "id": "fasta"], fasta ], [ ["id": "fai"], "$projectDir/assets/dummy_file.txt" ])
+        ch_prepared_fai = SAMTOOLS_FAIDX.out.fai.map{ meta, fai -> [fai] }
+
     emit:
         prepped_fasta = ch_prepared_fasta
+        prepped_fai = ch_prepared_fai
         prepped_gtf = ch_prepared_gtf
         versions = ch_versions
 }
