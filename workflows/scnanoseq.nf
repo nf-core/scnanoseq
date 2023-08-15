@@ -141,6 +141,7 @@ include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_BC_CORRECTED } from '../modules/nf-co
 include { STRINGTIE_STRINGTIE                           } from '../modules/nf-core/stringtie/stringtie/main'
 include { STRINGTIE_MERGE                               } from '../modules/nf-core/stringtie/merge/main'
 include { CAT_CAT                                       } from "../modules/nf-core/cat/cat/main"
+include { CAT_FASTQ                                     } from '../modules/nf-core/cat/fastq/main'
 
 /*
  * SUBWORKFLOW: Consisting entirely of nf-core/modules
@@ -213,6 +214,7 @@ workflow SCNANOSEQ {
                             params.gtf)
 
     fasta = PREPARE_REFERENCE_FILES.out.prepped_fasta
+    fai = PREPARE_REFERENCE_FILES.out.prepped_fai
     gtf = PREPARE_REFERENCE_FILES.out.prepped_gtf
 
 
@@ -225,6 +227,13 @@ workflow SCNANOSEQ {
     PAFTOOLS ( gtf )
     ch_bed = PAFTOOLS.out.bed
     ch_versions = ch_versions.mix(PAFTOOLS.out.versions)
+
+    //
+    // MODULE: Concatenate FastQ files from teh same sample if needed
+    //
+    //CAT_FASTQ (
+    //    ch
+    //)
     
 
     //
@@ -383,7 +392,7 @@ workflow SCNANOSEQ {
     if (!params.skip_save_minimap2_index) {
         ch_reference = ch_minimap_index.toList()
     } else {
-        ch_reference = Channel.fromPath(params.fasta, checkIfExists: true).toList()
+        ch_reference = Channel.fromPath(fasta, checkIfExists: true).toList()
     }
     MINIMAP2_ALIGN ( ch_zipped_r2_reads, ch_bed, ch_reference )
 
@@ -507,13 +516,12 @@ workflow SCNANOSEQ {
         ch_dedup_sorted_idxstats = BAM_SORT_STATS_SAMTOOLS_DEDUP.out.idxstats
         ch_versions = ch_versions.mix(BAM_SORT_STATS_SAMTOOLS_DEDUP.out.versions)
     }
-
-    ch_dedup_sorted_bam 
-
+    
     //
     // MODULE: Isoquant
     //
-    ISOQUANT ( ch_dedup_sorted_bam.join(ch_dedup_sorted_bai, by: [0]), params.fasta, params.gtf, 'tag:CB')
+    fasta.view()
+    ISOQUANT ( ch_dedup_sorted_bam.join(ch_dedup_sorted_bai, by: [0]), gtf, fasta, fai, 'tag:CB')
     ch_gene_count_mtx = ISOQUANT.out.gene_count_mtx
     ch_transcript_count_mtx = ISOQUANT.out.transcript_count_mtx
 
@@ -550,7 +558,7 @@ workflow SCNANOSEQ {
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
     )
 
-    if (!params.skip_multiqc){
+    if (!params.skip_qc && !params.skip_multiqc){
 
         //
         // MODULE: MultiQC for raw data
@@ -578,12 +586,20 @@ workflow SCNANOSEQ {
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
 
-        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_fastqc_multiqc_postrim.collect().ifEmpty([]))
-        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_fastqc_multiqc_postextract.collect().ifEmpty([]))
+        //ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_fastqc_multiqc_postrim.collect().ifEmpty([]))
+        //ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_fastqc_multiqc_postextract.collect().ifEmpty([]))
+        //
+        //ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_minimap_sorted_stats.collect{it[1]}.ifEmpty([]))
+        //ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_minimap_sorted_flagstat.collect{it[1]}.ifEmpty([]))
+        //ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_minimap_sorted_idxstats.collect{it[1]}.ifEmpty([]))
+        //
+        //ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_corrected_sorted_stats.collect{it[1]}.ifEmpty([]))
+        //ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_corrected_sorted_flagstat.collect{it[1]}.ifEmpty([]))
+        //ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_corrected_sorted_idxstats.collect{it[1]}.ifEmpty([]))
         
-        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_minimap_sorted_stats.collect{it[1]}.ifEmpty([]))
-        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_minimap_sorted_flagstat.collect{it[1]}.ifEmpty([]))
-        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_minimap_sorted_idxstats.collect{it[1]}.ifEmpty([]))
+        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_dedup_sorted_stats.collect{it[1]}.ifEmpty([]))
+        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_dedup_sorted_flagstat.collect{it[1]}.ifEmpty([]))
+        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_dedup_sorted_idxstats.collect{it[1]}.ifEmpty([]))
         
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_gene_stats_combined.collect().ifEmpty([]))
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_transcript_stats_combined.collect().ifEmpty([]))
