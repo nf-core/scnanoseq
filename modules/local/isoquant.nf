@@ -8,9 +8,10 @@ process ISOQUANT {
         'quay.io/biocontainers/isoquant:3.3.1--hdfd78af_0' }"
 
     input:
-    tuple val(meta), path(bam)
-    val fasta
-    val gtf
+    tuple val(meta), path(bam), path(bai)
+    path gtf
+    path fasta
+    path fai
     val group_category
 
     output:
@@ -23,7 +24,11 @@ process ISOQUANT {
 
     script:
     def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: "${meta.id}"
+    //def prefix = task.ext.prefix ?: "${meta.id}"
+    def prefix = "test" 
+    //def gtf = ''
+    //def bam = ''
+    def group_category = 'test'
 
     if ( !group_category?.trim() ){
         """
@@ -46,7 +51,7 @@ process ISOQUANT {
     } else {
         """
         isoquant.py ${args} \\
-                    --datatype nanopore \\
+                    --data_type nanopore \\
                     --reference $fasta \\
                     --genedb $gtf \\
                     --bam $bam \\
