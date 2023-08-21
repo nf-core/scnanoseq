@@ -520,7 +520,6 @@ workflow SCNANOSEQ {
     //
     // MODULE: Isoquant
     //
-    fasta.view()
     ISOQUANT ( ch_dedup_sorted_bam.join(ch_dedup_sorted_bai, by: [0]), gtf, fasta, fai, 'tag:CB')
     ch_gene_count_mtx = ISOQUANT.out.gene_count_mtx
     ch_transcript_count_mtx = ISOQUANT.out.transcript_count_mtx
