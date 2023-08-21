@@ -50,7 +50,7 @@ On release, automated continuous integration tests run the pipeline on a full-si
     3. Sorting, indexing and obtain mapping metrics
 11. Post-mapping QC in unfiltered BAM files ([`NanoComp`](https://github.com/wdecoster/nanocomp))
 12. Barcode tagging with read quality, BC, BC quality, UMI, and UMI quality (custom script `./bin/tag_barcodes.py`)
-13. Barcode correction
+13. Barcode correction (custom script `./bin/correct_barcodes.py`)
 14. UMI-based deduplication [`UMI-tools`](https://github.com/CGATOxford/UMI-tools)
 15. Gene and transcript level matrices generation. [`IsoQuant`](https://github.com/ablab/IsoQuant)
 16. Preliminary matrix QC ([`Seurat`](https://github.com/satijalab/seurat))
@@ -76,8 +76,6 @@ On release, automated continuous integration tests run the pipeline on a full-si
    > - If you are using `conda`, it is highly recommended to use the [`NXF_CONDA_CACHEDIR` or `conda.cacheDir`](https://www.nextflow.io/docs/latest/conda.html) settings to store the environments in a central location for future pipeline runs.
 
 4. Start running your own analysis!
-
-   <!-- TODO nf-core: Update the example "typical command" below used to run the pipeline -->
 
    ```console
    nextflow run nf-core/scnanoseq --input samplesheet.csv --outdir <OUTDIR> --genome GRCh37 -profile <docker/singularity/podman/shifter/charliecloud/conda/institute>
