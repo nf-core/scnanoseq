@@ -29,7 +29,7 @@ On release, automated continuous integration tests run the pipeline on a full-si
 ## Pipeline summary
 
 <!-- NOTE below doesn't include intron specific path/processing. If we set this as default, can add a couple of points -->
-<!-- TODO add updated subway diagram -->
+![scnanoseq diagram](assets/scnanoseq_diagram.png)
 
 1. Raw read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [`NanoPlot`](https://github.com/wdecoster/NanoPlot) and [`NanoComp`](https://github.com/wdecoster/nanocomp))
 2. Unzip and split FastQ (optional: faster processing if split. [`gunzip`](https://linux.die.net/man/1/gunzip) and [`split`](https://linux.die.net/man/1/split))
