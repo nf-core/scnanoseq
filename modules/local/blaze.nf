@@ -17,6 +17,7 @@ process BLAZE {
     tuple val(meta), path("*.putative_bc.csv") , emit: putative_bc
     tuple val(meta), path("*.whitelist.csv")   , emit: whitelist
     tuple val(meta), path("*.bc_count.txt")    , emit: bc_count
+    tuple val(meta), path("*.knee_plot.png")   , emit: knee_plot
     path "versions.yml"                        , emit: versions
 
     when:
@@ -38,6 +39,7 @@ process BLAZE {
 
     sed -i 's#-1##g' ${prefix}.whitelist.csv
     cut -f2 -d',' ${prefix}.putative_bc.csv | sort | uniq -c | awk '{if (\$2 != "") {print \$2"\\t\\t"\$1"\\t"}}' > ${prefix}.bc_count.txt
+    mv knee_plot.png ${prefix}.knee_plot.png
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
