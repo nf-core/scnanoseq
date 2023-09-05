@@ -9,8 +9,6 @@ def summary_params = NfcoreSchema.paramsSummaryMap(workflow, params)
 // Validate input parameters
 WorkflowScnanoseq.initialise(params, log)
 
-// TODO: added param below linked to file paths, but need to check other needs for our params
-// e.g.: fixed_seqs --> likely want to add some checkers here.
 def checkPathParamList = [ 
     params.input, params.multiqc_config, params.fasta, 
     params.gtf, params.whitelist
@@ -529,6 +527,7 @@ workflow SCNANOSEQ {
     ISOQUANT ( ch_dedup_sorted_bam.join(ch_dedup_sorted_bai, by: [0]), gtf, fasta, fai, 'tag:CB')
     ch_gene_count_mtx = ISOQUANT.out.gene_count_mtx
     ch_transcript_count_mtx = ISOQUANT.out.transcript_count_mtx
+    ch_versions = ch_versions.mix(ISOQUANT.out.versions)
 
     if (!params.skip_qc && !params.skip_seurat){
         //

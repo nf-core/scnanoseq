@@ -24,11 +24,7 @@ process ISOQUANT {
 
     script:
     def args = task.ext.args ?: ''
-    //def prefix = task.ext.prefix ?: "${meta.id}"
-    def prefix = "test" 
-    //def gtf = ''
-    //def bam = ''
-    def group_category = 'test'
+    def prefix = task.ext.prefix ?: "${meta.id}"
 
     if ( !group_category?.trim() ){
         """
@@ -64,7 +60,7 @@ process ISOQUANT {
 
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":
-            isoquant: 3.3.1
+            isoquant: \$(isoquant.py -v 2>&1)
         END_VERSIONS
         """
     
