@@ -5,7 +5,7 @@ process NANOFILT {
     conda (params.enable_conda ? "bioconda::nanofilt=2.8.0" : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/nanofilt:2.8.0--py_0':
-        'quay.io/biocontainers/nanofilt:2.8.0--py_0' }"
+        'biocontainers/nanofilt:2.8.0--py_0' }"
 
     input:
     tuple val(meta), path(reads)
