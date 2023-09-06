@@ -403,7 +403,6 @@ workflow SCNANOSEQ {
     //
     // MODULE: Samtools view
     //
-    ch_minimap_sam.view()
     SAMTOOLS_VIEW_BAM ( ch_minimap_sam, [[],[]], [] )
 
     ch_minimap_bam = SAMTOOLS_VIEW_BAM.out.bam
