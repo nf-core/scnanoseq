@@ -1,6 +1,6 @@
 process MINIMAP2_INDEX {
     tag "$fasta"
-    label "process_high"
+    label "process_medium"
 
     conda (params.enable_conda ? "bioconda::minimap2=2.24" : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
