@@ -169,12 +169,34 @@ workflow SCNANOSEQ {
     //
     // SUBWORKFLOW: Read in samplesheet, validate and stage input files
     //
-    INPUT_CHECK (
-        ch_input
-    )
-    ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
+    INPUT_CHECK ( ch_input )
+        .reads
+        .map{
+            meta, fastq ->
+                new_id = meta.id - ~/_T\d+/
+                [ meta + [id: new_id], fastq ]
+        }
+        .groupTuple()
+        .branch{
+            meta, fastq ->
+                single: fastq.size() == 1
+                    return [ meta, fastq.flatten() ]
+                multiple: fastq.size() > 1
+                    return [ meta, fastq.flatten() ]
+        }
+        .set { ch_fastqs }
 
-    ch_fastqs_in = INPUT_CHECK.out.reads
+    ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
+    
+    //
+    // MODULE: Combine fastqs from the same sample
+    //
+    CAT_FASTQ ( ch_fastqs.multiple )
+        .reads
+        .mix ( ch_fastqs.single )
+        .set { ch_cat_fastq }
+
+    ch_versions = ch_versions.mix (CAT_FASTQ.out.versions.first().ifEmpty(null))
 
     //
     // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - pre-trim QC
@@ -183,7 +205,7 @@ workflow SCNANOSEQ {
     ch_fastqc_multiqc_pretrim = Channel.empty()
     if (!params.skip_qc){
 
-        FASTQC_NANOPLOT_PRE_TRIM ( ch_fastqs_in, params.skip_nanoplot, params.skip_fastqc )
+        FASTQC_NANOPLOT_PRE_TRIM ( ch_cat_fastq, params.skip_nanoplot, params.skip_fastqc )
 
         ch_versions = ch_versions.mix(FASTQC_NANOPLOT_PRE_TRIM.out.nanoplot_version.first().ifEmpty(null))
         ch_versions = ch_versions.mix(FASTQC_NANOPLOT_PRE_TRIM.out.fastqc_version.first().ifEmpty(null))
@@ -196,7 +218,7 @@ workflow SCNANOSEQ {
     //
 
     if (!params.skip_qc && !params.skip_fastq_nanocomp) {
-        ch_nanocomp_fastqs = ch_fastqs_in.collect{it[1]}
+        ch_nanocomp_fastqs = ch_cat_fastq.collect{it[1]}
 
         NANOCOMP_FASTQ ( ch_nanocomp_fastqs )
         ch_versions = ch_versions.mix( NANOCOMP_FASTQ.out.versions )
@@ -228,18 +250,10 @@ workflow SCNANOSEQ {
     ch_versions = ch_versions.mix(PAFTOOLS.out.versions)
 
     //
-    // MODULE: Concatenate FastQ files from teh same sample if needed
-    //
-    //CAT_FASTQ (
-    //    ch
-    //)
-    
-
-    //
     // MODULE: Trim and filter reads
     //
     ch_trimmed_reads_combined = Channel.empty()
-    ch_zipped_reads = ch_fastqs_in
+    ch_zipped_reads = ch_cat_fastq
     ch_fastqc_multiqc_postrim = Channel.empty()
     
     if (!params.skip_trimming){
@@ -249,7 +263,7 @@ workflow SCNANOSEQ {
         //
         // MODULE: Unzip fastq
         //
-        GUNZIP( ch_fastqs_in )
+        GUNZIP( ch_cat_fastq )
         ch_unzipped_fastqs = GUNZIP.out.gunzip
         ch_versions = ch_versions.mix( GUNZIP.out.versions )
 
