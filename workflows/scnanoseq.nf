@@ -1,12 +1,18 @@
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    VALIDATE INPUTS
+    PRINT PARAMS SUMMARY
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-def summary_params = NfcoreSchema.paramsSummaryMap(workflow, params)
+include { paramsSummaryLog; paramsSummaryMap } from 'plugin/nf-validation'
 
-// Validate input parameters
+def logo = NfcoreTemplate.logo(workflow, params.monochrome_logs)
+def citation = '\n' + WorkflowMain.citation(workflow) + '\n'
+def summary_params = paramsSummaryMap(workflow)
+
+// Print parameter summary log to screen
+log.info logo + paramsSummaryLog(workflow) + citation
+
 WorkflowScnanoseq.initialise(params, log)
 
 def checkPathParamList = [ 
@@ -67,17 +73,10 @@ if (params.whitelist) {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-ch_multiqc_config        = file("$projectDir/assets/multiqc_config.yml", checkIfExists: true)
-ch_multiqc_custom_config = params.multiqc_config ? Channel.fromPath(params.multiqc_config) : Channel.empty()
-ch_multiqc_logo          = Channel.empty()
-
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    OTHER FILES
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
-
-// Dummy file used as optional input where required for __combine operator__
+ch_multiqc_config          = Channel.fromPath("$projectDir/assets/multiqc_config.yml", checkIfExists: true)
+ch_multiqc_custom_config   = params.multiqc_config ? Channel.fromPath( params.multiqc_config, checkIfExists: true ) : Channel.empty()
+ch_multiqc_logo            = params.multiqc_logo   ? Channel.fromPath( params.multiqc_logo, checkIfExists: true ) : Channel.empty()
+ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
 ch_dummy_file = Channel.fromPath("$projectDir/assets/dummy_file.txt", checkIfExists: true)
 
 /*
@@ -582,7 +581,7 @@ workflow SCNANOSEQ {
         //
 
         ch_multiqc_rawqc_files = Channel.empty()
-        ch_multiqc_rawqc_files = ch_multiqc_rawqc_files.mix(Channel.from(ch_multiqc_config))
+        ch_multiqc_rawqc_files = ch_multiqc_rawqc_files.mix(ch_multiqc_config)
         ch_multiqc_rawqc_files = ch_multiqc_rawqc_files.mix(ch_multiqc_custom_config.collect().ifEmpty([]))
         ch_multiqc_rawqc_files = ch_multiqc_rawqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
         ch_multiqc_rawqc_files = ch_multiqc_rawqc_files.mix(ch_fastqc_multiqc_pretrim.collect().ifEmpty([]))
@@ -601,7 +600,7 @@ workflow SCNANOSEQ {
         ch_workflow_summary = Channel.value(workflow_summary)
 
         ch_multiqc_finalqc_files = Channel.empty()
-        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(Channel.from(ch_multiqc_config))
+        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_multiqc_config)
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_multiqc_custom_config.collect().ifEmpty([]))
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
@@ -646,6 +645,9 @@ workflow.onComplete {
         NfcoreTemplate.email(workflow, params, summary_params, projectDir, log, multiqc_report)
     }
     NfcoreTemplate.summary(workflow, params, log)
+    if (params.hook_url) {
+        NfcoreTemplate.IM_notification(workflow, params, summary_params, projectDir, log)
+    }
 }
 
 /*

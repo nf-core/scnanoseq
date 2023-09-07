@@ -30,6 +30,11 @@
                         "git_sha": "911696ea0b62df80e900ef244d7867d177971f73",
                         "installed_by": ["modules"]
                     },
+                    "custom/dumpsoftwareversions": {
+                        "branch": "master",
+                        "git_sha": "76cc4938c1f6ea5c7d83fed1eeffc146787f9543",
+                        "installed_by": ["modules"]
+                    },
                     "fastqc": {
                         "branch": "master",
                         "git_sha": "bd8092b67b5103bdd52e300f75889442275c3117",
