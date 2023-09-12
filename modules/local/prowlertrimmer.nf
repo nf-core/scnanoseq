@@ -2,7 +2,7 @@ process PROWLERTRIMMER {
     tag "$meta.id"
     label 'process_low'
 
-    conda (params.enable_conda ? "jdoe062894::prowlertrimmer" : null)
+    conda "jdoe062894::prowlertrimmer"
 
     input:
     tuple val(meta), path(reads)

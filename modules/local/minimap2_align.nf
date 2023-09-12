@@ -2,7 +2,7 @@ process MINIMAP2_ALIGN {
     tag "$meta.id"
     label 'process_medium'
 
-    conda (params.enable_conda ? "bioconda::minimap2=2.24" : null)
+    conda "bioconda::minimap2=2.24"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/minimap2:2.24--h5bf99c6_0':
         'biocontainers/minimap2:2.24--h5bf99c6_0' }"

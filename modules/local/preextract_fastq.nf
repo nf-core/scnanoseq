@@ -2,7 +2,7 @@ process PREEXTRACT_FASTQ {
     tag "$meta.id"
     label 'process_low'
 
-    conda (params.enable_conda ? "conda-forge::regex=2022.1.18 conda-forge::biopython=1.79" : null)
+    conda "conda-forge::regex=2022.1.18 conda-forge::biopython=1.79"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/mulled-v2-497e12343495a3e0f3b3459542cc8ad37575d9fa:483e027ac6835fcb80b9cfef4de8c89b67343941-0' :
         'biocontainers/mulled-v2-497e12343495a3e0f3b3459542cc8ad37575d9fa:483e027ac6835fcb80b9cfef4de8c89b67343941-0' }"

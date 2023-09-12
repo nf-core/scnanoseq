@@ -2,7 +2,7 @@ process SEURAT {
     tag "$meta.id"
     label 'process_low'
 
-    conda (params.enable_conda ? "conda-forge::r-base conda-forge::r-seurat=4.1.1 conda-forge::r-ggplot2 conda-forge::r-optparse" : null)
+    conda "conda-forge::r-base conda-forge::r-seurat=4.1.1 conda-forge::r-ggplot2 conda-forge::r-optparse"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/mulled-v2-b4cd78f1471a75cb2d338d3be506b2352723c0d2:4d30026c33d2809f4bf7b3a62f0e2b8529cb6915-0' :
         'biocontainers/mulled-v2-b4cd78f1471a75cb2d338d3be506b2352723c0d2:4d30026c33d2809f4bf7b3a62f0e2b8529cb6915-0' }"

@@ -2,7 +2,7 @@ process UCSC_BEDTOGENEPRED {
     tag "$meta.id"
     label 'process_low'
 
-    conda (params.enable_conda ? "bioconda::ucsc-bedtogenepred=377" : null)
+    conda "bioconda::ucsc-bedtogenepred=377"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/ucsc-bedtogenepred:377--h0b8a92a_2' :
         'biocontainers/ucsc-bedtogenepred:377--h0b8a92a_2' }"

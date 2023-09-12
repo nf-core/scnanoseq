@@ -2,7 +2,7 @@ process PIGZ {
     tag "$meta.id"
     label 'process_low'
 
-    conda (params.enable_conda ? "conda-forge::pigz=2.3.4" : null)
+    conda "conda-forge::pigz=2.3.4"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/pigz:2.3.4':
         'biocontainers/pigz:2.3.4' }"

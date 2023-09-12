@@ -2,7 +2,7 @@ process NANOFILT {
     tag "$meta.id"
     label 'process_low'
 
-    conda (params.enable_conda ? "bioconda::nanofilt=2.8.0" : null)
+    conda "bioconda::nanofilt=2.8.0"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/nanofilt:2.8.0--py_0':
         'biocontainers/nanofilt:2.8.0--py_0' }"

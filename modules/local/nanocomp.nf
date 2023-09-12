@@ -1,7 +1,7 @@
 process NANOCOMP {
     label 'process_medium'
 
-    conda (params.enable_conda ? "bioconda::nanocomp=1.20.0" : null)
+    conda "bioconda::nanocomp=1.20.0"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/nanocomp:1.20.0--pyhdfd78af_0':
         'biocontainers/nanocomp:1.20.0--pyhdfd78af_0' }"

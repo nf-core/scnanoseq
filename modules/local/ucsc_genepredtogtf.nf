@@ -2,7 +2,7 @@ process UCSC_GENEPREDTOGTF {
     tag "$meta.id"
     label 'process_low'
 
-    conda (params.enable_conda ? "bioconda::ucsc-genepredtogtf=377" : null)
+    conda "bioconda::ucsc-genepredtogtf=377"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/ucsc-genepredtogtf:377--h0b8a92a_4' :
         'biocontainers/ucsc-genepredtogtf:377--h0b8a92a_4' }"
