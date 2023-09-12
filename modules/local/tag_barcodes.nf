@@ -5,7 +5,7 @@ process TAG_BARCODES {
     conda (params.enable_conda ? "bioconda::pysam=0.19.1" : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/pysam:0.19.1--py310hff46b53_1' :
-        'quay.io/biocontainers/pysam:0.19.1--py310hff46b53_1' }"
+        'biocontainers/pysam:0.19.1--py310hff46b53_1' }"
 
     input:
     tuple val(meta), path(bam), path(r1_fastq), val(bc_length), val(umi_length)

@@ -4,15 +4,12 @@
 
 
 // Local modules
-include { TRANSCRIPT_TO_EXON         } from '../../modules/local/prepare_gtf_transcript_to_exon'
-include { SORT_GTF as SORT_INPUT_GTF } from '../../modules/local/sort_gtf'
-include { SORT_GTF as SORT_EXON_GTF  } from '../../modules/local/sort_gtf'
-include { SORT_GTF as SORT_BEDTOOLS  } from '../../modules/local/sort_gtf'
-include { GET_GTF_FEATURES           } from '../../modules/local/get_gtf_features'
-include { GTF2BED                    } from '../../modules/local/gtf2bed'
-include { UCSC_BEDTOGENEPRED         } from '../../modules/local/ucsc_bedtogenepred'
-include { UCSC_GENEPREDTOGTF         } from '../../modules/local/ucsc_genepredtogtf'
-include { CREATE_INTRON_GTF          } from '../../modules/local/create_intron_gtf'
+include { TRANSCRIPT_TO_EXON        } from '../../modules/local/prepare_gtf_transcript_to_exon'
+include { GET_GTF_FEATURES          } from '../../modules/local/get_gtf_features'
+include { GTF2BED                   } from '../../modules/local/gtf2bed'
+include { UCSC_BEDTOGENEPRED        } from '../../modules/local/ucsc_bedtogenepred'
+include { UCSC_GENEPREDTOGTF        } from '../../modules/local/ucsc_genepredtogtf'
+include { CREATE_INTRON_GTF         } from '../../modules/local/create_intron_gtf'
 
 // nf-core modules
 include { CUSTOM_GETCHROMSIZES                        } from '../../modules/nf-core/custom/getchromsizes/main'
@@ -30,6 +27,7 @@ workflow PREPARE_GTF {
     main:
 
     ch_versions = Channel.empty()
+    ch_prepared_gtf = Channel.empty()
 
     if (gtf_preparation_method == "1") {
         // Convert the Transcript to exons
@@ -46,32 +44,18 @@ workflow PREPARE_GTF {
         ch_versions = ch_versions.mix(CUSTOM_GETCHROMSIZES.out.versions)
 
         //
-        // MODULE: Sort the bedtools
-        //
-        SORT_BEDTOOLS(chr_sizes)
-        ch_chr_sizes_sorted = SORT_BEDTOOLS.out.gtf.map { meta, chr_sizes -> [chr_sizes] }
-        ch_versions = ch_versions.mix(SORT_BEDTOOLS.out.versions)
-
-        //
-        // MODULE: Sort the gtf
-        //
-        SORT_INPUT_GTF ( [ [ "id": "base" ], gtf ])
-        ch_sorted_gtf = SORT_INPUT_GTF.out.gtf
-        ch_versions = ch_versions.mix(SORT_INPUT_GTF.out.versions)
-
-        //
         // MODULE: Complement the gtf to get the intergenic regions
         //
-        ch_intergenic_in = Channel.empty()
-        ch_sorted_gtf
-            .map {
-                meta, gtf ->
-                    meta.id = "intergenic"
-                    [ meta, gtf ]
-            }
-            .set{ch_intergenic_in}
 
-        COMPLEMENT_GTF ( ch_intergenic_in, ch_chr_sizes_sorted )
+        COMPLEMENT_GTF (
+            gtf
+                .map {
+                    meta, gtf ->
+                        meta.id = "intergenic"
+                        [meta, gtf]
+                },
+            chr_sizes 
+        )
         ch_intergenic_bed = COMPLEMENT_GTF.out.bed
         ch_versions = ch_versions.mix(COMPLEMENT_GTF.out.versions)
 
@@ -83,16 +67,9 @@ workflow PREPARE_GTF {
         ch_versions = ch_versions.mix(GET_GTF_FEATURES.out.versions)
 
         //
-        // MODULE: Sort the exon gtf
-        //
-        SORT_EXON_GTF(ch_exon_gtf)
-        ch_sorted_exon_gtf = SORT_EXON_GTF.out.gtf
-        ch_versions = ch_versions.mix(SORT_EXON_GTF.out.versions)
-
-        //
         // MODULE: Convert the gtf to bed
         //
-        GTF2BED( ch_sorted_exon_gtf )
+        GTF2BED( ch_exon_gtf )
         ch_exon_bed = GTF2BED.out.bed
         ch_versions = ch_versions.mix(GTF2BED.out.versions)
 
