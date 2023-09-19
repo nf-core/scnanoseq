@@ -589,8 +589,8 @@ workflow SCNANOSEQ {
         MULTIQC_RAWQC (
             ch_multiqc_rawqc_files.collect(),
             ch_multiqc_config,
-            ch_multiqc_custom_config,
-            ch_multiqc_logo
+            ch_multiqc_custom_config.collect().ifEmpty([]),
+            ch_multiqc_logo.collect().ifEmpty([])
         )
 
         //
@@ -626,8 +626,8 @@ workflow SCNANOSEQ {
         MULTIQC_FINALQC (
             ch_multiqc_finalqc_files.collect(),
             ch_multiqc_config,
-            ch_multiqc_custom_config,
-            ch_multiqc_logo
+            ch_multiqc_custom_config.collect().ifEmpty([]),
+            ch_multiqc_logo.collect().ifEmpty([])
         )
         multiqc_report = MULTIQC_FINALQC.out.report.toList()
         ch_versions    = ch_versions.mix(MULTIQC_FINALQC.out.versions)
