@@ -8,6 +8,7 @@
 import argparse
 from Bio import SeqIO
 from Bio.Seq import Seq
+import gzip
 
 def parse_args():
     """ Parse the commandline arguments """
@@ -68,10 +69,11 @@ def extract_barcode(input_file, barcode_file, output, bc_format):
     # R1 will contain the barcode + umi
     # R2 contains the actual read
 
-    with open(f"{output}.R1.fastq", 'w', encoding = "utf-8") as r1_out, \
-            open(f"{output}.R2.fastq", 'w', encoding = "utf-8") as r2_out:
+    with gzip.open(f"{output}.R1.fastq.gz", 'wt') as r1_out, \
+            gzip.open(f"{output}.R2.fastq.gz", 'wt') as r2_out, \
+            gzip.open(input_file, 'rt') as fastq_in:
 
-        for record in SeqIO.parse(input_file, "fastq"):
+        for record in SeqIO.parse(fastq_in, "fastq"):
             orig_seq = str(record.seq)
             orig_quals = ''.join([chr(score + 33) for score in
                                  record.letter_annotations['phred_quality']])
