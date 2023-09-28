@@ -1,6 +1,7 @@
 process PREEXTRACT_FASTQ {
     tag "$meta.id"
     label 'process_low'
+    stageInMode 'copy'
 
     conda "conda-forge::regex=2022.1.18 conda-forge::biopython=1.79"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?

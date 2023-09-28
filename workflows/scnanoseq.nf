@@ -251,8 +251,7 @@ workflow SCNANOSEQ {
     //
     // MODULE: Trim and filter reads
     //
-    ch_trimmed_reads_combined = Channel.empty()
-    ch_zipped_reads = ch_cat_fastq
+    ch_trimmed_reads_combined = ch_cat_fastq
     ch_fastqc_multiqc_postrim = Channel.empty()
     
     if (!params.skip_trimming){
