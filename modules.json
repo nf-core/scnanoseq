@@ -99,11 +99,6 @@
                         "branch": "master",
                         "git_sha": "7297204bf49273300a3dbfa4b7a4027c8683f1bd",
                         "installed_by": ["modules"]
-                    },
-                    "umitools/extract": {
-                        "branch": "master",
-                        "git_sha": "911696ea0b62df80e900ef244d7867d177971f73",
-                        "installed_by": ["modules"]
                     }
                 }
             },
