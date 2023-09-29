@@ -58,6 +58,9 @@ process ISOQUANT {
         mv OUT/OUT.gene_grouped_counts.tsv ${prefix}.gene_counts.tsv
         mv OUT/OUT.transcript_grouped_counts.tsv ${prefix}.transcript_counts.tsv
 
+        sed -i "1s/#//" ${prefix}.gene_counts.tsv
+        sed -i "1s/#//" ${prefix}.transcript_counts.tsv
+
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":
             isoquant: \$(isoquant.py -v 2>&1)
