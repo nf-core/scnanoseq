@@ -95,8 +95,8 @@ include { NANOCOMP as NANOCOMP_BAM                                 } from "../mo
 include { PROWLERTRIMMER                                           } from "../modules/local/prowlertrimmer"
 include { SPLIT_FILE                                               } from "../modules/local/split_file"
 include { PIGZ as ZIP_TRIM                                         } from "../modules/local/pigz"
-include { PIGZ as ZIP_R1                                           } from "../modules/local/pigz"
-include { PIGZ as ZIP_R2                                           } from "../modules/local/pigz"
+//include { PIGZ as ZIP_R1                                           } from "../modules/local/pigz"
+//include { PIGZ as ZIP_R2                                           } from "../modules/local/pigz"
 include { BLAZE                                                    } from "../modules/local/blaze"
 include { PREEXTRACT_FASTQ                                         } from "../modules/local/preextract_fastq.nf"
 include { PAFTOOLS                                                 } from "../modules/local/paftools"
@@ -136,8 +136,8 @@ include { SAMTOOLS_VIEW as SAMTOOLS_VIEW_BAM            } from "../modules/nf-co
 include { SAMTOOLS_VIEW as SAMTOOLS_VIEW_FILTER         } from "../modules/nf-core/samtools/view/main"
 include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_DEDUP        } from '../modules/nf-core/samtools/index/main'
 include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_BC_CORRECTED } from '../modules/nf-core/samtools/index/main'
-include { STRINGTIE_STRINGTIE                           } from '../modules/nf-core/stringtie/stringtie/main'
-include { STRINGTIE_MERGE                               } from '../modules/nf-core/stringtie/merge/main'
+//include { STRINGTIE_STRINGTIE                           } from '../modules/nf-core/stringtie/stringtie/main'
+//include { STRINGTIE_MERGE                               } from '../modules/nf-core/stringtie/merge/main'
 include { CAT_CAT                                       } from "../modules/nf-core/cat/cat/main"
 include { CAT_FASTQ                                     } from '../modules/nf-core/cat/fastq/main'
 
@@ -251,7 +251,7 @@ workflow SCNANOSEQ {
     //
     // MODULE: Trim and filter reads
     //
-    ch_trimmed_reads_combined = ch_cat_fastq
+    //ch_trimmed_reads_combined = ch_cat_fastq
     ch_fastqc_multiqc_postrim = Channel.empty()
     
     if (!params.skip_trimming){
@@ -359,13 +359,14 @@ workflow SCNANOSEQ {
     // MODULE: Extract barcodes
     //
 
-    PREEXTRACT_FASTQ( ch_trimmed_reads_combined.join(ch_putative_bc))
-    ch_r1_reads = PREEXTRACT_FASTQ.out.r1_reads
-    ch_r2_reads = PREEXTRACT_FASTQ.out.r2_reads
+    PREEXTRACT_FASTQ( ch_zipped_reads.join(ch_putative_bc))
+    ch_zipped_r1_reads = PREEXTRACT_FASTQ.out.r1_reads
+    ch_zipped_r2_reads = PREEXTRACT_FASTQ.out.r2_reads
 
     //
     // MODULE: Zip fastq
     //
+    /* This is no longer needed since preextract now accepts gzips
     ZIP_R1 ( ch_r1_reads, "R1" )
     ch_zipped_r1_reads = ZIP_R1.out.archive
     ch_versions = ch_versions.mix(ZIP_R1.out.versions)
@@ -373,6 +374,7 @@ workflow SCNANOSEQ {
     ZIP_R2 ( ch_r2_reads, "R2" )
     ch_zipped_r2_reads = ZIP_R2.out.archive
     ch_versions = ch_versions.mix(ZIP_R2.out.versions)
+    */
 
     //
     // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - post-extract QC

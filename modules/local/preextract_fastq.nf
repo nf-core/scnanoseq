@@ -12,8 +12,8 @@ process PREEXTRACT_FASTQ {
     tuple val(meta), path(reads), path(bc_list)
 
     output:
-    tuple val(meta), path("*.R1.fastq"), emit: r1_reads
-    tuple val(meta), path("*.R2.fastq"), emit: r2_reads
+    tuple val(meta), path("*.R1.fastq.gz"), emit: r1_reads
+    tuple val(meta), path("*.R2.fastq.gz"), emit: r2_reads
     path "versions.yml"                , emit: versions
 
     when:
