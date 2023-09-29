@@ -41,7 +41,7 @@ process ISOQUANT {
 
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":
-            isoquant: 3.3.1
+            isoquant: \$(isoquant.py -v 2>&1)
         END_VERSIONS
         """
     } else {

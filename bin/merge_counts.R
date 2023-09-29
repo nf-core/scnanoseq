@@ -78,3 +78,13 @@ merged_mtx <- cbind(unshared_column_table, summed_mtx)
 # Write out the data frame
 message("--- Output the table ---")
 write.table(merged_mtx, opt$output, sep = '\t', row.names = FALSE, quote = FALSE)
+
+####################
+### Session Info ###
+####################
+
+sessioninfo <- "R_sessionInfo.log"
+
+sink(sessioninfo)
+sessionInfo()
+sink()

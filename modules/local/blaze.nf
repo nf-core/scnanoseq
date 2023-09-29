@@ -25,6 +25,7 @@ process BLAZE {
     script:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
+    def VERSION = '1.1.0' // WARN: Version information not provided by tool on CLI. Please update this string when bumping BLAZE code
 
     """
     blaze.py \\
@@ -42,7 +43,7 @@ process BLAZE {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        blaze: 1.0
+        blaze: $VERSION
     END_VERSIONS
     """
 }
