@@ -95,8 +95,6 @@ include { NANOCOMP as NANOCOMP_BAM                                 } from "../mo
 include { PROWLERTRIMMER                                           } from "../modules/local/prowlertrimmer"
 include { SPLIT_FILE                                               } from "../modules/local/split_file"
 include { PIGZ as ZIP_TRIM                                         } from "../modules/local/pigz"
-//include { PIGZ as ZIP_R1                                           } from "../modules/local/pigz"
-//include { PIGZ as ZIP_R2                                           } from "../modules/local/pigz"
 include { BLAZE                                                    } from "../modules/local/blaze"
 include { PREEXTRACT_FASTQ                                         } from "../modules/local/preextract_fastq.nf"
 include { PAFTOOLS                                                 } from "../modules/local/paftools"
@@ -251,7 +249,7 @@ workflow SCNANOSEQ {
     //
     // MODULE: Trim and filter reads
     //
-    //ch_trimmed_reads_combined = ch_cat_fastq
+    ch_zipped_reads = Channel.empty()
     ch_fastqc_multiqc_postrim = Channel.empty()
     
     if (!params.skip_trimming){
@@ -325,6 +323,8 @@ workflow SCNANOSEQ {
             ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_TRIM.out.nanoplot_version.first().ifEmpty(null))
             ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_TRIM.out.fastqc_version.first().ifEmpty(null))
         }
+    } else {
+        ch_zipped_reads = ch_cat_fastq 
     }
     
     //
@@ -347,11 +347,10 @@ workflow SCNANOSEQ {
     // MODULE: Generate whitelist
     //
 
-    BLAZE ( ch_trimmed_reads_combined, params.cell_amount, blaze_whitelist)
+    BLAZE ( ch_zipped_reads, params.cell_amount, blaze_whitelist)
 
     ch_putative_bc = BLAZE.out.putative_bc
     ch_gt_whitelist = BLAZE.out.whitelist
-    //ch_gt_whitelist = Channel.from( file("$baseDir/assets/whitelist/3M-february-2018.txt") )
     ch_whitelist_bc_count = BLAZE.out.bc_count
     ch_versions = ch_versions.mix(BLAZE.out.versions)
 
@@ -362,19 +361,6 @@ workflow SCNANOSEQ {
     PREEXTRACT_FASTQ( ch_zipped_reads.join(ch_putative_bc))
     ch_zipped_r1_reads = PREEXTRACT_FASTQ.out.r1_reads
     ch_zipped_r2_reads = PREEXTRACT_FASTQ.out.r2_reads
-
-    //
-    // MODULE: Zip fastq
-    //
-    /* This is no longer needed since preextract now accepts gzips
-    ZIP_R1 ( ch_r1_reads, "R1" )
-    ch_zipped_r1_reads = ZIP_R1.out.archive
-    ch_versions = ch_versions.mix(ZIP_R1.out.versions)
-
-    ZIP_R2 ( ch_r2_reads, "R2" )
-    ch_zipped_r2_reads = ZIP_R2.out.archive
-    ch_versions = ch_versions.mix(ZIP_R2.out.versions)
-    */
 
     //
     // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - post-extract QC
