@@ -132,10 +132,6 @@ include { CUSTOM_DUMPSOFTWAREVERSIONS                   } from '../modules/nf-co
 include { UMITOOLS_DEDUP                                } from '../modules/nf-core/umitools/dedup/main'
 include { SAMTOOLS_VIEW as SAMTOOLS_VIEW_BAM            } from "../modules/nf-core/samtools/view/main"
 include { SAMTOOLS_VIEW as SAMTOOLS_VIEW_FILTER         } from "../modules/nf-core/samtools/view/main"
-include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_DEDUP        } from '../modules/nf-core/samtools/index/main'
-include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_BC_CORRECTED } from '../modules/nf-core/samtools/index/main'
-//include { STRINGTIE_STRINGTIE                           } from '../modules/nf-core/stringtie/stringtie/main'
-//include { STRINGTIE_MERGE                               } from '../modules/nf-core/stringtie/merge/main'
 include { CAT_CAT                                       } from "../modules/nf-core/cat/cat/main"
 include { CAT_FASTQ                                     } from '../modules/nf-core/cat/fastq/main'
 
