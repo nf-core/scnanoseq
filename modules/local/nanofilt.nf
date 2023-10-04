@@ -27,7 +27,7 @@ process NANOFILT {
         IDX=\$(basename ${reads} | cut -f2 -d'.')
         FILE_PREFIX=\${FILE_PREFIX}.\${IDX}
     fi
-    cat $reads | NanoFilt $args > \${FILE_PREFIX}.filtered.fastq    
+    cat $reads | NanoFilt $args > \${FILE_PREFIX}.filtered.fastq
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

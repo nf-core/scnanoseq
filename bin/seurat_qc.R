@@ -22,33 +22,33 @@ library(ggplot2)
 #' @return A density plot
 
 plotSingleCellDensity <- function(input_obj,
-                                  metadata_variable,
-                                  group.by = "orig.ident",
-                                  scale_x_axis = FALSE,
-                                  geom_density_level = 0.2) {
+                                    metadata_variable,
+                                    group.by = "orig.ident",
+                                    scale_x_axis = FALSE,
+                                    geom_density_level = 0.2) {
 
-  metadata <- dplyr::select(
-    input_obj@meta.data,
-    {{ metadata_variable }},
-    {{ group.by }}
-  )
-
-  meta_density <- ggplot2::ggplot(
-    metadata,
-    aes(
-      x = .data[[metadata_variable]],
-      color = .data[[group.by]],
-      fill = .data[[group.by]]
+    metadata <- dplyr::select(
+        input_obj@meta.data,
+        {{ metadata_variable }},
+        {{ group.by }}
     )
-  ) +
+
+    meta_density <- ggplot2::ggplot(
+        metadata,
+        aes(
+            x = .data[[metadata_variable]],
+            color = .data[[group.by]],
+            fill = .data[[group.by]]
+        )
+    ) +
     geom_density(alpha = geom_density_level) +
     theme_classic()
 
-  if (scale_x_axis == TRUE) {
-    return(meta_density + scale_x_log10())
-  } else {
-    return(meta_density)
-  }
+    if (scale_x_axis == TRUE) {
+        return(meta_density + scale_x_log10())
+    } else {
+        return(meta_density)
+    }
 }
 
 ###############################
@@ -102,9 +102,9 @@ total_reads <- as.numeric(gsub("([0-9]+).*$", "\\1", flagstat_lines[index_nums])
 # Create the Seurat object
 #NOTE: we do not perform any pre-filtering at this point
 seurat_obj <- CreateSeuratObject(counts = cell_bc_matrix,
-                                 min.cells = 0,
-                                 min.features = 0,
-                                 project = opt$id)
+                                    min.cells = 0,
+                                    min.features = 0,
+                                    project = opt$id)
 
 ######################
 ### GENERATE PLOTS ###

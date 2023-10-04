@@ -21,7 +21,7 @@ process REFORMAT_WHITELIST {
     script:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
-    
+
     """
     reformat_whitelist.py \\
         -i ${whitelist} \\

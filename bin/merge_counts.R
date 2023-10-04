@@ -62,7 +62,7 @@ message("--- Remove the columns ---")
 shared_column_table <- merged_table %>% select(ends_with(".x") | ends_with(".y"))
 unshared_column_table <- merged_table %>% select(!(ends_with(".x") | ends_with(".y")))
 
-# We only want to look at merged 
+# We only want to look at merged
 bc_prefixes <- unique(sub("\\..*", "", colnames(shared_column_table)))
 
 # Do rowsums for columns that are the same barcode
@@ -88,3 +88,4 @@ sessioninfo <- "R_sessionInfo.log"
 sink(sessioninfo)
 sessionInfo()
 sink()
+

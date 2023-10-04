@@ -66,6 +66,6 @@ process ISOQUANT {
             isoquant: \$(isoquant.py -v 2>&1)
         END_VERSIONS
         """
-    
+
     }
 }

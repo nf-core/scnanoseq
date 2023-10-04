@@ -5,7 +5,7 @@ process CREATE_REGEX {
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/python:3.8.3':
         'biocontainers/python:3.8.3' }"
-    
+
     input:
     val cell_barcode_pattern
     val identifier_pattern
@@ -22,13 +22,13 @@ process CREATE_REGEX {
 
     script:
     def args = task.ext.args ?: ''
-    
+
     """
     OUT_FILE="regex_patterns.txt"
 
     if [[ "${cell_barcode_pattern}" ]]; then
-       echo -e "REGEX: ${cell_barcode_pattern}" > \${OUT_FILE}
-       echo -e "UMI_TOOLS: N/A" >> \${OUT_FILE}
+        echo -e "REGEX: ${cell_barcode_pattern}" > \${OUT_FILE}
+        echo -e "UMI_TOOLS: N/A" >> \${OUT_FILE}
 
     else
         create_regex.py -i "${identifier_pattern}" \\
