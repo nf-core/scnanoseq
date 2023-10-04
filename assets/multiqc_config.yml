@@ -39,14 +39,14 @@ top_modules:
         info: "This section of the report shows FastQC results of the trimmed 
                data"
         path_filters:
-            - "*filtered*fastqc*"
+            - "*trimmed*fastqc*"
     - fastqc:
         name: "FastQC (post extract)"
         anchor: "fastqc_postextract"
         info: "This section of the report shows FastQC results of the trimmed 
                and umi extracted data"
         path_filters:
-            - "*umi_extract*fastqc*"
+            - "*extracted*fastqc*"
 
 section_comments:
     fastqc_posttrim: "Please note that if 'prowler' is selected as the trimming 
