@@ -2,7 +2,6 @@ repository_type: pipeline
 
 pipeline_todos: false
 
-
 lint:
   template_strings: False # "Jinja string found in" bin/create_regex.py and bin/seurat_qc.R
   files_unchanged:
