@@ -14,7 +14,7 @@ import helper
 def parse_arg():
     parser = argparse.ArgumentParser(
         description=textwrap.dedent(
-        """
+            """
         Find specific reads with given read id and output to a new fastq file
         """
         )

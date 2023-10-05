@@ -66,7 +66,9 @@ def parse_args():
 
     parser.add_argument("-o", "--out_bam", default=None, type=str, required=True, help="The output bam file")
 
-    parser.add_argument("-bl", "--barcode_length", default=None, type=int, required=True, help="The length of the barcode")
+    parser.add_argument(
+        "-bl", "--barcode_length", default=None, type=int, required=True, help="The length of the barcode"
+    )
 
     parser.add_argument("-ul", "--umi_length", default=None, type=int, required=True, help="The length of the umi")
 

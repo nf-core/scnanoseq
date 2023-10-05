@@ -20,29 +20,12 @@ def parse_args():
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument(
-        "-i",
-        "--infile",
-        default=None,
-        type=str,
-        required=True,
-        help="The input bam file")
+    parser.add_argument("-i", "--infile", default=None, type=str, required=True, help="The input bam file")
+
+    parser.add_argument("-o", "--outfile", default=None, type=str, required=True, help="The output bam file")
 
     parser.add_argument(
-        "-o",
-        "--outfile",
-        default=None,
-        type=str,
-        required=True,
-        help="The output bam file")
-
-    parser.add_argument(
-        "-w",
-        "--whitelist",
-        default=None,
-        type=str,
-        required=True,
-        help="The whitelist file containing cell barcodes"
+        "-w", "--whitelist", default=None, type=str, required=True, help="The whitelist file containing cell barcodes"
     )
 
     parser.add_argument(
@@ -54,7 +37,7 @@ def parse_args():
         help="The barcode count file, "
         "contains the union between the "
         "umi_tools generated whitelist "
-        "and the proper barcode whitelist."
+        "and the proper barcode whitelist.",
     )
 
     parser.add_argument(
@@ -62,7 +45,7 @@ def parse_args():
         default=1,
         type=int,
         required=False,
-        help="The maximum edit distance that a barcode can be from a barcode on the whitelist"
+        help="The maximum edit distance that a barcode can be from a barcode on the whitelist",
     )
 
     parser.add_argument(
@@ -74,7 +57,7 @@ def parse_args():
         "probability a barcode on the "
         "whitelist must have to replace "
         "the barcode detected by the "
-        "pipeline"
+        "pipeline",
     )
 
     parser.add_argument(
@@ -82,7 +65,7 @@ def parse_args():
         required=False,
         type=str,
         default="",
-        help="Output the filtered reads into a the file name specified by this parameter."
+        help="Output the filtered reads into a the file name specified by this parameter.",
     )
 
     args = parser.parse_args()

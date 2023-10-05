@@ -27,25 +27,23 @@ def get_args():
         "--cb_lengths",
         help="The comma delimited "
         "list of cell barcodes length. The position in "
-        "the list corresponds to its order in in_string"
+        "the list corresponds to its order in in_string",
     )
     arg_parser.add_argument(
         "-u",
         "--umi_lengths",
         help="The comma delimited "
         "list of umi lengths. The position in the list "
-        "corresponds to its order in in_string"
+        "corresponds to its order in in_string",
     )
     arg_parser.add_argument(
         "-f",
         "--fixed_seqs",
         help="The comma delimited "
         "list of fixed sequences. The position in the "
-        "corresponds to its order in in_string"
+        "corresponds to its order in in_string",
     )
-    arg_parser.add_argument(
-        "-o", "--out_file", help="The out file for the regex and umi_tools pattern to be output."
-    )
+    arg_parser.add_argument("-o", "--out_file", help="The out file for the regex and umi_tools pattern to be output.")
 
     args = arg_parser.parse_args()
 

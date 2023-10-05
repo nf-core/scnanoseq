@@ -17,9 +17,13 @@ def parse_args():
     arg_parser = argparse.ArgumentParser()
 
     arg_parser.add_argument("-i", "--input_file", required=True, type=str, help="The input fastq file")
-    arg_parser.add_argument("-b", "--barcode_file", required=True, type=str, help="The file containing the readname and barcode")
+    arg_parser.add_argument(
+        "-b", "--barcode_file", required=True, type=str, help="The file containing the readname and barcode"
+    )
     arg_parser.add_argument("-o", "--output_file", required=True, type=str, help="The output fastq")
-    arg_parser.add_argument("-f", "--barcode-format", required=False, type=str, help="The barcode/umi format (Options: cellranger)")
+    arg_parser.add_argument(
+        "-f", "--barcode-format", required=False, type=str, help="The barcode/umi format (Options: cellranger)"
+    )
 
     args = arg_parser.parse_args()
     return args

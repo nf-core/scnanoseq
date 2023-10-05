@@ -16,7 +16,7 @@ import helper
 def parse_arg():
     parser = argparse.ArgumentParser(
         description=textwrap.dedent(
-        """
+            """
         This script can be used to generate a new whitelist from the putative bc table
         output from 'blaze.py'. Users may specify different argment used in 
         'blaze.py' to obtain a different whitelist.
@@ -45,7 +45,7 @@ def parse_arg():
             """
             Choose from v2 and v3 (for 10X Single Cell 3ʹ gene expression v2 or v3). 
             """
-        )
+        ),
     )
     parser.add_argument(
         "--minQ",
@@ -57,7 +57,7 @@ def parse_arg():
             Reads whose putative BC contains one or more bases with 
             Q<minQ is not counted in the "Putative BC rank plot".
             """
-        )
+        ),
     )
     parser.add_argument(
         "--full-bc-whitelist",
@@ -65,13 +65,13 @@ def parse_arg():
         default=None,
         help="""<path to file>: .txt file containing all the possible BCs. Users may provide
         their own whitelist. No need to specify this if users want to use the 10X whilelist. The correct version
-        of 10X whilelist will be determined based on 10X kit version"""
+        of 10X whilelist will be determined based on 10X kit version""",
     )
     parser.add_argument(
         "--out-bc-whitelist",
         type=str,
         default=DEFAULT_GRB_OUT_WHITELIST,
-        help="""<filename_prefix>: Output the whitelist identified from all the reads."""
+        help="""<filename_prefix>: Output the whitelist identified from all the reads.""",
     )
     parser.add_argument(
         "--cr-style", type=bool, nargs="?", const=True, default=True, help="Output the whitelist in Cellranger style"
@@ -80,7 +80,7 @@ def parse_arg():
         "--chunk-size",
         type=int,
         default=1_000_000,
-        help="Chunk size when reading the input file. Please use smaller number if memory is not sufficient."
+        help="Chunk size when reading the input file. Please use smaller number if memory is not sufficient.",
     )
     parser.add_argument(
         "--high-sensitivity-mode",
@@ -106,7 +106,7 @@ def parse_arg():
             and any barcodes with ED>= {DEFAULT_EMPTY_DROP_MIN_ED} to the barcodes
             in whitelist can be selected as empty droplets)
             """
-        )
+        ),
     )
     args = parser.parse_args()
 
