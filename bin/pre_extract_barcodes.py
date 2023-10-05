@@ -10,25 +10,23 @@ from Bio import SeqIO
 from Bio.Seq import Seq
 import gzip
 
+
 def parse_args():
-    """ Parse the commandline arguments """
+    """Parse the commandline arguments"""
 
     arg_parser = argparse.ArgumentParser()
 
-    arg_parser.add_argument('-i', '--input_file', required=True, type=str,
-                             help="The input fastq file")
-    arg_parser.add_argument('-b', '--barcode_file', required=True, type=str,
-                            help="The file containing the readname and barcode")
-    arg_parser.add_argument('-o', '--output_file', required=True, type=str,
-                            help="The output fastq")
-    arg_parser.add_argument('-f', '--barcode-format', required=False, type=str,
-                            help="The barcode/umi format (Options: cellranger)")
+    arg_parser.add_argument("-i", "--input_file", required=True, type=str, help="The input fastq file")
+    arg_parser.add_argument("-b", "--barcode_file", required=True, type=str, help="The file containing the readname and barcode")
+    arg_parser.add_argument("-o", "--output_file", required=True, type=str, help="The output fastq")
+    arg_parser.add_argument("-f", "--barcode-format", required=False, type=str, help="The barcode/umi format (Options: cellranger)")
 
     args = arg_parser.parse_args()
     return args
 
+
 def read_barcode_list(barcode_file):
-    """ Read in the blaze putative barcode list into a dict in memory. The
+    """Read in the blaze putative barcode list into a dict in memory. The
         file contains the read name, predicted barcode, and average bc score
 
     Args:
@@ -40,9 +38,9 @@ def read_barcode_list(barcode_file):
     """
     barcode_list = {}
 
-    with open(barcode_file, 'r', encoding = "utf-8") as bc_in:
+    with open(barcode_file, "r", encoding="utf-8") as bc_in:
         for bc_line in bc_in.readlines():
-            read_name, barcode, _ = bc_line.split(',')
+            read_name, barcode, _ = bc_line.split(",")
 
             # Not all reads had barcodes, ignore those that don't
             if barcode:
@@ -52,7 +50,7 @@ def read_barcode_list(barcode_file):
 
 
 def extract_barcode(input_file, barcode_file, output, bc_format):
-    """ This will use the information stored in the barcode file to extract
+    """This will use the information stored in the barcode file to extract
         the predicted barcode and umi out of the main read (along with
         qualities) and place them in a separate fastq. This somewhat mimics
         the way that 10x provides single cell files (minus the index files)
@@ -69,21 +67,17 @@ def extract_barcode(input_file, barcode_file, output, bc_format):
     # R1 will contain the barcode + umi
     # R2 contains the actual read
 
-    with gzip.open(f"{output}.R1.fastq.gz", 'wt') as r1_out, \
-            gzip.open(f"{output}.R2.fastq.gz", 'wt') as r2_out, \
-            gzip.open(input_file, 'rt') as fastq_in:
-
+    with gzip.open(f"{output}.R1.fastq.gz", "wt") as r1_out, gzip.open(
+        f"{output}.R2.fastq.gz", "wt"
+    ) as r2_out, gzip.open(input_file, "rt") as fastq_in:
         for record in SeqIO.parse(fastq_in, "fastq"):
             orig_seq = str(record.seq)
-            orig_quals = ''.join([chr(score + 33) for score in
-                                 record.letter_annotations['phred_quality']])
+            orig_quals = "".join([chr(score + 33) for score in record.letter_annotations["phred_quality"]])
 
             # NOTE: Reads that do not have a predicted barcode will be filtered
             #   out at this point
             if record.id in barcode_list:
-                bc_index, seq, quals = find_seq_indices(barcode_list[record.id],
-                                                        orig_seq,
-                                                        orig_quals)
+                bc_index, seq, quals = find_seq_indices(barcode_list[record.id], orig_seq, orig_quals)
 
                 # If bc_index is < 0, the barcode was not found
                 if bc_index >= 0:
@@ -94,20 +88,13 @@ def extract_barcode(input_file, barcode_file, output, bc_format):
                         read_info = strip_read_cellranger(bc_index, seq, quals)
 
                     if read_info:
-                        r1_out.write('\n'.join(["@" + record.id,
-                                                read_info["r1_read"],
-                                                "+",
-                                                read_info["r1_qual"],
-                                                '']))
+                        r1_out.write("\n".join(["@" + record.id, read_info["r1_read"], "+", read_info["r1_qual"], ""]))
 
-                        r2_out.write('\n'.join(["@" + record.id,
-                                                read_info["r2_read"],
-                                                "+",
-                                                read_info["r2_qual"],
-                                                '']))
+                        r2_out.write("\n".join(["@" + record.id, read_info["r2_read"], "+", read_info["r2_qual"], ""]))
+
 
 def find_seq_indices(barcode, sequence, qualities):
-    """ Find the location in the read where the predictoed barcode exists. If
+    """Find the location in the read where the predictoed barcode exists. If
         it cannot be found, reverse-complement the read to find i.
 
     Args:
@@ -135,8 +122,9 @@ def find_seq_indices(barcode, sequence, qualities):
 
     return index, sequence, qualities
 
+
 def strip_read_cellranger(bc_index, seq, quals):
-    """ Strip the bc and umi from a read, and convert it from a single read
+    """Strip the bc and umi from a read, and convert it from a single read
         format to paired read. This function is used for when the barcode is in
         the 10X format, so we expect that the read would look this:
         {bc}{umi}{polyT}{read}
@@ -164,22 +152,21 @@ def strip_read_cellranger(bc_index, seq, quals):
     umi_length = 12
     polyt_length = 10
 
-    read_info["r1_read"] = seq[bc_index:bc_index+bc_length+umi_length]
-    read_info["r1_qual"] = quals[bc_index:bc_index+bc_length+umi_length]
+    read_info["r1_read"] = seq[bc_index : bc_index + bc_length + umi_length]
+    read_info["r1_qual"] = quals[bc_index : bc_index + bc_length + umi_length]
 
-    read_info["r2_read"] = seq[bc_index+bc_length+umi_length+polyt_length:]
-    read_info["r2_qual"] = quals[bc_index+bc_length+umi_length+polyt_length:]
+    read_info["r2_read"] = seq[bc_index + bc_length + umi_length + polyt_length :]
+    read_info["r2_qual"] = quals[bc_index + bc_length + umi_length + polyt_length :]
 
     return read_info
 
+
 def main():
-    """ Main subroutine """
+    """Main subroutine"""
 
     args = parse_args()
-    extract_barcode(args.input_file,
-                    args.barcode_file,
-                    args.output_file,
-                    args.barcode_format)
+    extract_barcode(args.input_file, args.barcode_file, args.output_file, args.barcode_format)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
