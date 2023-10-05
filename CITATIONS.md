@@ -19,7 +19,7 @@
   > You Y, Prawer Y D, De Paoli-Iseppi R, Hunt C P, Parish C L, Shim H, Clark M B. Identification of cell barcodes from long-read single-cell RNA-seq with BLAZE. bioRxiv 2022 Aug .08.16.504056; doi: 10.1101/2022.08.16.504056.
 
 - [FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/)
-  
+
   > Andrews, S. (2010). FastQC: A Quality Control Tool for High Throughput Sequence Data [Online]. Available online https://www.bioinformatics.babraham.ac.uk/projects/fastqc/.
 
 - [IsoQuant](https://pubmed.ncbi.nlm.nih.gov/36593406/)
@@ -87,6 +87,7 @@
   > Wickham H, Averick M, Bryan J, Winston C, McGowan LD, François R, Grolemund G, Hayes A , Henry L, Hester J, Kuhn M, Pedersen TL, Miller E, Bache SM, Müller K, Ooms J, Robinson D, Seidel DP, Spinu V, Takahashi K, Vaughan D, Wilke C, Woo K, Yutani H. Welcome to the Tidyverse. Journal of Open Source Software 2019, 4(43), 1686, doi:10.21105/joss.01686
 
 ## Python libraries
+
 - [Biopython](https://pubmed.ncbi.nlm.nih.gov/19304878/)
 
   > Cock PJ, Antao T, Chang JT, Chapman BA, Cox CJ, Dalke A, Friedberg I, Hamelryck T, Kauff F, Wilczynski B, de Hoon MJ. Biopython: freely available Python tools for computational molecular biology and bioinformatics. Bioinformatics 2009 Jun 1; 25(11):1422-3 doi:10.1093/bioinformatics/btp163. PubMed PMID: 19304878; PubMed Central PMCID: PMC2682512.

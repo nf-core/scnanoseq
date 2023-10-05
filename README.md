@@ -12,7 +12,7 @@
 
 ## Introduction
 
-**nf-core/scnanoseq** is a bioinformatics best-practice analysis pipeline for 10X Genomics single-cell/nuclei RNA-seq for data derived from Oxford Nanopore Q20+ chemistry ([R10.4 flow cells (>Q20)](https://nanoporetech.com/about-us/news/oxford-nanopore-announces-technology-updates-nanopore-community-meeting)). Due to the expectation of >Q20 quality, the input data for the pipeline is not dependent on Illumina paired data. 
+**nf-core/scnanoseq** is a bioinformatics best-practice analysis pipeline for 10X Genomics single-cell/nuclei RNA-seq for data derived from Oxford Nanopore Q20+ chemistry ([R10.4 flow cells (>Q20)](https://nanoporetech.com/about-us/news/oxford-nanopore-announces-technology-updates-nanopore-community-meeting)). Due to the expectation of >Q20 quality, the input data for the pipeline is not dependent on Illumina paired data.
 
 <!-- TODO: after test write brief sentence on exon only vs intron method (1 and 2) --->
 
@@ -35,8 +35,8 @@ On release, automated continuous integration tests run the pipeline on a full-si
 5. Pre-extraction QC in the R2 reads ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [`NanoPlot`](https://github.com/wdecoster/NanoPlot))
 6. Barcode detection using a custom whitelist or 10X whitelist. [`BLAZE`](https://github.com/shimlab/BLAZE)
 7. Extract barcodes. Consists of the following steps:
-    1. Parse FASTQ files into R1 reads containing barcode and UMI and R2 reads containing sequencing without barcode and UMI (custom script `./bin/pre_extract_barcodes.py`)
-    2. Re-zip FASTQs ([`pigz`](https://github.com/madler/pigz))
+   1. Parse FASTQ files into R1 reads containing barcode and UMI and R2 reads containing sequencing without barcode and UMI (custom script `./bin/pre_extract_barcodes.py`)
+   2. Re-zip FASTQs ([`pigz`](https://github.com/madler/pigz))
 8. Post-extraction QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [`NanoPlot`](https://github.com/wdecoster/NanoPlot))
 9. Alignment ([`minimap2`](https://github.com/lh3/minimap2))
 10. SAMtools processing including ([`SAMtools`](http://www.htslib.org/doc/samtools.html)):
@@ -74,9 +74,9 @@ Each row represents a fastq file (single-end) or a pair of fastq files (paired e
 
 -->
 
-   ```console
-   nextflow run nf-core/scnanoseq --input samplesheet.csv --outdir <OUTDIR> --genome GRCh37 -profile <docker/singularity/podman/shifter/charliecloud/conda/institute>
-   ```
+```console
+nextflow run nf-core/scnanoseq --input samplesheet.csv --outdir <OUTDIR> --genome GRCh37 -profile <docker/singularity/podman/shifter/charliecloud/conda/institute>
+```
 
 ```bash
 nextflow run nf-core/scnanoseq \
@@ -106,8 +106,8 @@ We thank the following people for their extensive assistance in the development 
 
 We would also like to thank the following people and groups for their support, including financial support:
 
-* Dr. Elizabeth Worthey
-* University of Alabama at Birmingham Biological Data Science Core (U-BDS), RRID:SCR_021766, https://github.com/U-BDS
+- Dr. Elizabeth Worthey
+- University of Alabama at Birmingham Biological Data Science Core (U-BDS), RRID:SCR_021766, https://github.com/U-BDS
 
 <!-- TODO from Lara: check that all financial support has been stated -->
 
