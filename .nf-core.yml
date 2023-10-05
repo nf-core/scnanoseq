@@ -9,3 +9,5 @@ lint:
     - .github/CONTRIBUTING.md
     - .github/workflows/linting.yml
     - lib/NfcoreTemplate.groovy
+  multiqc_config:
+    - report_comment
