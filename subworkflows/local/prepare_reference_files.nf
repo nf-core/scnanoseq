@@ -26,7 +26,7 @@ workflow PREPARE_REFERENCE_FILES {
             ch_prepared_fasta = GUNZIP_FASTA( [ [:], fasta ]).gunzip.map { it[1] }
             ch_versions = ch_versions.mix(GUNZIP_FASTA.out.versions)
         } else {
-            ch_prepared_fasta = fasta  
+            ch_prepared_fasta = [ [:], fasta ]
         }
 
         ch_gtf = Channel.empty()
@@ -34,14 +34,14 @@ workflow PREPARE_REFERENCE_FILES {
             ch_prepared_gtf = GUNZIP_GTF( [ [:], gtf ]).gunzip.map { it[1] }
             ch_versions = ch_versions.mix(GUNZIP_GTF.out.versions)
         } else {
-            ch_gtf = gtf
+            ch_gtf = [ [:], gtf]
         }
         
         //
         // MODULE: Index the fasta
         //
         SAMTOOLS_FAIDX( ch_prepared_fasta, [ [:], "$projectDir/assets/dummy_file.txt" ])
-        ch_prepared_fai = SAMTOOLS_FAIDX.out.fai.map{ meta, fai -> [fai] }
+        ch_prepared_fai = SAMTOOLS_FAIDX.out.fai
 
         //
         // SUBWORKFLOW: Prepare GTF
@@ -49,7 +49,6 @@ workflow PREPARE_REFERENCE_FILES {
         PREPARE_GTF (gtf_preparation_method, ch_gtf, fasta)
         ch_prepared_gtf = PREPARE_GTF.out.prepped_gtf
         ch_versions = ch_versions.mix(PREPARE_GTF.out.versions)
-
 
     emit:
         prepped_fasta = ch_prepared_fasta

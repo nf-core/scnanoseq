@@ -9,9 +9,9 @@ process ISOQUANT {
 
     input:
     tuple val(meta), path(bam), path(bai)
-    path gtf
-    path fasta
-    path fai
+    tuple val(meta_gtf), path(gtf)
+    tuple val(meta_fa), path(fasta)
+    tuple val(meta_fai), path(fai)
     val group_category
 
     output:

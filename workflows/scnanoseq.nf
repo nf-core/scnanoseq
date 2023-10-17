@@ -243,7 +243,7 @@ workflow SCNANOSEQ {
     // MODULE: Generate junction file - paftools
     //
     
-    PAFTOOLS ( gtf )
+    PAFTOOLS ( gtf.map { meta, gtf -> [gtf]} )
     ch_bed = PAFTOOLS.out.bed
     ch_versions = ch_versions.mix(PAFTOOLS.out.versions)
 
@@ -380,7 +380,7 @@ workflow SCNANOSEQ {
     //
 
     if (!params.skip_save_minimap2_index) {
-        MINIMAP2_INDEX ( fasta,  ch_bed)
+        MINIMAP2_INDEX ( fasta.map { meta, fasta -> [fasta]},  ch_bed)
         ch_minimap_index = MINIMAP2_INDEX.out.index
         ch_versions = ch_versions.mix(MINIMAP2_INDEX.out.versions)
     }
@@ -423,7 +423,7 @@ workflow SCNANOSEQ {
     // SUBWORKFLOW: BAM_SORT_STATS_SAMTOOLS
     // The subworkflow is called in both the minimap2 bams and filtered (mapped only) version
     BAM_SORT_STATS_SAMTOOLS_MINIMAP ( ch_minimap_bam, 
-                                      fasta.map { [ [:], it ] } )
+                                      fasta )
     ch_minimap_sorted_bam = BAM_SORT_STATS_SAMTOOLS_MINIMAP.out.bam
     ch_minimap_sorted_bai = BAM_SORT_STATS_SAMTOOLS_MINIMAP.out.bai
 
@@ -434,7 +434,7 @@ workflow SCNANOSEQ {
     ch_versions = ch_versions.mix(BAM_SORT_STATS_SAMTOOLS_MINIMAP.out.versions)
 
     BAM_SORT_STATS_SAMTOOLS_FILTERED ( ch_minimap_mapped_only_bam,
-                                      fasta.map { [ [:], it ] } )
+                                      fasta )
     ch_minimap_filtered_sorted_bam = BAM_SORT_STATS_SAMTOOLS_FILTERED.out.bam
     ch_minimap_filtered_sorted_bai = BAM_SORT_STATS_SAMTOOLS_FILTERED.out.bai
     ch_versions = ch_versions.mix(BAM_SORT_STATS_SAMTOOLS_FILTERED.out.versions)
@@ -487,7 +487,7 @@ workflow SCNANOSEQ {
     // SUBWORKFLOW: BAM_SORT_STATS_SAMTOOLS
     // The subworkflow is called in both the minimap2 bams and filtered (mapped only) version
     BAM_SORT_STATS_SAMTOOLS_CORRECTED ( ch_corrected_bam,
-                                        fasta.map { [ [:], it ] } )
+                                        fasta )
     
     ch_corrected_sorted_bam = BAM_SORT_STATS_SAMTOOLS_CORRECTED.out.bam
     ch_corrected_sorted_bai = BAM_SORT_STATS_SAMTOOLS_CORRECTED.out.bai
@@ -517,7 +517,7 @@ workflow SCNANOSEQ {
         // SUBWORKFLOW: BAM_SORT_STATS_SAMTOOLS
         // The subworkflow is called in both the minimap2 bams and filtered (mapped only) version
         BAM_SORT_STATS_SAMTOOLS_DEDUP ( ch_dedup_bam,
-                                        fasta.map { [ [:], it ] } )
+                                        fasta )
         
         ch_dedup_sorted_bam = BAM_SORT_STATS_SAMTOOLS_DEDUP.out.bam
         ch_dedup_sorted_bai = BAM_SORT_STATS_SAMTOOLS_DEDUP.out.bai
