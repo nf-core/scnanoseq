@@ -33,8 +33,7 @@ process ISOQUANT {
                     --reference $fasta \\
                     --genedb $gtf \\
                     --bam $bam \\
-                    -o . \\
-                    --threads $task.cpus
+                    -o .
 
         mv OUT/OUT.gene_counts.tsv ${prefix}.gene_counts.tsv
         mv OUT/OUT.transcript_counts.tsv ${prefix}.transcript_counts.tsv
@@ -52,8 +51,7 @@ process ISOQUANT {
                     --genedb $gtf \\
                     --bam $bam \\
                     -o . \\
-                    --read_group $group_category \\
-                    --threads $task.cpus
+                    --read_group $group_category
 
         mv OUT/OUT.gene_grouped_counts.tsv ${prefix}.gene_counts.tsv
         mv OUT/OUT.transcript_grouped_counts.tsv ${prefix}.transcript_counts.tsv
