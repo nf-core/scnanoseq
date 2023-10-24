@@ -462,6 +462,7 @@ workflow SCNANOSEQ {
 
     TAG_BARCODES (
         ch_minimap_filtered_sorted_bam
+            .join( ch_minimap_filtered_sorted_bai, by: 0)
             .join( ch_zipped_r1_reads, by: 0 )
             .combine( val_regex_info.bc_length )
             .combine( val_regex_info.umi_length )

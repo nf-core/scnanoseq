@@ -8,7 +8,7 @@ process TAG_BARCODES {
         'biocontainers/pysam:0.19.1--py310hff46b53_1' }"
 
     input:
-    tuple val(meta), path(bam), path(r1_fastq), val(bc_length), val(umi_length)
+    tuple val(meta), path(bam), path(bai), path(r1_fastq), val(bc_length), val(umi_length)
 
     output:
     tuple val(meta), path("*.tagged.bam"), emit: tagged_bam
