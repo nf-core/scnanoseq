@@ -340,7 +340,7 @@ workflow SCNANOSEQ {
     // MODULE: Generate whitelist
     //
 
-    BLAZE ( ch_zipped_reads, params.cell_amount, blaze_whitelist)
+    BLAZE ( ch_zipped_reads, blaze_whitelist)
 
     ch_putative_bc = BLAZE.out.putative_bc
     ch_gt_whitelist = BLAZE.out.whitelist

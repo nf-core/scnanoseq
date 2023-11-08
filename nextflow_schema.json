@@ -139,10 +139,6 @@
                     "description": "The file containing a list of barcodes.",
                     "format": "file-path"
                 },
-                "cell_amount": {
-                    "type": "integer",
-                    "description": "The estimated amount of cells in the experiment."
-                },
                 "cell_barcode_pattern": {
                     "type": "string",
                     "description": "Regex for the cell barcode pattern."
