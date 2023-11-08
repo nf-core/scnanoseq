@@ -92,7 +92,6 @@ ch_dummy_file = Channel.fromPath("$projectDir/assets/dummy_file.txt", checkIfExi
 include { NANOFILT                                                 } from "../modules/local/nanofilt"
 include { NANOCOMP as NANOCOMP_FASTQ                               } from "../modules/local/nanocomp"
 include { NANOCOMP as NANOCOMP_BAM                                 } from "../modules/local/nanocomp"
-include { PROWLERTRIMMER                                           } from "../modules/local/prowlertrimmer"
 include { SPLIT_FILE                                               } from "../modules/local/split_file"
 include { PIGZ as ZIP_TRIM                                         } from "../modules/local/pigz"
 include { BLAZE                                                    } from "../modules/local/blaze"
@@ -281,23 +280,16 @@ workflow SCNANOSEQ {
             ch_versions = ch_versions.mix(SPLIT_FILE.out.versions)
         }
 
-        if (params.trimming_software == 'nanofilt') {
+        ch_trimmed_reads = ch_fastqs
+        if (!params.skip_trimming) {
 
             NANOFILT ( ch_fastqs )
             ch_trimmed_reads = NANOFILT.out.reads
             ch_versions = ch_versions.mix(NANOFILT.out.versions)
-
-        } else if (params.trimming_software == 'prowler') {
-
-            PROWLERTRIMMER ( ch_fastqs )
-            ch_trimmed_reads = PROWLERTRIMMER.out.reads
-            ch_versions = ch_versions.mix(PROWLERTRIMMER.out.versions)
-
         }
         
         // If the fastqs were split, combine them together
-        ch_trimmed_reads_combined = ch_trimmed_reads
-     
+        ch_trimmed_reads_combined = ch_trimmed_reads 
         if (params.split_amount > 0){
            CAT_CAT(ch_trimmed_reads.groupTuple())
            ch_trimmed_reads_combined = CAT_CAT.out.file_out
