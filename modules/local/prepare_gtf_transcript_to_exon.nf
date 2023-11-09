@@ -8,10 +8,10 @@ process TRANSCRIPT_TO_EXON {
         'ubuntu:20.04' }"
 
     input:
-    path gtf
+    tuple val(meta), path(gtf)
 
     output:
-    path("processed.gtf"), emit: ch_processed_gtf
+    tuple val(meta), path("processed.gtf"), emit: ch_processed_gtf
     path("versions.yml") , emit: versions
 
     when:
