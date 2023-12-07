@@ -50,6 +50,11 @@
                         "git_sha": "911696ea0b62df80e900ef244d7867d177971f73",
                         "installed_by": ["modules"]
                     },
+                    "rseqc/readdistribution": {
+                        "branch": "master",
+                        "git_sha": "7bb1b295a359bcbf0a0ea03d19d40a00916805ee",
+                        "installed_by": ["modules"]
+                    },
                     "samtools/faidx": {
                         "branch": "master",
                         "git_sha": "fd742419940e01ba1c5ecb172c3e32ec840662fe",
