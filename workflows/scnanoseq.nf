@@ -107,6 +107,8 @@ include { SEURAT as SEURAT_GENE                                    } from "../mo
 include { SEURAT as SEURAT_TRANSCRIPT                              } from "../modules/local/seurat"
 include { COMBINE_SEURAT_STATS as COMBINE_SEURAT_STATS_GENE        } from "../modules/local/combine_seurat_stats"
 include { COMBINE_SEURAT_STATS as COMBINE_SEURAT_STATS_TRANSCRIPT  } from "../modules/local/combine_seurat_stats"
+include { UCSC_GTFTOGENEPRED                                       } from "../modules/local/ucsc_gtftogenepred"
+include { UCSC_GENEPREDTOBED                                       } from "../modules/local/ucsc_genepredtobed"
 
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
@@ -133,6 +135,7 @@ include { SAMTOOLS_VIEW as SAMTOOLS_VIEW_BAM            } from "../modules/nf-co
 include { SAMTOOLS_VIEW as SAMTOOLS_VIEW_FILTER         } from "../modules/nf-core/samtools/view/main"
 include { CAT_CAT                                       } from "../modules/nf-core/cat/cat/main"
 include { CAT_FASTQ                                     } from '../modules/nf-core/cat/fastq/main'
+include { RSEQC_READDISTRIBUTION                        } from '../modules/nf-core/rseqc/readdistribution/main'
 
 /*
  * SUBWORKFLOW: Consisting entirely of nf-core/modules
@@ -245,6 +248,24 @@ workflow SCNANOSEQ {
     PAFTOOLS ( gtf.map { meta, gtf -> [gtf]} )
     ch_bed = PAFTOOLS.out.bed
     ch_versions = ch_versions.mix(PAFTOOLS.out.versions)
+
+    //
+    // MODULE: Generate bed file from input gtf for rseqc
+    //
+
+    //TODO: This uses params.gtf instead of gtf in PAFTOOLS
+    // come back to this once intron work is finished (likely input will be fine)
+    ch_pred = Channel.empty()
+    ch_rseqc_bed = Channel.empty()
+    if (!params.skip_qc && !params.skip_rseqc) {
+        UCSC_GTFTOGENEPRED( params.gtf )
+        ch_pred = UCSC_GTFTOGENEPRED.out.genepred
+        ch_versions = ch_versions.mix(UCSC_GTFTOGENEPRED.out.versions)
+
+        UCSC_GENEPREDTOBED ( ch_pred )
+        ch_rseqc_bed = UCSC_GENEPREDTOBED.out.bed
+        ch_versions = ch_versions.mix(UCSC_GENEPREDTOBED.out.versions)
+    }
 
     //
     // MODULE: Trim and filter reads
@@ -432,6 +453,16 @@ workflow SCNANOSEQ {
     ch_versions = ch_versions.mix(BAM_SORT_STATS_SAMTOOLS_FILTERED.out.versions)
 
     //
+    // MODULE: RSeQC read distribution for BAM files (unfiltered for QC purposes)
+    //
+    ch_rseqc_read_dist = Channel.empty()
+    if (!params.skip_qc && !params.skip_rseqc) {
+        RSEQC_READDISTRIBUTION ( ch_minimap_sorted_bam, ch_rseqc_bed )
+        ch_rseqc_read_dist = RSEQC_READDISTRIBUTION.out.txt
+        ch_versions = ch_versions.mix(RSEQC_READDISTRIBUTION.out.versions)
+    }
+
+    //
     // MODULE: NanoComp for BAM files (unfiltered for QC purposes)
     //
     ch_nanocomp_bam_html = Channel.empty()
@@ -603,6 +634,7 @@ workflow SCNANOSEQ {
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_minimap_sorted_stats.collect{it[1]}.ifEmpty([]))
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_minimap_sorted_flagstat.collect{it[1]}.ifEmpty([]))
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_minimap_sorted_idxstats.collect{it[1]}.ifEmpty([]))
+        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_rseqc_read_dist.collect{it[1]}.ifEmpty([]))
         
         //ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_corrected_sorted_stats.collect{it[1]}.ifEmpty([]))
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_corrected_sorted_flagstat.collect{it[1]}.ifEmpty([]))
