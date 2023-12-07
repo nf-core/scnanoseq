@@ -27,6 +27,8 @@ top_modules:
   - general_stats
   - custom_content
   - samtools
+  - rseqc
+  - umitools
   - fastqc:
       name: "FastQC (raw)"
       anchor: "fastqc"
