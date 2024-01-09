@@ -9,7 +9,6 @@ process BLAZE {
 
     input:
     tuple val(meta), path(reads)
-    val exp_cell_amount
     val in_whitelist
 
     output:
@@ -26,10 +25,11 @@ process BLAZE {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     def VERSION = '1.1.0' // WARN: Version information not provided by tool on CLI. Please update this string when bumping BLAZE code
+    def cell_count = "${meta.cell_count}"
 
     """
     blaze.py \\
-        --expect-cells=${exp_cell_amount} \\
+        --expect-cells=${cell_count} \\
         --full-bc-whitelist=${in_whitelist} \\
         --out-putative-bc=${prefix}.putative_bc \\
         --out-bc-whitelist=${prefix}.whitelist \\

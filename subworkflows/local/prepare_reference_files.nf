@@ -4,8 +4,6 @@
 
 include { GUNZIP as GUNZIP_FASTA } from '../../modules/nf-core/gunzip/main'
 include { GUNZIP as GUNZIP_GTF   } from '../../modules/nf-core/gunzip/main'
-include { PREPARE_GTF            } from '../../subworkflows/local/prepare_gtf'
-
 include { SAMTOOLS_FAIDX } from '../../modules/nf-core/samtools/faidx/main'
 
 workflow PREPARE_REFERENCE_FILES {
@@ -43,12 +41,7 @@ workflow PREPARE_REFERENCE_FILES {
         SAMTOOLS_FAIDX( ch_prepared_fasta, [ [:], "$projectDir/assets/dummy_file.txt" ])
         ch_prepared_fai = SAMTOOLS_FAIDX.out.fai
 
-        //
-        // SUBWORKFLOW: Prepare GTF
-        //
-        PREPARE_GTF (gtf_preparation_method, ch_gtf, fasta)
-        ch_prepared_gtf = PREPARE_GTF.out.prepped_gtf
-        ch_versions = ch_versions.mix(PREPARE_GTF.out.versions)
+        ch_prepared_gtf = ch_gtf
 
     emit:
         prepped_fasta = ch_prepared_fasta
