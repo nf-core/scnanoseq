@@ -230,7 +230,7 @@ workflow SCNANOSEQ {
     //
 
     PREPARE_REFERENCE_FILES ( "",
-                            params.intron_retention_method,
+                            "",
                             params.fasta,
                             params.gtf)
 
