@@ -10,6 +10,7 @@ process PREEXTRACT_FASTQ {
 
     input:
     tuple val(meta), path(reads), path(bc_list)
+    val bc_format
 
     output:
     tuple val(meta), path("*.R1.fastq.gz"), emit: r1_reads
@@ -27,7 +28,7 @@ process PREEXTRACT_FASTQ {
     pre_extract_barcodes.py -i ${reads} \\
                             -b ${bc_list} \\
                             -o ${prefix} \\
-                            -f cellranger
+                            -f ${bc_format}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

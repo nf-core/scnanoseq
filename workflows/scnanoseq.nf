@@ -34,34 +34,17 @@ if (params.input) { ch_input = file(params.input) } else { exit 1, 'Input sample
 def cell_barcode_pattern = ""
 
 // This is for if the user wants to do more human readable regex
-def identifier_pattern = ""
 def cell_barcode_lengths = ""
 def umi_lengths = ""
-def fixed_seqs = ""
+def blaze_whitelist = "" 
 
-if (params.barcode_preset) {
-    if (params.barcode_preset = "cellranger_3_prime") {
-        identifier_pattern = "fixed_seq_1,cell_barcode_1,umi_1,fixed_seq_2"
-        cell_barcode_lengths = "16"
-        umi_lengths = "12"
-        fixed_seqs = "CTACACGACGCTCTTCCGATCT, TTTTTTTTTT"
-
-    } else if (params.barcode_preset = "cellranger_5_prime") {
-        identifier_pattern = "fixed_seq_1,cell_barcode_1,umi_1,fixed_seq_2"
-        cell_barcode_lengths = "16"
-        umi_lengths = "12"
-        fixed_seqs = "CTACACGACGCTCTTCCGATCT, TTTTTTTTTT"
-    }
-} else {
-    identifier_pattern = params.identifier_pattern
-    cell_barcode_lengths = params.cell_barcode_lengths
-    umi_lengths = params.umi_lengths
-    fixed_seqs = params.fixed_seqs
-
+// TODO: Move this to a config file
+if (params.barcode_preset = "cellranger_3_prime") {
+    blaze_whitelist = file("$baseDir/assets/whitelist/3M-february-2018.zip")
+    bc_length = "16"
+    umi_length = "12"
 }
 
-// TODO: Adding this in temporarily. Rethink how we want to represent this
-def blaze_whitelist = file("$baseDir/assets/whitelist/3M-february-2018.zip")
 if (params.whitelist) {
     blaze_whitelist = whitelist
 }
@@ -114,7 +97,6 @@ include { UCSC_GENEPREDTOBED                                       } from "../mo
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
 include { INPUT_CHECK             } from "../subworkflows/local/input_check"
-include { CREATE_REGEX_INFO       } from "../subworkflows/local/create_regex"
 include { PREPARE_REFERENCE_FILES } from "../subworkflows/local/prepare_reference_files"
 
 /*
@@ -342,22 +324,6 @@ workflow SCNANOSEQ {
     }
     
     //
-    // MODULE: Parse the regex info
-    //
-
-    // We need to create the regex format
-    // TODO: Add this information to the samplesheet to allow sample specific barcode detection?
-    CREATE_REGEX_INFO( cell_barcode_pattern,
-                identifier_pattern,
-                cell_barcode_lengths,
-                umi_lengths,
-                fixed_seqs)
-
-    val_regex_info = CREATE_REGEX_INFO.out.regex
-    // TODO: Why can't we use the below code?
-    //ch_versions = ch_versions.mix(CREATE_REGEX_INFO.out.versions)
-
-    //
     // MODULE: Generate whitelist
     //
 
@@ -372,7 +338,7 @@ workflow SCNANOSEQ {
     // MODULE: Extract barcodes
     //
 
-    PREEXTRACT_FASTQ( ch_zipped_reads.join(ch_putative_bc))
+    PREEXTRACT_FASTQ( ch_zipped_reads.join(ch_putative_bc), params.barcode_format)
     ch_zipped_r1_reads = PREEXTRACT_FASTQ.out.r1_reads
     ch_zipped_r2_reads = PREEXTRACT_FASTQ.out.r2_reads
 
@@ -486,9 +452,9 @@ workflow SCNANOSEQ {
     TAG_BARCODES (
         ch_minimap_filtered_sorted_bam
             .join( ch_minimap_filtered_sorted_bai, by: 0)
-            .join( ch_zipped_r1_reads, by: 0 )
-            .combine( val_regex_info.bc_length )
-            .combine( val_regex_info.umi_length )
+            .join( ch_zipped_r1_reads, by: 0 ),
+        bc_length,
+        umi_length
     )
 
     ch_tagged_bam = TAG_BARCODES.out.tagged_bam

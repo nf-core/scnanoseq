@@ -22,7 +22,7 @@ def parse_args():
     )
     arg_parser.add_argument("-o", "--output_file", required=True, type=str, help="The output fastq")
     arg_parser.add_argument(
-        "-f", "--barcode-format", required=False, type=str, help="The barcode/umi format (Options: cellranger)"
+        "-f", "--barcode-format", required=True, type=str, help="The barcode/umi format (Options: cellranger)"
     )
 
     args = arg_parser.parse_args()
@@ -88,7 +88,7 @@ def extract_barcode(input_file, barcode_file, output, bc_format):
                     read_info = {}
 
                     # Strip the primer, bc, umi, and poly-T
-                    if bc_format == "cellranger":
+                    if bc_format in ["cellranger_3_prime", "cellranger_5_prime"]:
                         read_info = strip_read_cellranger(bc_index, seq, quals)
 
                     if read_info:
