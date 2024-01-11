@@ -144,7 +144,7 @@
                 "barcode_format": {
                     "type": "string",
                     "description": "Specify the format for the barcode+umi",
-                    "enum": ["cellranger_3_prime"],
+                    "enum": ["cellranger_3_prime", "cellranger_5_prime"],
                     "fa_icon": "fas fa-barcode"
                 }
             },

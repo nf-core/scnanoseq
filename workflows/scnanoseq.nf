@@ -43,6 +43,10 @@ if (params.barcode_preset = "cellranger_3_prime") {
     blaze_whitelist = file("$baseDir/assets/whitelist/3M-february-2018.zip")
     bc_length = "16"
     umi_length = "12"
+} else if (params.barcode_preset = "cellranger_5_prime") {
+    blaze_whitelist = file("$baseDir/assets/whitelist/737K-august-2016.txt.zip")
+    bc_length = "16"
+    umi_length = "12"
 }
 
 if (params.whitelist) {
