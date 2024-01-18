@@ -21,7 +21,9 @@ workflow PREPARE_REFERENCE_FILES {
         //
         ch_prepared_fasta = Channel.empty()
         if (fasta.endsWith('.gz')){
-            ch_prepared_fasta = GUNZIP_FASTA( [ [:], fasta ]).gunzip.map { it[1] }
+            GUNZIP_FASTA( [ [:], fasta ])
+
+            ch_prepared_fasta = GUNZIP_FASTA.out.gunzip
             ch_versions = ch_versions.mix(GUNZIP_FASTA.out.versions)
         } else {
             ch_prepared_fasta = [ [:], fasta ]
@@ -29,7 +31,9 @@ workflow PREPARE_REFERENCE_FILES {
 
         ch_gtf = Channel.empty()
         if (gtf.endsWith('.gz')){
-            ch_prepared_gtf = GUNZIP_GTF( [ [:], gtf ]).gunzip.map { it[1] }
+            GUNZIP_GTF( [ [:], gtf ])
+
+            ch_prepared_gtf = GUNZIP_FASTA.out.gunzip
             ch_versions = ch_versions.mix(GUNZIP_GTF.out.versions)
         } else {
             ch_gtf = [ [:], gtf]
