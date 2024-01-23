@@ -46,7 +46,7 @@ if (params.barcode_preset = "cellranger_3_prime") {
 }
 
 if (params.whitelist) {
-    blaze_whitelist = whitelist
+    blaze_whitelist = params.whitelist
 }
 
 
