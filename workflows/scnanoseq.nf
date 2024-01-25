@@ -39,7 +39,7 @@ def umi_lengths = ""
 def blaze_whitelist = "" 
 
 // TODO: Move this to a config file
-if (params.barcode_preset = "cellranger_3_prime") {
+if (params.barcode_format = "cellranger_3_prime") {
     blaze_whitelist = file("$baseDir/assets/whitelist/3M-february-2018.zip")
     bc_length = "16"
     umi_length = "12"
@@ -50,7 +50,7 @@ if (params.barcode_preset = "cellranger_3_prime") {
 }
 
 if (params.whitelist) {
-    blaze_whitelist = whitelist
+    blaze_whitelist = params.whitelist
 }
 
 
