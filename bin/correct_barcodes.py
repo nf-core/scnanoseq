@@ -42,7 +42,7 @@ def parse_args():
 
     parser.add_argument(
         "--max_edit_dist",
-        default=1,
+        default=2,
         type=int,
         required=False,
         help="The maximum edit distance that a barcode can be from a barcode on the whitelist",
@@ -136,6 +136,7 @@ def correct_bam(infile, outfile, whitelist, barcode_count_file, write_filtered_r
 
             elif write_filtered_reads:
                 bam_filt_out.write(read)
+            print("")
 
 
 def read_whitelist(in_whitelist):
@@ -184,13 +185,14 @@ def calculate_bc_ratios(barcode_count_file):
 
     with open(barcode_count_file, "r", encoding="UTF-8") as f_handle:
         for line in f_handle.readlines():
-            cell_bc, _, bc_count, _ = line.split("\t")
+            cell_bc, bc_count= line.split(",")
 
             raw_bc_counts[cell_bc] = int(bc_count)
             bc_totals += int(bc_count)
 
     for cell_bc, bc_count in raw_bc_counts.items():
-        bc_ratios[cell_bc] = bc_count / bc_totals
+        #bc_ratios[cell_bc] = bc_count / bc_totals
+        bc_ratios[cell_bc] = bc_count + 1
 
     return bc_ratios
 
@@ -250,6 +252,7 @@ def get_similar_bcs(query_bc, query_bc_qual, bc_trie, bc_probabilities, max_edit
     for cell_bc in list(get_mutated_bcs(query_bc, max_edit_dist)):
         if bc_trie.has_key(cell_bc):
             bc_probability = get_bc_probability(query_bc, query_bc_qual, cell_bc, bc_probabilities)
+            print("INFO: BARCODE_CHECK - ({} - {}) Probability {}".format(query_bc, cell_bc, bc_probability))
 
             if bc_probability > 0:
                 similar_bcs.append((cell_bc, bc_probability))
@@ -275,10 +278,10 @@ def get_mutated_bcs(query_bc, max_edit_dist):
             query_bc_list = [[base] for base in query_bc]
 
             for loc in locs:
-                orig_base = query_bc_list[loc]
+                orig_base = query_bc_list[loc][0]
                 query_bc_list[loc] = [b for b in "ACGT" if b != orig_base]
 
-            for poss in itertools.product(*query_bc_list):
+            for poss in set(itertools.product(*query_bc_list)):
                 yield "".join(poss)
 
 
@@ -300,17 +303,18 @@ def get_bc_probability(query_bc, query_bc_qual, potential_bc, bc_probabilities):
             potential_bc.
 
     """
-    likelihood = 1
+    tot_edit_probability = 1
     for idx in get_mismatch_locs(query_bc, potential_bc):
         edit_probability = get_edit_probability(query_bc_qual[idx])
+        tot_edit_probability *= edit_probability
+    
+    potential_bc_prob = 0
+    if potential_bc in bc_probabilities:
+        potential_bc_prob = bc_probabilities[potential_bc]
 
-        potential_bc_prob = 0
-        if potential_bc in bc_probabilities:
-            potential_bc_prob = bc_probabilities[potential_bc]
-
-        likelihood *= potential_bc_prob * edit_probability
-
-    return likelihood
+    print("TOTAL_EDIT_PROBABILITY: {}".format(tot_edit_probability))
+    print("POTENTIAL_BC_PROB: {}".format(potential_bc_prob))
+    return tot_edit_probability * potential_bc_prob
 
 
 def get_mismatch_locs(query_bc, potential_bc):
@@ -366,7 +370,8 @@ def correct_barcode(potential_bcs, min_prob):
     for potential_bc_info in potential_bcs:
         potential_bc, potential_bc_qual = potential_bc_info
         likelihood = potential_bc_qual / total_probability
-        if likelihood > max_likelihood and likelihood >= min_prob:
+        print("INFO: BARCODE_CHECK - ({}) Likelihood {}".format(potential_bc, likelihood))
+        if likelihood > max_likelihood:
             max_likelihood = likelihood
             max_likelihood_bc = potential_bc
 
