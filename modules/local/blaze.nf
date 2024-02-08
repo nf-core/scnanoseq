@@ -38,7 +38,7 @@ process BLAZE {
         \$(pwd)
 
     sed -i 's#-1##g' ${prefix}.whitelist.csv
-    cut -f2 -d',' ${prefix}.putative_bc.csv | sort | uniq -c | awk '{if (\$2 != "") {print \$2"\\t\\t"\$1"\\t"}}' > ${prefix}.bc_count.txt
+    grep -f ${prefix}.whitelist.csv ${prefix}.putative_bc.csv | cut -f2 -d',' | sort | uniq -c | awk '{print \$2","\$1}'> ${prefix}.bc_count.txt
     mv knee_plot.png ${prefix}.knee_plot.png
 
     cat <<-END_VERSIONS > versions.yml
