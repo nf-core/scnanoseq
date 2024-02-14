@@ -27,25 +27,24 @@ On release, automated continuous integration tests run the pipeline on a full-si
 ![scnanoseq diagram](assets/scnanoseq_diagram.png)
 
 1. Raw read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [`NanoPlot`](https://github.com/wdecoster/NanoPlot) and [`NanoComp`](https://github.com/wdecoster/nanocomp))
-2. Unzip and split FastQ (optional: faster processing if split. [`gunzip`](https://linux.die.net/man/1/gunzip) and [`split`](https://linux.die.net/man/1/split))
-3. Trim and filter reads. One of the following:
-   1. [`Nanofilt`](https://github.com/wdecoster/nanofilt) -> default
-   2. [`ProwlerTrimmer`](https://github.com/ProwlerForNanopore/ProwlerTrimmer)
+2. Unzip and split FastQ ([`gunzip`](https://linux.die.net/man/1/gunzip))
+   1. Optional: Split fastq for faster processing ([`split`](https://linux.die.net/man/1/split))
+3. Trim and filter reads. ([`Nanofilt`](https://github.com/wdecoster/nanofilt))
 4. Post trim QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [`NanoPlot`](https://github.com/wdecoster/NanoPlot))
-5. Pre-extraction QC in the R2 reads ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [`NanoPlot`](https://github.com/wdecoster/NanoPlot))
-6. Barcode detection using a custom whitelist or 10X whitelist. [`BLAZE`](https://github.com/shimlab/BLAZE)
-7. Extract barcodes. Consists of the following steps:
+5. Barcode detection using a custom whitelist or 10X whitelist. [`BLAZE`](https://github.com/shimlab/BLAZE)
+6. Extract barcodes. Consists of the following steps:
    1. Parse FASTQ files into R1 reads containing barcode and UMI and R2 reads containing sequencing without barcode and UMI (custom script `./bin/pre_extract_barcodes.py`)
    2. Re-zip FASTQs ([`pigz`](https://github.com/madler/pigz))
-8. Post-extraction QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [`NanoPlot`](https://github.com/wdecoster/NanoPlot))
-9. Alignment ([`minimap2`](https://github.com/lh3/minimap2))
-10. SAMtools processing including ([`SAMtools`](http://www.htslib.org/doc/samtools.html)):
+7. Post-extraction QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [`NanoPlot`](https://github.com/wdecoster/NanoPlot))
+8. Alignment ([`minimap2`](https://github.com/lh3/minimap2))
+9. SAMtools processing including ([`SAMtools`](http://www.htslib.org/doc/samtools.html)):
     1. SAM to BAM
     2. Filtering of mapped only reads
     3. Sorting, indexing and obtain mapping metrics
-11. Post-mapping QC in unfiltered BAM files ([`NanoComp`](https://github.com/wdecoster/nanocomp))
-12. Barcode tagging with read quality, BC, BC quality, UMI, and UMI quality (custom script `./bin/tag_barcodes.py`)
-13. Barcode correction (custom script `./bin/correct_barcodes.py`)
+10. Post-mapping QC in unfiltered BAM files ([`NanoComp`](https://github.com/wdecoster/nanocomp), [`RSeQC`](https://rseqc.sourceforge.net/))
+11. Barcode tagging with read quality, BC, BC quality, UMI, and UMI quality (custom script `./bin/tag_barcodes.py`)
+12. Barcode correction (custom script `./bin/correct_barcodes.py`)
+13. Post correction QC for corrected bams ([`SAMtools`](http://www.htslib.org/doc/samtools.html))
 14. UMI-based deduplication [`UMI-tools`](https://github.com/CGATOxford/UMI-tools)
 15. Gene and transcript level matrices generation. [`IsoQuant`](https://github.com/ablab/IsoQuant)
 16. Preliminary matrix QC ([`Seurat`](https://github.com/satijalab/seurat))
@@ -58,25 +57,22 @@ On release, automated continuous integration tests run the pipeline on a full-si
 > to set-up Nextflow. Make sure to [test your setup](https://nf-co.re/docs/usage/introduction#how-to-run-a-pipeline)
 > with `-profile test` before running the workflow on actual data.
 
-<!-- TODO nf-core: Describe the minimum required steps to execute the pipeline, e.g. how to prepare samplesheets.
-     Explain what rows and columns represent. For instance (please edit as appropriate):
-
 First, prepare a samplesheet with your input data that looks as follows:
 
 `samplesheet.csv`:
 
 ```csv
-sample,fastq_1,fastq_2
-CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
+sample,fastq_1,cell_count
+CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,1000
+CONTROL_REP1,AEG588A1_S2_L002_R1_001.fastq.gz,1000
+CONTROL_REP2,AEG588A2_S1_L002_R1_001.fastq.gz,1000
+CONTROL_REP3,AEG588A3_S1_L002_R1_001.fastq.gz,1000
+CONTROL_REP4,AEG588A4_S1_L002_R1_001.fastq.gz,1000
+CONTROL_REP4,AEG588A4_S2_L002_R1_001.fastq.gz,1000
+CONTROL_REP4,AEG588A4_S3_L002_R1_001.fastq.gz,1000
 ```
 
-Each row represents a fastq file (single-end) or a pair of fastq files (paired end).
-
--->
-
-```console
-nextflow run nf-core/scnanoseq --input samplesheet.csv --outdir <OUTDIR> --genome GRCh37 -profile <docker/singularity/podman/shifter/charliecloud/conda/institute>
-```
+Each row represents a single-end fastq file. Rows with the same sample identifier are considered technical replicates and will be automatically merged. cell_count refers to the expected number of cells you expect
 
 ```bash
 nextflow run nf-core/scnanoseq \
@@ -97,6 +93,8 @@ For more details and further functionality, please refer to the [usage documenta
 To see the results of an example test run with a full size dataset refer to the [results](https://nf-co.re/scnanoseq/results) tab on the nf-core website pipeline page.
 For more details about the output files and reports, please refer to the
 [output documentation](https://nf-co.re/scnanoseq/output).
+
+This pipeline produces feature barcode matrices at both the gene and transcript level and can retain introns within the counts themselves. These files are able to be ingested directly by most packages used for downstream analyses such as Seurat. In addition the pipeline produces a number of quality control metrics to assess in ensuring the confidence of the results of the samples that were processed.
 
 ## Credits
 
