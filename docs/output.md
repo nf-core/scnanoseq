@@ -12,18 +12,57 @@ The directories listed below will be created in the results directory after the 
 
 The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes data using the following steps:
 
-- [FastQC](#fastqc) - Raw read QC
-- [MultiQC](#multiqc) - Aggregate report describing results and QC from the whole pipeline
+- [Preprocessing](#preprocessing)
+  - [Nanofilt](#nanofilt) - Read Quality Filtering and Trimming
+- [Barcode Calling and Extraction](#barcode-calling-and-extraction)
+  - [BLAZE](#blaze) - Barcode caller
+  - [Prextraction](#preextraction) - Barcode extraction
+- [Alignment](#alignment)
+  - [Minimap](#minimap) - Long read alignment
+- [Alignment Post-processing](#alignment-post-processing)
+  - [Samtools](#samtools) - Sort and index alignments and make alignment qc
+  - [Barcode Correction](#barcode-correction) - Barcode whitelist correction
+  - [UMI Deduplication](#umi-deduplication) - UMI-based deduplication
+- [Feature-Barcode Quantification](#feature-barcode-quantification)
+  - [IsoQuant](#isoquant) - Feature-barcode quantification
+  - [Seurat](#seurat) - Feature-barcode matrix QC
+- [Quality Control](#quality-control)
+  - [FastQC](#fastqc) - Fastq QC
+  - [Nanocomp](#nanocomp) - Long Read Fastq QC
+  - [Nanoplot](#nanoplot) - Long Read Fastq QC
+  - [RSeQC](#rseqc) - Various RNA-seq QC metrics
+  - [MultiQC](#multiqc) - Aggregate report describing results and QC from the whole pipeline
 - [Pipeline information](#pipeline-information) - Report metrics generated during the workflow execution
 
+## Preprocessing
+### Nanofilt
+<details markdown="1">
+<summary>Output files</summary>
+
+- `<sample_identifier>/`
+  - `fastq/`
+    - `trimmed_nanofilt/`
+      - `*_filtered.fastq.gz`
+
+</details>
+
+[Nanofilt](https://github.com/wdecoster/nanocomp) is a tool used for filtering and trimming of long read sequencing data.
+
+## Quality Control
 ### FastQC
 
 <details markdown="1">
 <summary>Output files</summary>
 
-- `fastqc/`
-  - `*_fastqc.html`: FastQC report containing quality metrics.
-  - `*_fastqc.zip`: Zip archive containing the FastQC report, tab-delimited data file and plot images.
+- `<sample_identifier>/`
+  - `qc/`
+    - `fastqc/`
+      - `pre_trim/`
+        - `*_fastqc.html`: FastQC report containing quality metrics.
+        - `*_fastqc.zip`: Zip archive containing the FastQC report, tab-delimited data file and plot images.
+      - `post_extract/`
+        - `*_fastqc.html`: FastQC report containing quality metrics.
+        - `*_fastqc.zip`: Zip archive containing the FastQC report, tab-delimited data file and plot images.
 
 </details>
 
@@ -36,6 +75,63 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 ![MultiQC - FastQC adapter content plot](images/mqc_fastqc_adapter.png)
 
 > **NB:** The FastQC plots displayed in the MultiQC report shows _untrimmed_ reads. They may contain adapter sequence and potentially regions with low quality.
+
+### Nanocomp
+
+<details markdown="1">
+<summary>Output files</summary>
+
+- `batch_qcs/`
+  - `nanocomp/`
+    - `fastq/`
+      - `NanoComp_*.log`
+      - `NanoComp_lengths_violin.html`
+      - `NanoComp_log_length_violin.html`
+      - `NanoComp_N50.html`
+      - `NanoComp_number_of_reads.html`
+      - `NanoComp_OverlayHistogram.html`
+      - `NanoComp_OverlayHistogram_Normalized.html`
+      - `NanoComp_OverlayLogHistogram.html`
+      - `NanoComp_OverlayLogHistogram_Normalized.html`
+      - `NanoComp_quals_violin.html`
+      - `NanoComp-report.html`
+      - `NanoComp_total_throughput.html`
+      - `NanoStats.txt`
+    - `bam/`
+      - `NanoComp_20240212_1942.log`
+      - `NanoComp_lengths_violin.html`
+      - `NanoComp_log_length_violin.html`
+      - `NanoComp_N50.html`
+      - `NanoComp_number_of_reads.html`
+      - `NanoComp_OverlayHistogram.html`
+      - `NanoComp_OverlayHistogram_Identity.html`
+      - `NanoComp_OverlayHistogram_Normalized.html`
+      - `NanoComp_OverlayHistogram_PhredScore.html`
+      - `NanoComp_OverlayLogHistogram.html`
+      - `NanoComp_OverlayLogHistogram_Normalized.html`
+      - `NanoComp_percentIdentity_violin.html`
+      - `NanoComp_quals_violin.html`
+      - `NanoComp-report.html`
+      - `NanoComp_total_throughput.html`
+      - `NanoStats.txt`
+
+
+</details>
+
+[Nanocomp](https://github.com/wdecoster/nanocomp) compares multiple runs of long read sequencing data and alignments. It creates violin plots or box plots of length, quality and percent identity and creates dynamic, overlaying read length histograms and a cumulative yield plot
+
+### Nanoplot
+<details markdown="1">
+<summary>Output files</summary>
+
+- `<sample_identifier>/`
+  - `fastq/`
+    - `trimmed_nanofilt/`
+      - `*_filtered.fastq.gz`
+
+</details>
+
+[Nanoplot](https://github.com/wdecoster/NanoPlot) is a plotting tool for long read sequencing data and alignments.
 
 ### MultiQC
 
