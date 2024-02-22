@@ -42,7 +42,8 @@ class Read(object):
             self.__dict__[attr_name] = attr_val
 
     def find_adaptor(
-        self, read=None, strand=None, adaptor_seq=ADPT_SEQ, num_nt=ADPT_WIN, min_match_prop=ADPT_MIN_MATCH_PROP
+        self, read=None, strand=None, adaptor_seq=ADPT_SEQ, num_nt=ADPT_WIN, min_match_prop=ADPT_MIN_MATCH_PROP,
+        kit_type=KIT_TYPE
     ):
         """
         find adaptor from a read
@@ -113,8 +114,8 @@ class Read(object):
             T_prop = helper.sliding_window_mean(read_code, poly_T_len)
             return np.any(T_prop >= min_match_prop)
 
-        if strand == "-":
-            seq = read[:num_nt]
+        def find_subseq(seq, subseq, min_match_prop):
+            """Looks for a subsequence in a given sequence"""
 
             # Align adaptor sequencing to seq
             # no panelty for skipping the start and end of the seq
@@ -122,12 +123,21 @@ class Read(object):
             # score for a mismatch : -1
             # score for open a gap : -1
             # score for extent a gap: -1
-            align = Bio.pairwise2.align.localms(seq, adaptor_seq, 2, -1, -1, -1)
+            align = Bio.pairwise2.align.localms(seq, subseq, 2, -1, -1, -1)
 
-            # filter out candidate adaptor when no polyT find
-            adp_cand = [a for a in align if a.score >= min_score(len(adaptor_seq), min_match_prop)]
+            subseq_cand = [a for a in align if a.score >= min_score(len(subseq), min_match_prop)]
+            return subseq_cand
+        
+        if strand == "-":
+            seq = read[:num_nt]
+            adp_cand = find_subseq(seq, adaptor_seq, min_match_prop)
             d1, d2 = PLY_T_NT_AFT_ADPT
-            adp_cand = [a for a in adp_cand if check_poly_T(read[a.end + d1 : a.end + d2])]
+
+            if kit_type == "3_prime":
+                adp_cand = [a for a in adp_cand if find_subseq(read[a.end + d1 : a.end + d2], "T" * PLY_T_LEN, PLY_T_MIN_MATCH_PROP)]
+            else:
+                adp_cand = [a for a in adp_cand if find_subseq(read[a.end + d1 : a.end + d2], TSO_SEQ, ADPT_MIN_MATCH_PROP)]
+
             return {"-": adp_cand} if len(adp_cand) else {}
 
         # take reverse complement if read is coming from transcript strand (with ployA instead ployT)
@@ -169,6 +179,7 @@ class Read(object):
         None.
 
         """
+        print("HI")
         adapt_dict = self.find_adaptor()
         self.adaptor_polyT_pass = 0
         num_of_strand_find = len(adapt_dict)

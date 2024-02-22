@@ -18,6 +18,10 @@ PLY_T_WIN = 200  # search poly T in subsequence from both end of the reads with 
 PLY_T_MIN_MATCH_PROP = 1  # minimum proportion of match required when searching
 PLY_T_NT_AFT_ADPT = (20, 50)  # a poly T should locate within this range downstream an adaptor
 
+TSO_SEQ = "TTTCTTATATGGG"
+
+KIT_TYPE = "5_prime"
+
 
 ####################################################
 #######    DEFAULT in getting putative bc     ######
