@@ -29,14 +29,14 @@ workflow PREPARE_REFERENCE_FILES {
             ch_prepared_fasta = [ [:], fasta ]
         }
 
-        ch_gtf = Channel.empty()
+        ch_prepared_gtf = Channel.empty()
         if (gtf.endsWith('.gz')){
             GUNZIP_GTF( [ [:], gtf ])
 
             ch_prepared_gtf = GUNZIP_FASTA.out.gunzip
             ch_versions = ch_versions.mix(GUNZIP_GTF.out.versions)
         } else {
-            ch_gtf = [ [:], gtf]
+            ch_prepared_gtf = [ [:], gtf]
         }
         
         //
@@ -44,8 +44,6 @@ workflow PREPARE_REFERENCE_FILES {
         //
         SAMTOOLS_FAIDX( ch_prepared_fasta, [ [:], "$projectDir/assets/dummy_file.txt" ])
         ch_prepared_fai = SAMTOOLS_FAIDX.out.fai
-
-        ch_prepared_gtf = ch_gtf
 
     emit:
         prepped_fasta = ch_prepared_fasta
