@@ -33,7 +33,7 @@ workflow PREPARE_REFERENCE_FILES {
         if (gtf.endsWith('.gz')){
             GUNZIP_GTF( [ [:], gtf ])
 
-            ch_prepared_gtf = GUNZIP_FASTA.out.gunzip
+            ch_prepared_gtf = GUNZIP_GTF.out.gunzip
             ch_versions = ch_versions.mix(GUNZIP_GTF.out.versions)
         } else {
             ch_prepared_gtf = [ [:], gtf]
