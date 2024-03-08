@@ -52,14 +52,6 @@ top_modules:
       path_filters:
         - "*extracted*fastqc*"
 
-section_comments:
-  fastqc_posttrim: "Please note that if 'prowler' is selected as the trimming
-    method, these qc's should be looked at closely. Prowler does not
-    always remove reads, as it will replace low quality windows with
-    N's, which can have notable effects on the qc's below. For more
-    information on the prowler algorithm, please refer to the
-    [Prowler paper](https://doi.org/10.1093/bioinformatics/btab630)"
-
 custom_content:
   seurat_section:
     parent_id: seurat_section
