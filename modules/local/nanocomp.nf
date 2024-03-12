@@ -7,7 +7,7 @@ process NANOCOMP {
         'biocontainers/nanocomp:1.20.0--pyhdfd78af_0' }"
 
     input:
-    path ont_files
+    tuple path(ont_files), path(ont_files_idx)
 
     output:
     path "*.html"       , emit: html

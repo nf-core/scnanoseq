@@ -127,6 +127,7 @@ include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_POST_TRIM        } from '..
 include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_POST_EXTRACT     } from '../subworkflows/nf-core/qcfastq_nanoplot_fastqc'
 include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_MINIMAP  } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
 include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_FILTERED } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
+include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_TAGGED } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
 include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_CORRECTED } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
 include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_DEDUP } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
 
@@ -197,7 +198,9 @@ workflow SCNANOSEQ {
     ch_nanocomp_fastq_html = Channel.empty()
     ch_nanocomp_fastq_txt = Channel.empty()
     if (!params.skip_qc && !params.skip_fastq_nanocomp) {
-        ch_nanocomp_fastqs = ch_cat_fastq.collect{it[1]}
+        ch_nanocomp_fastqs = ch_cat_fastq
+                                 .collect{it[1]}
+                                 .combine( ch_dummy_file )
 
         NANOCOMP_FASTQ ( ch_nanocomp_fastqs )
         ch_nanocomp_fastq_html = NANOCOMP_FASTQ.out.html
@@ -435,7 +438,9 @@ workflow SCNANOSEQ {
     ch_nanocomp_bam_txt = Channel.empty()
 
     if (!params.skip_qc && !params.skip_bam_nanocomp) {
-        ch_nanocomp_bams = ch_minimap_sorted_bam.collect{it[1]}
+        ch_nanocomp_bams = ch_minimap_sorted_bam
+                               .collect{it[1]}
+                               .join( ch_minimap_sorted_bai, by: 0 )
 
         NANOCOMP_BAM ( ch_nanocomp_bams )
         
@@ -460,12 +465,19 @@ workflow SCNANOSEQ {
     ch_tagged_bam = TAG_BARCODES.out.tagged_bam
     ch_versions = ch_versions.mix(TAG_BARCODES.out.versions)
 
+    BAM_SORT_STATS_SAMTOOLS_TAGGED ( ch_tagged_bam,
+                                        fasta )
+    
+    ch_tagged_sorted_bam = BAM_SORT_STATS_SAMTOOLS_TAGGED.out.bam
+    ch_tagged_sorted_bai = BAM_SORT_STATS_SAMTOOLS_TAGGED.out.bai
+
     //
     // MODULE: Correct Barcodes
     //
 
     CORRECT_BARCODES (
-        ch_tagged_bam
+        ch_tagged_sorted_bam
+            .join ( ch_tagged_sorted_bai, by: 0)
             .join ( ch_gt_whitelist, by: 0)
             .join ( ch_whitelist_bc_count, by: 0 )
     )

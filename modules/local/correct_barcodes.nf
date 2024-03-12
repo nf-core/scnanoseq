@@ -8,7 +8,7 @@ process CORRECT_BARCODES {
         'biocontainers/mulled-v2-bb96c7354781ab52d8e69ccff89587598dc87fea:ad24cd6a9acfe3ff51beb4c454076e18e778f7c0-0' }"
 
     input:
-    tuple val(meta), path(bam), path(whitelist), path(bc_count_file)
+    tuple val(meta), path(bam), path(bai), path(whitelist), path(bc_count_file)
 
     output:
     tuple val(meta), path("*.corrected.bam"), emit: corrected_bam
