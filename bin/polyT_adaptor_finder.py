@@ -1,5 +1,6 @@
 """Searching for adaptor polyT or poly A in a Nanopore read.
 """
+
 import numpy as np
 import Bio
 import Bio.pairwise2
