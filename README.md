@@ -34,9 +34,9 @@ On release, automated continuous integration tests run the pipeline on a full-si
 7. Post-extraction QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [`NanoPlot`](https://github.com/wdecoster/NanoPlot))
 8. Alignment ([`minimap2`](https://github.com/lh3/minimap2))
 9. SAMtools processing including ([`SAMtools`](http://www.htslib.org/doc/samtools.html)):
-    1. SAM to BAM
-    2. Filtering of mapped only reads
-    3. Sorting, indexing and obtain mapping metrics
+   1. SAM to BAM
+   2. Filtering of mapped only reads
+   3. Sorting, indexing and obtain mapping metrics
 10. Post-mapping QC in unfiltered BAM files ([`NanoComp`](https://github.com/wdecoster/nanocomp), [`RSeQC`](https://rseqc.sourceforge.net/))
 11. Barcode tagging with read quality, BC, BC quality, UMI, and UMI quality (custom script `./bin/tag_barcodes.py`)
 12. Barcode correction (custom script `./bin/correct_barcodes.py`)
