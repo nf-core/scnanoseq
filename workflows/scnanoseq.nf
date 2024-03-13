@@ -197,11 +197,9 @@ workflow SCNANOSEQ {
     ch_nanocomp_fastq_html = Channel.empty()
     ch_nanocomp_fastq_txt = Channel.empty()
     if (!params.skip_qc && !params.skip_fastq_nanocomp) {
-        ch_nanocomp_fastqs = ch_cat_fastq
-                                 .collect{it[1]}
-                                 .combine( ch_dummy_file )
 
-        NANOCOMP_FASTQ ( ch_nanocomp_fastqs )
+        NANOCOMP_FASTQ ( ch_cat_fastq.collect{it[1]},
+                         ch_dummy_file )
         ch_nanocomp_fastq_html = NANOCOMP_FASTQ.out.html
         ch_nanocomp_fastq_txt = NANOCOMP_FASTQ.out.txt
 
@@ -437,11 +435,9 @@ workflow SCNANOSEQ {
     ch_nanocomp_bam_txt = Channel.empty()
 
     if (!params.skip_qc && !params.skip_bam_nanocomp) {
-        ch_nanocomp_bams = ch_minimap_sorted_bam
-                               .collect{it[1]}
-                               .join( ch_minimap_sorted_bai, by: 0 )
 
-        NANOCOMP_BAM ( ch_nanocomp_bams )
+        NANOCOMP_BAM ( ch_minimap_sorted_bam.collect{it[1]},
+                       ch_minimap_sorted_bai.collect{it[1]})
 
         ch_nanocomp_bam_html = NANOCOMP_BAM.out.html
         ch_nanocomp_bam_txt = NANOCOMP_BAM.out.txt
