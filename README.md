@@ -92,6 +92,104 @@ For more details about the output files and reports, please refer to the
 
 This pipeline produces feature barcode matrices at both the gene and transcript level and can retain introns within the counts themselves. These files are able to be ingested directly by most packages used for downstream analyses such as `Seurat`. In addition the pipeline produces a number of quality control metrics to ensure that the samples processed meet expected metrics for single-cell/nuclei data.
 
+## Troubleshooting
+If you experience any issues, please make sure to submit an issue above. However, some resolutions for common issues will be noted below:
+* One issue that has been observed is a recurrent node failure on slurm clusters that does seem to be related to submission of nextflow jobs. This issue is not related to this pipeline itself, but rather to nextflow itself. Our reserach computing are currently working on a resolution. But we have two methods that appear to help overcome should this issue arise:
+  1. The first is to create a custom config that increases the memory request for the job that failed. This may take a couple attempts to find the correct requests, but we have noted that there does appear to be a memory issue occassionally with this errors.
+  2. The second resolution is to request an interactive session with a decent amount of time and memory and cpus in order to run the pipeline on the single node. Note that this will take time as there will be minimal parallelization, but this does seem to resolve the issue
+* We acknowledge that analyzing promethion is a common use case for this pipeline. Currently, the pipeline has been developed with defaults to analyze gridion data. We have tested with promethion-level data and have noted that some of the process defaults need to be increased (substantially in some cases). Below are some of the overrides we have used, while these amounts may not work on every dataset, these will hopefully at least note which processes will need to have their resources increased:
+```
+process 
+{
+    withName: '.*:FASTQC' 
+    {
+        time = '48.h'
+        cpus = 15
+        memory = '50.GB'
+    }
+}
+
+process
+{
+    withName: '.*:BLAZE'
+    {
+        queue = 'largemem'
+        clusterOptions = '--ntasks=30 --mem-per-cpu=1000'
+        memory = ''
+        cpus = ''
+        ext.args = '--threads 30'
+    }
+}
+
+process 
+{
+    withName: '.*:FASTQC' 
+    {
+        time = '48.h'
+        memory = '40.GB'
+    }
+}
+
+process
+{
+    withName: '.*:PREEXTRACT_FASTQ'
+    {
+        time = '48.h'
+        memory = '80.GB'
+    }
+}
+
+process
+{
+    withName: '.*:SAMTOOLS_SORT'
+    {
+        time = '48.h'
+        memory = '80.GB'
+        cpus = 20
+    }
+}
+
+process
+{
+    withName: '.*:MINIMAP2_ALIGN'
+    {   
+        cpus = 20
+        memory = '80.GB'
+        time = '48.h'
+    }   
+}
+
+process
+{
+    withName: '.*:ISOQUANT'
+    {   
+        clusterOptions = '--ntasks 40 --mem-per-cpu=1000'
+        memory = ''
+        cpus = ''
+        ext.args = { 
+            [   
+                "--threads 40",
+                "--complete_genedb",
+                params.stranded == "forward" ? "--stranded forward" : params.stranded == "reverse" ? "--stranded reverse" : "--stranded none",
+            ].join(' ').trim()
+        }   
+        time = '72.h'
+    }
+}
+
+process
+{
+    withName: '.*:MINIMAP2_ALIGN'
+    {   
+        cpus = ''
+        memory = ''
+        clusterOptions = '--ntasks 40 --mem-per-cpu=3000'
+        time = '72.h'
+    }   
+}
+
+```
+
 ## Credits
 
 nf-core/scnanoseq was originally written by [Austyn Trull](https://github.com/atrull314), and [Dr. Lara Ianov](https://github.com/lianov).
