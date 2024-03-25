@@ -107,16 +107,18 @@ include { PREPARE_REFERENCE_FILES } from "../subworkflows/local/prepare_referenc
 //
 // MODULE: Installed directly from nf-core/modules
 //
-include { GUNZIP                                        } from "../modules/nf-core/gunzip/main"
-include { MULTIQC as MULTIQC_RAWQC                      } from '../modules/nf-core/multiqc/main'
-include { MULTIQC as MULTIQC_FINALQC                    } from '../modules/nf-core/multiqc/main'
-include { CUSTOM_DUMPSOFTWAREVERSIONS                   } from '../modules/nf-core/custom/dumpsoftwareversions/main'
-include { UMITOOLS_DEDUP                                } from '../modules/nf-core/umitools/dedup/main'
-include { SAMTOOLS_VIEW as SAMTOOLS_VIEW_BAM            } from "../modules/nf-core/samtools/view/main"
-include { SAMTOOLS_VIEW as SAMTOOLS_VIEW_FILTER         } from "../modules/nf-core/samtools/view/main"
-include { CAT_CAT                                       } from "../modules/nf-core/cat/cat/main"
-include { CAT_FASTQ                                     } from '../modules/nf-core/cat/fastq/main'
-include { RSEQC_READDISTRIBUTION                        } from '../modules/nf-core/rseqc/readdistribution/main'
+include { GUNZIP                                } from "../modules/nf-core/gunzip/main"
+include { MULTIQC as MULTIQC_RAWQC              } from '../modules/nf-core/multiqc/main'
+include { MULTIQC as MULTIQC_FINALQC            } from '../modules/nf-core/multiqc/main'
+include { CUSTOM_DUMPSOFTWAREVERSIONS           } from '../modules/nf-core/custom/dumpsoftwareversions/main'
+include { UMITOOLS_DEDUP                        } from '../modules/nf-core/umitools/dedup/main'
+include { SAMTOOLS_VIEW as SAMTOOLS_VIEW_BAM    } from "../modules/nf-core/samtools/view/main"
+include { SAMTOOLS_VIEW as SAMTOOLS_VIEW_FILTER } from "../modules/nf-core/samtools/view/main"
+include { CAT_CAT                               } from "../modules/nf-core/cat/cat/main"
+include { CAT_FASTQ                             } from '../modules/nf-core/cat/fastq/main'
+include { RSEQC_READDISTRIBUTION                } from '../modules/nf-core/rseqc/readdistribution/main'
+include { BAMTOOLS_SPLIT                        } from '../modules/nf-core/bamtools/split/main'
+include { SAMTOOLS_MERGE                        } from '../modules/nf-core/samtools/merge/main'
 
 /*
  * SUBWORKFLOW: Consisting entirely of nf-core/modules
@@ -128,6 +130,7 @@ include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_MINIMAP  } from "..
 include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_FILTERED } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
 include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_TAGGED } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
 include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_CORRECTED } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
+include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_SPLIT } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
 include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_DEDUP } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
 
 /*
@@ -502,18 +505,65 @@ workflow SCNANOSEQ {
     ch_dedup_log = Channel.empty()
 
     if (!params.skip_dedup) {
+
+        //
+        // MODULE: Bamtools Split
+        //
+        BAMTOOLS_SPLIT ( ch_corrected_sorted_bam )
+        ch_split_bams = BAMTOOLS_SPLIT.out.bam
+        
+        ch_split_corrected_bam = ch_split_bams 
+                                     .map{
+                                        meta, bam ->
+                                            [bam]
+                                     }
+                                     .flatten()
+                                     .map{
+                                         bam ->
+                                             bam_basename = bam.toString().split('/')[-1]
+                                             split_bam_basename = bam_basename.split(/\./)
+                                             meta = [ 'id': split_bam_basename.take(split_bam_basename.size()-1).join(".") ]
+                                             [ meta, bam ]
+                                     }
+
+        //  
+        // SUBWORKFLOW: BAM_SORT_STATS_SAMTOOLS
+        // The subworkflow is called in both the minimap2 bams and filtered (mapped only) version
+        BAM_SORT_STATS_SAMTOOLS_SPLIT ( ch_split_corrected_bam,
+                                        fasta )
+
+        ch_split_sorted_bam = BAM_SORT_STATS_SAMTOOLS_SPLIT.out.bam
+        ch_split_sorted_bai = BAM_SORT_STATS_SAMTOOLS_SPLIT.out.bai
+
         //
         // MODULE: Umitools Dedup
         //
-        UMITOOLS_DEDUP ( ch_corrected_sorted_bam.join(ch_corrected_sorted_bai, by: [0]), true )
+        UMITOOLS_DEDUP ( ch_split_sorted_bam.join(ch_split_sorted_bai, by: [0]), true )
 
         ch_dedup_bam = UMITOOLS_DEDUP.out.bam
         ch_dedup_log = UMITOOLS_DEDUP.out.log
         ch_versions = ch_versions.mix(UMITOOLS_DEDUP.out.versions)
 
+        //
+        // MODULE: Samtools merge
+        //
+        ch_bams_to_merge = ch_dedup_bam
+                               .map{
+                                   meta, bam ->
+                                       bam_basename = bam.toString().split('/')[-1]
+                                       split_bam_basename = bam_basename.split(/\./)
+                                       meta = [ 'id': split_bam_basename[0] ]
+                                   [ meta, bam ]
+                                }
+                                .groupTuple()
+
+        SAMTOOLS_MERGE ( ch_bams_to_merge, fasta, fai)
+
+        ch_dedup_merged_bam = SAMTOOLS_MERGE.out.bam
+
         // SUBWORKFLOW: BAM_SORT_STATS_SAMTOOLS
         // The subworkflow is called in both the minimap2 bams and filtered (mapped only) version
-        BAM_SORT_STATS_SAMTOOLS_DEDUP ( ch_dedup_bam,
+        BAM_SORT_STATS_SAMTOOLS_DEDUP ( ch_dedup_merged_bam,
                                         fasta )
 
         ch_dedup_sorted_bam = BAM_SORT_STATS_SAMTOOLS_DEDUP.out.bam
