@@ -26,7 +26,7 @@ done
 ###############
 
 # Print out the header
-echo -e "Sample\tFeature_Type\tEstimated_Cell_Number\tMean_Reads_Per_Cell\tMedian_Genes_Per_Cell" > .header.tmp
+echo -e "Sample\tFeature_Type\tEstimated_Cell_Number\tMean_Reads_Per_Cell\tMedian_Features_Per_Cell\tTotal_Number_of_Features" > .header.tmp
 
 # The files are just input from the command line
 for in_file in ${IN_DIR}/*.csv

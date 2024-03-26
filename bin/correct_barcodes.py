@@ -185,13 +185,13 @@ def calculate_bc_ratios(barcode_count_file):
 
     with open(barcode_count_file, "r", encoding="UTF-8") as f_handle:
         for line in f_handle.readlines():
-            cell_bc, bc_count= line.split(",")
+            cell_bc, bc_count = line.split(",")
 
             raw_bc_counts[cell_bc] = int(bc_count)
             bc_totals += int(bc_count)
 
     for cell_bc, bc_count in raw_bc_counts.items():
-        #bc_ratios[cell_bc] = bc_count / bc_totals
+        # bc_ratios[cell_bc] = bc_count / bc_totals
         bc_ratios[cell_bc] = bc_count + 1
 
     return bc_ratios
@@ -307,7 +307,7 @@ def get_bc_probability(query_bc, query_bc_qual, potential_bc, bc_probabilities):
     for idx in get_mismatch_locs(query_bc, potential_bc):
         edit_probability = get_edit_probability(query_bc_qual[idx])
         tot_edit_probability *= edit_probability
-    
+
     potential_bc_prob = 0
     if potential_bc in bc_probabilities:
         potential_bc_prob = bc_probabilities[potential_bc]

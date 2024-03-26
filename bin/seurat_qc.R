@@ -156,18 +156,22 @@ est_cell_number <- length(colnames(cell_bc_matrix))
 # Get the "Mean Reads per Cell"
 mean_reads_per_cell <- round(total_reads / est_cell_number, digits = 2)
 
-# Get the "Median Genes per Cell"
-median_genes_per_cell <- median(seurat_obj$nFeature_RNA)
+# Get the "Median Feautures per Cell"
+# Feature may be genes or transcripts
+median_features_per_cell <- median(seurat_obj$nFeature_RNA)
+
+# Get the "Total Number of Features" detected
+total_number_features <- nrow(seurat_obj@assays$RNA@counts)
 
 ####################
 ### OUTPUT TABLE ###
 ####################
 
 # Acquire all stats
-output_table <- data.frame(est_cell_number, mean_reads_per_cell, median_genes_per_cell)
+output_table <- data.frame(est_cell_number, mean_reads_per_cell, median_features_per_cell, total_number_features)
 
 # Set the colnames for the output table
-colnames(output_table) <- c("Estimated Cell Number", "Mean Reads Per Cell", "Median Genes Per Cell")
+colnames(output_table) <- c("Estimated Cell Number", "Mean Reads Per Cell", "Median Feautures Per Cell", "Total Number of Features")
 
 # Write out the data frame
 out_stats <- paste0(opt$outprefix,".csv")

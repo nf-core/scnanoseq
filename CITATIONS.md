@@ -10,10 +10,6 @@
 
 ## Pipeline tools
 
-- [BEDTools](https://pubmed.ncbi.nlm.nih.gov/20110278/)
-
-  > Quinlan AR, Hall IM. BEDTools: a flexible suite of utilities for comparing genomic features. Bioinformatics. 2010 Mar 15;26(6):841-2. doi: 10.1093/bioinformatics/btq033. Epub 2010 Jan 28. PubMed PMID: 20110278; PubMed Central PMCID: PMC2832824.
-
 - [BLAZE](https://www.biorxiv.org/content/10.1101/2022.08.16.504056v1)
 
   > You Y, Prawer Y D, De Paoli-Iseppi R, Hunt C P, Parish C L, Shim H, Clark M B. Identification of cell barcodes from long-read single-cell RNA-seq with BLAZE. bioRxiv 2022 Aug .08.16.504056; doi: 10.1101/2022.08.16.504056.
@@ -48,10 +44,6 @@
 
 - [pigz](https://zlib.net/pigz/)
 
-- [Prowler](https://pubmed.ncbi.nlm.nih.gov/34473226/)
-
-  > Lee S, Nguyen LT, Hayes BJ, Ross E. Prowler: A novel trimming algorithm for Oxford Nanopore sequence data. Bioinformatics 2021 Sep 2 doi:10.1093/bioinformatics/btab630. PubMed PMID: 34473226
-
 - [SAMtools](https://pubmed.ncbi.nlm.nih.gov/19505943/)
 
   > Li H, Handsaker B, Wysoker A, Fennell T, Ruan J, Homer N, Marth G, Abecasis G, Durbin R; 1000 Genome Project Data Processing Subgroup. The Sequence Alignment/Map format and SAMtools. Bioinformatics. 2009 Aug 15;25(16):2078-9. doi: 10.1093/bioinformatics/btp352. Epub 2009 Jun 8. PubMed PMID: 19505943; PubMed Central PMCID: PMC2723002.
@@ -81,10 +73,6 @@
 - [Seurat](https://pubmed.ncbi.nlm.nih.gov/34062119/)
 
   > Hao Y, Hao S, Andersen-Nissen E, Mauck WM, 3rd, Zheng S, Butler A, Lee MJ, Wilk AJ, Darby C, Zager M, Hoffman P, Stoeckius M, Papalexi E, Mimitou EP, Jain J, Srivastava A, Stuart T, Fleming LM, Yeung B, Rogers AJ, McElrath JM, Blish CA, Gottardo R, Smibert P, Satija R. Integrated analysis of multimodal single-cell data. Cell 2021 Jun 24; 184(13):3573-87 e29 doi:10.1016/j.cell.2021.04.048. PubMed PMID: 34062119; PubMed Central PMCID: PMC8238499.
-
-- [tidyverse](https://joss.theoj.org/papers/10.21105/joss.01686)
-
-  > Wickham H, Averick M, Bryan J, Winston C, McGowan LD, François R, Grolemund G, Hayes A , Henry L, Hester J, Kuhn M, Pedersen TL, Miller E, Bache SM, Müller K, Ooms J, Robinson D, Seidel DP, Spinu V, Takahashi K, Vaughan D, Wilke C, Woo K, Yutani H. Welcome to the Tidyverse. Journal of Open Source Software 2019, 4(43), 1686, doi:10.21105/joss.01686
 
 ## Python libraries
 
