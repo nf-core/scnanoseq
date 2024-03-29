@@ -1,5 +1,5 @@
 process NANOCOMP {
-    label 'process_medium'
+    label 'process_high'
 
     conda "bioconda::nanocomp=1.20.0"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?

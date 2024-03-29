@@ -1,6 +1,6 @@
 process PREEXTRACT_FASTQ {
     tag "$meta.id"
-    label 'process_low'
+    label 'process_high'
     stageInMode 'copy'
 
     conda "conda-forge::regex=2022.1.18 conda-forge::biopython=1.79"
