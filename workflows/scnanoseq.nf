@@ -141,10 +141,10 @@ include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_DEDUP } from "../su
 
 workflow SCNANOSEQ {
 
-    take:
-    ch_samplesheet // channel: samplesheet read in from --input
+    //take:
+    //ch_samplesheet // channel: samplesheet read in from --input
 
-    main:
+    //main:
 
     ch_versions = Channel.empty()
 
@@ -618,9 +618,13 @@ workflow SCNANOSEQ {
     //
     // Collate and save software versions
     //
-    softwareVersionsToYAML(ch_versions)
-        .collectFile(storeDir: "${params.outdir}/pipeline_info", name: 'nf_core_pipeline_software_mqc_versions.yml', sort: true, newLine: true)
-        .set { ch_collated_versions }
+    //softwareVersionsToYAML(ch_versions)
+    //    .collectFile(storeDir: "${params.outdir}/pipeline_info", name: 'nf_core_pipeline_software_mqc_versions.yml', sort: true, newLine: true)
+    //    .set { ch_collated_versions }
+
+    CUSTOM_DUMPSOFTWAREVERSIONS (
+        ch_versions.unique().collectFile(name: 'collated_versions.yml')
+    )
 
     if (!params.skip_qc && !params.skip_multiqc){
 
