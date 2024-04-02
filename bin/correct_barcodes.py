@@ -358,7 +358,14 @@ def correct_barcode(potential_bcs, min_prob):
     """Determines which barcode is the most likely origin barcode
 
     Args:
-        potential_bcs (dict): The k
+        potential_bcs (dict): The list of whitelisted barcodes and their
+            qualities that could be the origin barcode
+        min_prob (float): The minimum posterior probability that a barcode
+            should be before considering it to be an option for correction
+
+    Returns:
+        max_likelihood_bc (str): The barcode deemed to be the best option
+            to correct the source barcode to
 
     """
     # TODO: Add Docstring
@@ -371,7 +378,7 @@ def correct_barcode(potential_bcs, min_prob):
         potential_bc, potential_bc_qual = potential_bc_info
         likelihood = potential_bc_qual / total_probability
         print("INFO: BARCODE_CHECK - ({}) Likelihood {}".format(potential_bc, likelihood))
-        if likelihood > max_likelihood:
+        if likelihood > max_likelihood and likelihood > min_prob:
             max_likelihood = likelihood
             max_likelihood_bc = potential_bc
 
