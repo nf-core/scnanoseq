@@ -22,6 +22,8 @@ report_section_order:
   fastqc_postextract_fastqc_status_checks: remove
 
 export_plots: true
+
+disable_version_detection: true
 # parse files up to 2GB
 log_filesize_limit: 2000000000
 

@@ -25,12 +25,14 @@ process MULTIQC {
     def args = task.ext.args ?: ''
     def config = multiqc_config ? "--config $multiqc_config" : ''
     def extra_config = extra_multiqc_config ? "--config $extra_multiqc_config" : ''
+    def logo = multiqc_logo ? /--cl-config 'custom_logo: "${multiqc_logo}"'/ : ''
     """
     multiqc \\
         --force \\
         $args \\
         $config \\
         $extra_config \\
+        $logo \\
         .
 
     cat <<-END_VERSIONS > versions.yml
@@ -41,7 +43,7 @@ process MULTIQC {
 
     stub:
     """
-    touch multiqc_data
+    mkdir multiqc_data
     touch multiqc_plots
     touch multiqc_report.html
 
