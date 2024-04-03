@@ -9,5 +9,9 @@ lint:
     - .github/CONTRIBUTING.md
     - .github/workflows/linting.yml
     - lib/NfcoreTemplate.groovy
+    - docs/images/nf-core-scnanoseq_logo_dark.png
+  pipeline_todos:
+    - README.md
+    - main.nf
   multiqc_config:
     - report_comment
