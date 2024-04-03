@@ -237,7 +237,8 @@
                 },
                 "skip_rseqc": {
                     "type": "boolean",
-                    "fa_icon": "fas fa-forward"
+                    "fa_icon": "fas fa-forward",
+                    "description": "Skip RSeQC."
                 },
                 "skip_seurat": {
                     "type": "boolean",
