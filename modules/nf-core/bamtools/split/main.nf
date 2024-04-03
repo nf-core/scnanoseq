@@ -29,6 +29,7 @@ process BAMTOOLS_SPLIT {
             split \\
             -stub $prefix \\
             $args
+
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         bamtools: \$( bamtools --version | grep -e 'bamtools' | sed 's/^.*bamtools //' )

@@ -41,11 +41,20 @@ params.fasta = getGenomeAttribute('fasta')
 // WORKFLOW: Run main analysis pipeline depending on type of input
 //
 workflow NFCORE_SCNANOSEQ {
+    take:
+    samplesheet // channel: samplesheet read in from --input
+
+    main:
 
     //
     // WORKFLOW: Run pipeline
     //
-    SCNANOSEQ ()
+    SCNANOSEQ (
+        samplesheet
+    )
+
+    emit:
+    multiqc_report = SCNANOSEQ.out.multiqc_report // channel: /path/to/multiqc_report.html
 
 }
 /*
@@ -58,40 +67,40 @@ workflow {
 
     main:
 
-    ////
-    //// SUBWORKFLOW: Run initialisation tasks
-    ////
-    //PIPELINE_INITIALISATION (
-    //    params.version,
-    //    params.help,
-    //    params.validate_params,
-    //    params.monochrome_logs,
-    //    args,
-    //    params.outdir,
-    //    params.input
-    //)
+    //
+    // SUBWORKFLOW: Run initialisation tasks
+    //
+    PIPELINE_INITIALISATION (
+        params.version,
+        params.help,
+        params.validate_params,
+        params.monochrome_logs,
+        args,
+        params.outdir,
+        params.input
+    )
 
-    ////
-    //// WORKFLOW: Run main workflow
-    ////
-    //NFCORE_SCNANOSEQ (
-    //    PIPELINE_INITIALISATION.out.samplesheet
-    //)
+    //
+    // WORKFLOW: Run main workflow
+    //
+    NFCORE_SCNANOSEQ (
+        PIPELINE_INITIALISATION.out.samplesheet
+    )
 
-    ////
-    //// SUBWORKFLOW: Run completion tasks
-    ////
-    //PIPELINE_COMPLETION (
-    //    params.email,
-    //    params.email_on_fail,
-    //    params.plaintext_email,
-    //    params.outdir,
-    //    params.monochrome_logs,
-    //    params.hook_url,
-    //    NFCORE_SCNANOSEQ.out.multiqc_report
-    //)
+    //
+    // SUBWORKFLOW: Run completion tasks
+    //
+    PIPELINE_COMPLETION (
+        params.email,
+        params.email_on_fail,
+        params.plaintext_email,
+        params.outdir,
+        params.monochrome_logs,
+        params.hook_url,
+        NFCORE_SCNANOSEQ.out.multiqc_report
+    )
 
-    NFCORE_SCNANOSEQ()
+    //NFCORE_SCNANOSEQ()
 }
 
 /*
