@@ -129,20 +129,20 @@ process
     withName: '.*:MINIMAP2_ALIGN'
     {
         cpus = 20
-    }   
+    }
 }
 
 process
 {
     withName: '.*:ISOQUANT'
-    {   
-        ext.args = { 
-            [   
+    {
+        ext.args = {
+            [
                 "--threads 30",
                 "--complete_genedb",
                 params.stranded == "forward" ? "--stranded forward" : params.stranded == "reverse" ? "--stranded reverse" : "--stranded none",
             ].join(' ').trim()
-        }   
+        }
         time = '135.h'
     }
 }

@@ -26,6 +26,7 @@ CONTROL_REP4,AEG588A4_S1.fastq.gz,5000
 CONTROL_REP4,AEG588A4_S2.fastq.gz,5000
 CONTROL_REP4,AEG588A4_S3.fastq.gz,5000
 ```
+
 `cell_count` refers to the expected number of cells you expect for each sample, which can vary from sample to sample.
 
 ### Full samplesheet
@@ -42,11 +43,11 @@ TREATMENT_REP2,AEG588A5_S1.fastq.gz,6000
 TREATMENT_REP3,AEG588A6_S1.fastq.gz,5000
 ```
 
-| Column    | Description                                                                                                                                                                            |
-| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `sample`  | Custom sample name. This entry will be identical for multiple sequencing libraries/runs from the same sample. Spaces in sample names are automatically converted to underscores (`_`). |
-| `fastq` | Full path to FastQ file for Oxford Nanopore. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                             |
-| `cell_count` | Expected number of cells/nuclei.                                                             |
+| Column       | Description                                                                                                                                                                            |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sample`     | Custom sample name. This entry will be identical for multiple sequencing libraries/runs from the same sample. Spaces in sample names are automatically converted to underscores (`_`). |
+| `fastq`      | Full path to FastQ file for Oxford Nanopore. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                                    |
+| `cell_count` | Expected number of cells/nuclei.                                                                                                                                                       |
 
 An [example samplesheet](../assets/samplesheet.csv) has been provided with the pipeline.
 
