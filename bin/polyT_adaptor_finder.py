@@ -241,7 +241,7 @@ class Read(object):
             # set new strand
             helper.warning_msg(
                 """
-                No strand information is recorded, try 'get_strand_and_raw_bc' 
+                No strand information is recorded, try 'get_strand_and_raw_bc'
                 first.
                 """
             )

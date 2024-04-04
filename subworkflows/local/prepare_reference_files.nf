@@ -38,7 +38,7 @@ workflow PREPARE_REFERENCE_FILES {
         } else {
             ch_prepared_gtf = [ [:], gtf]
         }
-        
+
         //
         // MODULE: Index the fasta
         //

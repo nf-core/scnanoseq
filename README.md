@@ -1,12 +1,19 @@
-# ![nf-core/scnanoseq](docs/images/nf-core-scnanoseq_logo_light.png#gh-light-mode-only) ![nf-core/scnanoseq](docs/images/nf-core-scnanoseq_logo_dark.png#gh-dark-mode-only)
+<h1>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/nf-core-scnanoseq_logo_dark.png">
+    <img alt="nf-core/scnanoseq" src="docs/images/nf-core-scnanoseq_logo_light.png">
+  </picture>
+</h1>
 
-[![AWS CI](https://img.shields.io/badge/CI%20tests-full%20size-FF9900?labelColor=000000&logo=Amazon%20AWS)](https://nf-co.re/scnanoseq/results)[![Cite with Zenodo](http://img.shields.io/badge/DOI-10.5281/zenodo.XXXXXXX-1073c8?labelColor=000000)](https://doi.org/10.5281/zenodo.XXXXXXX)
+[![GitHub Actions CI Status](https://github.com/nf-core/scnanoseq/actions/workflows/ci.yml/badge.svg)](https://github.com/nf-core/scnanoseq/actions/workflows/ci.yml)
+[![GitHub Actions Linting Status](https://github.com/nf-core/scnanoseq/actions/workflows/linting.yml/badge.svg)](https://github.com/nf-core/scnanoseq/actions/workflows/linting.yml)[![AWS CI](https://img.shields.io/badge/CI%20tests-full%20size-FF9900?labelColor=000000&logo=Amazon%20AWS)](https://nf-co.re/scnanoseq/results)[![Cite with Zenodo](http://img.shields.io/badge/DOI-10.5281/zenodo.XXXXXXX-1073c8?labelColor=000000)](https://doi.org/10.5281/zenodo.XXXXXXX)
+[![nf-test](https://img.shields.io/badge/unit_tests-nf--test-337ab7.svg)](https://www.nf-test.com)
 
 [![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A523.04.0-23aa62.svg)](https://www.nextflow.io/)
 [![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/)
 [![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)
 [![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
-[![Launch on Nextflow Tower](https://img.shields.io/badge/Launch%20%F0%9F%9A%80-Nextflow%20Tower-%234256e7)](https://tower.nf/launch?pipeline=https://github.com/nf-core/scnanoseq)
+[![Launch on Seqera Platform](https://img.shields.io/badge/Launch%20%F0%9F%9A%80-Seqera%20Platform-%234256e7)](https://tower.nf/launch?pipeline=https://github.com/nf-core/scnanoseq)
 
 [![Get help on Slack](http://img.shields.io/badge/slack-nf--core%20%23scnanoseq-4A154B?labelColor=000000&logo=slack)](https://nfcore.slack.com/channels/scnanoseq)[![Follow on Twitter](http://img.shields.io/badge/twitter-%40nf__core-1DA1F2?labelColor=000000&logo=twitter)](https://twitter.com/nf_core)[![Follow on Mastodon](https://img.shields.io/badge/mastodon-nf__core-6364ff?labelColor=FFFFFF&logo=mastodon)](https://mstdn.science/@nf_core)[![Watch on YouTube](http://img.shields.io/badge/youtube-nf--core-FF0000?labelColor=000000&logo=youtube)](https://www.youtube.com/c/nf-core)
 
@@ -48,10 +55,8 @@ On release, automated continuous integration tests run the pipeline on a full-si
 
 ## Usage
 
-> **Note**
-> If you are new to Nextflow and nf-core, please refer to [this page](https://nf-co.re/docs/usage/installation) on how
-> to set-up Nextflow. Make sure to [test your setup](https://nf-co.re/docs/usage/introduction#how-to-run-a-pipeline)
-> with `-profile test` before running the workflow on actual data.
+> [!NOTE]
+> If you are new to Nextflow and nf-core, please refer to [this page](https://nf-co.re/docs/usage/installation) on how to set-up Nextflow. Make sure to [test your setup](https://nf-co.re/docs/usage/introduction#how-to-run-a-pipeline) with `-profile test` before running the workflow on actual data.
 
 First, prepare a samplesheet with your input data that looks as follows:
 
@@ -77,9 +82,8 @@ nextflow run nf-core/scnanoseq \
    --outdir <OUTDIR>
 ```
 
-> **Warning:**
-> Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those
-> provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_;
+> [!WARNING]
+> Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_;
 > see [docs](https://nf-co.re/usage/configuration#custom-configuration-files).
 
 For more details and further functionality, please refer to the [usage documentation](https://nf-co.re/scnanoseq/usage) and the [parameter documentation](https://nf-co.re/scnanoseq/parameters).
@@ -93,11 +97,14 @@ For more details about the output files and reports, please refer to the
 This pipeline produces feature barcode matrices at both the gene and transcript level and can retain introns within the counts themselves. These files are able to be ingested directly by most packages used for downstream analyses such as `Seurat`. In addition the pipeline produces a number of quality control metrics to ensure that the samples processed meet expected metrics for single-cell/nuclei data.
 
 ## Troubleshooting
+
 If you experience any issues, please make sure to submit an issue above. However, some resolutions for common issues will be noted below:
-* One issue that has been observed is a recurrent node failure on slurm clusters that does seem to be related to submission of Nextflow jobs. This issue is not related to this pipeline itself, but rather to Nextflow itself. Our reserach computing are currently working on a resolution. But we have two methods that appear to help overcome should this issue arise:
+
+- One issue that has been observed is a recurrent node failure on slurm clusters that does seem to be related to submission of nextflow jobs. This issue is not related to this pipeline itself, but rather to nextflow itself. Our reserach computing are currently working on a resolution. But we have two methods that appear to help overcome should this issue arise:
   1. The first is to create a custom config that increases the memory request for the job that failed. This may take a couple attempts to find the correct requests, but we have noted that there does appear to be a memory issue occassionally with this errors.
   2. The second resolution is to request an interactive session with a decent amount of time and memory and cpus in order to run the pipeline on the single node. Note that this will take time as there will be minimal parallelization, but this does seem to resolve the issue.
-* We acknowledge that analyzing PromethION is a common use case for this pipeline. Currently, the pipeline has been developed with defaults to analyze GridION and average sized PromethION data. For cases, where jobs have failed due for larger PromethION datasets, the defaults have been overwritten by a custom configuation file (provided by the `-c` Nextflow option) where resources were increased (substantially in some cases). Below are some of the overrides we have used, while these amounts may not work on every dataset, these will hopefully at least note which processes will need to have their resources increased:
+- We acknowledge that analyzing PromethION is a common use case for this pipeline. Currently, the pipeline has been developed with defaults to analyze GridION and average sized PromethION data. For cases, where jobs have failed due for larger PromethION datasets, the defaults have been overwritten by a custom configuation file (provided by the `-c` Nextflow option) where resources were increased (substantially in some cases). Below are some of the overrides we have used, while these amounts may not work on every dataset, these will hopefully at least note which processes will need to have their resources increased:
+
 ```
 
 process
@@ -120,7 +127,7 @@ process
 process
 {
     withName: '.*:MINIMAP2_ALIGN'
-    {   
+    {
         cpus = 20
     }   
 }
@@ -160,7 +167,7 @@ For further information or help, don't hesitate to get in touch on the [Slack `#
 ## Citations
 
 <!-- TODO nf-core: Add citation for pipeline after first release. Uncomment lines below and update Zenodo doi and badge at the top of this file. -->
-<!-- If you use  nf-core/scnanoseq for your analysis, please cite it using the following doi: [10.5281/zenodo.XXXXXX](https://doi.org/10.5281/zenodo.XXXXXX) -->
+<!-- If you use nf-core/scnanoseq for your analysis, please cite it using the following doi: [10.5281/zenodo.XXXXXX](https://doi.org/10.5281/zenodo.XXXXXX) -->
 
 An extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](CITATIONS.md) file.
 

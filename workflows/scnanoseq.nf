@@ -1,31 +1,5 @@
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    PRINT PARAMS SUMMARY
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
-
-include { paramsSummaryLog; paramsSummaryMap } from 'plugin/nf-validation'
-
-def logo = NfcoreTemplate.logo(workflow, params.monochrome_logs)
-def citation = '\n' + WorkflowMain.citation(workflow) + '\n'
-def summary_params = paramsSummaryMap(workflow)
-
-// Print parameter summary log to screen
-log.info logo + paramsSummaryLog(workflow) + citation
-
-WorkflowScnanoseq.initialise(params, log)
-
-def checkPathParamList = [
-    params.input, params.multiqc_config, params.fasta,
-    params.gtf, params.whitelist
-]
-for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
-
-// Check mandatory parameters
-if (params.input) { ch_input = file(params.input) } else { exit 1, 'Input samplesheet not specified!' }
-
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     PARAMETER PRESETS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
@@ -95,7 +69,6 @@ include { UCSC_GENEPREDTOBED                                       } from "../mo
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
-include { INPUT_CHECK             } from "../subworkflows/local/input_check"
 include { PREPARE_REFERENCE_FILES } from "../subworkflows/local/prepare_reference_files"
 
 /*
@@ -119,6 +92,7 @@ include { CAT_FASTQ                             } from '../modules/nf-core/cat/f
 include { RSEQC_READDISTRIBUTION                } from '../modules/nf-core/rseqc/readdistribution/main'
 include { BAMTOOLS_SPLIT                        } from '../modules/nf-core/bamtools/split/main'
 include { SAMTOOLS_MERGE                        } from '../modules/nf-core/samtools/merge/main'
+include { paramsSummaryMap } from 'plugin/nf-validation'
 
 /*
  * SUBWORKFLOW: Consisting entirely of nf-core/modules
@@ -132,6 +106,9 @@ include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_TAGGED } from "../s
 include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_CORRECTED } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
 include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_SPLIT } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
 include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_DEDUP } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
+include { paramsSummaryMultiqc } from '../subworkflows/nf-core/utils_nfcore_pipeline'
+include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
+include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_scnanoseq_pipeline'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -139,24 +116,19 @@ include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_DEDUP } from "../su
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-// Info required for completion email and summary
-def multiqc_report = []
-
 workflow SCNANOSEQ {
+
+    take:
+    ch_samplesheet // channel: samplesheet read in from --input
+
+    main:
 
     ch_versions = Channel.empty()
 
     //
     // SUBWORKFLOW: Read in samplesheet, validate and stage input files
     //
-    INPUT_CHECK ( ch_input )
-        .reads
-        .map{
-            meta, fastq ->
-                new_id = meta.id - ~/_T\d+/
-                [ meta + [id: new_id], fastq ]
-        }
-        .groupTuple()
+    ch_samplesheet
         .branch{
             meta, fastq ->
                 single: fastq.size() == 1
@@ -165,8 +137,6 @@ workflow SCNANOSEQ {
                     return [ meta, fastq.flatten() ]
         }
         .set { ch_fastqs }
-
-    ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
 
     //
     // MODULE: Combine fastqs from the same sample
@@ -202,7 +172,7 @@ workflow SCNANOSEQ {
     if (!params.skip_qc && !params.skip_fastq_nanocomp) {
 
         NANOCOMP_FASTQ ( ch_cat_fastq.collect{it[1]},
-                         ch_dummy_file )
+                        ch_dummy_file )
         ch_nanocomp_fastq_html = NANOCOMP_FASTQ.out.html
         ch_nanocomp_fastq_txt = NANOCOMP_FASTQ.out.txt
 
@@ -297,8 +267,8 @@ workflow SCNANOSEQ {
         // If the fastqs were split, combine them together
         ch_trimmed_reads_combined = ch_trimmed_reads
         if (params.split_amount > 0){
-           CAT_CAT(ch_trimmed_reads.groupTuple())
-           ch_trimmed_reads_combined = CAT_CAT.out.file_out
+            CAT_CAT(ch_trimmed_reads.groupTuple())
+            ch_trimmed_reads_combined = CAT_CAT.out.file_out
         }
 
         //
@@ -405,7 +375,7 @@ workflow SCNANOSEQ {
     // SUBWORKFLOW: BAM_SORT_STATS_SAMTOOLS
     // The subworkflow is called in both the minimap2 bams and filtered (mapped only) version
     BAM_SORT_STATS_SAMTOOLS_MINIMAP ( ch_minimap_bam,
-                                      fasta )
+                                        fasta )
     ch_minimap_sorted_bam = BAM_SORT_STATS_SAMTOOLS_MINIMAP.out.bam
     ch_minimap_sorted_bai = BAM_SORT_STATS_SAMTOOLS_MINIMAP.out.bai
 
@@ -416,7 +386,7 @@ workflow SCNANOSEQ {
     ch_versions = ch_versions.mix(BAM_SORT_STATS_SAMTOOLS_MINIMAP.out.versions)
 
     BAM_SORT_STATS_SAMTOOLS_FILTERED ( ch_minimap_mapped_only_bam,
-                                      fasta )
+                                        fasta )
     ch_minimap_filtered_sorted_bam = BAM_SORT_STATS_SAMTOOLS_FILTERED.out.bam
     ch_minimap_filtered_sorted_bai = BAM_SORT_STATS_SAMTOOLS_FILTERED.out.bai
     ch_versions = ch_versions.mix(BAM_SORT_STATS_SAMTOOLS_FILTERED.out.versions)
@@ -440,7 +410,7 @@ workflow SCNANOSEQ {
     if (!params.skip_qc && !params.skip_bam_nanocomp) {
 
         NANOCOMP_BAM ( ch_minimap_sorted_bam.collect{it[1]},
-                       ch_minimap_sorted_bai.collect{it[1]})
+                        ch_minimap_sorted_bai.collect{it[1]})
 
         ch_nanocomp_bam_html = NANOCOMP_BAM.out.html
         ch_nanocomp_bam_txt = NANOCOMP_BAM.out.txt
@@ -465,7 +435,7 @@ workflow SCNANOSEQ {
 
     BAM_SORT_STATS_SAMTOOLS_TAGGED ( ch_tagged_bam,
                                         fasta )
-    
+
     ch_tagged_sorted_bam = BAM_SORT_STATS_SAMTOOLS_TAGGED.out.bam
     ch_tagged_sorted_bai = BAM_SORT_STATS_SAMTOOLS_TAGGED.out.bai
 
@@ -511,22 +481,22 @@ workflow SCNANOSEQ {
         //
         BAMTOOLS_SPLIT ( ch_corrected_sorted_bam )
         ch_split_bams = BAMTOOLS_SPLIT.out.bam
-        
-        ch_split_corrected_bam = ch_split_bams 
-                                     .map{
+
+        ch_split_corrected_bam = ch_split_bams
+                                    .map{
                                         meta, bam ->
                                             [bam]
-                                     }
-                                     .flatten()
-                                     .map{
-                                         bam ->
-                                             bam_basename = bam.toString().split('/')[-1]
-                                             split_bam_basename = bam_basename.split(/\./)
-                                             meta = [ 'id': split_bam_basename.take(split_bam_basename.size()-1).join(".") ]
-                                             [ meta, bam ]
-                                     }
+                                    }
+                                    .flatten()
+                                    .map{
+                                        bam ->
+                                            bam_basename = bam.toString().split('/')[-1]
+                                            split_bam_basename = bam_basename.split(/\./)
+                                            meta = [ 'id': split_bam_basename.take(split_bam_basename.size()-1).join(".") ]
+                                            [ meta, bam ]
+                                    }
 
-        //  
+        //
         // SUBWORKFLOW: BAM_SORT_STATS_SAMTOOLS
         // The subworkflow is called in both the minimap2 bams and filtered (mapped only) version
         BAM_SORT_STATS_SAMTOOLS_SPLIT ( ch_split_corrected_bam,
@@ -548,12 +518,12 @@ workflow SCNANOSEQ {
         // MODULE: Samtools merge
         //
         ch_bams_to_merge = ch_dedup_bam
-                               .map{
-                                   meta, bam ->
-                                       bam_basename = bam.toString().split('/')[-1]
-                                       split_bam_basename = bam_basename.split(/\./)
-                                       meta = [ 'id': split_bam_basename[0] ]
-                                   [ meta, bam ]
+                                .map{
+                                    meta, bam ->
+                                        bam_basename = bam.toString().split('/')[-1]
+                                        split_bam_basename = bam_basename.split(/\./)
+                                        meta = [ 'id': split_bam_basename[0] ]
+                                    [ meta, bam ]
                                 }
                                 .groupTuple()
 
@@ -613,9 +583,19 @@ workflow SCNANOSEQ {
     // SOFTWARE_VERSIONS
     //
 
+    //
+    // Collate and save software versions
+    //
+    //softwareVersionsToYAML(ch_versions)
+    //    .collectFile(storeDir: "${params.outdir}/pipeline_info", name: 'nf_core_pipeline_software_mqc_versions.yml', sort: true, newLine: true)
+    //    .set { ch_collated_versions }
+
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
     )
+
+    ch_multiqc_report = Channel.empty()
+    ch_versions = Channel.empty()
 
     if (!params.skip_qc && !params.skip_multiqc){
 
@@ -642,8 +622,8 @@ workflow SCNANOSEQ {
         //
         // MODULE: MultiQC for final pipeline outputs
         //
-        workflow_summary    = WorkflowScnanoseq.paramsSummaryMultiqc(workflow, summary_params)
-        ch_workflow_summary = Channel.value(workflow_summary)
+        summary_params = paramsSummaryMap(workflow, parameters_schema: "nextflow_schema.json")
+        ch_workflow_summary    = Channel.value(paramsSummaryMultiqc(summary_params))
 
         ch_multiqc_finalqc_files = Channel.empty()
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_multiqc_config)
@@ -678,26 +658,15 @@ workflow SCNANOSEQ {
             ch_multiqc_custom_config.collect().ifEmpty([]),
             ch_multiqc_logo.collect().ifEmpty([])
         )
-        multiqc_report = MULTIQC_FINALQC.out.report.toList()
+        ch_multiqc_report = MULTIQC_FINALQC.out.report
         ch_versions    = ch_versions.mix(MULTIQC_FINALQC.out.versions)
     }
+
+    emit:
+    multiqc_report = ch_multiqc_report.toList()
+    versions = ch_versions
 }
 
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    COMPLETION EMAIL AND SUMMARY
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
-
-workflow.onComplete {
-    if (params.email || params.email_on_fail) {
-        NfcoreTemplate.email(workflow, params, summary_params, projectDir, log, multiqc_report)
-    }
-    NfcoreTemplate.summary(workflow, params, log)
-    if (params.hook_url) {
-        NfcoreTemplate.IM_notification(workflow, params, summary_params, projectDir, log)
-    }
-}
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
