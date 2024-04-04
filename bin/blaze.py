@@ -50,19 +50,19 @@ def parse_arg():
                     Expected number of cells. Default: not specified
 
                 --kit-version <v2 or v3>:
-                    Choose from 10X Single Cell 3ʹ gene expression v2 or v3. 
+                    Choose from 10X Single Cell 3ʹ gene expression v2 or v3.
                     Default: --kit_version v3.
 
                 --minQ <INT>:
-                    Putative BC contains one or more bases with Q<minQ is not counted 
+                    Putative BC contains one or more bases with Q<minQ is not counted
                     in the "Putative BC rank plot". Default: --minQ=15
 
                 --threads <INT>
                     <INT>: Number of threads used <default: # of available cpus - 1>
 
                 --batch-size <INT>
-                    <INT>: Number of reads this program process together as a batch. Not that if 
-                    the specified number larger than the number of reads in each fastq files, the 
+                    <INT>: Number of reads this program process together as a batch. Not that if
+                    the specified number larger than the number of reads in each fastq files, the
                     batch size will be forced to be the number of reads in the file. <Default: 1000>
 
                 --full-bc-whitelist <path to file>
