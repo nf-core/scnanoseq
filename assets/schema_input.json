@@ -21,7 +21,7 @@
                 "errorMessage": "FastQ file for reads 1 must be provided, cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'"
             },
             "cell_count": {
-                "type": "string",
+                "type": "string"
             }
         },
         "required": ["sample", "fastq", "cell_count"]
