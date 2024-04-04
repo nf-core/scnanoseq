@@ -41,22 +41,22 @@ def parse_arg():
     def print_help():
         help_message = f"""
             Usage: python3 {argv[0]} [OPTIONS] <fastq directory>
-            
+
             Options:
                 -h, --help
                     Print this help message.
-                
+
                 --expect-cells <INT> (required in current version)
                     Expected number of cells. Default: not specified
-                
+
                 --kit-version <v2 or v3>:
                     Choose from 10X Single Cell 3ʹ gene expression v2 or v3. 
                     Default: --kit_version v3.
-                
+
                 --minQ <INT>:
                     Putative BC contains one or more bases with Q<minQ is not counted 
                     in the "Putative BC rank plot". Default: --minQ=15
-                
+
                 --threads <INT>
                     <INT>: Number of threads used <default: # of available cpus - 1>
 
@@ -64,18 +64,18 @@ def parse_arg():
                     <INT>: Number of reads this program process together as a batch. Not that if 
                     the specified number larger than the number of reads in each fastq files, the 
                     batch size will be forced to be the number of reads in the file. <Default: 1000>
-                
+
                 --full-bc-whitelist <path to file>
-                    txt file containing all the possible BCs. You may provide your own whitelist. 
-                    No need to specify this if users want to use the 10X whilelist. The correct 
+                    txt file containing all the possible BCs. You may provide your own whitelist.
+                    No need to specify this if users want to use the 10X whilelist. The correct
                     version of 10X whilelist will be determined based on 10X kit version.
-                
+
                 --out-putative-bc <filename_prefix>
-                    Output a csv file for the putative BC in each read. 
+                    Output a csv file for the putative BC in each read.
                     Default: --out-putative-bc=putative_bc
-                
+
                 --out-bc-whitelist <filename_prefix>
-                    Output the whitelist identified from all the reads. 
+                    Output the whitelist identified from all the reads.
                     Default: --out-bc-whitelist=whitelist
 
             High sensitivity mode:
@@ -83,14 +83,14 @@ def parse_arg():
                 --high-sensitivity-mode:
                     Turn on the sensitivity mode, which increases the sensitivity of barcode
                     detections but potentially increase the number false/uninformative BC in
-                    the whitelist. 
+                    the whitelist.
                     Note that --emptydrop is recommanded specified with this mode (See details below).
 
             Empty droplet BCs
                 --emptydrop
-                    Output list of BCs corresponding to empty droplets (filename: {DEFAULT_EMPTY_DROP_FN}), 
+                    Output list of BCs corresponding to empty droplets (filename: {DEFAULT_EMPTY_DROP_FN}),
                     which could be used to estimate ambiant RNA expressionprofile.
-                
+
                 --emptydrop-max-count <INT>
                     Only select barcodes supported by a maximum number of high-confidence
                     putative barcode count. (Default: Inf, i.e. no maximum number is set
@@ -288,15 +288,15 @@ def qc_report(pass_count, min_phred_score):
     total_read = sum(pass_count.values())
 
     print_message = f"""
-        Total number of reads: 
+        Total number of reads:
             {total_read:,}
-        Reads with unambiguous polyT and adapter positions found:            
+        Reads with unambiguous polyT and adapter positions found:
             {pass_count[0]+ pass_count[100]:,} ({(pass_count[0]+ pass_count[100])/total_read*100:.2f}% of all reads)
             {pass_count[0]:,} in which all bases in the putative BC have Q>={min_phred_score}
-        Failed Reads: 
-            no polyT and adapter positions found: 
+        Failed Reads:
+            no polyT and adapter positions found:
                 {pass_count[1]:,} ({pass_count[1]/total_read*100:.2f}% of all reads)
-            polyT and adapter positions found in both end (fail to determine strand): 
+            polyT and adapter positions found in both end (fail to determine strand):
                 {pass_count[2]:,} ({pass_count[2]/total_read*100:.2f}% of all reads)
             multiple polyT and adapter found in one end
                 {pass_count[10]:,} ({pass_count[10]/total_read*100:.2f}% of all reads)

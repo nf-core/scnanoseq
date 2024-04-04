@@ -172,7 +172,7 @@ workflow SCNANOSEQ {
     if (!params.skip_qc && !params.skip_fastq_nanocomp) {
 
         NANOCOMP_FASTQ ( ch_cat_fastq.collect{it[1]},
-                         ch_dummy_file )
+                        ch_dummy_file )
         ch_nanocomp_fastq_html = NANOCOMP_FASTQ.out.html
         ch_nanocomp_fastq_txt = NANOCOMP_FASTQ.out.txt
 
@@ -267,8 +267,8 @@ workflow SCNANOSEQ {
         // If the fastqs were split, combine them together
         ch_trimmed_reads_combined = ch_trimmed_reads
         if (params.split_amount > 0){
-           CAT_CAT(ch_trimmed_reads.groupTuple())
-           ch_trimmed_reads_combined = CAT_CAT.out.file_out
+            CAT_CAT(ch_trimmed_reads.groupTuple())
+            ch_trimmed_reads_combined = CAT_CAT.out.file_out
         }
 
         //
@@ -375,7 +375,7 @@ workflow SCNANOSEQ {
     // SUBWORKFLOW: BAM_SORT_STATS_SAMTOOLS
     // The subworkflow is called in both the minimap2 bams and filtered (mapped only) version
     BAM_SORT_STATS_SAMTOOLS_MINIMAP ( ch_minimap_bam,
-                                      fasta )
+                                        fasta )
     ch_minimap_sorted_bam = BAM_SORT_STATS_SAMTOOLS_MINIMAP.out.bam
     ch_minimap_sorted_bai = BAM_SORT_STATS_SAMTOOLS_MINIMAP.out.bai
 
@@ -386,7 +386,7 @@ workflow SCNANOSEQ {
     ch_versions = ch_versions.mix(BAM_SORT_STATS_SAMTOOLS_MINIMAP.out.versions)
 
     BAM_SORT_STATS_SAMTOOLS_FILTERED ( ch_minimap_mapped_only_bam,
-                                      fasta )
+                                        fasta )
     ch_minimap_filtered_sorted_bam = BAM_SORT_STATS_SAMTOOLS_FILTERED.out.bam
     ch_minimap_filtered_sorted_bai = BAM_SORT_STATS_SAMTOOLS_FILTERED.out.bai
     ch_versions = ch_versions.mix(BAM_SORT_STATS_SAMTOOLS_FILTERED.out.versions)
@@ -410,7 +410,7 @@ workflow SCNANOSEQ {
     if (!params.skip_qc && !params.skip_bam_nanocomp) {
 
         NANOCOMP_BAM ( ch_minimap_sorted_bam.collect{it[1]},
-                       ch_minimap_sorted_bai.collect{it[1]})
+                        ch_minimap_sorted_bai.collect{it[1]})
 
         ch_nanocomp_bam_html = NANOCOMP_BAM.out.html
         ch_nanocomp_bam_txt = NANOCOMP_BAM.out.txt
@@ -435,7 +435,7 @@ workflow SCNANOSEQ {
 
     BAM_SORT_STATS_SAMTOOLS_TAGGED ( ch_tagged_bam,
                                         fasta )
-    
+
     ch_tagged_sorted_bam = BAM_SORT_STATS_SAMTOOLS_TAGGED.out.bam
     ch_tagged_sorted_bai = BAM_SORT_STATS_SAMTOOLS_TAGGED.out.bai
 
@@ -481,22 +481,22 @@ workflow SCNANOSEQ {
         //
         BAMTOOLS_SPLIT ( ch_corrected_sorted_bam )
         ch_split_bams = BAMTOOLS_SPLIT.out.bam
-        
-        ch_split_corrected_bam = ch_split_bams 
-                                     .map{
+
+        ch_split_corrected_bam = ch_split_bams
+                                    .map{
                                         meta, bam ->
                                             [bam]
-                                     }
-                                     .flatten()
-                                     .map{
-                                         bam ->
-                                             bam_basename = bam.toString().split('/')[-1]
-                                             split_bam_basename = bam_basename.split(/\./)
-                                             meta = [ 'id': split_bam_basename.take(split_bam_basename.size()-1).join(".") ]
-                                             [ meta, bam ]
-                                     }
+                                    }
+                                    .flatten()
+                                    .map{
+                                        bam ->
+                                            bam_basename = bam.toString().split('/')[-1]
+                                            split_bam_basename = bam_basename.split(/\./)
+                                            meta = [ 'id': split_bam_basename.take(split_bam_basename.size()-1).join(".") ]
+                                            [ meta, bam ]
+                                    }
 
-        //  
+        //
         // SUBWORKFLOW: BAM_SORT_STATS_SAMTOOLS
         // The subworkflow is called in both the minimap2 bams and filtered (mapped only) version
         BAM_SORT_STATS_SAMTOOLS_SPLIT ( ch_split_corrected_bam,
@@ -518,12 +518,12 @@ workflow SCNANOSEQ {
         // MODULE: Samtools merge
         //
         ch_bams_to_merge = ch_dedup_bam
-                               .map{
-                                   meta, bam ->
-                                       bam_basename = bam.toString().split('/')[-1]
-                                       split_bam_basename = bam_basename.split(/\./)
-                                       meta = [ 'id': split_bam_basename[0] ]
-                                   [ meta, bam ]
+                                .map{
+                                    meta, bam ->
+                                        bam_basename = bam.toString().split('/')[-1]
+                                        split_bam_basename = bam_basename.split(/\./)
+                                        meta = [ 'id': split_bam_basename[0] ]
+                                    [ meta, bam ]
                                 }
                                 .groupTuple()
 

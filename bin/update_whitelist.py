@@ -18,7 +18,7 @@ def parse_arg():
         description=textwrap.dedent(
             """
         This script can be used to generate a new whitelist from the putative bc table
-        output from 'blaze.py'. Users may specify different argment used in 
+        output from 'blaze.py'. Users may specify different argment used in
         'blaze.py' to obtain a different whitelist.
         """
         ),
@@ -43,7 +43,7 @@ def parse_arg():
         default="v3",
         help=textwrap.dedent(
             """
-            Choose from v2 and v3 (for 10X Single Cell 3ʹ gene expression v2 or v3). 
+            Choose from v2 and v3 (for 10X Single Cell 3ʹ gene expression v2 or v3).
             """
         ),
     )
@@ -53,8 +53,8 @@ def parse_arg():
         default=15,
         help=textwrap.dedent(
             """
-            <INT>: Minimum phred score for all bases in a putative BC. 
-            Reads whose putative BC contains one or more bases with 
+            <INT>: Minimum phred score for all bases in a putative BC.
+            Reads whose putative BC contains one or more bases with
             Q<minQ is not counted in the "Putative BC rank plot".
             """
         ),
@@ -92,7 +92,7 @@ def parse_arg():
     parser.add_argument(
         "--emptydrop",
         action="store_true",
-        help="""Output list of BCs corresponding to empty droplets (filename: {DEFAULT_EMPTY_DROP_FN}), 
+        help="""Output list of BCs corresponding to empty droplets (filename: {DEFAULT_EMPTY_DROP_FN}),
                     which could be used to estimate ambiant RNA expressionprofile.""",
     )
     parser.add_argument(
@@ -119,7 +119,7 @@ def parse_arg():
                 f"""
                 Warning: You have specified'--count-threshold'. Options
                 "--high_sensitivity_mode" and "--expect-cells" would be ignored if
-                specified.        
+                specified.
                 """
             )
         )
