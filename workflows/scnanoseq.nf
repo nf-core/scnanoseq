@@ -306,26 +306,40 @@ workflow SCNANOSEQ {
     ch_gt_whitelist = BLAZE.out.whitelist
     ch_whitelist_bc_count = BLAZE.out.bc_count
     ch_versions = ch_versions.mix(BLAZE.out.versions)
-
+    
+    ch_multiqc_report = Channel.empty()
+    
     //
     // MODULE: Extract barcodes
     //
 
     PREEXTRACT_FASTQ( ch_zipped_reads.join(ch_putative_bc), params.barcode_format)
-    ch_zipped_r1_reads = PREEXTRACT_FASTQ.out.r1_reads
-    ch_zipped_r2_reads = PREEXTRACT_FASTQ.out.r2_reads
-
+    ch_barcode_info = PREEXTRACT_FASTQ.out.barcode_info
+    ch_extracted_fastq = PREEXTRACT_FASTQ.out.extracted_fastq
+    
     //
     // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - post-extract QC
     //
     ch_fastqc_multiqc_postextract = Channel.empty()
     if (!params.skip_qc){
-        FASTQC_NANOPLOT_POST_EXTRACT ( ch_zipped_r2_reads, params.skip_nanoplot, params.skip_fastqc )
+        FASTQC_NANOPLOT_POST_EXTRACT ( ch_extracted_fastq, params.skip_nanoplot, params.skip_fastqc )
 
         ch_fastqc_multiqc_postextract = FASTQC_NANOPLOT_POST_EXTRACT.out.fastqc_multiqc.ifEmpty([])
         ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_EXTRACT.out.nanoplot_version.first().ifEmpty(null))
         ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_EXTRACT.out.fastqc_version.first().ifEmpty(null))
     }
+    
+    //
+    // MODULE: Correct Barcodes
+    //
+
+    CORRECT_BARCODES (
+        ch_barcode_info
+            .join ( ch_gt_whitelist, by: 0)
+            .join ( ch_whitelist_bc_count, by: 0 )
+    )
+    ch_corrected_bc_info = CORRECT_BARCODES.out.corrected_bc_info
+    ch_versions = ch_versions.mix(CORRECT_BARCODES.out.versions)
 
     //
     // MINIMAP2_INDEX
@@ -346,7 +360,7 @@ workflow SCNANOSEQ {
     } else {
         ch_reference = Channel.fromPath(fasta, checkIfExists: true).toList()
     }
-    MINIMAP2_ALIGN ( ch_zipped_r2_reads, ch_bed, ch_reference )
+    MINIMAP2_ALIGN ( ch_extracted_fastq, ch_bed, ch_reference )
 
     ch_versions = ch_versions.mix(MINIMAP2_ALIGN.out.versions)
     MINIMAP2_ALIGN.out.sam
@@ -417,7 +431,6 @@ workflow SCNANOSEQ {
         ch_versions = ch_versions.mix( NANOCOMP_BAM.out.versions )
     }
 
-
     //
     // MODULE: Tag Barcodes
     //
@@ -425,53 +438,30 @@ workflow SCNANOSEQ {
     TAG_BARCODES (
         ch_minimap_filtered_sorted_bam
             .join( ch_minimap_filtered_sorted_bai, by: 0)
-            .join( ch_zipped_r1_reads, by: 0 ),
-        bc_length,
-        umi_length
+            .join( ch_corrected_bc_info, by: 0 )
     )
 
     ch_tagged_bam = TAG_BARCODES.out.tagged_bam
     ch_versions = ch_versions.mix(TAG_BARCODES.out.versions)
 
+    //
+    // SUBWORKFLOW: BAM_SORT_STATS_SAMTOOLS
     BAM_SORT_STATS_SAMTOOLS_TAGGED ( ch_tagged_bam,
                                         fasta )
 
     ch_tagged_sorted_bam = BAM_SORT_STATS_SAMTOOLS_TAGGED.out.bam
     ch_tagged_sorted_bai = BAM_SORT_STATS_SAMTOOLS_TAGGED.out.bai
 
-    //
-    // MODULE: Correct Barcodes
-    //
-
-    CORRECT_BARCODES (
-        ch_tagged_sorted_bam
-            .join ( ch_tagged_sorted_bai, by: 0)
-            .join ( ch_gt_whitelist, by: 0)
-            .join ( ch_whitelist_bc_count, by: 0 )
-    )
-
-    ch_corrected_bam = CORRECT_BARCODES.out.corrected_bam
-    ch_versions = ch_versions.mix(CORRECT_BARCODES.out.versions)
-
-    //
-    // SUBWORKFLOW: BAM_SORT_STATS_SAMTOOLS
-    // The subworkflow is called in both the minimap2 bams and filtered (mapped only) version
-    BAM_SORT_STATS_SAMTOOLS_CORRECTED ( ch_corrected_bam,
-                                        fasta )
-
-    ch_corrected_sorted_bam = BAM_SORT_STATS_SAMTOOLS_CORRECTED.out.bam
-    ch_corrected_sorted_bai = BAM_SORT_STATS_SAMTOOLS_CORRECTED.out.bai
-
     // these stats go for multiqc
-    ch_corrected_sorted_stats =     BAM_SORT_STATS_SAMTOOLS_CORRECTED.out.stats
-    ch_corrected_sorted_flagstat =  BAM_SORT_STATS_SAMTOOLS_CORRECTED.out.flagstat
-    ch_corrected_sorted_idxstats =  BAM_SORT_STATS_SAMTOOLS_CORRECTED.out.idxstats
-    ch_versions = ch_versions.mix(BAM_SORT_STATS_SAMTOOLS_CORRECTED.out.versions)
+    ch_tagged_sorted_stats =     BAM_SORT_STATS_SAMTOOLS_TAGGED.out.stats
+    ch_tagged_sorted_flagstat =  BAM_SORT_STATS_SAMTOOLS_TAGGED.out.flagstat
+    ch_tagged_sorted_idxstats =  BAM_SORT_STATS_SAMTOOLS_TAGGED.out.idxstats
+    ch_versions = ch_versions.mix(BAM_SORT_STATS_SAMTOOLS_TAGGED.out.versions)
 
     // TODO: Rename the dedup_bam channel to be more descriptive
-    ch_dedup_sorted_bam = ch_corrected_sorted_bam
-    ch_dedup_sorted_bam_bai = ch_corrected_sorted_bai
-    ch_dedup_sorted_flagstat = ch_corrected_sorted_flagstat
+    ch_dedup_sorted_bam = ch_tagged_sorted_bam
+    ch_dedup_sorted_bam_bai = ch_tagged_sorted_bai
+    ch_dedup_sorted_flagstat = ch_tagged_sorted_flagstat
     ch_dedup_log = Channel.empty()
 
     if (!params.skip_dedup) {
@@ -479,10 +469,10 @@ workflow SCNANOSEQ {
         //
         // MODULE: Bamtools Split
         //
-        BAMTOOLS_SPLIT ( ch_corrected_sorted_bam )
+        BAMTOOLS_SPLIT ( ch_tagged_sorted_bam )
         ch_split_bams = BAMTOOLS_SPLIT.out.bam
 
-        ch_split_corrected_bam = ch_split_bams
+        ch_split_tagged_bam = ch_split_bams
                                     .map{
                                         meta, bam ->
                                             [bam]
@@ -499,7 +489,7 @@ workflow SCNANOSEQ {
         //
         // SUBWORKFLOW: BAM_SORT_STATS_SAMTOOLS
         // The subworkflow is called in both the minimap2 bams and filtered (mapped only) version
-        BAM_SORT_STATS_SAMTOOLS_SPLIT ( ch_split_corrected_bam,
+        BAM_SORT_STATS_SAMTOOLS_SPLIT ( ch_split_tagged_bam,
                                         fasta )
 
         ch_split_sorted_bam = BAM_SORT_STATS_SAMTOOLS_SPLIT.out.bam
@@ -639,11 +629,9 @@ workflow SCNANOSEQ {
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_minimap_sorted_idxstats.collect{it[1]}.ifEmpty([]))
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_rseqc_read_dist.collect{it[1]}.ifEmpty([]))
 
-        //ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_corrected_sorted_stats.collect{it[1]}.ifEmpty([]))
-        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_corrected_sorted_flagstat.collect{it[1]}.ifEmpty([]))
-        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_corrected_sorted_idxstats.collect{it[1]}.ifEmpty([]))
+        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_tagged_sorted_flagstat.collect{it[1]}.ifEmpty([]))
+        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_tagged_sorted_idxstats.collect{it[1]}.ifEmpty([]))
 
-        //ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_dedup_sorted_stats.collect{it[1]}.ifEmpty([]))
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_dedup_sorted_flagstat.collect{it[1]}.ifEmpty([]))
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_dedup_sorted_idxstats.collect{it[1]}.ifEmpty([]))
 

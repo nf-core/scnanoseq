@@ -13,8 +13,8 @@ process PREEXTRACT_FASTQ {
     val bc_format
 
     output:
-    tuple val(meta), path("*.R1.fastq.gz"), emit: r1_reads
-    tuple val(meta), path("*.R2.fastq.gz"), emit: r2_reads
+    tuple val(meta), path("*.putative_bc_umi.tsv"), emit: barcode_info
+    tuple val(meta), path("*.fastq.gz"), emit: extracted_fastq 
     path "versions.yml"                , emit: versions
 
     when:

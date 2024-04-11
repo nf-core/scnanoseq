@@ -71,15 +71,16 @@ def extract_barcode(input_file, barcode_file, output, bc_format):
     # R1 will contain the barcode + umi
     # R2 contains the actual read
 
-    with gzip.open(f"{output}.R1.fastq.gz", "wt") as r1_out, gzip.open(
-        f"{output}.R2.fastq.gz", "wt"
+    with open(f"{output}.putative_bc_umi.tsv", "wt") as bc_out, gzip.open(
+        f"{output}.fastq.gz", "wt"
     ) as r2_out, gzip.open(input_file, "rt") as fastq_in:
+        bc_out.write("read_id\tbc\tbc_qual\tumi\tumi_qual\n")
+
         for record in SeqIO.parse(fastq_in, "fastq"):
             orig_seq = str(record.seq)
             orig_quals = "".join([chr(score + 33) for score in record.letter_annotations["phred_quality"]])
 
             # NOTE: Reads that do not have a predicted barcode will be filtered
-            #   out at this point
             if record.id in barcode_list:
                 bc_index, seq, quals = find_seq_indices(barcode_list[record.id], orig_seq, orig_quals)
 
@@ -92,7 +93,13 @@ def extract_barcode(input_file, barcode_file, output, bc_format):
                         read_info = strip_read_cellranger(bc_index, seq, quals)
 
                     if read_info:
-                        r1_out.write("\n".join(["@" + record.id, read_info["r1_read"], "+", read_info["r1_qual"], ""]))
+                        bc_out.write("\t".join(
+                            [record.id,
+                            read_info["bc"],
+                            read_info["bc_qual"],
+                            read_info["umi"],
+                            read_info["umi_qual"]]
+                        ) + "\n")
 
                         r2_out.write("\n".join(["@" + record.id, read_info["r2_read"], "+", read_info["r2_qual"], ""]))
 
@@ -156,8 +163,10 @@ def strip_read_cellranger(bc_index, seq, quals):
     umi_length = 12
     polyt_length = 10
 
-    read_info["r1_read"] = seq[bc_index : bc_index + bc_length + umi_length]
-    read_info["r1_qual"] = quals[bc_index : bc_index + bc_length + umi_length]
+    read_info["bc"] = seq[bc_index : bc_index + bc_length ]
+    read_info["bc_qual"] = quals[bc_index: bc_index + bc_length ]
+    read_info["umi"] = seq[bc_index + bc_length : bc_index + bc_length + umi_length ]
+    read_info["umi_qual"] = quals[bc_index + bc_length : bc_index + bc_length + umi_length ]
 
     read_info["r2_read"] = seq[bc_index + bc_length + umi_length + polyt_length :]
     read_info["r2_qual"] = quals[bc_index + bc_length + umi_length + polyt_length :]

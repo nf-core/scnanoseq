@@ -20,12 +20,29 @@ def parse_args():
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("-i", "--infile", default=None, type=str, required=True, help="The input bam file")
-
-    parser.add_argument("-o", "--outfile", default=None, type=str, required=True, help="The output bam file")
+    parser.add_argument(
+        "-i",
+        "--infile",
+        default=None,
+        type=str,
+        required=True,
+        help="The input csv containing read-id and estimated barcode")
 
     parser.add_argument(
-        "-w", "--whitelist", default=None, type=str, required=True, help="The whitelist file containing cell barcodes"
+        "-o",
+        "--outfile",
+        default=None,
+        type=str,
+        required=True,
+        help="The output csv containing the corrected barcodes.")
+
+    parser.add_argument(
+        "-w",
+        "--whitelist",
+        default=None,
+        type=str,
+        required=True,
+        help="The whitelist file containing cell barcodes"
     )
 
     parser.add_argument(
@@ -34,10 +51,8 @@ def parse_args():
         default=None,
         type=str,
         required=True,
-        help="The barcode count file, "
-        "contains the union between the "
-        "umi_tools generated whitelist "
-        "and the proper barcode whitelist.",
+        help="The barcode count file, contains the union between the umi_tools generated "
+        "whitelist and the proper barcode whitelist."
     )
 
     parser.add_argument(
@@ -45,7 +60,7 @@ def parse_args():
         default=2,
         type=int,
         required=False,
-        help="The maximum edit distance that a barcode can be from a barcode on the whitelist",
+        help="The maximum edit distance that a barcode can be from a barcode on the whitelist"
     )
 
     parser.add_argument(
@@ -53,19 +68,8 @@ def parse_args():
         default=0.975,
         type=int,
         required=False,
-        help="The minimum posterior "
-        "probability a barcode on the "
-        "whitelist must have to replace "
-        "the barcode detected by the "
-        "pipeline",
-    )
-
-    parser.add_argument(
-        "--write_filtered_reads",
-        required=False,
-        type=str,
-        default="",
-        help="Output the filtered reads into a the file name specified by this parameter.",
+        help="The minimum posterior probability a barcode on the whitelist must have to replace "
+        "the barcode detected by the pipeline"
     )
 
     args = parser.parse_args()
@@ -92,7 +96,7 @@ def get_filtered_outfile(outfile):
     return filtered_outfile
 
 
-def correct_bam(infile, outfile, whitelist, barcode_count_file, write_filtered_reads, min_post_prob, max_edit_dist):
+def correct_barcode(infile, outfile, whitelist, barcode_count_file, min_post_prob, max_edit_dist):
     """Iterate through each read in the bam, determine the most likely barcode
         for each read and output it.
 
@@ -102,8 +106,6 @@ def correct_bam(infile, outfile, whitelist, barcode_count_file, write_filtered_r
         whitelist (str): The path to the barcode whitelist file
         barcode_count_file (str): The path to the file containing each detected
             barcode and the counts for that barcode
-        write_filtered_reads (bool): Determine whether to write out reads that
-            are filtered due to not being able to correct the barcode
         min_post_prob (float): The minimum probability a barcode must be to be
             considered a 'correct' barcode
         max_edit_dist (int): The maximum edit distance the detected barcode can
@@ -112,32 +114,34 @@ def correct_bam(infile, outfile, whitelist, barcode_count_file, write_filtered_r
     Output: None
 
     """
+    
+    with open(infile, 'r') as infile_h, open(outfile, 'w') as outfile_h:
 
-    with ps.AlignmentFile(infile, "rb") as bam_in, ps.AlignmentFile(
-        outfile, "wb", template=bam_in
-    ) as bam_unfilt_out, ps.AlignmentFile("filtered.bam", "wb", template=bam_in) as bam_filt_out:
+        # Turn the whitelist into a trie, as it allows for very quick access to check for a barcode
         whitelist_trie = read_whitelist(whitelist)
+        
+        # Turn the barcode abundances into percentages
         bc_probabilities = calculate_bc_ratios(barcode_count_file)
 
-        for read in bam_in:
-            corrected_bc = get_read_bc(
-                read.get_tag("CR"), read.get_tag("CY"), whitelist_trie, bc_probabilities, max_edit_dist, min_post_prob
-            )
+        header = ""
 
-            if corrected_bc:
-                # The code below will fix the read query name for umitools
-                read.query_name = "_".join(
-                    [read.query_name.split("_")[0], corrected_bc, read.query_name.split("_")[-1]]
+        for inline in infile_h.readlines():
+            inline = inline.strip('\n')
+            if not header:
+                header = inline
+                outfile_h.write(header + "\tcorrected_bc\n")
+                continue
+
+            read_id, bc, bc_qual, _, _ = inline.split('\t')
+
+            if not bc:
+                continue
+            else:
+                corrected_bc = get_read_bc(
+                    bc, bc_qual, whitelist_trie, bc_probabilities, max_edit_dist, min_post_prob
                 )
 
-                read.tags += [("CB", corrected_bc)]
-
-                bam_unfilt_out.write(read)
-
-            elif write_filtered_reads:
-                bam_filt_out.write(read)
-            print("")
-
+                outfile_h.write(inline + '\t' + corrected_bc + '\n')
 
 def read_whitelist(in_whitelist):
     """Read the barcode whitelist into a trie. While this does have a hit on
@@ -222,7 +226,7 @@ def get_read_bc(barcode, barcode_qual, whitelist_trie, bc_probabilities, max_edi
     if not whitelist_trie.has_key(barcode):
         similar_bcs = get_similar_bcs(barcode, barcode_qual, whitelist_trie, bc_probabilities, max_edit_dist)
         if similar_bcs:
-            corrected_barcode = correct_barcode(similar_bcs, min_post_prob)
+            corrected_barcode = find_correct_barcode(similar_bcs, min_post_prob)
     else:
         corrected_barcode = barcode
 
@@ -270,7 +274,6 @@ def get_mutated_bcs(query_bc, max_edit_dist):
             the barcode
 
     Returns: None, yields the mutated barcodes
-
     """
 
     for edit_dist in range(1, max_edit_dist + 1):
@@ -354,7 +357,7 @@ def get_edit_probability(q_score):
     return math.pow(10, -1 * (ord(q_score) - QUAL_OFFSET) / 10)
 
 
-def correct_barcode(potential_bcs, min_prob):
+def find_correct_barcode(potential_bcs, min_prob):
     """Determines which barcode is the most likely origin barcode
 
     Args:
@@ -388,12 +391,11 @@ def correct_barcode(potential_bcs, min_prob):
 def main():
     """Main Subroutine"""
     args = parse_args()
-    correct_bam(
+    correct_barcode(
         args.infile,
         args.outfile,
         args.whitelist,
         args.barcode_count,
-        args.write_filtered_reads,
         args.min_post_prob,
         args.max_edit_dist,
     )
