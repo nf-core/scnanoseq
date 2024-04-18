@@ -44,7 +44,7 @@ def read_barcode_list(barcode_file):
 
     with open(barcode_file, "r", encoding="utf-8") as bc_in:
         for bc_line in bc_in.readlines():
-            read_name, barcode, _ = bc_line.split(",")
+            read_name, barcode, _, umi, _, _, _ = bc_line.split(",")
 
             # Not all reads had barcodes, ignore those that don't
             if barcode:
