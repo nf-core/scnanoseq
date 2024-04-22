@@ -1,7 +1,7 @@
 process TOULLIGQC {
     label 'process_low'
     tag "$meta.id"
-
+    
     conda "bioconda::toulligqc=2.5.4"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/toulligqc:2.5.4--pyhdfd78af_0':
@@ -15,7 +15,6 @@ process TOULLIGQC {
     tuple val(meta), path("*/*.html")                   , emit: report_html, optional: true
     tuple val(meta), path("*/images/*.html")            , emit: plots_html
     tuple val(meta), path("*/images/plotly.min.js")     , emit: plotly_js
-
     path "versions.yml" , emit: versions
 
     when:
