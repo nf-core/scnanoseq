@@ -49,7 +49,7 @@ workflow QCFASTQ_NANOPLOT_FASTQC {
     toulligqc_plotly_js     = Channel.empty()
     toulligqc_version       = Channel.empty()
     if (!skip_toulligqc){
-        TOULLIGQC ( Channel.empty(), ch_fastq, Channel.empty())
+        TOULLIGQC ( ch_fastq )
         toulligqc_report_data  = TOULLIGQC.out.report_data
         toulligqc_report_html  = TOULLIGQC.out.report_html
         toulligqc_plots_html   = TOULLIGQC.out.plots_html
