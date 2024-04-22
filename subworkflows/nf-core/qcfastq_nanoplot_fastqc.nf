@@ -1,19 +1,22 @@
 /*
- * FastQ QC with NanoPlot and fastqc
+ * FastQ QC with NanoPlot, ToulligQC and fastqc
  * subworkflow from nf-core/nanoseq
  * author: @yuukiiwa
  */
 
 params.nanoplot_fastq_options = [:]
+params.toulligqc_fastqc_options = [:]
 params.fastqc_options         = [:]
 
 include { NANOPLOT     } from '../../modules/nf-core/nanoplot/main'  //addParams( options: params.nanoplot_fastq_options )
+include { TOULLIGQC } from '../modules/nf-core/toulligqc/main'       //addParams( options: params.toulligqc_fastqc_options )                                                                                                                    
 include { FASTQC       } from '../../modules/nf-core/fastqc/main'    //addParams( options: params.fastqc_options )
 
 workflow QCFASTQ_NANOPLOT_FASTQC {
     take:
     ch_fastq
     skip_nanoplot
+    skip_toulligqc
     skip_fastqc
 
     main:
@@ -36,6 +39,22 @@ workflow QCFASTQ_NANOPLOT_FASTQC {
         nanoplot_txt     = NANOPLOT.out.txt
         nanoplot_log     = NANOPLOT.out.log
         nanoplot_version = NANOPLOT.out.versions
+    }
+    /*
+     * FastQ QC using ToulligQC
+     */
+    toulligqc_report_data   = Channel.empty()
+    toulligqc_report_html   = Channel.empty()
+    toulligqc_plots_html    = Channel.empty()
+    toulligqc_plotly_js     = Channel.empty()
+    toulligqc_version       = Channel.empty()
+    if (!skip_toulligqc){
+        TOULLIGQC ( Channel.empty(), ch_fastq, Channel.empty())
+        toulligqc_report_data  = TOULLIGQC.out.report_data
+        toulligqc_report_html  = TOULLIGQC.out.report_html
+        toulligqc_plots_html   = TOULLIGQC.out.plots_html
+        toulligqc_plotly_js    = TOULLIGQC.out.plotly_js
+        toulligqc_version      = TOULLIGQC.out.versions
     }
 
     /*
@@ -65,6 +84,12 @@ workflow QCFASTQ_NANOPLOT_FASTQC {
     nanoplot_txt
     nanoplot_log
     nanoplot_version
+
+    toulligqc_report_data
+    toulligqc_report_html
+    toulligqc_plots_html
+    toulligqc_plotly_js
+    toulligqc_version
 
     fastqc_zip
     fastqc_html

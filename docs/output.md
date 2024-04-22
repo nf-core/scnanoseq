@@ -30,6 +30,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
   - [FastQC](#fastqc) - Fastq QC
   - [Nanocomp](#nanocomp) - Long Read Fastq QC
   - [Nanoplot](#nanoplot) - Long Read Fastq QC
+  - [ToulligQC](#toulligqc) - Long Read Fastq QC
   - [RSeQC](#rseqc) - Various RNA-seq QC metrics
   - [MultiQC](#multiqc) - Aggregate report describing results and QC from the whole pipeline
 - [Pipeline information](#pipeline-information) - Report metrics generated during the workflow execution
