@@ -9,7 +9,7 @@ params.toulligqc_fastqc_options = [:]
 params.fastqc_options         = [:]
 
 include { NANOPLOT     } from '../../modules/nf-core/nanoplot/main'  //addParams( options: params.nanoplot_fastq_options )
-include { TOULLIGQC } from '../modules/nf-core/toulligqc/main'       //addParams( options: params.toulligqc_fastqc_options )                                                                                                                    
+include { TOULLIGQC    } from '../../modules/nf-core/toulligqc/main' //addParams( options: params.toulligqc_fastqc_options )                                                                                                                    
 include { FASTQC       } from '../../modules/nf-core/fastqc/main'    //addParams( options: params.fastqc_options )
 
 workflow QCFASTQ_NANOPLOT_FASTQC {
