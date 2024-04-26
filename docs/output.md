@@ -287,6 +287,26 @@ The FastQC plots displayed in the MultiQC report shows _untrimmed_ reads. They m
 
 [Nanoplot](https://github.com/wdecoster/NanoPlot) is a plotting tool for long read sequencing data and alignments.
 
+### ToulliQC
+<details markdown="1">
+<summary>Output files</summary>
+
+- `<sample_identifier>/`
+  - `qc/`
+    - `toulligqc/`
+      - `pre_trim/` and `post_trim/` and `post_extract`
+        - `<sample_identifier>ToulligQC-report-<date>/`
+          - `report.html`: This is browser-viewable report that contains all the figures in a single location.
+          - `report.data`: A log file containing information about ToulligQC execution, environment variables and full statistics
+          - `images/*`: This is folder containing all the individual images produced by ToulligQC
+
+</details>
+
+![ToulligQC](images/toulligqc_1.png)
+![ToulligQC](images/toulligqc_2.png)
+
+[ToulligQC](https://github.com/GenomiqueENS/toulligQC) is a post sequencing QC tool for Oxford Nanopore sequencers.
+
 ### RSeQC
 
 <details markdown="1">
