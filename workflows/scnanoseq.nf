@@ -563,9 +563,11 @@ workflow SCNANOSEQ {
         //
         SEURAT_GENE ( ch_gene_count_mtx.join(ch_dedup_sorted_flagstat, by: [0]) )
         ch_gene_seurat_qc = SEURAT_GENE.out.seurat_stats
+        ch_versions = ch_versions.mix(SEURAT_GENE.out.versions)
 
         SEURAT_TRANSCRIPT ( ch_transcript_count_mtx.join(ch_dedup_sorted_flagstat, by: [0]) )
         ch_transcript_seurat_qc = SEURAT_TRANSCRIPT.out.seurat_stats
+        ch_versions = ch_versions.mix(SEURAT_TRANSCRIPT.out.versions)
 
         //
         // MODULE: Combine Seurat Stats
@@ -650,7 +652,8 @@ workflow SCNANOSEQ {
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_dedup_sorted_flagstat.collect{it[1]}.ifEmpty([]))
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_dedup_sorted_idxstats.collect{it[1]}.ifEmpty([]))
 
-        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_dedup_log.collect{it[1]}.ifEmpty([]))
+        // see issue #12 (too many files when split by chr)
+        //ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_dedup_log.collect{it[1]}.ifEmpty([]))
 
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_gene_stats_combined.collect().ifEmpty([]))
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_transcript_stats_combined.collect().ifEmpty([]))
