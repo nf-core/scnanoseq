@@ -1,5 +1,5 @@
 process TOULLIGQC {
-    label 'process_low'
+    label 'process_high'
     tag "$meta.id"
     
     conda "bioconda::toulligqc=2.5.6"
