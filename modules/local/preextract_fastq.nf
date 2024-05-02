@@ -28,7 +28,9 @@ process PREEXTRACT_FASTQ {
     pre_extract_barcodes.py -i ${reads} \\
                             -b ${bc_list} \\
                             -o ${prefix} \\
-                            -f ${bc_format}
+                            -f ${bc_format} \\
+                            -t ${task.cpus} \\
+                            ${args}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

@@ -10,6 +10,8 @@ from Bio import SeqIO
 from Bio.Seq import Seq
 import gzip
 
+import threading
+import queue
 
 def parse_args():
     """Parse the commandline arguments"""
@@ -24,86 +26,82 @@ def parse_args():
     arg_parser.add_argument(
         "-f", "--barcode-format", required=True, type=str, help="The barcode/umi format (Options: cellranger)"
     )
-
+    arg_parser.add_argument(
+        "-t", "--threads", type=int, help="The number of threads to use")
+    
     args = arg_parser.parse_args()
     return args
 
+def extract_bc_umi(bc_queue, bc_out, r2_out):
+    """ Will extract the barcode and umi from a read and write them out to a file """
+    while True:
+        read_id, barcode, orig_seq, orig_quals = bc_queue.get()
+        #print(read_id)
+        bc_index, seq, quals = find_seq_indices(barcode, orig_seq, orig_quals)
 
-def read_barcode_list(barcode_file):
-    """Read in the blaze putative barcode list into a dict in memory. The
-        file contains the read name, predicted barcode, and average bc score
+        # If bc_index is < 0, the barcode was not found
+        if bc_index >= 0:
+            read_info = {}
 
-    Args:
-        barcode_file (str): The path to the blaze putative barcode list
+            # Strip the primer, bc, umi, and poly-T
+            #if bc_format in ["cellranger_3_prime", "cellranger_5_prime"]:
+            #    read_info = strip_read_cellranger(bc_index, seq, quals)
+            read_info = strip_read_cellranger(bc_index, seq, quals)
 
-    Returns:
-        barcode_list (dict): The dictionary containing the barcodes. Key is
-            read identifier and value is the barcode
-    """
-    barcode_list = {}
+            if read_info:
+                bc_output = "\t".join(
+                    [read_id,
+                    read_info["bc"],
+                    read_info["bc_qual"],
+                    read_info["umi"],
+                    read_info["umi_qual"]]
+                    ) + "\n"
 
-    with open(barcode_file, "r", encoding="utf-8") as bc_in:
-        for bc_line in bc_in.readlines():
-            read_name, barcode, _, umi, _, _, _ = bc_line.split(",")
+                fq_output = "\n".join(
+                    ["@" + read_id,
+                    read_info["r2_read"],
+                    "+",
+                    read_info["r2_qual"],
+                    ""])
+                bc_out.write(bc_output)
+                r2_out.write(r2_output)
 
-            # Not all reads had barcodes, ignore those that don't
-            if barcode:
-                barcode_list[read_name] = barcode
+        bc_queue.task_done()
 
-    return barcode_list
+def extract_barcode(input_file, barcode_file, output, bc_format, threads):
+    """ Reads in a fastq and BLAZE putative bc file and strip the bc and umi from read """
+    results_queue = queue.Queue()
+    bc_queue = queue.Queue()
 
+    # read file
+    with gzip.open(input_file, "rt") as fastq_in, \
+        open(barcode_file, "r", encoding="utf-8") as bc_in:
 
-def extract_barcode(input_file, barcode_file, output, bc_format):
-    """This will use the information stored in the barcode file to extract
-        the predicted barcode and umi out of the main read (along with
-        qualities) and place them in a separate fastq. This somewhat mimics
-        the way that 10x provides single cell files (minus the index files)
+        for bc_umi_line,record in zip(bc_in.readlines(),SeqIO.parse(fastq_in, "fastq")):
+            bc_umi_line = bc_umi_line.strip()
 
-    Args:
-        input_file (str): The path to the input fastq
-        barcode_file (str): The path to the blaze putative barcode list
-        output (str): The output prefix
-    """
-
-    barcode_list = read_barcode_list(barcode_file)
-
-    # We will open two fastqs to output to.
-    # R1 will contain the barcode + umi
-    # R2 contains the actual read
-
-    with open(f"{output}.putative_bc_umi.tsv", "wt") as bc_out, gzip.open(
-        f"{output}.fastq.gz", "wt"
-    ) as r2_out, gzip.open(input_file, "rt") as fastq_in:
-        bc_out.write("read_id\tbc\tbc_qual\tumi\tumi_qual\n")
-
-        for record in SeqIO.parse(fastq_in, "fastq"):
+            _, barcode, _, _, _, _, _ = bc_umi_line.split(",")
             orig_seq = str(record.seq)
             orig_quals = "".join([chr(score + 33) for score in record.letter_annotations["phred_quality"]])
+            if barcode:
+                bc_queue.put((record.id, barcode, orig_seq, orig_quals))
+    
+    bc_out = open(f"{output}.putative_bc_umi.tsv", "wt")
+    r2_out = gzip.open(f"{output}.fastq.gz", "wt")
 
-            # NOTE: Reads that do not have a predicted barcode will be filtered
-            if record.id in barcode_list:
-                bc_index, seq, quals = find_seq_indices(barcode_list[record.id], orig_seq, orig_quals)
+    # start worker threads
+    for i in range(threads):
+        t = threading.Thread(target=extract_bc_umi, args=(bc_queue, bc_out, r2_out))
+        t.daemon = True
+        t.start()
+    
+    bc_out.write("read_id\tbc\tbc_qual\tumi\tumi_qual\n")
+    
+    bc_queue.join()
 
-                # If bc_index is < 0, the barcode was not found
-                if bc_index >= 0:
-                    read_info = {}
-
-                    # Strip the primer, bc, umi, and poly-T
-                    if bc_format in ["cellranger_3_prime", "cellranger_5_prime"]:
-                        read_info = strip_read_cellranger(bc_index, seq, quals)
-
-                    if read_info:
-                        bc_out.write("\t".join(
-                            [record.id,
-                            read_info["bc"],
-                            read_info["bc_qual"],
-                            read_info["umi"],
-                            read_info["umi_qual"]]
-                        ) + "\n")
-
-                        r2_out.write("\n".join(["@" + record.id, read_info["r2_read"], "+", read_info["r2_qual"], ""]))
-
-
+    bc_out.close()
+    r2_out.close()
+    
 def find_seq_indices(barcode, sequence, qualities):
     """Find the location in the read where the predictoed barcode exists. If
         it cannot be found, reverse-complement the read to find i.
@@ -178,7 +176,7 @@ def main():
     """Main subroutine"""
 
     args = parse_args()
-    extract_barcode(args.input_file, args.barcode_file, args.output_file, args.barcode_format)
+    extract_barcode(args.input_file, args.barcode_file, args.output_file, args.barcode_format, args.threads)
 
 
 if __name__ == "__main__":
