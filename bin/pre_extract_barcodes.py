@@ -64,29 +64,17 @@ def extract_bc_umi(bc_queue, bc_out, r2_out):
                     read_info["r2_qual"],
                     ""])
                 bc_out.write(bc_output)
-                r2_out.write(r2_output)
+                r2_out.write(fq_output)
 
         bc_queue.task_done()
 
 def extract_barcode(input_file, barcode_file, output, bc_format, threads):
     """ Reads in a fastq and BLAZE putative bc file and strip the bc and umi from read """
-    results_queue = queue.Queue()
-    bc_queue = queue.Queue()
-
-    # read file
-    with gzip.open(input_file, "rt") as fastq_in, \
-        open(barcode_file, "r", encoding="utf-8") as bc_in:
-
-        for bc_umi_line,record in zip(bc_in.readlines(),SeqIO.parse(fastq_in, "fastq")):
-            bc_umi_line = bc_umi_line.strip()
-
-            _, barcode, _, _, _, _, _ = bc_umi_line.split(",")
-            orig_seq = str(record.seq)
-            orig_quals = "".join([chr(score + 33) for score in record.letter_annotations["phred_quality"]])
-            if barcode:
-                bc_queue.put((record.id, barcode, orig_seq, orig_quals))
+    bc_queue = queue.Queue(5000)
     
-    bc_out = open(f"{output}.putative_bc_umi.tsv", "wt")
+    bc_out = open(f"{output}.putative_bc_umi.tsv", "wt") 
+    bc_out.write("read_id\tbc\tbc_qual\tumi\tumi_qual\n")
+
     r2_out = gzip.open(f"{output}.fastq.gz", "wt")
 
     # start worker threads
@@ -94,8 +82,22 @@ def extract_barcode(input_file, barcode_file, output, bc_format, threads):
         t = threading.Thread(target=extract_bc_umi, args=(bc_queue, bc_out, r2_out))
         t.daemon = True
         t.start()
-    
-    bc_out.write("read_id\tbc\tbc_qual\tumi\tumi_qual\n")
+
+    # read file
+    fastq_in = gzip.open(input_file, "rt") if '.gz' in input_file else open(input_file, "r", encoding="utf-8")
+
+    with open(barcode_file, "r", encoding="utf-8") as bc_in:
+
+        for bc_umi_line,record in zip(bc_in,SeqIO.parse(fastq_in, "fastq")):
+            bc_umi_line = bc_umi_line.strip()
+
+            _, barcode, _, _, _, _, _ = bc_umi_line.split(",")
+            orig_seq = str(record.seq)
+            orig_quals = "".join([chr(score + 33) for score in record.letter_annotations["phred_quality"]])
+            if barcode:
+                bc_queue.put((record.id, barcode, orig_seq, orig_quals))
+
+    fastq_in.close()
     
     bc_queue.join()
 
