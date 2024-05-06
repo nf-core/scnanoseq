@@ -75,7 +75,7 @@ def extract_barcode(input_file, barcode_file, output, bc_format, threads):
     bc_out = open(f"{output}.putative_bc_umi.tsv", "wt") 
     bc_out.write("read_id\tbc\tbc_qual\tumi\tumi_qual\n")
 
-    r2_out = gzip.open(f"{output}.fastq.gz", "wt")
+    r2_out = open(f"{output}.fastq", "wt")
 
     # start worker threads
     for i in range(threads):

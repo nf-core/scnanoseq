@@ -15,7 +15,7 @@ process BLAZE {
     val in_whitelist
 
     output:
-    tuple val(meta), path("*.putative_bc.csv") , emit: putative_bc
+    tuple val(meta), path("*.putative_bc.mod.csv") , emit: putative_bc
     tuple val(meta), path("*.whitelist.csv")   , emit: whitelist
     tuple val(meta), path("*.bc_count.txt")    , emit: bc_count
     tuple val(meta), path("*.knee_plot.png")   , emit: knee_plot
@@ -39,7 +39,10 @@ process BLAZE {
         ${args} \\
         \$(pwd)
 
-    cat ${prefix}.putative_bc.csv | cut -f2 -d',' | sort -T \$(pwd) | uniq -c | awk '{print \$2","\$1}'> ${prefix}.bc_count.txt
+
+    tail -n +2 ${prefix}.putative_bc.csv > ${prefix}.putative_bc.mod.csv
+
+    cat ${prefix}.putative_bc.mod.csv | cut -f2 -d',' | sort -T \$(pwd) | uniq -c | awk '{print \$2","\$1}'> ${prefix}.bc_count.txt
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         blaze: $VERSION
