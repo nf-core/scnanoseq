@@ -23,12 +23,14 @@ process CORRECT_BARCODES {
     def prefix = task.ext.prefix ?: "${meta.id}"
 
     """
+    prefix=\$(echo ${bc_info} | sed 's/extracted.putative_bc_umi.tsv//')
     correct_barcodes.py \\
         ${args} \\
         -i ${bc_info} \\
-        -o ${prefix}.corrected_bc_umi.tsv \\
+        -o \${prefix}.corrected_bc_umi.tsv \\
         -w ${whitelist} \\
-        -b ${bc_count_file}
+        -b ${bc_count_file} \\
+        --skip_header
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

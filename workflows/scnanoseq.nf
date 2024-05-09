@@ -91,6 +91,7 @@ include { SAMTOOLS_VIEW as SAMTOOLS_VIEW_BAM    } from "../modules/nf-core/samto
 include { SAMTOOLS_VIEW as SAMTOOLS_VIEW_FILTER } from "../modules/nf-core/samtools/view/main"
 include { CAT_CAT                               } from "../modules/nf-core/cat/cat/main"
 include { CAT_CAT as CAT_CAT_PREEXTRACT                               } from "../modules/nf-core/cat/cat/main"
+include { CAT_CAT as CAT_CAT_BARCODE                               } from "../modules/nf-core/cat/cat/main"
 include { CAT_FASTQ                             } from '../modules/nf-core/cat/fastq/main'
 include { RSEQC_READDISTRIBUTION                } from '../modules/nf-core/rseqc/readdistribution/main'
 include { BAMTOOLS_SPLIT                        } from '../modules/nf-core/bamtools/split/main'
@@ -224,6 +225,14 @@ workflow SCNANOSEQ {
         ch_rseqc_bed = UCSC_GENEPREDTOBED.out.bed
         ch_versions = ch_versions.mix(UCSC_GENEPREDTOBED.out.versions)
     }
+    
+    //
+    // MODULE: Unzip fastq
+    //
+    GUNZIP( ch_cat_fastq )
+    ch_unzipped_fastqs = GUNZIP.out.gunzip
+    ch_versions = ch_versions.mix( GUNZIP.out.versions )
+
 
     //
     // MODULE: Trim and filter reads
@@ -233,16 +242,6 @@ workflow SCNANOSEQ {
     ch_trimmed_reads_combined = Channel.empty()
 
     if (!params.skip_trimming){
-        // The trimmers require unzipped fastqs, so we'll need to unzip them
-        // to accomodate this requirement
-
-        //
-        // MODULE: Unzip fastq
-        //
-        GUNZIP( ch_cat_fastq )
-        ch_unzipped_fastqs = GUNZIP.out.gunzip
-        ch_versions = ch_versions.mix( GUNZIP.out.versions )
-
         //
         // MODULE: Split fastq
         //
@@ -279,21 +278,21 @@ workflow SCNANOSEQ {
         //
         // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - post-trim QC
         //
-        if (!params.skip_qc){
+        //if (!params.skip_qc){
 
-            //
-            // MODULE: Run qc on the post trimmed reads
-            //
-            //FASTQC_NANOPLOT_POST_TRIM ( ch_zipped_reads, params.skip_nanoplot, params.skip_fastqc )
-            FASTQC_NANOPLOT_POST_TRIM ( ch_trimmed_reads_combined, params.skip_nanoplot, params.skip_fastqc )
+        //    //
+        //    // MODULE: Run qc on the post trimmed reads
+        //    //
+        //    //FASTQC_NANOPLOT_POST_TRIM ( ch_zipped_reads, params.skip_nanoplot, params.skip_fastqc )
+        //    FASTQC_NANOPLOT_POST_TRIM ( ch_trimmed_reads_combined, params.skip_nanoplot, params.skip_fastqc )
 
-            ch_fastqc_multiqc_postrim = FASTQC_NANOPLOT_POST_TRIM.out.fastqc_multiqc.ifEmpty([])
-            ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_TRIM.out.nanoplot_version.first().ifEmpty(null))
-            ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_TRIM.out.fastqc_version.first().ifEmpty(null))
-        }
+        //    ch_fastqc_multiqc_postrim = FASTQC_NANOPLOT_POST_TRIM.out.fastqc_multiqc.ifEmpty([])
+        //    ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_TRIM.out.nanoplot_version.first().ifEmpty(null))
+        //    ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_TRIM.out.fastqc_version.first().ifEmpty(null))
+        //}
     } else {
         //ch_zipped_reads = ch_cat_fastq
-        ch_trimmed_reads_combined = ch_cat_fastq
+        ch_trimmed_reads_combined = ch_unzipped_fastqs
     }
 
     //
@@ -320,7 +319,7 @@ workflow SCNANOSEQ {
 
         ch_versions = ch_versions.mix(SPLIT_FILE_BC_FASTQ.out.versions)
 
-        SPLIT_FILE_BC_CSV ( ch_putative_bc, '.csv', params.split_amount )
+        SPLIT_FILE_BC_CSV ( ch_putative_bc, '.csv', (params.split_amount / 4) )
         SPLIT_FILE_BC_CSV.out.split_files
             .transpose()
             .set { ch_split_bc }
@@ -336,10 +335,46 @@ workflow SCNANOSEQ {
     ch_barcode_info = PREEXTRACT_FASTQ.out.barcode_info
     ch_preextract_fastq = PREEXTRACT_FASTQ.out.extracted_fastq
 
+    
+    //
+    // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - post-extract QC
+    //
+    //ch_fastqc_multiqc_postextract = Channel.empty()
+    //if (!params.skip_qc){
+    //    FASTQC_NANOPLOT_POST_EXTRACT ( ch_extracted_fastq, params.skip_nanoplot, params.skip_fastqc )
+
+    //    ch_fastqc_multiqc_postextract = FASTQC_NANOPLOT_POST_EXTRACT.out.fastqc_multiqc.ifEmpty([])
+    //    ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_EXTRACT.out.nanoplot_version.first().ifEmpty(null))
+    //    ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_EXTRACT.out.fastqc_version.first().ifEmpty(null))
+    //}
+    
+    //
+    // MODULE: Correct Barcodes
+    //
+
+    CORRECT_BARCODES (
+        ch_barcode_info
+            .combine ( ch_gt_whitelist, by: 0)
+            .combine ( ch_whitelist_bc_count, by: 0 )
+    )
+    ch_corrected_bc_file = CORRECT_BARCODES.out.corrected_bc_info
+    ch_versions = ch_versions.mix(CORRECT_BARCODES.out.versions)
+    
     ch_extracted_fastq = ch_preextract_fastq
+    ch_corrected_bc_info = ch_corrected_bc_file
+    
     if (params.split_amount > 0){
+        //
+        // MODULE: Cat Preextract
+        //
         CAT_CAT_PREEXTRACT(ch_preextract_fastq.groupTuple())
         ch_cat_preextract_fastq = CAT_CAT_PREEXTRACT.out.file_out
+
+        //
+        // MODULE: Cat barcode file
+        //
+        CAT_CAT_BARCODE (ch_corrected_bc_file.groupTuple())
+        ch_corrected_bc_info = CAT_CAT_BARCODE.out.file_out
         
         //
         // MODULE: Zip the reads
@@ -348,30 +383,6 @@ workflow SCNANOSEQ {
         ch_extracted_fastq = ZIP_TRIM.out.archive
         ch_versions = ch_versions.mix(ZIP_TRIM.out.versions)
     }
-    
-    //
-    // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - post-extract QC
-    //
-    ch_fastqc_multiqc_postextract = Channel.empty()
-    if (!params.skip_qc){
-        FASTQC_NANOPLOT_POST_EXTRACT ( ch_extracted_fastq, params.skip_nanoplot, params.skip_fastqc )
-
-        ch_fastqc_multiqc_postextract = FASTQC_NANOPLOT_POST_EXTRACT.out.fastqc_multiqc.ifEmpty([])
-        ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_EXTRACT.out.nanoplot_version.first().ifEmpty(null))
-        ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_EXTRACT.out.fastqc_version.first().ifEmpty(null))
-    }
-    
-    //
-    // MODULE: Correct Barcodes
-    //
-
-    CORRECT_BARCODES (
-        ch_barcode_info
-            .join ( ch_gt_whitelist, by: 0)
-            .join ( ch_whitelist_bc_count, by: 0 )
-    )
-    ch_corrected_bc_info = CORRECT_BARCODES.out.corrected_bc_info
-    ch_versions = ch_versions.mix(CORRECT_BARCODES.out.versions)
 
     //
     // MINIMAP2_INDEX
@@ -654,7 +665,7 @@ workflow SCNANOSEQ {
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
 
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_fastqc_multiqc_postrim.collect().ifEmpty([]))
-        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_fastqc_multiqc_postextract.collect().ifEmpty([]))
+        //ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_fastqc_multiqc_postextract.collect().ifEmpty([]))
 
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_minimap_sorted_stats.collect{it[1]}.ifEmpty([]))
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_minimap_sorted_flagstat.collect{it[1]}.ifEmpty([]))

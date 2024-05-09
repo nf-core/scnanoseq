@@ -71,6 +71,16 @@ def parse_args():
         help="The minimum posterior probability a barcode on the whitelist must have to replace "
         "the barcode detected by the pipeline"
     )
+    
+    #parser.add_argument(print_header, default=True)
+    parser.set_defaults(print_header=True)
+
+    parser.add_argument(
+        "--skip_header",
+        action='store_false',
+        dest='print_header',
+        help="Indicates whether to skip printing the header"
+    )
 
     args = parser.parse_args()
 
@@ -96,7 +106,7 @@ def get_filtered_outfile(outfile):
     return filtered_outfile
 
 
-def correct_barcode(infile, outfile, whitelist, barcode_count_file, min_post_prob, max_edit_dist):
+def correct_barcode(infile, outfile, whitelist, barcode_count_file, min_post_prob, max_edit_dist, print_header):
     """Iterate through each read in the bam, determine the most likely barcode
         for each read and output it.
 
@@ -110,6 +120,8 @@ def correct_barcode(infile, outfile, whitelist, barcode_count_file, min_post_pro
             considered a 'correct' barcode
         max_edit_dist (int): The maximum edit distance the detected barcode can
             be from a barcode on the whitelist in order to be corrected
+        print_header (bool): Indicates whether to print the header to the output
+            file or not
 
     Output: None
 
@@ -129,7 +141,8 @@ def correct_barcode(infile, outfile, whitelist, barcode_count_file, min_post_pro
             inline = inline.strip('\n')
             if not header:
                 header = inline
-                outfile_h.write(header + "\tcorrected_bc\n")
+                if print_header:
+                    outfile_h.write(header + "\tcorrected_bc\n")
                 continue
 
             read_id, bc, bc_qual, _, _ = inline.split('\t')
@@ -398,6 +411,7 @@ def main():
         args.barcode_count,
         args.min_post_prob,
         args.max_edit_dist,
+        args.print_header
     )
 
 

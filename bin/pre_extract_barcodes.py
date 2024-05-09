@@ -13,6 +13,8 @@ import gzip
 import threading
 import queue
 
+OUTPUT_LOCK = threading.Lock()
+
 def parse_args():
     """Parse the commandline arguments"""
 
@@ -63,8 +65,10 @@ def extract_bc_umi(bc_queue, bc_out, r2_out):
                     "+",
                     read_info["r2_qual"],
                     ""])
-                bc_out.write(bc_output)
-                r2_out.write(fq_output)
+
+                with OUTPUT_LOCK:
+                    bc_out.write(bc_output)
+                    r2_out.write(fq_output)
 
         bc_queue.task_done()
 
@@ -72,10 +76,10 @@ def extract_barcode(input_file, barcode_file, output, bc_format, threads):
     """ Reads in a fastq and BLAZE putative bc file and strip the bc and umi from read """
     bc_queue = queue.Queue(5000)
     
-    bc_out = open(f"{output}.putative_bc_umi.tsv", "wt") 
+    bc_out = open(f"{output}.putative_bc_umi.tsv", "w", encoding="utf-8") 
     bc_out.write("read_id\tbc\tbc_qual\tumi\tumi_qual\n")
 
-    r2_out = open(f"{output}.fastq", "wt")
+    r2_out = open(f"{output}.fastq", "w", encoding="utf-8")
 
     # start worker threads
     for i in range(threads):
