@@ -25,14 +25,13 @@ process PREEXTRACT_FASTQ {
     def prefix = task.ext.prefix ?: "${meta.id}"
 
     """
-    prefix=\$(echo ${reads} | sed 's/.fastq//')
-
-    pre_extract_barcodes.py -i ${reads} \\
-                            -b ${bc_list} \\
-                            -o \${prefix}.extracted \\
-                            -f ${bc_format} \\
-                            -t ${task.cpus} \\
-                            ${args}
+    pre_extract_barcodes.py \\
+        -i ${reads} \\
+        -b ${bc_list} \\
+        -o ${prefix}.extracted \\
+        -f ${bc_format} \\
+        -t ${task.cpus} \\
+        ${args}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
