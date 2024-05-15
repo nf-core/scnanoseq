@@ -279,18 +279,18 @@ workflow SCNANOSEQ {
         //
         // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - post-trim QC
         //
-        //if (!params.skip_qc){
+        if (!params.skip_qc){
 
-        //    //
-        //    // MODULE: Run qc on the post trimmed reads
-        //    //
-        //    FASTQC_NANOPLOT_POST_TRIM ( ch_trimmed_reads_combined, params.skip_nanoplot, params.skip_toulligqc, params.skip_fastqc )
+            //
+            // MODULE: Run qc on the post trimmed reads
+            //
+            FASTQC_NANOPLOT_POST_TRIM ( ch_trimmed_reads_combined, params.skip_nanoplot, params.skip_toulligqc, params.skip_fastqc )
 
-        //    ch_fastqc_multiqc_postrim = FASTQC_NANOPLOT_POST_TRIM.out.fastqc_multiqc.ifEmpty([])
-        //    ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_TRIM.out.nanoplot_version.first().ifEmpty(null))
-        //    ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_TRIM.out.toulligqc_version.first().ifEmpty(null))
-        //    ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_TRIM.out.fastqc_version.first().ifEmpty(null))
-        //}
+            ch_fastqc_multiqc_postrim = FASTQC_NANOPLOT_POST_TRIM.out.fastqc_multiqc.ifEmpty([])
+            ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_TRIM.out.nanoplot_version.first().ifEmpty(null))
+            ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_TRIM.out.toulligqc_version.first().ifEmpty(null))
+            ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_TRIM.out.fastqc_version.first().ifEmpty(null))
+        }
     } else {
         //ch_zipped_reads = ch_cat_fastq
         ch_trimmed_reads_combined = ch_unzipped_fastqs
@@ -337,18 +337,6 @@ workflow SCNANOSEQ {
     ch_preextract_fastq = PREEXTRACT_FASTQ.out.extracted_fastq
 
     
-    //
-    // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - post-extract QC
-    //
-    //ch_fastqc_multiqc_postextract = Channel.empty()
-    //if (!params.skip_qc){
-    //    FASTQC_NANOPLOT_POST_EXTRACT ( ch_extracted_fastq, params.skip_nanoplot, params.skip_toulligqc, params.skip_fastqc )
-
-    //    ch_fastqc_multiqc_postextract = FASTQC_NANOPLOT_POST_EXTRACT.out.fastqc_multiqc.ifEmpty([])
-    //    ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_EXTRACT.out.nanoplot_version.first().ifEmpty(null))
-    //    ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_EXTRACT.out.toulligqc_version.first().ifEmpty(null))
-    //    ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_EXTRACT.out.fastqc_version.first().ifEmpty(null))
-    //}
     
     //
     // MODULE: Correct Barcodes
@@ -384,6 +372,19 @@ workflow SCNANOSEQ {
         ZIP_TRIM (ch_cat_preextract_fastq, "filtered" )
         ch_extracted_fastq = ZIP_TRIM.out.archive
         ch_versions = ch_versions.mix(ZIP_TRIM.out.versions)
+    }
+    
+    //
+    // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - post-extract QC
+    //
+    ch_fastqc_multiqc_postextract = Channel.empty()
+    if (!params.skip_qc){
+        FASTQC_NANOPLOT_POST_EXTRACT ( ch_extracted_fastq, params.skip_nanoplot, params.skip_toulligqc, params.skip_fastqc )
+
+        ch_fastqc_multiqc_postextract = FASTQC_NANOPLOT_POST_EXTRACT.out.fastqc_multiqc.ifEmpty([])
+        ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_EXTRACT.out.nanoplot_version.first().ifEmpty(null))
+        ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_EXTRACT.out.toulligqc_version.first().ifEmpty(null))
+        ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_EXTRACT.out.fastqc_version.first().ifEmpty(null))
     }
 
     //
@@ -669,7 +670,7 @@ workflow SCNANOSEQ {
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
 
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_fastqc_multiqc_postrim.collect().ifEmpty([]))
-        //ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_fastqc_multiqc_postextract.collect().ifEmpty([]))
+        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_fastqc_multiqc_postextract.collect().ifEmpty([]))
 
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_minimap_sorted_stats.collect{it[1]}.ifEmpty([]))
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_minimap_sorted_flagstat.collect{it[1]}.ifEmpty([]))
