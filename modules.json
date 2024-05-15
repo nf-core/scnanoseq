@@ -43,7 +43,8 @@
                     "nanoplot": {
                         "branch": "master",
                         "git_sha": "a31407dfaf0cb0d04768d5cb439fc6f4523a6981",
-                        "installed_by": ["modules"]
+                        "installed_by": ["modules"],
+                        "patch": "modules/nf-core/nanoplot/nanoplot.diff"
                     },
                     "rseqc/readdistribution": {
                         "branch": "master",
@@ -89,6 +90,12 @@
                         "branch": "master",
                         "git_sha": "0bd7d2333a88483aa0476acea172e9f5f6dd83bb",
                         "installed_by": ["modules"]
+                    },
+                    "toulligqc": {
+                        "branch": "master",
+                        "git_sha": "061a322293b3487e53f044304710e54cbf657717",
+                        "installed_by": ["modules"],
+                        "patch": "modules/nf-core/toulligqc/toulligqc.diff"
                     },
                     "umitools/dedup": {
                         "branch": "master",
