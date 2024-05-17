@@ -14,7 +14,7 @@ process SPLIT_FILE {
 
     output:
     // TODO: Make this more generalizable. Gunzip probably a good example
-    tuple val(meta), path("*.fastq"), emit: split_files
+    tuple val(meta), path("*$file_ext"), emit: split_files
     path "versions.yml"             , emit: versions
 
     when:

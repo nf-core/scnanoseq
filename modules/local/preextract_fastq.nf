@@ -1,7 +1,7 @@
 process PREEXTRACT_FASTQ {
     tag "$meta.id"
-    label 'process_high'
-    stageInMode 'copy'
+    label 'process_low'
+    //stageInMode 'copy'
 
     conda "conda-forge::regex=2022.1.18 conda-forge::biopython=1.79"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -13,8 +13,8 @@ process PREEXTRACT_FASTQ {
     val bc_format
 
     output:
-    tuple val(meta), path("*.R1.fastq.gz"), emit: r1_reads
-    tuple val(meta), path("*.R2.fastq.gz"), emit: r2_reads
+    tuple val(meta), path("*.putative_bc_umi.tsv"), emit: barcode_info
+    tuple val(meta), path("*.extracted.fastq"), emit: extracted_fastq 
     path "versions.yml"                , emit: versions
 
     when:
@@ -25,10 +25,13 @@ process PREEXTRACT_FASTQ {
     def prefix = task.ext.prefix ?: "${meta.id}"
 
     """
-    pre_extract_barcodes.py -i ${reads} \\
-                            -b ${bc_list} \\
-                            -o ${prefix} \\
-                            -f ${bc_format}
+    pre_extract_barcodes.py \\
+        -i ${reads} \\
+        -b ${bc_list} \\
+        -o ${prefix}.extracted \\
+        -f ${bc_format} \\
+        -t ${task.cpus} \\
+        ${args}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
