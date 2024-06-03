@@ -90,9 +90,9 @@ def parse_arg(argv):
                     Maximum edit distance allowed between a putative barcode and a barcode 
                     for a read/putative barcdoe to be assigned to the barcode. Default: --max-edit-distance {DEFAULT_ASSIGNMENT_ED}
                 
-                --kit-version <v2 or v3>:
-                    Choose from 10X Single Cell 3ʹ gene expression v2 or v3. If using other protocols,
-                    please do not specify this option and specify --full-bc-whitelist instead. By default, 
+                --kit-version <3v2 or 3v3 or 5v2>:
+                    Choose from 10X Single Cell 3ʹ gene expression v2 or v3 or 5' gene expression. If using other
+                    protocols, please do not specify this option and specify --full-bc-whitelist instead. By default, 
                     `--kit_version v3`  will be used if --full-bc-whitelist is not specified.
 
                 --minQ <INT>:
@@ -224,13 +224,9 @@ def parse_arg(argv):
     out_emptydrop_fn = prefix + DEFAULT_EMPTY_DROP_FN
     out_plot_fn = prefix + DEFAULT_KNEE_PLOT_FN
     summary_fn = prefix + DEFAULT_BC_STAT_FN
-    # create output directory if not exist
-    out_dir = os.path.dirname(out_fastq_fn)
-    if out_dir and not os.path.exists(out_dir):
-        os.makedirs(out_dir)
 
-    if kit not in ['v2', 'v3']:
-        helper.err_msg("Error: Invalid value of --kit-version, please choose from v3 or v2") 
+    if kit not in ['3v2', '3v3', '5v2']:
+        helper.err_msg("Error: Invalid value of --kit-version (" + kit + "), please choose from 3v3 or 3v2 or 5v2") 
         sys.exit()
 
     if full_bc_whitelist:
@@ -238,9 +234,9 @@ def parse_arg(argv):
             f'You are using {os.path.basename(full_bc_whitelist)} as the full barcode '\
             'whitelist. Note that the barcodes not listed in the file will never be found.'))
     else:
-        if kit == 'v3':
+        if kit == '3v3':
             full_bc_whitelist = DEFAULT_GRB_WHITELIST_V3
-        elif kit == 'v2':
+        elif kit == '3v2' or kit == '5v2':
             full_bc_whitelist = DEFAULT_GRB_WHITELIST_V2
 
     # Read from args
@@ -311,10 +307,10 @@ def parse_arg(argv):
             full_bc_whitelist, out_raw_bc_fn, out_whitelist_fn, \
             high_sensitivity_mode, batch_size, out_emptydrop_fn, emptydrop_max_count, \
             overwrite, out_plot_fn, do_demultiplexing, max_edit_distance, summary_fn,\
-            minimal_out, do_whitelisting, count_t
+            minimal_out, do_whitelisting, count_t, kit
 
 # Parse fastq -> polyT_adaptor_finder.Read class
-def get_raw_bc_from_reads(reads, min_q=0):
+def get_raw_bc_from_reads(reads, min_q=0, kit=None):
     """
     Get putative BC from each reads from a batch of read (can be defined by batch_iterator function)
 
@@ -348,7 +344,7 @@ def get_raw_bc_from_reads(reads, min_q=0):
         
         # create read object 
         read = polyT_adaptor_finder.Read(read_id = r.id, sequence=str(r.seq), 
-                    phred_score=r.q_letter)    
+                    phred_score=r.q_letter, kit=kit)    
         
 
         read.get_strand_and_raw_bc()
@@ -588,7 +584,7 @@ def main(argv=None):
         high_sensitivity_mode, batch_size, out_emptydrop_fn, \
         emptydrop_max_count, overwrite, out_plot_fn, do_demultiplexing, \
         max_edit_distance, summary_fn,minimal_out, do_whitelisting, \
-        count_t = parse_arg(argv)
+        count_t, kit = parse_arg(argv)
     
     # Start running: Welcome logo
     if not minimal_out:
@@ -610,7 +606,7 @@ def main(argv=None):
     
         rst_futures = helper.multiprocessing_submit(get_raw_bc_from_reads,
                                                 read_batchs, n_process=n_process, 
-                                                min_q=min_phred_score)
+                                                min_q=min_phred_score, kit=kit)
 
         raw_bc_pass_count = defaultdict(int)
 

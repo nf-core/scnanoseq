@@ -145,7 +145,7 @@
                 "barcode_format": {
                     "type": "string",
                     "description": "Specify the format for the barcode+umi",
-                    "enum": ["cellranger_3_prime"],
+                    "enum": ["10X_3v3", "10X_5v2"],
                     "fa_icon": "fas fa-barcode"
                 }
             },
@@ -189,20 +189,13 @@
                     "description": "Run downstream steps on the bam that contains reads that could not be corrected. Do not use this if no whitelist is provided.",
                     "fa_icon": "fas fa-search"
                 },
-                "counts_level": {
-                    "type": "string",
-                    "description": "What level to generate the counts matrix at. Options: 'gene', 'transcript'.",
-                    "enum": ["gene", "transcript", "both"],
-                    "fa_icon": "fas fa-file-csv"
-                },
                 "retain_introns": {
                     "type": "boolean",
                     "default": true,
                     "description": "Indicate whether to include introns in the count matrices",
                     "fa_icon": "fas fa-filter"
                 }
-            },
-            "required": ["counts_level"]
+            }
         },
         "process_skipping_options": {
             "title": "Process skipping options",
