@@ -13,7 +13,7 @@ def umi_lengths = ""
 def blaze_whitelist = ""
 
 // TODO: Move this to a config file
-if (params.barcode_format = "10X_3v3") {
+if (params.barcode_format.equals("10X_3v3")) {
     blaze_whitelist = file("$baseDir/assets/whitelist/3M-february-2018.zip")
 }
 else{
