@@ -30,7 +30,7 @@ def parse_args():
     )
     arg_parser.add_argument(
         "-t", "--threads", type=int, help="The number of threads to use")
-    
+
     args = arg_parser.parse_args()
     return args
 
@@ -75,8 +75,8 @@ def extract_bc_umi(bc_queue, bc_out, r2_out):
 def extract_barcode(input_file, barcode_file, output, bc_format, threads):
     """ Reads in a fastq and BLAZE putative bc file and strip the bc and umi from read """
     bc_queue = queue.Queue(5000)
-    
-    bc_out = open(f"{output}.putative_bc_umi.tsv", "w", encoding="utf-8") 
+
+    bc_out = open(f"{output}.putative_bc_umi.tsv", "w", encoding="utf-8")
     bc_out.write("read_id\tbc\tbc_qual\tumi\tumi_qual\n")
 
     r2_out = open(f"{output}.fastq", "w", encoding="utf-8")
@@ -102,12 +102,12 @@ def extract_barcode(input_file, barcode_file, output, bc_format, threads):
                 bc_queue.put((record.id, barcode, orig_seq, orig_quals))
 
     fastq_in.close()
-    
+
     bc_queue.join()
 
     bc_out.close()
     r2_out.close()
-    
+
 def find_seq_indices(barcode, sequence, qualities):
     """Find the location in the read where the predictoed barcode exists. If
         it cannot be found, reverse-complement the read to find i.

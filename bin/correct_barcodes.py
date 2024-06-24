@@ -71,7 +71,7 @@ def parse_args():
         help="The minimum posterior probability a barcode on the whitelist must have to replace "
         "the barcode detected by the pipeline"
     )
-    
+
     #parser.add_argument(print_header, default=True)
     parser.set_defaults(print_header=True)
 
@@ -126,12 +126,12 @@ def correct_barcode(infile, outfile, whitelist, barcode_count_file, min_post_pro
     Output: None
 
     """
-    
+
     with open(infile, 'r') as infile_h, open(outfile, 'w') as outfile_h:
 
         # Turn the whitelist into a trie, as it allows for very quick access to check for a barcode
         whitelist_trie = read_whitelist(whitelist)
-        
+
         # Turn the barcode abundances into percentages
         bc_probabilities = calculate_bc_ratios(barcode_count_file)
 

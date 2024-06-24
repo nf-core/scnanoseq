@@ -227,7 +227,7 @@ workflow SCNANOSEQ {
         ch_rseqc_bed = UCSC_GENEPREDTOBED.out.bed
         ch_versions = ch_versions.mix(UCSC_GENEPREDTOBED.out.versions)
     }
-    
+
     //
     // MODULE: Unzip fastq
     //
@@ -307,9 +307,9 @@ workflow SCNANOSEQ {
     ch_gt_whitelist = BLAZE.out.whitelist
     ch_whitelist_bc_count = BLAZE.out.bc_count
     ch_versions = ch_versions.mix(BLAZE.out.versions)
-    
+
     ch_multiqc_report = Channel.empty()
-        
+
     ch_split_bc_fastqs = ch_trimmed_reads_combined
     ch_split_bc = ch_putative_bc
     if (params.split_amount > 0) {
@@ -325,20 +325,16 @@ workflow SCNANOSEQ {
         SPLIT_FILE_BC_CSV.out.split_files
             .transpose()
             .set { ch_split_bc }
-
     }
-    
+
     //
     // MODULE: Extract barcodes
     //
-
 
     PREEXTRACT_FASTQ( ch_split_bc_fastqs.join(ch_split_bc), params.barcode_format)
     ch_barcode_info = PREEXTRACT_FASTQ.out.barcode_info
     ch_preextract_fastq = PREEXTRACT_FASTQ.out.extracted_fastq
 
-    
-    
     //
     // MODULE: Correct Barcodes
     //
@@ -350,10 +346,10 @@ workflow SCNANOSEQ {
     )
     ch_corrected_bc_file = CORRECT_BARCODES.out.corrected_bc_info
     ch_versions = ch_versions.mix(CORRECT_BARCODES.out.versions)
-    
+
     ch_extracted_fastq = ch_preextract_fastq
     ch_corrected_bc_info = ch_corrected_bc_file
-    
+
     if (params.split_amount > 0){
         //
         // MODULE: Cat Preextract
@@ -366,7 +362,7 @@ workflow SCNANOSEQ {
         //
         CAT_CAT_BARCODE (ch_corrected_bc_file.groupTuple())
         ch_corrected_bc_info = CAT_CAT_BARCODE.out.file_out
-        
+
         //
         // MODULE: Zip the reads
         //
@@ -374,7 +370,7 @@ workflow SCNANOSEQ {
         ch_extracted_fastq = ZIP_TRIM.out.archive
         ch_versions = ch_versions.mix(ZIP_TRIM.out.versions)
     }
-    
+
     //
     // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - post-extract QC
     //
