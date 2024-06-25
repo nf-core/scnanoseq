@@ -55,6 +55,11 @@ top_modules:
         - "*extracted*fastqc*"
 
 custom_content:
+  read_counts_section:
+    parent_id: read_counts_section
+    order:
+        read_counts_module
+
   seurat_section:
     parent_id: seurat_section
     order:
@@ -62,6 +67,14 @@ custom_content:
       - gene_seurat_stats_module
 
 custom_data:
+  read_counts_module:
+    parent_id: read_counts_section
+    parent_name: "Read Counts Section"
+    parent_description: "Read counts of samples as they progress through the pipeline"
+    section_name: "Read Counts"
+    file_format: "csv"
+    plot_type: "table"
+  
   gene_seurat_stats_module:
     parent_id: seurat_section
     parent_name: "Seurat Section"
@@ -87,3 +100,5 @@ sp:
     fn: "gene.*.tsv"
   transcript_seurat_stats_module:
     fn: "transcript.*.tsv"
+  read_counts_module:
+    fn: "read_counts.csv"

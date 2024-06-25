@@ -56,6 +56,7 @@ include { SPLIT_FILE as SPLIT_FILE_BC_CSV                                       
 include { PIGZ as ZIP_TRIM                                         } from "../modules/local/pigz"
 include { BLAZE                                                    } from "../modules/local/blaze"
 include { PREEXTRACT_FASTQ                                         } from "../modules/local/preextract_fastq.nf"
+include { READ_COUNTS                                              } from "../modules/local/read_counts.nf"
 include { PAFTOOLS                                                 } from "../modules/local/paftools"
 include { MINIMAP2_INDEX                                           } from "../modules/local/minimap2_index"
 include { MINIMAP2_ALIGN                                           } from "../modules/local/minimap2_align"
@@ -375,6 +376,7 @@ workflow SCNANOSEQ {
     // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - post-extract QC
     //
     ch_fastqc_multiqc_postextract = Channel.empty()
+    ch_read_counts = Channel.empty()
     if (!params.skip_qc){
         FASTQC_NANOPLOT_POST_EXTRACT ( ch_extracted_fastq, params.skip_nanoplot, params.skip_toulligqc, params.skip_fastqc )
 
@@ -382,6 +384,17 @@ workflow SCNANOSEQ {
         ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_EXTRACT.out.nanoplot_version.first().ifEmpty(null))
         ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_EXTRACT.out.toulligqc_version.first().ifEmpty(null))
         ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_EXTRACT.out.fastqc_version.first().ifEmpty(null))
+
+        if (!params.skip_fastqc){
+
+            READ_COUNTS (
+                ch_fastqc_multiqc_pretrim.collect{it[0]},
+                ch_fastqc_multiqc_postrim.collect{it[0]}.ifEmpty([]),
+                ch_fastqc_multiqc_postextract.collect{it[0]},
+                ch_corrected_bc_info.collect{it[1]})
+
+            ch_read_counts = READ_COUNTS.out.read_counts
+        }
     }
 
     //
@@ -682,7 +695,7 @@ workflow SCNANOSEQ {
 
         // see issue #12 (too many files when split by chr)
         //ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_dedup_log.collect{it[1]}.ifEmpty([]))
-
+        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_read_counts.collect().ifEmpty([]))
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_gene_stats_combined.collect().ifEmpty([]))
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_transcript_stats_combined.collect().ifEmpty([]))
 
