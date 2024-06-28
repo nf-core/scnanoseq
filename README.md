@@ -38,20 +38,19 @@ On release, automated continuous integration tests run the pipeline on a full-si
 6. Extract barcodes. Consists of the following steps:
    1. Parse FASTQ files into R1 reads containing barcode and UMI and R2 reads containing sequencing without barcode and UMI (custom script `./bin/pre_extract_barcodes.py`)
    2. Re-zip FASTQs ([`pigz`](https://github.com/madler/pigz))
-7. Post-extraction QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [`NanoPlot`](https://github.com/wdecoster/NanoPlot) and [`ToulligQC`](https://github.com/GenomiqueENS/toulligQC))
-8. Alignment ([`minimap2`](https://github.com/lh3/minimap2))
-9. SAMtools processing including ([`SAMtools`](http://www.htslib.org/doc/samtools.html)):
+7. Barcode correction (custom script `./bin/correct_barcodes.py`)
+8. Post-extraction QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [`NanoPlot`](https://github.com/wdecoster/NanoPlot) and [`ToulligQC`](https://github.com/GenomiqueENS/toulligQC))
+9. Alignment ([`minimap2`](https://github.com/lh3/minimap2))
+10. SAMtools processing including ([`SAMtools`](http://www.htslib.org/doc/samtools.html)):
    1. SAM to BAM
    2. Filtering of mapped only reads
    3. Sorting, indexing and obtain mapping metrics
-10. Post-mapping QC in unfiltered BAM files ([`NanoComp`](https://github.com/wdecoster/nanocomp), [`RSeQC`](https://rseqc.sourceforge.net/))
-11. Barcode tagging with read quality, BC, BC quality, UMI, and UMI quality (custom script `./bin/tag_barcodes.py`)
-12. Barcode correction (custom script `./bin/correct_barcodes.py`)
-13. Post correction QC for corrected bams ([`SAMtools`](http://www.htslib.org/doc/samtools.html))
-14. UMI-based deduplication [`UMI-tools`](https://github.com/CGATOxford/UMI-tools)
-15. Gene and transcript level matrices generation. [`IsoQuant`](https://github.com/ablab/IsoQuant)
-16. Preliminary matrix QC ([`Seurat`](https://github.com/satijalab/seurat))
-17. Compile QC for raw reads, trimmed reads, pre and post-extracted reads, mapping metrics and preliminary single-cell/nuclei QC ([`MultiQC`](http://multiqc.info/))
+11. Post-mapping QC in unfiltered BAM files ([`NanoComp`](https://github.com/wdecoster/nanocomp), [`RSeQC`](https://rseqc.sourceforge.net/))
+12. Barcode tagging with read quality, BC, BC quality, UMI, and UMI quality (custom script `./bin/tag_barcodes.py`)
+13. UMI-based deduplication [`UMI-tools`](https://github.com/CGATOxford/UMI-tools)
+14. Gene and transcript level matrices generation. [`IsoQuant`](https://github.com/ablab/IsoQuant)
+15. Preliminary matrix QC ([`Seurat`](https://github.com/satijalab/seurat))
+16. Compile QC for raw reads, trimmed reads, pre and post-extracted reads, mapping metrics and preliminary single-cell/nuclei QC ([`MultiQC`](http://multiqc.info/))
 
 ## Usage
 
