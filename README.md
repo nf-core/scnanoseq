@@ -114,12 +114,17 @@ process
     }   
 }
 
+//NOTE: reminder that params set in modules.config need to be copied over to a custom config
 process
 {
     withName: '.*:BLAZE'
     {
-        cpus = 24
-        ext.args = '--threads 30'
+        ext.args = {
+            [
+                "--threads 30",
+                params.barcode_format == "10X_3v3" ? "--kit-version 3v3" : params.barcode_format == "10X_5v2" ? "--kit-version 5v2" : ""
+            ].join(' ').trim()
+        }
     }
 }
 
