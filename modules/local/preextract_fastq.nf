@@ -14,7 +14,7 @@ process PREEXTRACT_FASTQ {
 
     output:
     tuple val(meta), path("*.putative_bc_umi.tsv"), emit: barcode_info
-    tuple val(meta), path("*.extracted.fastq"), emit: extracted_fastq 
+    tuple val(meta), path("*.extracted.fastq"), emit: extracted_fastq
     path "versions.yml"                , emit: versions
 
     when:

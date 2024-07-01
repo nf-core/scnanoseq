@@ -13,10 +13,11 @@ def umi_lengths = ""
 def blaze_whitelist = ""
 
 // TODO: Move this to a config file
-if (params.barcode_format = "cellranger_3_prime") {
+if (params.barcode_format.equals("10X_3v3")) {
     blaze_whitelist = file("$baseDir/assets/whitelist/3M-february-2018.zip")
-    bc_length = "16"
-    umi_length = "12"
+}
+else{
+    blaze_whitelist = file("$baseDir/assets/whitelist/737K-august-2016.txt.zip")
 }
 
 if (params.whitelist) {
@@ -55,6 +56,7 @@ include { SPLIT_FILE as SPLIT_FILE_BC_CSV                                       
 include { PIGZ as ZIP_TRIM                                         } from "../modules/local/pigz"
 include { BLAZE                                                    } from "../modules/local/blaze"
 include { PREEXTRACT_FASTQ                                         } from "../modules/local/preextract_fastq.nf"
+include { READ_COUNTS                                              } from "../modules/local/read_counts.nf"
 include { PAFTOOLS                                                 } from "../modules/local/paftools"
 include { MINIMAP2_INDEX                                           } from "../modules/local/minimap2_index"
 include { MINIMAP2_ALIGN                                           } from "../modules/local/minimap2_align"
@@ -226,7 +228,7 @@ workflow SCNANOSEQ {
         ch_rseqc_bed = UCSC_GENEPREDTOBED.out.bed
         ch_versions = ch_versions.mix(UCSC_GENEPREDTOBED.out.versions)
     }
-    
+
     //
     // MODULE: Unzip fastq
     //
@@ -306,9 +308,9 @@ workflow SCNANOSEQ {
     ch_gt_whitelist = BLAZE.out.whitelist
     ch_whitelist_bc_count = BLAZE.out.bc_count
     ch_versions = ch_versions.mix(BLAZE.out.versions)
-    
+
     ch_multiqc_report = Channel.empty()
-        
+
     ch_split_bc_fastqs = ch_trimmed_reads_combined
     ch_split_bc = ch_putative_bc
     if (params.split_amount > 0) {
@@ -324,20 +326,16 @@ workflow SCNANOSEQ {
         SPLIT_FILE_BC_CSV.out.split_files
             .transpose()
             .set { ch_split_bc }
-
     }
-    
+
     //
     // MODULE: Extract barcodes
     //
-
 
     PREEXTRACT_FASTQ( ch_split_bc_fastqs.join(ch_split_bc), params.barcode_format)
     ch_barcode_info = PREEXTRACT_FASTQ.out.barcode_info
     ch_preextract_fastq = PREEXTRACT_FASTQ.out.extracted_fastq
 
-    
-    
     //
     // MODULE: Correct Barcodes
     //
@@ -349,10 +347,10 @@ workflow SCNANOSEQ {
     )
     ch_corrected_bc_file = CORRECT_BARCODES.out.corrected_bc_info
     ch_versions = ch_versions.mix(CORRECT_BARCODES.out.versions)
-    
+
     ch_extracted_fastq = ch_preextract_fastq
     ch_corrected_bc_info = ch_corrected_bc_file
-    
+
     if (params.split_amount > 0){
         //
         // MODULE: Cat Preextract
@@ -365,7 +363,7 @@ workflow SCNANOSEQ {
         //
         CAT_CAT_BARCODE (ch_corrected_bc_file.groupTuple())
         ch_corrected_bc_info = CAT_CAT_BARCODE.out.file_out
-        
+
         //
         // MODULE: Zip the reads
         //
@@ -373,11 +371,12 @@ workflow SCNANOSEQ {
         ch_extracted_fastq = ZIP_TRIM.out.archive
         ch_versions = ch_versions.mix(ZIP_TRIM.out.versions)
     }
-    
+
     //
     // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - post-extract QC
     //
     ch_fastqc_multiqc_postextract = Channel.empty()
+    ch_read_counts = Channel.empty()
     if (!params.skip_qc){
         FASTQC_NANOPLOT_POST_EXTRACT ( ch_extracted_fastq, params.skip_nanoplot, params.skip_toulligqc, params.skip_fastqc )
 
@@ -385,6 +384,17 @@ workflow SCNANOSEQ {
         ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_EXTRACT.out.nanoplot_version.first().ifEmpty(null))
         ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_EXTRACT.out.toulligqc_version.first().ifEmpty(null))
         ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_EXTRACT.out.fastqc_version.first().ifEmpty(null))
+
+        if (!params.skip_fastqc){
+
+            READ_COUNTS (
+                ch_fastqc_multiqc_pretrim.collect{it[0]},
+                ch_fastqc_multiqc_postrim.collect{it[0]}.ifEmpty([]),
+                ch_fastqc_multiqc_postextract.collect{it[0]},
+                ch_corrected_bc_info.collect{it[1]})
+
+            ch_read_counts = READ_COUNTS.out.read_counts
+        }
     }
 
     //
@@ -685,7 +695,7 @@ workflow SCNANOSEQ {
 
         // see issue #12 (too many files when split by chr)
         //ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_dedup_log.collect{it[1]}.ifEmpty([]))
-
+        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_read_counts.collect().ifEmpty([]))
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_gene_stats_combined.collect().ifEmpty([]))
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_transcript_stats_combined.collect().ifEmpty([]))
 

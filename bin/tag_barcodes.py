@@ -79,12 +79,12 @@ def tag_bams(in_bam, bc_info, out_bam):
     with pysam.AlignmentFile(in_bam, "rb") as fh_in_bam, pysam.AlignmentFile(
         out_bam, "wb", template=fh_in_bam
     ) as fh_out_bam:
-        
+
         umi_bc_infos = read_bc_info(bc_info)
 
         for read in fh_in_bam:
             parsed_read_name = read.query_name.split("_")[0]
-            
+
             if parsed_read_name in umi_bc_infos:
                 umi_bc_info = umi_bc_infos[parsed_read_name]
 
