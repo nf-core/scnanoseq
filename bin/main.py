@@ -359,7 +359,7 @@ def get_raw_bc_from_reads(reads, min_q=0, kit=None):
         if read.raw_bc_min_q and read.raw_bc_min_q >= min_q:
             raw_bc.append(read.raw_bc)
 
-        if read.raw_bc_min_q and read.raw_bc_min_q < min_q: 
+        if read.raw_bc_min_q and read.raw_bc_min_q < min_q:
             raw_bc_pass.append(100) #tag for low quality putative bc
         else:
             raw_bc_pass.append(read.adaptor_polyT_pass)

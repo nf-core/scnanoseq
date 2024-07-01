@@ -110,7 +110,7 @@ class Read(object):
             # convert to np_array T -> 1 and ACG -> 0
             read_code = np.array([int(x == 'T') for x in seq])
             T_prop = helper.sliding_window_mean(read_code, poly_T_len)
-            return np.where(T_prop >= min_match_prop)[0] 
+            return np.where(T_prop >= min_match_prop)[0]
 
         strand = self._strand if not strand else strand
         read = self.seq if not read else read
@@ -348,7 +348,7 @@ class Read(object):
             index of the end of the polyT, negative if it's polyA strand
         """
 
- 
+
         umi_end_idx = self.adator_trimming_idx
 
         if umi_end_idx is None:
@@ -423,4 +423,4 @@ def main():
 
 if __name__ == '__main__':
     main()
- 
+
