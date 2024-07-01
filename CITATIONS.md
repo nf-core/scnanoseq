@@ -50,7 +50,7 @@
 
 - [ToulligQC](https://github.com/GenomiqueENS/toulligQC)
 
-  >Karine Dias, Bérengère Laffay, Lionel Ferrato-Berberian, Sophie Lemoine, Ali Hamraoui, Morgane Thomas-Chollier, Stéphane Le Crom and Laurent Jourdren.
+  > Karine Dias, Bérengère Laffay, Lionel Ferrato-Berberian, Sophie Lemoine, Ali Hamraoui, Morgane Thomas-Chollier, Stéphane Le Crom and Laurent Jourdren.
 
 - [UMI-tools](https://pubmed.ncbi.nlm.nih.gov/28100584/)
 

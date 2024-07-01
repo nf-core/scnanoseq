@@ -29,7 +29,7 @@ On release, automated continuous integration tests run the pipeline on a full-si
 
 ![scnanoseq diagram](assets/scnanoseq_diagram.png)
 
-1. Raw read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [`NanoPlot`](https://github.com/wdecoster/NanoPlot),  [`NanoComp`](https://github.com/wdecoster/nanocomp) and [`ToulligQC`](https://github.com/GenomiqueENS/toulligQC))
+1. Raw read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [`NanoPlot`](https://github.com/wdecoster/NanoPlot), [`NanoComp`](https://github.com/wdecoster/nanocomp) and [`ToulligQC`](https://github.com/GenomiqueENS/toulligQC))
 2. Unzip and split FastQ ([`gunzip`](https://linux.die.net/man/1/gunzip))
    1. Optional: Split fastq for faster processing ([`split`](https://linux.die.net/man/1/split))
 3. Trim and filter reads. ([`Nanofilt`](https://github.com/wdecoster/nanofilt))
@@ -41,11 +41,8 @@ On release, automated continuous integration tests run the pipeline on a full-si
 7. Barcode correction (custom script `./bin/correct_barcodes.py`)
 8. Post-extraction QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [`NanoPlot`](https://github.com/wdecoster/NanoPlot) and [`ToulligQC`](https://github.com/GenomiqueENS/toulligQC))
 9. Alignment ([`minimap2`](https://github.com/lh3/minimap2))
-10. SAMtools processing including ([`SAMtools`](http://www.htslib.org/doc/samtools.html)):
-   1. SAM to BAM
-   2. Filtering of mapped only reads
-   3. Sorting, indexing and obtain mapping metrics
-11. Post-mapping QC in unfiltered BAM files ([`NanoComp`](https://github.com/wdecoster/nanocomp), [`RSeQC`](https://rseqc.sourceforge.net/))
+10. Post-alignment filtering of mapped reads and gathering mapping QC ([`SAMtools`](http://www.htslib.org/doc/samtools.html))
+11. Post-alignment QC in unfiltered BAM files ([`NanoComp`](https://github.com/wdecoster/nanocomp), [`RSeQC`](https://rseqc.sourceforge.net/))
 12. Barcode tagging with read quality, BC, BC quality, UMI, and UMI quality (custom script `./bin/tag_barcodes.py`)
 13. UMI-based deduplication [`UMI-tools`](https://github.com/CGATOxford/UMI-tools)
 14. Gene and transcript level matrices generation. [`IsoQuant`](https://github.com/ablab/IsoQuant)
@@ -110,9 +107,9 @@ If you experience any issues, please make sure to submit an issue above. However
 process
 {
     withName: '.*:.*FASTQC.*'
-    {   
+    {
         cpus = 20
-    }   
+    }
 }
 
 //NOTE: reminder that params set in modules.config need to be copied over to a custom config
