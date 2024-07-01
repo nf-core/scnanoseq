@@ -19,45 +19,60 @@
 
 ## Introduction
 
-**nf-core/scnanoseq** is a bioinformatics pipeline that ...
+**nf-core/scnanoseq** is a bioinformatics best-practice analysis pipeline for 10X Genomics single-cell/nuclei RNA-seq for data derived from Oxford Nanopore Q20+ chemistry ([R10.4 flow cells (>Q20)](https://nanoporetech.com/about-us/news/oxford-nanopore-announces-technology-updates-nanopore-community-meeting)). Due to the expectation of >Q20 quality, the input data for the pipeline is not dependent on Illumina paired data. Please note `scnanoseq` can also process Oxford data with older chemistry, but we encourage usage of the Q20+ chemistry.
 
-<!-- TODO nf-core:
-   Complete this sentence with a 2-3 sentence summary of what types of data the pipeline ingests, a brief overview of the
-   major pipeline sections and the types of output it produces. You're giving an overview to someone new
-   to nf-core here, in 15-20 seconds. For an example, see https://github.com/nf-core/rnaseq/blob/master/README.md#introduction
--->
+The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It uses Docker/Singularity containers making installation trivial and results highly reproducible. The [Nextflow DSL2](https://www.nextflow.io/docs/latest/dsl2.html) implementation of this pipeline uses one container per process which makes it much easier to maintain and update software dependencies. Where possible, these processes have been submitted to and installed from [nf-core/modules](https://github.com/nf-core/modules) in order to make them available to all nf-core pipelines, and to everyone within the Nextflow community!
 
-<!-- TODO nf-core: Include a figure that guides the user through the major workflow steps. Many nf-core
-     workflows use the "tube map" design for that. See https://nf-co.re/docs/contributing/design_guidelines#examples for examples.   -->
-<!-- TODO nf-core: Fill in short bullet-pointed list of the default steps in the pipeline -->
+On release, automated continuous integration tests run the pipeline on a full-sized dataset on the AWS cloud infrastructure. This ensures that the pipeline runs on AWS, has sensible resource allocation defaults set to run on real-world datasets, and permits the persistent storage of results to benchmark between pipeline releases and other analysis sources. The results obtained from the full-sized test can be viewed on the [nf-core website](https://nf-co.re/scnanoseq/results).
 
-1. Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/))
-2. Present QC for raw reads ([`MultiQC`](http://multiqc.info/))
+## Pipeline summary
+
+![scnanoseq diagram](assets/scnanoseq_diagram.png)
+
+1. Raw read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [`NanoPlot`](https://github.com/wdecoster/NanoPlot),  [`NanoComp`](https://github.com/wdecoster/nanocomp) and [`ToulligQC`](https://github.com/GenomiqueENS/toulligQC))
+2. Unzip and split FastQ ([`gunzip`](https://linux.die.net/man/1/gunzip))
+   1. Optional: Split fastq for faster processing ([`split`](https://linux.die.net/man/1/split))
+3. Trim and filter reads. ([`Nanofilt`](https://github.com/wdecoster/nanofilt))
+4. Post trim QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [`NanoPlot`](https://github.com/wdecoster/NanoPlot) and [`ToulligQC`](https://github.com/GenomiqueENS/toulligQC))
+5. Barcode detection using a custom whitelist or 10X whitelist. [`BLAZE`](https://github.com/shimlab/BLAZE)
+6. Extract barcodes. Consists of the following steps:
+   1. Parse FASTQ files into R1 reads containing barcode and UMI and R2 reads containing sequencing without barcode and UMI (custom script `./bin/pre_extract_barcodes.py`)
+   2. Re-zip FASTQs ([`pigz`](https://github.com/madler/pigz))
+7. Barcode correction (custom script `./bin/correct_barcodes.py`)
+8. Post-extraction QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [`NanoPlot`](https://github.com/wdecoster/NanoPlot) and [`ToulligQC`](https://github.com/GenomiqueENS/toulligQC))
+9. Alignment ([`minimap2`](https://github.com/lh3/minimap2))
+10. SAMtools processing including ([`SAMtools`](http://www.htslib.org/doc/samtools.html)):
+   1. SAM to BAM
+   2. Filtering of mapped only reads
+   3. Sorting, indexing and obtain mapping metrics
+11. Post-mapping QC in unfiltered BAM files ([`NanoComp`](https://github.com/wdecoster/nanocomp), [`RSeQC`](https://rseqc.sourceforge.net/))
+12. Barcode tagging with read quality, BC, BC quality, UMI, and UMI quality (custom script `./bin/tag_barcodes.py`)
+13. UMI-based deduplication [`UMI-tools`](https://github.com/CGATOxford/UMI-tools)
+14. Gene and transcript level matrices generation. [`IsoQuant`](https://github.com/ablab/IsoQuant)
+15. Preliminary matrix QC ([`Seurat`](https://github.com/satijalab/seurat))
+16. Compile QC for raw reads, trimmed reads, pre and post-extracted reads, mapping metrics and preliminary single-cell/nuclei QC ([`MultiQC`](http://multiqc.info/))
 
 ## Usage
 
 > [!NOTE]
 > If you are new to Nextflow and nf-core, please refer to [this page](https://nf-co.re/docs/usage/installation) on how to set-up Nextflow. Make sure to [test your setup](https://nf-co.re/docs/usage/introduction#how-to-run-a-pipeline) with `-profile test` before running the workflow on actual data.
 
-<!-- TODO nf-core: Describe the minimum required steps to execute the pipeline, e.g. how to prepare samplesheets.
-     Explain what rows and columns represent. For instance (please edit as appropriate):
-
 First, prepare a samplesheet with your input data that looks as follows:
 
 `samplesheet.csv`:
 
 ```csv
-sample,fastq_1,fastq_2
-CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
+sample,fastq,cell_count
+CONTROL_REP1,AEG588A1_S1.fastq.gz,5000
+CONTROL_REP1,AEG588A1_S2.fastq.gz,5000
+CONTROL_REP2,AEG588A2_S1.fastq.gz,5000
+CONTROL_REP3,AEG588A3_S1.fastq.gz,5000
+CONTROL_REP4,AEG588A4_S1.fastq.gz,5000
+CONTROL_REP4,AEG588A4_S2.fastq.gz,5000
+CONTROL_REP4,AEG588A4_S3.fastq.gz,5000
 ```
 
-Each row represents a fastq file (single-end) or a pair of fastq files (paired end).
-
--->
-
-Now, you can run the pipeline using:
-
-<!-- TODO nf-core: update the following command to include all required parameters for a minimal example -->
+Each row represents a single-end fastq file. Rows with the same sample identifier are considered technical replicates and will be automatically merged. `cell_count` refers to the expected number of cells you expect.
 
 ```bash
 nextflow run nf-core/scnanoseq \
@@ -78,13 +93,77 @@ To see the results of an example test run with a full size dataset refer to the 
 For more details about the output files and reports, please refer to the
 [output documentation](https://nf-co.re/scnanoseq/output).
 
+This pipeline produces feature barcode matrices at both the gene and transcript level and can retain introns within the counts themselves. These files are able to be ingested directly by most packages used for downstream analyses such as `Seurat`. In addition the pipeline produces a number of quality control metrics to ensure that the samples processed meet expected metrics for single-cell/nuclei data.
+
+## Troubleshooting
+
+If you experience any issues, please make sure to submit an issue above. However, some resolutions for common issues will be noted below:
+
+- Due to the nature of the data this pipeline analyzes, some tools can experience increased runtimes. For some of the custom tools made for this pipeline (`preextract_fastq.py` and `correct_barcodes.py`), we have leveraged the splitting that is done via the `split_amount` param to decrease their overall runtimes. The `split_amount` parameter will split the input fastqs into a number of fastq files that each have a number of lines based on the value used for this parameter. As a result, it is important not to set this parameter to be too low as it would cause the creation of a large number of files the pipeline will be processed. While this value can be highly dependent on the data, a good starting point for an analysis would be to set this value to `500000`. If you find that `PREEXTRACT_FASTQ` and `CORRECT_BARCODES` are still taking long amounts of time to run, it would be worth reducing this parameter to `200000` or `100000`, but keeping the value on the order of hundred of thousands or tens of thousands should help with with keeping the total number of processes minimal.
+- One issue that has been observed is a recurrent node failure on slurm clusters that does seem to be related to submission of nextflow jobs. This issue is not related to this pipeline itself, but rather to nextflow itself. Our reserach computing are currently working on a resolution. But we have two methods that appear to help overcome should this issue arise:
+  1. The first is to create a custom config that increases the memory request for the job that failed. This may take a couple attempts to find the correct requests, but we have noted that there does appear to be a memory issue occassionally with this errors.
+  2. The second resolution is to request an interactive session with a decent amount of time and memory and cpus in order to run the pipeline on the single node. Note that this will take time as there will be minimal parallelization, but this does seem to resolve the issue.
+- We acknowledge that analyzing PromethION is a common use case for this pipeline. Currently, the pipeline has been developed with defaults to analyze GridION and average sized PromethION data. For cases, where jobs have failed due for larger PromethION datasets, the defaults have been overwritten by a custom configuation file (provided by the `-c` Nextflow option) where resources were increased (substantially in some cases). Below are some of the overrides we have used, while these amounts may not work on every dataset, these will hopefully at least note which processes will need to have their resources increased:
+
+```
+
+process
+{
+    withName: '.*:.*FASTQC.*'
+    {   
+        cpus = 20
+    }   
+}
+
+//NOTE: reminder that params set in modules.config need to be copied over to a custom config
+process
+{
+    withName: '.*:BLAZE'
+    {
+        ext.args = {
+            [
+                "--threads 30",
+                params.barcode_format == "10X_3v3" ? "--kit-version 3v3" : params.barcode_format == "10X_5v2" ? "--kit-version 5v2" : ""
+            ].join(' ').trim()
+        }
+    }
+}
+
+process
+{
+    withName: '.*:SAMTOOLS_SORT'
+    {
+        cpus = 20
+    }
+}
+
+process
+{
+    withName: '.*:MINIMAP2_ALIGN'
+    {
+        cpus = 20
+    }
+}
+
+process
+{
+    withName: '.*:ISOQUANT'
+    {
+        cpus = 40
+        time = '135.h'
+    }
+}
+```
+
 ## Credits
 
-nf-core/scnanoseq was originally written by Austyn Trull, Lara Ianov.
+nf-core/scnanoseq was originally written by [Austyn Trull](https://github.com/atrull314), and [Dr. Lara Ianov](https://github.com/lianov).
 
-We thank the following people for their extensive assistance in the development of this pipeline:
+We would also like to thank the following people and groups for their support, including financial support:
 
-<!-- TODO nf-core: If applicable, make list of people who have also contributed -->
+- Dr. Elizabeth Worthey
+- University of Alabama at Birmingham Biological Data Science Core (U-BDS), RRID:SCR_021766, https://github.com/U-BDS
+- Support from: 3P30CA013148-48S8
 
 ## Contributions and Support
 
@@ -96,8 +175,6 @@ For further information or help, don't hesitate to get in touch on the [Slack `#
 
 <!-- TODO nf-core: Add citation for pipeline after first release. Uncomment lines below and update Zenodo doi and badge at the top of this file. -->
 <!-- If you use nf-core/scnanoseq for your analysis, please cite it using the following doi: [10.5281/zenodo.XXXXXX](https://doi.org/10.5281/zenodo.XXXXXX) -->
-
-<!-- TODO nf-core: Add bibliography of tools and data used in your pipeline -->
 
 An extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](CITATIONS.md) file.
 

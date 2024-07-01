@@ -65,6 +65,20 @@
                     "help_text": "This parameter is *mandatory* if `--genome` is not specified. If you don't have a BWA index available this will be generated for you automatically. Combine with `--save_reference` to save BWA index for future runs.",
                     "fa_icon": "far fa-file-code"
                 },
+                "gtf": {
+                    "type": "string",
+                    "fa_icon": "far fa-file-code",
+                    "description": "Path to GTF file.",
+                    "format": "file-path"
+                },
+                "igenomes_base": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "description": "Directory / URL base for iGenomes references.",
+                    "default": "s3://ngi-igenomes/igenomes",
+                    "fa_icon": "fas fa-cloud-download-alt",
+                    "hidden": true
+                },
                 "igenomes_ignore": {
                     "type": "boolean",
                     "description": "Do not load the iGenomes reference config.",
@@ -72,7 +86,181 @@
                     "hidden": true,
                     "help_text": "Do not load `igenomes.config` when running the pipeline. You may choose this option if you observe clashes between custom parameters and those supplied in `igenomes.config`."
                 }
+            },
+            "required": ["fasta", "gtf"]
+        },
+        "fastq_options": {
+            "title": "Fastq options",
+            "type": "object",
+            "description": "Options related to processing fastqs",
+            "default": "",
+            "fa_icon": "fas fa-file",
+            "properties": {
+                "split_amount": {
+                    "type": "integer",
+                    "description": "The amount of lines to split  the fastq into (Default: 0)",
+                    "default": 0,
+                    "fa_icon": "fas fa-cut"
+                }
             }
+        },
+        "read_trimming_options": {
+            "title": "Read trimming options",
+            "type": "object",
+            "description": "Options to choose trimming criteria and software.",
+            "default": "",
+            "properties": {
+                "min_length": {
+                    "type": "integer",
+                    "default": 500,
+                    "description": "Choose minimum read length.",
+                    "fa_icon": "fas fa-cut"
+                },
+                "min_q_score": {
+                    "type": "integer",
+                    "default": 10,
+                    "description": "Choose minimum average read quality score.",
+                    "fa_icon": "fas fa-cut"
+                },
+                "skip_trimming": {
+                    "type": "boolean",
+                    "description": "Skip quality trimming step.",
+                    "fa_icon": "fas fa-forward"
+                }
+            },
+            "fa_icon": "fas fa-cut"
+        },
+        "cell_barcode_options": {
+            "title": "Cell barcode options",
+            "type": "object",
+            "description": "Options related to the barcode and umis.",
+            "default": "",
+            "properties": {
+                "whitelist": {
+                    "type": "string",
+                    "description": "The file containing a list of barcodes.",
+                    "format": "file-path",
+                    "fa_icon": "far fa-file-alt"
+                },
+                "barcode_format": {
+                    "type": "string",
+                    "description": "Specify the format for the barcode+umi",
+                    "enum": ["10X_3v3", "10X_5v2"],
+                    "fa_icon": "fas fa-barcode"
+                }
+            },
+            "fa_icon": "fas fa-microscope",
+            "required": ["barcode_format"]
+        },
+        "mapping": {
+            "title": "Mapping",
+            "type": "object",
+            "description": "Options related to minimap2.",
+            "default": "",
+            "properties": {
+                "stranded": {
+                    "type": "string",
+                    "enum": ["None", "reverse", "forward"],
+                    "description": "Library strandness option.",
+                    "fa_icon": "fas fa-dna"
+                },
+                "kmer_size": {
+                    "type": "integer",
+                    "default": 14,
+                    "description": "Minimizer k-mer length.",
+                    "fa_icon": "fas fa-sort-amount-down"
+                },
+                "save_secondary_alignment": {
+                    "type": "boolean",
+                    "description": "Save secondary alignment outputs.",
+                    "fa_icon": "far fa-save"
+                }
+            },
+            "fa_icon": "far fa-map"
+        },
+        "analysis_options": {
+            "title": "Analysis options",
+            "type": "object",
+            "default": "",
+            "fa_icon": "fas fa-search",
+            "properties": {
+                "analyze_uncorrected_bam": {
+                    "type": "boolean",
+                    "description": "Run downstream steps on the bam that contains reads that could not be corrected. Do not use this if no whitelist is provided.",
+                    "fa_icon": "fas fa-search"
+                },
+                "retain_introns": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Indicate whether to include introns in the count matrices",
+                    "fa_icon": "fas fa-filter"
+                }
+            }
+        },
+        "process_skipping_options": {
+            "title": "Process skipping options",
+            "type": "object",
+            "description": "Options to skip various steps within the workflow.",
+            "default": "",
+            "help_text": "",
+            "properties": {
+                "skip_qc": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-forward",
+                    "description": "Skip all QC."
+                },
+                "skip_fastqc": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-forward",
+                    "description": "Skip FastQC."
+                },
+                "skip_nanoplot": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-forward",
+                    "description": "Skip Nanoplot."
+                },
+                "skip_toulligqc": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-forward",
+                    "description": "Skip ToulligQC."
+                },
+                "skip_fastq_nanocomp": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-forward",
+                    "description": "Skip NanoComp from FASTQ file(s)."
+                },
+                "skip_bam_nanocomp": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-forward",
+                    "description": "Skip NanoComp from BAM file(s)."
+                },
+                "skip_rseqc": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-forward",
+                    "description": "Skip RSeQC."
+                },
+                "skip_seurat": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-forward",
+                    "description": "Skip Seurat QC."
+                },
+                "skip_save_minimap2_index": {
+                    "type": "boolean",
+                    "description": "Skip saving minimap2 index.",
+                    "fa_icon": "fas fa-forward"
+                },
+                "skip_dedup": {
+                    "type": "boolean",
+                    "description": "Skip umi dedup.",
+                    "fa_icon": "fas fa-forward"
+                },
+                "skip_multiqc": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-forward",
+                    "description": "Skip MultiQC."
+                }
+            },
+            "fa_icon": "fas fa-forward"
         },
         "institutional_config_options": {
             "title": "Institutional config options",
@@ -282,6 +470,24 @@
         },
         {
             "$ref": "#/definitions/reference_genome_options"
+        },
+        {
+            "$ref": "#/definitions/fastq_options"
+        },
+        {
+            "$ref": "#/definitions/read_trimming_options"
+        },
+        {
+            "$ref": "#/definitions/cell_barcode_options"
+        },
+        {
+            "$ref": "#/definitions/mapping"
+        },
+        {
+            "$ref": "#/definitions/analysis_options"
+        },
+        {
+            "$ref": "#/definitions/process_skipping_options"
         },
         {
             "$ref": "#/definitions/institutional_config_options"

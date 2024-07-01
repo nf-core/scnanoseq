@@ -29,9 +29,6 @@ include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_scna
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-// TODO nf-core: Remove this line if you don't need a FASTA file
-//   This is an example of how to use getGenomeAttribute() to fetch parameters
-//   from igenomes.config using `--genome`
 params.fasta = getGenomeAttribute('fasta')
 
 /*
@@ -44,7 +41,6 @@ params.fasta = getGenomeAttribute('fasta')
 // WORKFLOW: Run main analysis pipeline depending on type of input
 //
 workflow NFCORE_SCNANOSEQ {
-
     take:
     samplesheet // channel: samplesheet read in from --input
 
@@ -103,6 +99,8 @@ workflow {
         params.hook_url,
         NFCORE_SCNANOSEQ.out.multiqc_report
     )
+
+    //NFCORE_SCNANOSEQ()
 }
 
 /*

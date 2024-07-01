@@ -1,2 +1,18 @@
 repository_type: pipeline
 nf_core_version: "2.14.1"
+
+pipeline_todos: false
+
+lint:
+  template_strings: False # "Jinja string found in" bin/create_regex.py and bin/seurat_qc.R
+  files_unchanged:
+    - CODE_OF_CONDUCT.md
+    - .github/CONTRIBUTING.md
+    - .github/workflows/linting.yml
+    - lib/NfcoreTemplate.groovy
+    - docs/images/nf-core-scnanoseq_logo_dark.png
+  pipeline_todos:
+    - README.md
+    - main.nf
+  multiqc_config:
+    - report_comment
