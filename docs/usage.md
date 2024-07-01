@@ -61,7 +61,7 @@ nextflow run nf-core/scnanoseq \
   --outdir ./results \
   --genome /path/to/genome.fa \
   --gtf /path/to/genome.gtf \
-  --barcode_format 10X_v3 \
+  --barcode_format 10X_3v3 \
   -profile <docker/singularity/institute>
 ```
 
