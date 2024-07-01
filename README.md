@@ -108,6 +108,14 @@ If you experience any issues, please make sure to submit an issue above. However
 
 process
 {
+    withName: '.*:.*FASTQC.*'
+    {   
+        cpus = 20
+    }   
+}
+
+process
+{
     withName: '.*:BLAZE'
     {
         cpus = 24
@@ -135,13 +143,7 @@ process
 {
     withName: '.*:ISOQUANT'
     {
-        ext.args = {
-            [
-                "--threads 30",
-                "--complete_genedb",
-                params.stranded == "forward" ? "--stranded forward" : params.stranded == "reverse" ? "--stranded reverse" : "--stranded none",
-            ].join(' ').trim()
-        }
+        cpus = 40
         time = '135.h'
     }
 }
