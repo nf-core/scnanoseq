@@ -18,11 +18,11 @@ def parse_arg():
         description=textwrap.dedent(
         '''
         This script can be used to generate a new whitelist from the putative bc table
-        output from 'blaze.py'. Users may specify different argment used in 
+        output from 'blaze.py'. Users may specify different argment used in
         'blaze.py' to obtain a different whitelist.
         '''),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    
+
     # Required positional argument
     parser.add_argument('putative_bc_csv', type=str,
                         help='Filename of the putative_bc csv file output from blaze.py')
@@ -40,13 +40,13 @@ def parse_arg():
     parser.add_argument('--kit-version', type=str, default='3v3',
                         help= textwrap.dedent(
                             '''
-                            Choose from v2 and v3 (for 10X Single Cell 3ʹ gene expression v2 or v3). 
+                            Choose from v2 and v3 (for 10X Single Cell 3ʹ gene expression v2 or v3).
                             '''))
     parser.add_argument('--minQ', type=int, default=15,
                         help= textwrap.dedent(
                             '''
-                            <INT>: Minimum phred score for all bases in a putative BC. 
-                            Reads whose putative BC contains one or more bases with 
+                            <INT>: Minimum phred score for all bases in a putative BC.
+                            Reads whose putative BC contains one or more bases with
                             Q<minQ is not counted in the "Putative BC rank plot".'''))
     parser.add_argument('--full-bc-whitelist', type=str, default=None,
                         help='''<path to file>: .txt file containing all the possible BCs. Users may provide
@@ -64,7 +64,7 @@ def parse_arg():
                     detections but potentially increase the number false/uninformative BC in
                     the whitelist.''')
     parser.add_argument('--emptydrop', action='store_true',
-                        help='''Output list of BCs corresponding to empty droplets (filename: {DEFAULT_EMPTY_DROP_FN}), 
+                        help='''Output list of BCs corresponding to empty droplets (filename: {DEFAULT_EMPTY_DROP_FN}),
                     which could be used to estimate ambiant RNA expressionprofile.''')
     parser.add_argument('--emptydrop-max-count', type=float, default=np.inf,
                         help=textwrap.dedent(
@@ -76,20 +76,20 @@ def parse_arg():
     args = parser.parse_args()
 
     if not args.expect_cells and not args.count_threshold:
-        helper.err_msg("Missing argument --expect-cells or --count-threshold.") 
+        helper.err_msg("Missing argument --expect-cells or --count-threshold.")
         sys.exit(1)
     if (args.expect_cells or args.high_sensitivity_mode) and args.count_threshold:
         helper.warning_msg(textwrap.dedent(
                 f'''
                 Warning: You have specified'--count-threshold'. Options
                 "--high_sensitivity_mode" and "--expect-cells" would be ignored if
-                specified.        
+                specified.
                 '''))
         args.high_sensitivity_mode = False
-    
+
     args.kit_version = args.kit_version.lower()
     if args.kit_version not in ['3v2', '3v3', '5v2']:
-        helper.err_msg("Error: Invalid value of --kit-version, please choose from 3v3 or 3v2 or 5v2") 
+        helper.err_msg("Error: Invalid value of --kit-version, please choose from 3v3 or 3v2 or 5v2")
         sys.exit()
 
     if args.full_bc_whitelist:
@@ -102,7 +102,7 @@ def parse_arg():
         elif args.kit_version == '3v2' or args.kit_version == '5v2':
             args.full_bc_whitelist = DEFAULT_GRB_WHITELIST_V2
 
-    # check file 
+    # check file
     helper.check_exist([args.full_bc_whitelist, args.putative_bc_csv])
     return args
 
@@ -111,9 +111,9 @@ def parse_arg():
 def main(args):
     # read table
     dfs = pd.read_csv(args.putative_bc_csv, chunksize=args.chunk_size)
-    
+
     # get bc count dict (filtered by minQ)
-    
+
     raw_bc_count = Counter()
     for df in tqdm(dfs, desc = 'Counting high-quality putative BC'):
         raw_bc_count += Counter(df[
@@ -121,10 +121,10 @@ def main(args):
 
     if args.high_sensitivity_mode:
         print('Preparing whitelist...(high-sensitivity-mode)')
-    else: 
+    else:
         print('Preparing whitelist...')
     bc_whitelist, ept_bc = get_bc_whitelist(raw_bc_count,
-                                    args.full_bc_whitelist, 
+                                    args.full_bc_whitelist,
                                     args.expect_cells,
                                     args.count_threshold,
                                     args.high_sensitivity_mode,

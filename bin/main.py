@@ -13,7 +13,7 @@ Output:
     3. BC rank plot
     4. csv file of the BC whitelist
 """
-  
+
 import sys
 import shlex
 import os
@@ -48,23 +48,23 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 def parse_arg(argv):
-    
+
     def print_help():
         help_message=\
             f'''
             Description:
                 BLAZE2 is a tool for demultiplexing 10X single cell long-read RNA-seq data.
-                It takes fastq files as input and output a whitelist of barcodes and a fastq 
+                It takes fastq files as input and output a whitelist of barcodes and a fastq
                 with demultiplexed reads.
 
             Usage: blaze  --expect-cells <INT> [OPTIONS] <fastq directory>
 
             Required argument:
                 One of the following two options is required unless whitelisting step is turned off:
-                    --expect-cells <INT> 
+                    --expect-cells <INT>
                             Expected number of cells.
                     --count-threshold <INT>
-                            Count threshold of high-quality putative barcodes used to determine the whitelist. 
+                            Count threshold of high-quality putative barcodes used to determine the whitelist.
                 Note that the --count-threshold option is ignored if --expect-cells is specified.
 
             Options:
@@ -75,7 +75,7 @@ def parse_arg(argv):
                     Filename of output files. Default: --output-prefix {DEFAULT_PREFIX}
                     Note that the output can be directed to a different directory by specifying
                     the path in the prefix. E.g., --output-prefix /path/to/output/prefix
-                
+
                 --output-fastq <fastq filename>
                     Filename of output fastq file name. Default: --output-fastq {DEFAULT_GRB_OUT_FASTQ}
                     Note that if the filename has to end with .fastq, .fq, .fastq.gz or .fq.gz.
@@ -85,35 +85,35 @@ def parse_arg(argv):
 
                 --no-whitelisting:
                     Skip the whitelisting step and assign reads to full whitelist specified by --full-bc-whitelist.
-                
+
                 --max-edit-distance <INT>
-                    Maximum edit distance allowed between a putative barcode and a barcode 
+                    Maximum edit distance allowed between a putative barcode and a barcode
                     for a read/putative barcdoe to be assigned to the barcode. Default: --max-edit-distance {DEFAULT_ASSIGNMENT_ED}
-                
+
                 --kit-version <3v2 or 3v3 or 5v2>:
                     Choose from 10X Single Cell 3ʹ gene expression v2 or v3 or 5' gene expression. If using other
-                    protocols, please do not specify this option and specify --full-bc-whitelist instead. By default, 
+                    protocols, please do not specify this option and specify --full-bc-whitelist instead. By default,
                     `--kit_version v3`  will be used if --full-bc-whitelist is not specified.
 
                 --minQ <INT>:
-                    Putative BC contains one or more bases with Q<minQ is not counted 
+                    Putative BC contains one or more bases with Q<minQ is not counted
                     in the "Putative BC rank plot". Default: --minQ=15
-                
+
                 --full-bc-whitelist <path to file>
-                    txt file containing all the possible BCs. You may provide your own whitelist. 
-                    No need to specify this if users want to use the 10X whilelist. The correct 
+                    txt file containing all the possible BCs. You may provide your own whitelist.
+                    No need to specify this if users want to use the 10X whilelist. The correct
                     version of 10X whilelist will be determined based on 10X kit version.
 
                 --overwrite
-                    Overwrite the old file when the output file(s) exist. If not specified, 
+                    Overwrite the old file when the output file(s) exist. If not specified,
                     the steps generating the existing file(s) will be skipped.
 
                 --threads <INT>
                     <INT>: Number of threads used <default: # of available cpus - 1>
 
                 --batch-size <INT>
-                    <INT>: Number of reads this program process together as a batch. Not that if 
-                    the specified number larger than the number of reads in each fastq files, the 
+                    <INT>: Number of reads this program process together as a batch. Not that if
+                    the specified number larger than the number of reads in each fastq files, the
                     batch size will be forced to be the number of reads in the file. <Default: 1000>
 
                 --minimal_stdout
@@ -123,7 +123,7 @@ def parse_arg(argv):
                 --high-sensitivity-mode:
                     Turn on the sensitivity mode, which increases the sensitivity of barcode
                     detections but potentially increase the number false/uninformative BC in
-                    the whitelist. 
+                    the whitelist.
                     Note that --emptydrop is recommanded specified with this mode (See details below).
 
             Empty droplet BCs
@@ -135,7 +135,7 @@ def parse_arg(argv):
 
             '''
         print(textwrap.dedent(help_message))
-   
+
     if not argv:
         argv = sys.argv
     else:
@@ -144,11 +144,11 @@ def parse_arg(argv):
         elif isinstance(argv, list):
             argv = ['blaze.py'] + argv
         else:
-            helper.err_msg("Error: Invalid argument input, the argument should be a string or a list.") 
+            helper.err_msg("Error: Invalid argument input, the argument should be a string or a list.")
             sys.exit(1)
-    
-    
-    # Default 
+
+
+    # Default
     out_fastq_fn = DEFAULT_GRB_OUT_FASTQ
     prefix = DEFAULT_PREFIX
     overwrite = False
@@ -158,7 +158,7 @@ def parse_arg(argv):
     min_phred_score = DEFAULT_GRB_MIN_SCORE
     kit = DEFAULT_GRB_KIT
     batch_size=1000
-    high_sensitivity_mode = False   
+    high_sensitivity_mode = False
     emptydrop_max_count = np.inf
     do_demultiplexing = True
     do_whitelisting = True
@@ -167,7 +167,7 @@ def parse_arg(argv):
     count_t = None
 
     # Read from options
-    try: 
+    try:
         opts, args = getopt.getopt(argv[1:],"h",
                     ["help","threads=","minQ=","full-bc-whitelist=","high-sensitivity-mode",
                      "output-prefix=", "expect-cells=", "overwrite",
@@ -175,10 +175,10 @@ def parse_arg(argv):
                      "no-demultiplexing", "max-edit-distance=", "minimal_stdout",
                      "no-whitelisting", "count-threshold="])
     except getopt.GetoptError:
-        helper.err_msg("Error: Invalid argument input") 
+        helper.err_msg("Error: Invalid argument input")
         print_help()
-        sys.exit(1)    
-    
+        sys.exit(1)
+
     for opt, arg in opts:
         if opt in  ("-h", "--help"):
             print_help()
@@ -194,11 +194,11 @@ def parse_arg(argv):
         elif opt == '--threads':
             n_process = int(arg)
         elif opt == '--minQ':
-            min_phred_score = int(arg)  
+            min_phred_score = int(arg)
         elif opt == '--full-bc-whitelist':
-            full_bc_whitelist = arg  
+            full_bc_whitelist = arg
         elif opt == "--out-putative-bc":
-            out_raw_bc_fn = arg      
+            out_raw_bc_fn = arg
         elif opt == "--kit-version":
             kit = arg.lower()
         elif opt == "--high-sensitivity-mode":
@@ -226,7 +226,7 @@ def parse_arg(argv):
     summary_fn = prefix + DEFAULT_BC_STAT_FN
 
     if kit not in ['3v2', '3v3', '5v2']:
-        helper.err_msg("Error: Invalid value of --kit-version (" + kit + "), please choose from 3v3 or 3v2 or 5v2") 
+        helper.err_msg("Error: Invalid value of --kit-version (" + kit + "), please choose from 3v3 or 3v2 or 5v2")
         sys.exit()
 
     if full_bc_whitelist:
@@ -241,13 +241,13 @@ def parse_arg(argv):
 
     # Read from args
     if not args:
-        helper.err_msg("Error: Missing fastq directory.")   
+        helper.err_msg("Error: Missing fastq directory.")
         print_help()# print help doc when no command line args provided
         sys.exit(0)
 
     # check required argument
     if not exp_cells and count_t is None and do_whitelisting:
-        helper.err_msg("--expect-cells or --count-threshold is required to build the whitelist!") 
+        helper.err_msg("--expect-cells or --count-threshold is required to build the whitelist!")
         sys.exit(1)
     if exp_cells and count_t is not None:
         helper.warning_msg("--expect-cells and --count-threshold are both specified. --expect-cells will be used.")
@@ -256,7 +256,7 @@ def parse_arg(argv):
     # check input
     fastq_dir = args[0]
     helper.check_exist([full_bc_whitelist, fastq_dir])
-    
+
     if os.path.isdir(fastq_dir):
         fastq_fns = helper.get_files(fastq_dir, ['*.fastq', '*.fq', '*.fastq.gz', '*.fq.gz'])
     elif os.path.isfile(fastq_dir):
@@ -300,7 +300,7 @@ def parse_arg(argv):
             f"Error in filename configuration:"
             f"Filename '{out_plot_fn}' should end with '.png'. Please check the config.py file in BLAZE.")
         sys.exit(1)
-    
+
     # helper.warning_msg(f"Filename {out_fastq_fn} exists, will output demultiplexed reads into {out_fastq_fn}.")
 
     return fastq_fns, out_fastq_fn, n_process, exp_cells ,min_phred_score, \
@@ -327,7 +327,7 @@ def get_raw_bc_from_reads(reads, min_q=0, kit=None):
     -------
     1. Counter of high-confidence putative BC
     2. Counter of high-confidence putative BC
-    3. pd.DataFrame containing all putative BCs 
+    3. pd.DataFrame containing all putative BCs
     """
     # init
     read_ids = []
@@ -341,11 +341,11 @@ def get_raw_bc_from_reads(reads, min_q=0, kit=None):
     post_umi_flankings = []
 
     for i,r in enumerate(reads):
-        
-        # create read object 
-        read = polyT_adaptor_finder.Read(read_id = r.id, sequence=str(r.seq), 
-                    phred_score=r.q_letter, kit=kit)    
-        
+
+        # create read object
+        read = polyT_adaptor_finder.Read(read_id = r.id, sequence=str(r.seq),
+                    phred_score=r.q_letter, kit=kit)
+
 
         read.get_strand_and_raw_bc()
         read_ids.append(read.id)
@@ -355,11 +355,11 @@ def get_raw_bc_from_reads(reads, min_q=0, kit=None):
         trim_idxs.append(read.polyT_trimming_idx)
         pre_bc_flankings.append(read.pre_bc_flanking)
         post_umi_flankings.append(read.post_umi_flanking)
-        
-        if read.raw_bc_min_q and read.raw_bc_min_q >= min_q:     
+
+        if read.raw_bc_min_q and read.raw_bc_min_q >= min_q:
             raw_bc.append(read.raw_bc)
-            
-        if read.raw_bc_min_q and read.raw_bc_min_q < min_q:  
+
+        if read.raw_bc_min_q and read.raw_bc_min_q < min_q: 
             raw_bc_pass.append(100) #tag for low quality putative bc
         else:
             raw_bc_pass.append(read.adaptor_polyT_pass)
@@ -379,7 +379,7 @@ def get_raw_bc_from_reads(reads, min_q=0, kit=None):
 def qc_report(pass_count, min_phred_score, stdout=True, out_fn=None):
     '''
     Generate report for the putative barcode detection.
-    Print stats for 
+    Print stats for
         a. # of input read in total (only look at primary alignment if it's BAM)
         b. # and % read pass the polyT and adaptor searching process.
         c. # and % with poly T and adaptor find in both ends
@@ -392,20 +392,20 @@ def qc_report(pass_count, min_phred_score, stdout=True, out_fn=None):
         min score used to filter out putative BC
     '''
     total_read = sum(pass_count.values())
-    
+
     print_message=textwrap.dedent(
         f'''
         \n----------------------stats of the putative barcodes--------------------------
 
-        Total number of reads: 
+        Total number of reads:
             {total_read:,}
-        Reads with unambiguous polyT and adapter positions found:            
+        Reads with unambiguous polyT and adapter positions found:
             {pass_count[0]+ pass_count[100]:,} ({(pass_count[0]+ pass_count[100])/total_read*100:.2f}% of all reads)
             {pass_count[0]:,} in which all bases in the putative BC have Q>={min_phred_score}
-        Failed Reads: 
-            no polyT and adapter positions found: 
+        Failed Reads:
+            no polyT and adapter positions found:
                 {pass_count[1]:,} ({pass_count[1]/total_read*100:.2f}% of all reads)
-            polyT and adapter positions found in both end (fail to determine strand): 
+            polyT and adapter positions found in both end (fail to determine strand):
                 {pass_count[2]:,} ({pass_count[2]/total_read*100:.2f}% of all reads)
             multiple polyT and adapter found in one end
                 {pass_count[10]:,} ({pass_count[10]/total_read*100:.2f}% of all reads)
@@ -417,22 +417,22 @@ def qc_report(pass_count, min_phred_score, stdout=True, out_fn=None):
         with open(out_fn, 'w') as f:
             f.write(print_message + '\n')
 
-    
-def get_bc_whitelist(raw_bc_count, full_bc_whitelist, exp_cells=None, 
-                    count_t=None, high_sensitivity_mode=False, 
-                    output_empty = False, empty_max_count = np.inf, 
-                    out_plot_fn = DEFAULT_KNEE_PLOT_FN):
-    f"""    
-    Get a whitelist from all putative cell bc with high-confidence putative bc counts. 
-    If the expect number is provided (default), a quantile-based threshold will be 
-    calculated to determine the exact cells to be output. Otherwise, a user-specified 
-    ount threshold will be used and the cells/Barocdes with counts above the threshold will be output.
-    
-    If high_sensitivity_mode = True, the high sensitivity (HS) mode is turned on which uses
-    more relaxed threshold  
 
-    If in output_empty=True, a list of BCs that are most likely corresponding to 
-    empty droplets will also be produced autimatically , which might be useful in 
+def get_bc_whitelist(raw_bc_count, full_bc_whitelist, exp_cells=None,
+                    count_t=None, high_sensitivity_mode=False,
+                    output_empty = False, empty_max_count = np.inf,
+                    out_plot_fn = DEFAULT_KNEE_PLOT_FN):
+    """
+    Get a whitelist from all putative cell bc with high-confidence putative bc counts.
+    If the expect number is provided (default), a quantile-based threshold will be
+    calculated to determine the exact cells to be output. Otherwise, a user-specified
+    ount threshold will be used and the cells/Barocdes with counts above the threshold will be output.
+
+    If high_sensitivity_mode = True, the high sensitivity (HS) mode is turned on which uses
+    more relaxed threshold
+
+    If in output_empty=True, a list of BCs that are most likely corresponding to
+    empty droplets will also be produced autimatically , which might be useful in
     downstream analysis.
         Criteria of selecting these BC:
             1. BC in 10x full whitelist, and
@@ -449,10 +449,10 @@ def get_bc_whitelist(raw_bc_count, full_bc_whitelist, exp_cells=None,
         ValueError: No valid exp_cells or count_t specified
 
     Returns:
-        dict 1: 
+        dict 1:
             key: barcodes selected
             values: high-confidence putative BC counts
-       
+
         list  (high_sensitivity_mode only):
             barcodes most likely associated to empty droplet
     """
@@ -462,15 +462,15 @@ def get_bc_whitelist(raw_bc_count, full_bc_whitelist, exp_cells=None,
         percentile_count_thres = high_sensitivity_threshold_calculation
     else:
         percentile_count_thres = default_count_threshold_calculation
-    
-    whole_whitelist = []    
+
+    whole_whitelist = []
 
     if full_bc_whitelist.endswith('.zip'):
         with zipfile.ZipFile(full_bc_whitelist) as zf:
             # check if there is only 1 file
             assert len(zf.namelist()) == 1
 
-            with io.TextIOWrapper(zf.open(zf.namelist()[0]), 
+            with io.TextIOWrapper(zf.open(zf.namelist()[0]),
                                                     encoding="utf-8") as f:
                 for line in f:
                     whole_whitelist.append(line.strip())
@@ -478,11 +478,11 @@ def get_bc_whitelist(raw_bc_count, full_bc_whitelist, exp_cells=None,
         with open(full_bc_whitelist, 'r') as f:
             for line in f:
                 whole_whitelist.append(line.strip())
-    
+
     whole_whitelist = set(whole_whitelist)
 
     raw_bc_count = {k:v for k,v in raw_bc_count.items() if k in whole_whitelist}
-    
+
     # determine real bc based on the count threshold
     if count_t is not None:
         knee_plot(list(raw_bc_count.values()), count_t, out_plot_fn)
@@ -504,7 +504,7 @@ def get_bc_whitelist(raw_bc_count, full_bc_whitelist, exp_cells=None,
 
                 # we don't need too much BC in this list
                 if len(ept_bc) >  DEFAULT_EMPTY_DROP_NUM:
-                    break      
+                    break
             return cells_bc, ept_bc
 
     elif exp_cells:
@@ -512,7 +512,7 @@ def get_bc_whitelist(raw_bc_count, full_bc_whitelist, exp_cells=None,
         knee_plot(list(raw_bc_count.values()), t, out_plot_fn)
 
         cells_bc = {k:v for k,v in raw_bc_count.items() if v > t}
-        
+
         if not output_empty:
             return cells_bc, []
         else:
@@ -532,7 +532,7 @@ def get_bc_whitelist(raw_bc_count, full_bc_whitelist, exp_cells=None,
                     break
             return cells_bc, ept_bc
 
-    else: 
+    else:
         raise ValueError('Invalid value of count_t and/or exp_cells.')
 
 def knee_plot(counts, threshold=None, out_fn = 'knee_plot.png'):
@@ -578,18 +578,18 @@ def read_batch_generator(fastq_fns, batch_size):
 
 
 def main(argv=None):
-    
+
     fastq_fns, out_fastq_fn, n_process, exp_cells ,min_phred_score, \
         full_bc_whitelist, out_raw_bc_fn, out_whitelist_fn, \
         high_sensitivity_mode, batch_size, out_emptydrop_fn, \
         emptydrop_max_count, overwrite, out_plot_fn, do_demultiplexing, \
         max_edit_distance, summary_fn,minimal_out, do_whitelisting, \
         count_t, kit = parse_arg(argv)
-    
+
     # Start running: Welcome logo
     if not minimal_out:
         print(textwrap.dedent(
-            f'''\n\nWelcome to 
+            f'''\n\nWelcome to
                 {BLAZE_LOGO}
         '''))
 
@@ -603,9 +603,9 @@ def main(argv=None):
                  printit = False))
         logger.info(f'Getting putative barcodes from {len(fastq_fns)} FASTQ files...')
         read_batchs = read_batch_generator(fastq_fns, batch_size=batch_size)
-    
+
         rst_futures = helper.multiprocessing_submit(get_raw_bc_from_reads,
-                                                read_batchs, n_process=n_process, 
+                                                read_batchs, n_process=n_process,
                                                 min_q=min_phred_score, kit=kit)
 
         raw_bc_pass_count = defaultdict(int)
@@ -618,35 +618,35 @@ def main(argv=None):
                 rst_df.to_csv(out_raw_bc_fn, index=False)
             else:
                 rst_df.to_csv(out_raw_bc_fn, mode='a', index=False, header=False)
-        
+
         helper.green_msg(f'Putative barcode table saved in {out_raw_bc_fn}')
-        
+
         # ----------------------stats of the putative barcodes--------------------------
-        qc_report(raw_bc_pass_count, min_phred_score=min_phred_score, 
+        qc_report(raw_bc_pass_count, min_phred_score=min_phred_score,
                   out_fn=summary_fn, stdout= not minimal_out)
 
-    
+
     else:
         logger.info(helper.warning_msg(textwrap.dedent(
             f"""
-            Warning: `{out_raw_bc_fn}` exists. BLAZE would NOT re-generate the file and the existing file 
+            Warning: `{out_raw_bc_fn}` exists. BLAZE would NOT re-generate the file and the existing file
             will be directly used for downstream steps. If you believe it needs to be updated, please
-            change the --output_prefix or remove/rename the existing file. 
-            
+            change the --output_prefix or remove/rename the existing file.
+
             Note: there is no need to update this file if the input data remain the same and the previous
-            run that generated this file finished successfully. It wouldn't change with other specified 
+            run that generated this file finished successfully. It wouldn't change with other specified
             arguments . However if you are running using a modified config.py file or the existing  `{out_raw_bc_fn}`
             was generated by a different version of BLAZE, updating the file is suggested.
             """
         ), printit = False))
 
-        
+
     ######################
     ###### Whitelisting
     ######################
     if do_whitelisting and (not os.path.exists(out_whitelist_fn) or overwrite):
         dfs = pd.read_csv(out_raw_bc_fn, chunksize=1_000_000)
-        
+
         # get bc count dict (filtered by minQ)
         raw_bc_count = Counter()
         for df in tqdm(dfs, desc = 'Counting high-quality putative BC'):
@@ -670,7 +670,7 @@ def main(argv=None):
 
         try:
             bc_whitelist, ept_bc = get_bc_whitelist(raw_bc_count,
-                                    full_bc_whitelist, 
+                                    full_bc_whitelist,
                                     exp_cells=exp_cells,
                                     count_t=count_t,
                                     high_sensitivity_mode=high_sensitivity_mode,
@@ -684,7 +684,7 @@ def main(argv=None):
             with open(out_emptydrop_fn, 'w') as f:
                 for k in ept_bc:
                     f.write(k+'\n')
-                helper.green_msg(f'Empty droplet barcode list saved as `{out_emptydrop_fn}`.')    
+                helper.green_msg(f'Empty droplet barcode list saved as `{out_emptydrop_fn}`.')
 
         except Exception as e:
             logger.exception(e)
@@ -708,7 +708,7 @@ def main(argv=None):
                 f"NOTE: BLAZE will use existing `{out_whitelist_fn}` for the downstread steps and will not re-generate the {out_plot_fn}."
                 f"If the file is required, please remove/rename the existing `{out_whitelist_fn}` and rerun."
             , printit = False))
-    
+
     elif not do_whitelisting:
         logger.info(helper.warning_msg(
                 f"NOTE: Whitelisting step is skipped as specified by --no-whitelisting. BLAZE will assign reads to {full_bc_whitelist}."
@@ -725,13 +725,13 @@ def main(argv=None):
                 printit = False
             ))
         logger.info("Assigning reads to whitelist.\n")
-        read_assignment.assign_read(fastq_fns, 
-                                        out_fastq_fn, 
-                                        out_raw_bc_fn, 
+        read_assignment.assign_read(fastq_fns,
+                                        out_fastq_fn,
+                                        out_raw_bc_fn,
                                         out_whitelist_fn,
                                         max_edit_distance,
                                         n_process,
-                                        out_fastq_fn.endswith('.gz'), 
+                                        out_fastq_fn.endswith('.gz'),
                                         batch_size)
     else:
         logger.info(helper.warning_msg(

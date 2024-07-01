@@ -33,17 +33,17 @@ class Read(object):
         self.kit = kit
         for key in kwargs.keys():
             self.__dict__[key] = kwargs[key]
-            
+
     def add(self, attr_name, attr_val, overwrite = True):
         if attr_name in __dict__.keys() and not overwrite:
             pass
-        else:    
+        else:
             self.__dict__[attr_name] = attr_val
-    
+
     def find_adapter_5_prime(self, read=None, strand=None, adapter_seq=ADPT_SEQ,
                              num_nt=ADPT_WIN,max_ed=ADPT_MAC_MATCH_ED,
                              tso_seq=TSO_SEQ):
-        
+
         strand = self._strand if not strand else strand
         read = self.seq if not read else read
 
@@ -61,7 +61,7 @@ class Read(object):
                 return {'-':[max(0,tso_seq_start-d2)+sub_seq_end+1]} if sub_seq_end > 0 else {}
             else:
                 return {}
-        
+
         if strand == '+':
             read = helper.reverse_complement(read[-num_nt:])
             adpt_ends = self.find_adapter_5_prime(
@@ -70,22 +70,22 @@ class Read(object):
 
             return {'+':adpt_ends} if len(adpt_ends) else {}
         else:
-            
+
             fwd_strand = self.find_adapter_5_prime(
-                strand='-', adapter_seq=adapter_seq, 
+                strand='-', adapter_seq=adapter_seq,
                 num_nt=num_nt, tso_seq=tso_seq)
             rev_strand = self.find_adapter_5_prime(
-                strand='+', adapter_seq=adapter_seq, 
+                strand='+', adapter_seq=adapter_seq,
                 num_nt=num_nt, tso_seq=tso_seq)
 
             rst = {**{k:v for k,v in fwd_strand.items() if len(v)},
                    **{k:v for k,v in rev_strand.items() if len(v)}}
             return rst
 
-    def find_adaptor_3_prime(self, read=None, strand=None, adaptor_seq=ADPT_SEQ, 
+    def find_adaptor_3_prime(self, read=None, strand=None, adaptor_seq=ADPT_SEQ,
                         num_nt=ADPT_WIN, max_ed=ADPT_MAC_MATCH_ED):
-        
-        def find_poly_T(seq, poly_T_len=PLY_T_LEN, 
+
+        def find_poly_T(seq, poly_T_len=PLY_T_LEN,
                               min_match_prop=SEQ_SUFFIX_MIN_MATCH_PROP):
             '''Find poly T in seq
             Parameters
@@ -110,7 +110,7 @@ class Read(object):
             # convert to np_array T -> 1 and ACG -> 0
             read_code = np.array([int(x == 'T') for x in seq])
             T_prop = helper.sliding_window_mean(read_code, poly_T_len)
-            return np.where(T_prop >= min_match_prop)[0]  
+            return np.where(T_prop >= min_match_prop)[0] 
 
         strand = self._strand if not strand else strand
         read = self.seq if not read else read
@@ -130,7 +130,7 @@ class Read(object):
                     if idx-d2 > win_end:
                         searching_win.append((win_start, win_end))
                         win_start, win_end = idx-d2, idx-d1
-                    else: 
+                    else:
                         win_end = idx-d1
                 searching_win.append((win_start, win_end))
 
@@ -141,34 +141,34 @@ class Read(object):
                     if sub_seq_end > 0:
                         adpt_ends.append(max(start,0)+sub_seq_end+1)
 
-            return {'-':list(set(adpt_ends))} if len(adpt_ends) else {}    
+            return {'-':list(set(adpt_ends))} if len(adpt_ends) else {}
 
-        
+
         # take reverse complement if read is coming from transcript strand (with ployA instead ployT)
         if strand == '+':
             read = helper.reverse_complement(read[-num_nt:])
             adpt_ends = self.find_adaptor_3_prime(
-                            read, strand='-', adaptor_seq=adaptor_seq, 
+                            read, strand='-', adaptor_seq=adaptor_seq,
                             num_nt=num_nt).get('-',[])
             return {'+':adpt_ends} if len(adpt_ends) else {}
-                
+
         else:
             T_strand = self.find_adaptor_3_prime(
-                strand='-', adaptor_seq=adaptor_seq, 
+                strand='-', adaptor_seq=adaptor_seq,
                 num_nt=num_nt)
             A_strand = self.find_adaptor_3_prime(
-                strand='+', adaptor_seq=adaptor_seq, 
+                strand='+', adaptor_seq=adaptor_seq,
                 num_nt=num_nt)
             rst = {**{k:v for k,v in T_strand.items() if len(v)},
                    **{k:v for k,v in A_strand.items() if len(v)}}
             return rst
 
-    
-    def find_adaptor(self,read=None, strand=None, adaptor_seq=ADPT_SEQ, 
+
+    def find_adaptor(self,read=None, strand=None, adaptor_seq=ADPT_SEQ,
                         num_nt=ADPT_WIN, max_ed=ADPT_MAC_MATCH_ED, tso_seq=TSO_SEQ):
         '''
         find adaptor from a read
-    
+
         Parameters
         ----------
         read : STR
@@ -178,7 +178,7 @@ class Read(object):
             Transcript strand, this function will find adaptor in '-' poly T strand
             Will do a reverse complement if strand == '-'
         adaptor_seq : STR
-            10X adaptor sequence, the full-length adaptor sequence is 
+            10X adaptor sequence, the full-length adaptor sequence is
             'CTACACGACGCTCTTCCGATCT' (22nt). Last 12nt is used by default.
         max_ed : float
             max edit distance in the adaptor alignment. Default: 2
@@ -210,7 +210,7 @@ class Read(object):
                 1: poly T and adaptor not found in any strand
                 2: poly T and adaptor found in both strand
                 10: multiple adaptor found in 20~50 nt of poly T upstream
-        
+
         Returns
         -------
         None.
@@ -227,7 +227,7 @@ class Read(object):
         if num_of_strand_find == 0:
             self.adaptor_polyT_pass += 1
         elif num_of_strand_find == 1:
-            # check single location 
+            # check single location
             adptors = set(list(adapt_dict.values())[0])
             num_of_adptor_find = len(adptors)
             if num_of_adptor_find == 0:
@@ -259,12 +259,12 @@ class Read(object):
 
             self.raw_bc_start = list(adapt_dict.values())[0][0]
             self.strand = list(adapt_dict.keys())[0]
-            
+
             if self.strand == '+':
                 self.raw_bc = \
                     helper.reverse_complement(
                             self.seq)[self.raw_bc_start: self.raw_bc_start+16]
-            else: 
+            else:
                 self.raw_bc = self.seq[self.raw_bc_start: self.raw_bc_start+16]
 
             if self.phred_score is not None:
@@ -273,15 +273,15 @@ class Read(object):
                 else:
                     phred_score = self.phred_score
 
-                bc_phred_score = phred_score[self.raw_bc_start: self.raw_bc_start+16]      
+                bc_phred_score = phred_score[self.raw_bc_start: self.raw_bc_start+16]
 
                 self.raw_bc_min_q = min([ord(x) for x in bc_phred_score]) - 33
 
             else:
                 self.raw_bc_min_q = None
-        
+
         # get poly_T_start_raw and adaptor_end_raw
-    
+
     @property
     def adator_trimming_idx(self):
         """sequencing after trimming the adaptor and UMI
@@ -294,7 +294,7 @@ class Read(object):
             return None
         elif self._strand == '+':
             return int(-self.raw_bc_start-16-DEFAULT_UMI_SIZE)
-        else: 
+        else:
             return int(self.raw_bc_start+16+DEFAULT_UMI_SIZE)
 
     @property
@@ -306,10 +306,10 @@ class Read(object):
         elif self._strand == '+':
             return helper.reverse_complement(
                         self.seq)[self.raw_bc_start+16: self.raw_bc_start+16+DEFAULT_UMI_SIZE]
-        else: 
+        else:
             return self.seq[
                 self.raw_bc_start+16: self.raw_bc_start+16+DEFAULT_UMI_SIZE]
-    
+
     @property
     def pre_bc_flanking(self):
         if not self._get_strand_and_raw_bc_flag:
@@ -319,9 +319,9 @@ class Read(object):
         elif self._strand == '+':
             return helper.reverse_complement(
                         self.seq)[self.raw_bc_start-DEFAULT_GRB_FLANKING_SIZE: self.raw_bc_start]
-        else: 
+        else:
             return self.seq[self.raw_bc_start-DEFAULT_GRB_FLANKING_SIZE: self.raw_bc_start]
-    
+
     @property
     def post_umi_flanking(self):
         """sequencing after trimming the adaptor and UMI
@@ -336,30 +336,30 @@ class Read(object):
             return helper.reverse_complement(
                         self.seq)[self.raw_bc_start+16+DEFAULT_UMI_SIZE: \
                                   self.raw_bc_start+16+DEFAULT_UMI_SIZE+ DEFAULT_GRB_FLANKING_SIZE]
-        else: 
+        else:
             return self.seq[
                 self.raw_bc_start+16+DEFAULT_UMI_SIZE: \
                     self.raw_bc_start+16+DEFAULT_UMI_SIZE+DEFAULT_GRB_FLANKING_SIZE]
-    
+
     @property
     def polyT_trimming_idx(self):
         """sequencing after trimming the adaptor and UMI
         Returns:
             index of the end of the polyT, negative if it's polyA strand
         """
-        
-        
+
+ 
         umi_end_idx = self.adator_trimming_idx
-        
+
         if umi_end_idx is None:
             return None
-        
+
         # take reverse complement if read is coming from transcript strand (with ployA instead ployT)
         if umi_end_idx < 0:
             reversed = True
             seq = helper.reverse_complement(self.seq)
             umi_end_idx = abs(umi_end_idx)
-        else: 
+        else:
             reversed = False
             seq = self.seq
 
@@ -367,15 +367,15 @@ class Read(object):
         polyT_start = seq.find('TTTT', umi_end_idx)
         if polyT_start == -1:
             return umi_end_idx
-        
+
         read_code = np.array([int(x == 'T') for x in seq])
         for idx, nt in enumerate(read_code[polyT_start:]):
             if nt == 1:
                 polyT_start += 1
-            elif sum(read_code[polyT_start:polyT_start+10]) >= 7: # hard code definition of polyT. plotT end when >3 of 10 consecutive letter are not T 
+            elif sum(read_code[polyT_start:polyT_start+10]) >= 7: # hard code definition of polyT. plotT end when >3 of 10 consecutive letter are not T
                 polyT_start += 1
             else:
-                break 
+                break
         return int(polyT_start) if not reversed else int(-polyT_start)
 
 
@@ -385,12 +385,12 @@ class Read(object):
             # set new strand
             helper.warning_msg(
                 """
-                No strand information is recorded, try 'get_strand_and_raw_bc' 
+                No strand information is recorded, try 'get_strand_and_raw_bc'
                 first.
                 """)
             return None
         return self._strand
-    
+
     @strand.setter
     def strand(self, v):
         if v == None:
@@ -423,5 +423,4 @@ def main():
 
 if __name__ == '__main__':
     main()
-    
-    
+ 

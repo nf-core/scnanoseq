@@ -51,15 +51,15 @@ def polyT_trimming_idx(seq, reverse=False, umi_end_idx=0, polyT_end_minT=7, poly
     polyT_start = seq.find('TTTT', umi_end_idx)
     if polyT_start == -1:
         return umi_end_idx
-    
+
     read_code = np.array([int(x == 'T') for x in seq])
     for idx, nt in enumerate(read_code[polyT_start:]):
         if nt == 1:
             polyT_start += 1
-        elif sum(read_code[polyT_start:polyT_start+polyT_end_check_win]) >= polyT_end_minT: 
+        elif sum(read_code[polyT_start:polyT_start+polyT_end_check_win]) >= polyT_end_minT:
             polyT_start += 1
         else:
-            break 
+            break
     return int(polyT_start) if not reverse else int(-polyT_start)
 
 
@@ -91,7 +91,7 @@ def _read_batch_generator(fastq_fns, batch_size):
                 batch_iter = helper.batch_iterator(fastq, batch_size=batch_size)
                 for batch in batch_iter:
                     yield batch
-                
+
         else:
             with open(fn) as handle:
                 fastq =\
@@ -114,13 +114,13 @@ def _proc_read_batches(read_batch, gz):
         else:
             seq = r.seq[int(polyT_end):]
             qscore = r.qscore[int(polyT_end):]
-        
+
         out_buffer += '@' + r.id + '\n'
         out_buffer += str(seq) + '\n'
         out_buffer += '+\n'
         out_buffer += qscore + '\n'
 
-    
+
     if gz:
         b_out_buffer = gzip.compress(out_buffer.encode('utf-8'))
     else:
@@ -152,13 +152,13 @@ def polyT_trimmer(fastq_fns, fastq_out, n_process, gz, batchsize):
 
     # multi-thread version
     else:
-        rst_futures = helper.multiprocessing_submit(_proc_read_batches, 
-                            r_batches, 
+        rst_futures = helper.multiprocessing_submit(_proc_read_batches,
+                            r_batches,
                             n_process=n_process,
                             schduler = "process",
                             pbar_func=len,
                             gz = gz)
-        
+
         # collect results
         with open(fastq_out, 'wb') as output_handle:
             for f in rst_futures:
@@ -169,5 +169,5 @@ def polyT_trimmer(fastq_fns, fastq_out, n_process, gz, batchsize):
 if __name__ == '__main__':
     fastq_fns, fastq_out, n_process, gzip_out = parse_command_line()
     polyT_trimmer(fastq_fns, fastq_out, n_process, gz=gzip_out, batchsize=4000)
-        
+
 
