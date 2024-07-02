@@ -8,7 +8,7 @@ import textwrap
 from pathlib import Path
 
 
-import helper 
+import helper
 
 def parse_arg():
     parser = argparse.ArgumentParser(
@@ -16,7 +16,7 @@ def parse_arg():
         '''
         Find specific reads with given read id and output to a new fastq file
         '''))
-    
+
     # Required positional argument
     parser.add_argument('input_fastq_dir', type=str,
                         help='Fastq directory, Note that this should be a folder.')
@@ -53,10 +53,10 @@ def main(args):
 
     fastq_fns = list(Path(args.input_fastq_dir).rglob('*.fastq'))
     rst_futures = helper.multiprocessing_submit(find_reads,
-                                                fastq_fns, 
-                                                n_process=args.threads, 
+                                                fastq_fns,
+                                                n_process=args.threads,
                                                 id_list = ids)
-        
+
     rst_ls = []
     for f in rst_futures:
         rst_ls+=f.result()
@@ -67,3 +67,4 @@ def main(args):
 if __name__ == '__main__':
     args = parse_arg()
     main(args)
+

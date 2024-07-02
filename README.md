@@ -13,7 +13,7 @@
 [![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/)
 [![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)
 [![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
-[![Launch on Seqera Platform](https://img.shields.io/badge/Launch%20%F0%9F%9A%80-Seqera%20Platform-%234256e7)](https://tower.nf/launch?pipeline=https://github.com/nf-core/scnanoseq)
+[![Launch on Seqera Platform](https://img.shields.io/badge/Launch%20%F0%9F%9A%80-Seqera%20Platform-%234256e7)](https://cloud.seqera.io/launch?pipeline=https://github.com/nf-core/scnanoseq)
 
 [![Get help on Slack](http://img.shields.io/badge/slack-nf--core%20%23scnanoseq-4A154B?labelColor=000000&logo=slack)](https://nfcore.slack.com/channels/scnanoseq)[![Follow on Twitter](http://img.shields.io/badge/twitter-%40nf__core-1DA1F2?labelColor=000000&logo=twitter)](https://twitter.com/nf_core)[![Follow on Mastodon](https://img.shields.io/badge/mastodon-nf__core-6364ff?labelColor=FFFFFF&logo=mastodon)](https://mstdn.science/@nf_core)[![Watch on YouTube](http://img.shields.io/badge/youtube-nf--core-FF0000?labelColor=000000&logo=youtube)](https://www.youtube.com/c/nf-core)
 
@@ -29,7 +29,7 @@ On release, automated continuous integration tests run the pipeline on a full-si
 
 ![scnanoseq diagram](assets/scnanoseq_diagram.png)
 
-1. Raw read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [`NanoPlot`](https://github.com/wdecoster/NanoPlot),  [`NanoComp`](https://github.com/wdecoster/nanocomp) and [`ToulligQC`](https://github.com/GenomiqueENS/toulligQC))
+1. Raw read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [`NanoPlot`](https://github.com/wdecoster/NanoPlot), [`NanoComp`](https://github.com/wdecoster/nanocomp) and [`ToulligQC`](https://github.com/GenomiqueENS/toulligQC))
 2. Unzip and split FastQ ([`gunzip`](https://linux.die.net/man/1/gunzip))
    1. Optional: Split fastq for faster processing ([`split`](https://linux.die.net/man/1/split))
 3. Trim and filter reads. ([`Nanofilt`](https://github.com/wdecoster/nanofilt))
@@ -41,11 +41,8 @@ On release, automated continuous integration tests run the pipeline on a full-si
 7. Barcode correction (custom script `./bin/correct_barcodes.py`)
 8. Post-extraction QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [`NanoPlot`](https://github.com/wdecoster/NanoPlot) and [`ToulligQC`](https://github.com/GenomiqueENS/toulligQC))
 9. Alignment ([`minimap2`](https://github.com/lh3/minimap2))
-10. SAMtools processing including ([`SAMtools`](http://www.htslib.org/doc/samtools.html)):
-   1. SAM to BAM
-   2. Filtering of mapped only reads
-   3. Sorting, indexing and obtain mapping metrics
-11. Post-mapping QC in unfiltered BAM files ([`NanoComp`](https://github.com/wdecoster/nanocomp), [`RSeQC`](https://rseqc.sourceforge.net/))
+10. Post-alignment filtering of mapped reads and gathering mapping QC ([`SAMtools`](http://www.htslib.org/doc/samtools.html))
+11. Post-alignment QC in unfiltered BAM files ([`NanoComp`](https://github.com/wdecoster/nanocomp), [`RSeQC`](https://rseqc.sourceforge.net/))
 12. Barcode tagging with read quality, BC, BC quality, UMI, and UMI quality (custom script `./bin/tag_barcodes.py`)
 13. UMI-based deduplication [`UMI-tools`](https://github.com/CGATOxford/UMI-tools)
 14. Gene and transcript level matrices generation. [`IsoQuant`](https://github.com/ablab/IsoQuant)
@@ -110,9 +107,9 @@ If you experience any issues, please make sure to submit an issue above. However
 process
 {
     withName: '.*:.*FASTQC.*'
-    {   
+    {
         cpus = 20
-    }   
+    }
 }
 
 //NOTE: reminder that params set in modules.config need to be copied over to a custom config

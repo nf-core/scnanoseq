@@ -57,8 +57,7 @@ top_modules:
 custom_content:
   read_counts_section:
     parent_id: read_counts_section
-    order:
-        read_counts_module
+    order: read_counts_module
 
   seurat_section:
     parent_id: seurat_section
@@ -74,7 +73,7 @@ custom_data:
     section_name: "Read Counts"
     file_format: "csv"
     plot_type: "table"
-  
+
   gene_seurat_stats_module:
     parent_id: seurat_section
     parent_name: "Seurat Section"
