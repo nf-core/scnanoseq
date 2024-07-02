@@ -15,7 +15,7 @@ ADPT_WIN=200 #search adaptor in subsequence from both end of the reads with this
 ADPT_MAC_MATCH_ED=2 #minimum proportion of match required when searching
 
 ## format suffix
-SEQ_SUFFIX_WIN=200 
+SEQ_SUFFIX_WIN=200
 SEQ_SUFFIX_MIN_MATCH_PROP=1
 SEQ_SUFFIX_AFT_ADPT=(20,50)
 
@@ -61,13 +61,12 @@ DEFAULT_KNEE_PLOT_FN = 'knee_plot.png'
 DEFAULT_BC_STAT_FN = "summary.txt"
 DEFAULT_EMPTY_DROP_MIN_ED = 5 # minimum edit distance from emtpy drop BC to selected BC
 DEFAULT_EMPTY_DROP_NUM = 2000 # number of BC in the output
-    
 
 ####################################################
 #####    DEFAULT in Demultiplexing            ######
 ####################################################
 
-DEFAULT_ASSIGNMENT_ED = 2 
+DEFAULT_ASSIGNMENT_ED = 2
 # Make sure this is smaller than DEFAULT_GRB_FLANKING_SIZE
 assert DEFAULT_GRB_FLANKING_SIZE >= DEFAULT_ASSIGNMENT_ED
 DEFAULT_ED_FLANKING = DEFAULT_ASSIGNMENT_ED

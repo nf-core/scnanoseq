@@ -39,7 +39,7 @@ do
     data="$(basename $sample_name)"
 
     # RAW FASTQ COUNTS
-    
+
     if [[ -s "$raw_fastqc" ]]
     then
         fastqc_counts=$(get_fastqc_counts "$raw_fastqc")
@@ -47,9 +47,9 @@ do
     else
         data="$data,"
     fi
-    
+
     # TRIM COUNTS
-    
+
     if [[ -s "$trim_fastqc" ]]
     then
         trim_counts=$(get_fastqc_counts "$trim_fastqc")
@@ -57,9 +57,9 @@ do
     else
         data="$data,"
     fi
-    
+
     # PREEXTRACT COUNTS
-    
+
     if [ -s "$extract_fastqc" ]
     then
         extract_counts=$(get_fastqc_counts "$extract_fastqc")
@@ -67,10 +67,9 @@ do
     else
         data="$data,"
     fi
-    
+
     # CORRECT COUNTS
-    
-    
+
     if [ -s $correct_csv ]
     then
         correct_counts=$(cut -f6 $correct_csv | awk '{if ($0 != "") {print $0}}' | wc -l)
