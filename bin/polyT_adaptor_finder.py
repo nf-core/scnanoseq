@@ -1,4 +1,13 @@
-"""Searching for adaptor polyT or poly A in a Nanopore read.
+"""
+This is modified script from the `support-5prim-kit` branch of the BLAZE repo, link below:
+https://github.com/shimlab/BLAZE/tree/support-5prim-kit
+
+The only modifications that have been made are formatting changes in order to meet the
+nf-core linting requirements. The script has been copied into the pipeline temporarily
+in order to support 5-prime data, and will be removed once this feature has been
+incorporated into an official BLAZE release.
+
+Searching for adaptor polyT or poly A in a Nanopore read.
 """
 import numpy as np
 from fast_edit_distance import sub_edit_distance

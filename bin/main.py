@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 
 """
+This is modified script from the `support-5prim-kit` branch of the BLAZE repo, link below:
+https://github.com/shimlab/BLAZE/tree/support-5prim-kit
+
+The only modifications that have been made are formatting changes in order to meet the
+nf-core linting requirements. The script has been copied into the pipeline temporarily
+in order to support 5-prime data, and will be removed once this feature has been
+incorporated into an official BLAZE release.
+
 Get raw BC (i.e. putative barcode) from fastq file
 
 Output:
