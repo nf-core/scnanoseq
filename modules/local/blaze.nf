@@ -34,14 +34,14 @@ process BLAZE {
         --output-prefix ${prefix}. \\
         --threads $task.cpus \\
         ${args} \\
-        \$(pwd)
+        \${pwd}
 
 
     tail -n +2 ${prefix}.putative_bc.csv > ${prefix}.putative_bc.no_header.csv
 
     cat ${prefix}.putative_bc.no_header.csv | \\
         cut -f2 -d',' | \\
-        sort -T \$(pwd) | \\
+        sort -T \${pwd} | \\
         uniq -c | \\
         awk '{print \$2","\$1}'> ${prefix}.bc_count.txt
 
