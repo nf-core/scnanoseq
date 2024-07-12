@@ -5,7 +5,9 @@ process BLAZE {
 
     conda "atrull314::fast_edit_distance=1.2.1 conda-forge::matplotlib=3.8.4 conda-forge::biopython=1.83 conda-forge::pandas=2.2.2 conda-forge::numpy=2.0.0rc2 conda-forge::tqdm=4.66.4"
 
-    container "docker://agtrull314/blaze:2.2.0"
+    container "${ workflow.containerEngine == 'singularity' ?
+        'docker://agtrull314/blaze:2.2.0' :
+        'docker.io/agtrull314/blaze:2.2.0'}"
 
     input:
     tuple val(meta), path(reads)
@@ -34,14 +36,14 @@ process BLAZE {
         --output-prefix ${prefix}. \\
         --threads $task.cpus \\
         ${args} \\
-        \${pwd}
+        \$(pwd)
 
 
     tail -n +2 ${prefix}.putative_bc.csv > ${prefix}.putative_bc.no_header.csv
 
     cat ${prefix}.putative_bc.no_header.csv | \\
         cut -f2 -d',' | \\
-        sort -T \${pwd} | \\
+        sort -T \$(pwd) | \\
         uniq -c | \\
         awk '{print \$2","\$1}'> ${prefix}.bc_count.txt
 
