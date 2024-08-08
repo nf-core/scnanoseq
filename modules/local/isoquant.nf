@@ -1,7 +1,6 @@
 process ISOQUANT {
     tag "$meta.id"
     label 'process_high'
-    label 'process_high_memory'
 
     conda "bioconda::isoquant=3.5.0"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
