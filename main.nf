@@ -100,7 +100,6 @@ workflow {
         NFCORE_SCNANOSEQ.out.multiqc_report
     )
 
-    //NFCORE_SCNANOSEQ()
 }
 
 /*
