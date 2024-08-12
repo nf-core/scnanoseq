@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - dev
-      - template_update
   pull_request:
   release:
     types: [published]
