@@ -4,15 +4,7 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-// This is if the user passes in direct regex
-def cell_barcode_pattern = ""
 
-// This is for if the user wants to do more human readable regex
-def cell_barcode_lengths = ""
-def umi_lengths = ""
-def blaze_whitelist = ""
-
-// TODO: Move this to a config file
 if (params.barcode_format.equals("10X_3v3")) {
     blaze_whitelist = file("$baseDir/assets/whitelist/3M-february-2018.zip")
 }
@@ -51,8 +43,8 @@ include { NANOFILT                                                 } from "../mo
 include { NANOCOMP as NANOCOMP_FASTQ                               } from "../modules/local/nanocomp"
 include { NANOCOMP as NANOCOMP_BAM                                 } from "../modules/local/nanocomp"
 include { SPLIT_FILE                                               } from "../modules/local/split_file"
-include { SPLIT_FILE as SPLIT_FILE_BC_FASTQ                                               } from "../modules/local/split_file"
-include { SPLIT_FILE as SPLIT_FILE_BC_CSV                                               } from "../modules/local/split_file"
+include { SPLIT_FILE as SPLIT_FILE_BC_FASTQ                        } from "../modules/local/split_file"
+include { SPLIT_FILE as SPLIT_FILE_BC_CSV                          } from "../modules/local/split_file"
 include { PIGZ as ZIP_TRIM                                         } from "../modules/local/pigz"
 include { BLAZE                                                    } from "../modules/local/blaze"
 include { PREEXTRACT_FASTQ                                         } from "../modules/local/preextract_fastq.nf"
@@ -92,8 +84,8 @@ include { UMITOOLS_DEDUP                        } from '../modules/nf-core/umito
 include { SAMTOOLS_VIEW as SAMTOOLS_VIEW_BAM    } from "../modules/nf-core/samtools/view/main"
 include { SAMTOOLS_VIEW as SAMTOOLS_VIEW_FILTER } from "../modules/nf-core/samtools/view/main"
 include { CAT_CAT                               } from "../modules/nf-core/cat/cat/main"
-include { CAT_CAT as CAT_CAT_PREEXTRACT                               } from "../modules/nf-core/cat/cat/main"
-include { CAT_CAT as CAT_CAT_BARCODE                               } from "../modules/nf-core/cat/cat/main"
+include { CAT_CAT as CAT_CAT_PREEXTRACT         } from "../modules/nf-core/cat/cat/main"
+include { CAT_CAT as CAT_CAT_BARCODE            } from "../modules/nf-core/cat/cat/main"
 include { CAT_FASTQ                             } from '../modules/nf-core/cat/fastq/main'
 include { RSEQC_READDISTRIBUTION                } from '../modules/nf-core/rseqc/readdistribution/main'
 include { BAMTOOLS_SPLIT                        } from '../modules/nf-core/bamtools/split/main'
@@ -103,18 +95,18 @@ include { paramsSummaryMap } from 'plugin/nf-validation'
 /*
  * SUBWORKFLOW: Consisting entirely of nf-core/modules
  */
-include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_PRE_TRIM         } from '../subworkflows/nf-core/qcfastq_nanoplot_fastqc'
-include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_POST_TRIM        } from '../subworkflows/nf-core/qcfastq_nanoplot_fastqc'
-include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_POST_EXTRACT     } from '../subworkflows/nf-core/qcfastq_nanoplot_fastqc'
-include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_MINIMAP  } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
-include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_FILTERED } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
-include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_TAGGED } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
+include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_PRE_TRIM          } from '../subworkflows/nf-core/qcfastq_nanoplot_fastqc'
+include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_POST_TRIM         } from '../subworkflows/nf-core/qcfastq_nanoplot_fastqc'
+include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_POST_EXTRACT      } from '../subworkflows/nf-core/qcfastq_nanoplot_fastqc'
+include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_MINIMAP   } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
+include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_FILTERED  } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
+include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_TAGGED    } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
 include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_CORRECTED } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
-include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_SPLIT } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
-include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_DEDUP } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
-include { paramsSummaryMultiqc } from '../subworkflows/nf-core/utils_nfcore_pipeline'
-include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
-include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_scnanoseq_pipeline'
+include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_SPLIT     } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
+include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_DEDUP     } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
+include { paramsSummaryMultiqc                                         } from '../subworkflows/nf-core/utils_nfcore_pipeline'
+include { softwareVersionsToYAML                                       } from '../subworkflows/nf-core/utils_nfcore_pipeline'
+include { methodsDescriptionText                                       } from '../subworkflows/local/utils_nfcore_scnanoseq_pipeline'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -711,7 +703,7 @@ workflow SCNANOSEQ {
 
     emit:
     multiqc_report = ch_multiqc_report.toList()
-    versions = ch_versions
+    versions       = ch_versions
 }
 
 
