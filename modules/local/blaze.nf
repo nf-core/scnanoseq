@@ -11,7 +11,7 @@ process BLAZE {
 
     input:
     tuple val(meta), path(reads)
-    val in_whitelist
+    path in_whitelist
 
     output:
     tuple val(meta), path("*.putative_bc.no_header.csv") , emit: putative_bc
