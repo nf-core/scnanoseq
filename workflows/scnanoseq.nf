@@ -49,9 +49,6 @@ include { PIGZ as ZIP_TRIM                                         } from "../mo
 include { BLAZE                                                    } from "../modules/local/blaze"
 include { PREEXTRACT_FASTQ                                         } from "../modules/local/preextract_fastq.nf"
 include { READ_COUNTS                                              } from "../modules/local/read_counts.nf"
-include { PAFTOOLS                                                 } from "../modules/local/paftools"
-include { MINIMAP2_INDEX                                           } from "../modules/local/minimap2_index"
-include { MINIMAP2_ALIGN                                           } from "../modules/local/minimap2_align"
 include { TAG_BARCODES                                             } from "../modules/local/tag_barcodes"
 include { CORRECT_BARCODES                                         } from "../modules/local/correct_barcodes"
 include { ISOQUANT                                                 } from "../modules/local/isoquant"
@@ -77,36 +74,37 @@ include { PREPARE_REFERENCE_FILES } from "../subworkflows/local/prepare_referenc
 // MODULE: Installed directly from nf-core/modules
 //
 include { GUNZIP                                } from "../modules/nf-core/gunzip/main"
-include { MULTIQC as MULTIQC_RAWQC              } from '../modules/nf-core/multiqc/main'
-include { MULTIQC as MULTIQC_FINALQC            } from '../modules/nf-core/multiqc/main'
-include { CUSTOM_DUMPSOFTWAREVERSIONS           } from '../modules/nf-core/custom/dumpsoftwareversions/main'
-include { UMITOOLS_DEDUP                        } from '../modules/nf-core/umitools/dedup/main'
-include { SAMTOOLS_VIEW as SAMTOOLS_VIEW_BAM    } from "../modules/nf-core/samtools/view/main"
+include { MULTIQC as MULTIQC_RAWQC              } from "../modules/nf-core/multiqc/main"
+include { MULTIQC as MULTIQC_FINALQC            } from "../modules/nf-core/multiqc/main"
+include { CUSTOM_DUMPSOFTWAREVERSIONS           } from "../modules/nf-core/custom/dumpsoftwareversions/main"
+include { UMITOOLS_DEDUP                        } from "../modules/nf-core/umitools/dedup/main"
 include { SAMTOOLS_VIEW as SAMTOOLS_VIEW_FILTER } from "../modules/nf-core/samtools/view/main"
 include { CAT_CAT                               } from "../modules/nf-core/cat/cat/main"
 include { CAT_CAT as CAT_CAT_PREEXTRACT         } from "../modules/nf-core/cat/cat/main"
 include { CAT_CAT as CAT_CAT_BARCODE            } from "../modules/nf-core/cat/cat/main"
-include { CAT_FASTQ                             } from '../modules/nf-core/cat/fastq/main'
-include { RSEQC_READDISTRIBUTION                } from '../modules/nf-core/rseqc/readdistribution/main'
-include { BAMTOOLS_SPLIT                        } from '../modules/nf-core/bamtools/split/main'
-include { SAMTOOLS_MERGE                        } from '../modules/nf-core/samtools/merge/main'
-include { paramsSummaryMap } from 'plugin/nf-validation'
+include { CAT_FASTQ                             } from "../modules/nf-core/cat/fastq/main"
+include { MINIMAP2_INDEX                        } from "../modules/nf-core/minimap2/index/main"
+include { MINIMAP2_ALIGN                        } from "../modules/nf-core/minimap2/align/main"
+include { RSEQC_READDISTRIBUTION                } from "../modules/nf-core/rseqc/readdistribution/main"
+include { BAMTOOLS_SPLIT                        } from "../modules/nf-core/bamtools/split/main"
+include { SAMTOOLS_MERGE                        } from "../modules/nf-core/samtools/merge/main"
+include { paramsSummaryMap                      } from "plugin/nf-validation"
 
 /*
  * SUBWORKFLOW: Consisting entirely of nf-core/modules
  */
-include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_PRE_TRIM          } from '../subworkflows/nf-core/qcfastq_nanoplot_fastqc'
-include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_POST_TRIM         } from '../subworkflows/nf-core/qcfastq_nanoplot_fastqc'
-include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_POST_EXTRACT      } from '../subworkflows/nf-core/qcfastq_nanoplot_fastqc'
+include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_PRE_TRIM          } from "../subworkflows/nf-core/qcfastq_nanoplot_fastqc"
+include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_POST_TRIM         } from "../subworkflows/nf-core/qcfastq_nanoplot_fastqc"
+include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_POST_EXTRACT      } from "../subworkflows/nf-core/qcfastq_nanoplot_fastqc"
 include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_MINIMAP   } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
 include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_FILTERED  } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
 include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_TAGGED    } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
 include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_CORRECTED } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
 include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_SPLIT     } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
 include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_DEDUP     } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
-include { paramsSummaryMultiqc                                         } from '../subworkflows/nf-core/utils_nfcore_pipeline'
-include { softwareVersionsToYAML                                       } from '../subworkflows/nf-core/utils_nfcore_pipeline'
-include { methodsDescriptionText                                       } from '../subworkflows/local/utils_nfcore_scnanoseq_pipeline'
+include { paramsSummaryMultiqc                                         } from "../subworkflows/nf-core/utils_nfcore_pipeline"
+include { softwareVersionsToYAML                                       } from "../subworkflows/nf-core/utils_nfcore_pipeline"
+include { methodsDescriptionText                                       } from "../subworkflows/local/utils_nfcore_scnanoseq_pipeline"
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -196,18 +194,9 @@ workflow SCNANOSEQ {
     ch_versions = ch_versions.mix( PREPARE_REFERENCE_FILES.out.versions )
 
     //
-    // MODULE: Generate junction file - paftools
-    //
-
-    PAFTOOLS ( gtf.map { meta, gtf -> [gtf]} )
-    ch_bed = PAFTOOLS.out.bed
-    ch_versions = ch_versions.mix(PAFTOOLS.out.versions)
-
-    //
     // MODULE: Generate bed file from input gtf for rseqc
     //
 
-    //TODO: This uses params.gtf instead of gtf in PAFTOOLS
     // come back to this once intron work is finished (likely input will be fine)
     ch_pred = Channel.empty()
     ch_rseqc_bed = Channel.empty()
@@ -392,10 +381,11 @@ workflow SCNANOSEQ {
     //
     // MINIMAP2_INDEX
     //
+    ch_minimap_ref = fasta
 
     if (!params.skip_save_minimap2_index) {
-        MINIMAP2_INDEX ( fasta.map { meta, fasta -> [fasta]},  ch_bed)
-        ch_minimap_index = MINIMAP2_INDEX.out.index
+        MINIMAP2_INDEX ( fasta )
+        ch_minimap_ref = MINIMAP2_INDEX.out.index
         ch_versions = ch_versions.mix(MINIMAP2_INDEX.out.versions)
     }
 
@@ -403,25 +393,15 @@ workflow SCNANOSEQ {
     // MINIMAP2_ALIGN
     //
 
-    if (!params.skip_save_minimap2_index) {
-        ch_reference = ch_minimap_index.toList()
-    } else {
-        ch_reference = Channel.fromPath(fasta, checkIfExists: true).toList()
-    }
-    MINIMAP2_ALIGN ( ch_extracted_fastq, ch_bed, ch_reference )
+    MINIMAP2_ALIGN ( ch_extracted_fastq,
+                     ch_minimap_ref,
+                     true,
+                     "bai",
+                     "",
+                     "")
 
     ch_versions = ch_versions.mix(MINIMAP2_ALIGN.out.versions)
-    MINIMAP2_ALIGN.out.sam
-        .combine( ch_dummy_file )
-        .set { ch_minimap_sam }
-
-    //
-    // MODULE: Samtools view
-    //
-    SAMTOOLS_VIEW_BAM ( ch_minimap_sam, [[],[]], [] )
-
-    ch_minimap_bam = SAMTOOLS_VIEW_BAM.out.bam
-    ch_versions = ch_versions.mix(SAMTOOLS_VIEW_BAM.out.versions)
+    ch_minimap_bam = MINIMAP2_ALIGN.out.bam
 
     // acquire only mapped reads from bam for downstream processing
     // NOTE: some QCs steps are performed on the full BAM
