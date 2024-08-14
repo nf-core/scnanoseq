@@ -50,6 +50,11 @@
                         "git_sha": "b7ebe95761cd389603f9cc0e0dc384c0f663815a",
                         "installed_by": ["modules"]
                     },
+                    "nanocomp": {
+                        "branch": "master",
+                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
+                        "installed_by": ["modules"]
+                    },
                     "nanoplot": {
                         "branch": "master",
                         "git_sha": "a31407dfaf0cb0d04768d5cb439fc6f4523a6981",

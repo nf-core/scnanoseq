@@ -40,8 +40,6 @@ ch_dummy_file = Channel.fromPath("$projectDir/assets/dummy_file.txt", checkIfExi
 //
 
 include { NANOFILT                                                 } from "../modules/local/nanofilt"
-include { NANOCOMP as NANOCOMP_FASTQ                               } from "../modules/local/nanocomp"
-include { NANOCOMP as NANOCOMP_BAM                                 } from "../modules/local/nanocomp"
 include { SPLIT_FILE                                               } from "../modules/local/split_file"
 include { SPLIT_FILE as SPLIT_FILE_BC_FASTQ                        } from "../modules/local/split_file"
 include { SPLIT_FILE as SPLIT_FILE_BC_CSV                          } from "../modules/local/split_file"
@@ -74,6 +72,8 @@ include { PREPARE_REFERENCE_FILES } from "../subworkflows/local/prepare_referenc
 // MODULE: Installed directly from nf-core/modules
 //
 include { GUNZIP                                } from "../modules/nf-core/gunzip/main"
+include { NANOCOMP as NANOCOMP_FASTQ            } from "../modules/nf-core/nanocomp/main"
+include { NANOCOMP as NANOCOMP_BAM              } from "../modules/nf-core/nanocomp/main"
 include { MULTIQC as MULTIQC_RAWQC              } from "../modules/nf-core/multiqc/main"
 include { MULTIQC as MULTIQC_FINALQC            } from "../modules/nf-core/multiqc/main"
 include { CUSTOM_DUMPSOFTWAREVERSIONS           } from "../modules/nf-core/custom/dumpsoftwareversions/main"
@@ -120,6 +120,7 @@ workflow SCNANOSEQ {
     main:
 
     ch_versions = Channel.empty()
+    ch_multiqc_report = Channel.empty()
 
     //
     // SUBWORKFLOW: Read in samplesheet, validate and stage input files
@@ -168,10 +169,16 @@ workflow SCNANOSEQ {
     ch_nanocomp_fastq_txt = Channel.empty()
     if (!params.skip_qc && !params.skip_fastq_nanocomp) {
 
-        NANOCOMP_FASTQ ( ch_cat_fastq.collect{it[1]},
-                        ch_dummy_file )
-        ch_nanocomp_fastq_html = NANOCOMP_FASTQ.out.html
-        ch_nanocomp_fastq_txt = NANOCOMP_FASTQ.out.txt
+        NANOCOMP_FASTQ ( 
+            ch_cat_fastq
+                .collect{it[1]} 
+                .map{
+                    [ [ 'id': 'nanocomp_fastq.' ] , it ]
+                }
+        )
+
+        ch_nanocomp_fastq_html = NANOCOMP_FASTQ.out.report_html
+        ch_nanocomp_fastq_txt = NANOCOMP_FASTQ.out.stats_txt
 
         ch_versions = ch_versions.mix( NANOCOMP_FASTQ.out.versions )
 
@@ -289,8 +296,6 @@ workflow SCNANOSEQ {
     ch_gt_whitelist = BLAZE.out.whitelist
     ch_whitelist_bc_count = BLAZE.out.bc_count
     ch_versions = ch_versions.mix(BLAZE.out.versions)
-
-    ch_multiqc_report = Channel.empty()
 
     ch_split_bc_fastqs = ch_trimmed_reads_combined
     ch_split_bc = ch_putative_bc
@@ -452,11 +457,17 @@ workflow SCNANOSEQ {
 
     if (!params.skip_qc && !params.skip_bam_nanocomp) {
 
-        NANOCOMP_BAM ( ch_minimap_sorted_bam.collect{it[1]},
-                        ch_minimap_sorted_bai.collect{it[1]})
+        NANOCOMP_BAM ( 
+            ch_minimap_sorted_bam
+                .collect{it[1]} 
+                .map{
+                    [ [ 'id': 'nanocomp_bam.' ] , it ]
+                }
 
-        ch_nanocomp_bam_html = NANOCOMP_BAM.out.html
-        ch_nanocomp_bam_txt = NANOCOMP_BAM.out.txt
+        )
+
+        ch_nanocomp_bam_html = NANOCOMP_BAM.out.report_html
+        ch_nanocomp_bam_txt = NANOCOMP_BAM.out.stats_txt
         ch_versions = ch_versions.mix( NANOCOMP_BAM.out.versions )
     }
 
@@ -614,9 +625,6 @@ workflow SCNANOSEQ {
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
     )
-
-    ch_multiqc_report = Channel.empty()
-    ch_versions = Channel.empty()
 
     if (!params.skip_qc && !params.skip_multiqc){
 
