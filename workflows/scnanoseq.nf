@@ -43,7 +43,6 @@ include { NANOFILT                                                 } from "../mo
 include { SPLIT_FILE                                               } from "../modules/local/split_file"
 include { SPLIT_FILE as SPLIT_FILE_BC_FASTQ                        } from "../modules/local/split_file"
 include { SPLIT_FILE as SPLIT_FILE_BC_CSV                          } from "../modules/local/split_file"
-include { PIGZ as ZIP_TRIM                                         } from "../modules/local/pigz"
 include { BLAZE                                                    } from "../modules/local/blaze"
 include { PREEXTRACT_FASTQ                                         } from "../modules/local/preextract_fastq.nf"
 include { READ_COUNTS                                              } from "../modules/local/read_counts.nf"
@@ -71,7 +70,8 @@ include { PREPARE_REFERENCE_FILES } from "../subworkflows/local/prepare_referenc
 //
 // MODULE: Installed directly from nf-core/modules
 //
-include { GUNZIP                                } from "../modules/nf-core/gunzip/main"
+include { PIGZ_UNCOMPRESS                       } from "../modules/nf-core/pigz/uncompress/main"
+include { PIGZ_COMPRESS                         } from "../modules/nf-core/pigz/compress/main"
 include { NANOCOMP as NANOCOMP_FASTQ            } from "../modules/nf-core/nanocomp/main"
 include { NANOCOMP as NANOCOMP_BAM              } from "../modules/nf-core/nanocomp/main"
 include { MULTIQC as MULTIQC_RAWQC              } from "../modules/nf-core/multiqc/main"
@@ -220,9 +220,9 @@ workflow SCNANOSEQ {
     //
     // MODULE: Unzip fastq
     //
-    GUNZIP( ch_cat_fastq )
-    ch_unzipped_fastqs = GUNZIP.out.gunzip
-    ch_versions = ch_versions.mix( GUNZIP.out.versions )
+    PIGZ_UNCOMPRESS( ch_cat_fastq )
+    ch_unzipped_fastqs = PIGZ_UNCOMPRESS.out.file
+    ch_versions = ch_versions.mix( PIGZ_UNCOMPRESS.out.versions )
 
 
     //
@@ -353,9 +353,9 @@ workflow SCNANOSEQ {
         //
         // MODULE: Zip the reads
         //
-        ZIP_TRIM (ch_cat_preextract_fastq, "filtered" )
-        ch_extracted_fastq = ZIP_TRIM.out.archive
-        ch_versions = ch_versions.mix(ZIP_TRIM.out.versions)
+        PIGZ_COMPRESS (ch_cat_preextract_fastq )
+        ch_extracted_fastq = PIGZ_COMPRESS.out.archive
+        ch_versions = ch_versions.mix(PIGZ_COMPRESS.out.versions)
     }
 
     //
