@@ -375,6 +375,7 @@ workflow SCNANOSEQ {
                 ch_corrected_bc_info.collect{it[1]})
 
             ch_read_counts = READ_COUNTS.out.read_counts
+            ch_versions = ch_versions.mix(READ_COUNTS.out.versions)
         }
     }
 
