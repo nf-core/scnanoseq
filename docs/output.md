@@ -32,6 +32,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
   - [Nanoplot](#nanoplot) - Long Read FASTQ QC
   - [ToulligQC](#toulligqc) - Long Read FASTQ QC
   - [RSeQC](#rseqc) - Various RNA-seq QC metrics
+  - [Read Counts](#read-counts) - Read Counts QC
   - [MultiQC](#multiqc) - Aggregate report describing results and QC from the whole pipeline
 - [Pipeline information](#pipeline-information) - Report metrics generated during the workflow execution
 
@@ -317,6 +318,21 @@ The FastQC plots displayed in the MultiQC report shows _untrimmed_ reads. They m
 ![RSeQC](images/rseqc.png)
 
 [RSeQC](https://rseqc.sourceforge.net/) package provides a number of useful modules that can comprehensively evaluate high throughput sequence data especially RNA-seq data
+
+### Read Counts
+
+<details markdown="1">
+<summary>Output files</summary>
+
+- `batch_qcs/`
+  - `read_counts/`
+    - `read_counts.csv`: This file contains the read counts for each sample at various points in the pipeline. Each row is a different sample, and the columns are the amount of reads the sample contained at that point in the pipeline.
+
+</details>
+
+![Read Counts](images/read_counts.png)
+
+This is a custom script written using BASH scripting. Its purpose is to report the amount of reads that are filtered out at steps in the pipeline that will result in filtered reads, such as barcode detection, barcode correction, alignment, etc.
 
 ### MultiQC
 
