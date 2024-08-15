@@ -2,9 +2,9 @@
 // Creates gtfs to that add introns as features
 //
 
-include { GUNZIP as GUNZIP_FASTA } from '../../modules/nf-core/gunzip/main'
-include { GUNZIP as GUNZIP_GTF   } from '../../modules/nf-core/gunzip/main'
-include { SAMTOOLS_FAIDX } from '../../modules/nf-core/samtools/faidx/main'
+include { PIGZ_UNCOMPRESS as UNZIP_FASTA } from '../../modules/nf-core/pigz/uncompress/main'
+include { PIGZ_UNCOMPRESS as UNZIP_GTF   } from '../../modules/nf-core/pigz/uncompress/main'
+include { SAMTOOLS_FAIDX                 } from '../../modules/nf-core/samtools/faidx/main'
 
 workflow PREPARE_REFERENCE_FILES {
     take:
@@ -21,20 +21,20 @@ workflow PREPARE_REFERENCE_FILES {
         //
         ch_prepared_fasta = Channel.empty()
         if (fasta.endsWith('.gz')){
-            GUNZIP_FASTA( [ [:], fasta ])
+            UNZIP_FASTA( [ [:], fasta ])
 
-            ch_prepared_fasta = GUNZIP_FASTA.out.gunzip
-            ch_versions = ch_versions.mix(GUNZIP_FASTA.out.versions)
+            ch_prepared_fasta = UNZIP_FASTA.out.gunzip
+            ch_versions = ch_versions.mix(UNZIP_FASTA.out.versions)
         } else {
             ch_prepared_fasta = [ [:], fasta ]
         }
 
         ch_prepared_gtf = Channel.empty()
         if (gtf.endsWith('.gz')){
-            GUNZIP_GTF( [ [:], gtf ])
+            UNZIP_GTF( [ [:], gtf ])
 
-            ch_prepared_gtf = GUNZIP_GTF.out.gunzip
-            ch_versions = ch_versions.mix(GUNZIP_GTF.out.versions)
+            ch_prepared_gtf = UNZIP_GTF.out.gunzip
+            ch_versions = ch_versions.mix(UNZIP_GTF.out.versions)
         } else {
             ch_prepared_gtf = [ [:], gtf]
         }
