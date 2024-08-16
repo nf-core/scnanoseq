@@ -23,7 +23,7 @@ workflow PREPARE_REFERENCE_FILES {
         if (fasta.endsWith('.gz')){
             UNZIP_FASTA( [ [:], fasta ])
 
-            ch_prepared_fasta = UNZIP_FASTA.out.gunzip
+            ch_prepared_fasta = UNZIP_FASTA.out.file
             ch_versions = ch_versions.mix(UNZIP_FASTA.out.versions)
         } else {
             ch_prepared_fasta = [ [:], fasta ]
@@ -33,7 +33,7 @@ workflow PREPARE_REFERENCE_FILES {
         if (gtf.endsWith('.gz')){
             UNZIP_GTF( [ [:], gtf ])
 
-            ch_prepared_gtf = UNZIP_GTF.out.gunzip
+            ch_prepared_gtf = UNZIP_GTF.out.file
             ch_versions = ch_versions.mix(UNZIP_GTF.out.versions)
         } else {
             ch_prepared_gtf = [ [:], gtf]
