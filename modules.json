@@ -52,7 +52,8 @@
                         "git_sha": "72e277acfd9e61a9f1368eafb4a9e83f5bcaa9f5",
                         "installed_by": [
                             "modules"
-                        ]
+                        ],
+                        "patch": "modules/nf-core/minimap2/index/minimap2-index.diff"
                     },
                     "multiqc": {
                         "branch": "master",
@@ -66,7 +67,8 @@
                         "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
                         "installed_by": [
                             "modules"
-                        ]
+                        ],
+                        "patch": "modules/nf-core/nanocomp/nanocomp.diff"
                     },
                     "nanoplot": {
                         "branch": "master",

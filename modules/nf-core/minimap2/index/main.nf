@@ -1,5 +1,5 @@
 process MINIMAP2_INDEX {
-    label 'process_low'
+    label 'process_medium'
 
     // Note: the versions here need to match the versions used in minimap2/align
     conda "${moduleDir}/environment.yml"
