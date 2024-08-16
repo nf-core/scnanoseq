@@ -23,11 +23,11 @@ if (params.whitelist) {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-ch_multiqc_config          = Channel.fromPath("$projectDir/assets/multiqc_config.yml", checkIfExists: true)
-ch_multiqc_custom_config   = params.multiqc_config ? Channel.fromPath( params.multiqc_config, checkIfExists: true ) : Channel.empty()
-ch_multiqc_logo            = params.multiqc_logo   ? Channel.fromPath( params.multiqc_logo, checkIfExists: true ) : Channel.empty()
-ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
-ch_dummy_file = Channel.fromPath("$projectDir/assets/dummy_file.txt", checkIfExists: true)
+ch_multiqc_custom_config                = Channel.fromPath("$projectDir/assets/multiqc_config.yml", checkIfExists: true)
+ch_multiqc_custom_config                = params.multiqc_config ? Channel.fromPath( params.multiqc_config, checkIfExists: true ) : Channel.empty()
+ch_multiqc_logo                         = params.multiqc_logo   ? Channel.fromPath( params.multiqc_logo, checkIfExists: true ) : Channel.empty()
+ch_multiqc_custom_methods_description   = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
+ch_dummy_file                           = Channel.fromPath("$projectDir/assets/dummy_file.txt", checkIfExists: true)
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -191,7 +191,7 @@ workflow SCNANOSEQ {
     PREPARE_REFERENCE_FILES ( "",
                             "",
                             params.fasta,
-                            params.gtf)
+                            params.gtf )
 
     fasta = PREPARE_REFERENCE_FILES.out.prepped_fasta
     fai = PREPARE_REFERENCE_FILES.out.prepped_fai
@@ -228,7 +228,6 @@ workflow SCNANOSEQ {
     //
     // MODULE: Trim and filter reads
     //
-    //ch_zipped_reads = Channel.empty()
     ch_fastqc_multiqc_postrim = Channel.empty()
     ch_trimmed_reads_combined = Channel.empty()
 
@@ -282,7 +281,6 @@ workflow SCNANOSEQ {
             ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_TRIM.out.fastqc_version.first().ifEmpty(null))
         }
     } else {
-        //ch_zipped_reads = ch_cat_fastq
         ch_trimmed_reads_combined = ch_unzipped_fastqs
     }
 
@@ -290,7 +288,7 @@ workflow SCNANOSEQ {
     // MODULE: Generate whitelist
     //
 
-    BLAZE ( ch_trimmed_reads_combined, blaze_whitelist)
+    BLAZE ( ch_trimmed_reads_combined, blaze_whitelist )
 
     ch_putative_bc = BLAZE.out.putative_bc
     ch_gt_whitelist = BLAZE.out.whitelist
@@ -318,7 +316,7 @@ workflow SCNANOSEQ {
     // MODULE: Extract barcodes
     //
 
-    PREEXTRACT_FASTQ( ch_split_bc_fastqs.join(ch_split_bc), params.barcode_format)
+    PREEXTRACT_FASTQ( ch_split_bc_fastqs.join(ch_split_bc), params.barcode_format )
     ch_barcode_info = PREEXTRACT_FASTQ.out.barcode_info
     ch_preextract_fastq = PREEXTRACT_FASTQ.out.extracted_fastq
 
@@ -404,7 +402,7 @@ workflow SCNANOSEQ {
                      true,
                      "bai",
                      "",
-                     "")
+                     "" )
 
     ch_versions = ch_versions.mix(MINIMAP2_ALIGN.out.versions)
     ch_minimap_bam = MINIMAP2_ALIGN.out.bam
@@ -498,7 +496,6 @@ workflow SCNANOSEQ {
     ch_tagged_sorted_idxstats =  BAM_SORT_STATS_SAMTOOLS_TAGGED.out.idxstats
     ch_versions = ch_versions.mix(BAM_SORT_STATS_SAMTOOLS_TAGGED.out.versions)
 
-    // TODO: Rename the dedup_bam channel to be more descriptive
     ch_dedup_sorted_bam = ch_tagged_sorted_bam
     ch_dedup_sorted_bam_bai = ch_tagged_sorted_bai
     ch_dedup_sorted_flagstat = ch_tagged_sorted_flagstat
@@ -674,8 +671,6 @@ workflow SCNANOSEQ {
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_dedup_sorted_flagstat.collect{it[1]}.ifEmpty([]))
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_dedup_sorted_idxstats.collect{it[1]}.ifEmpty([]))
 
-        // see issue #12 (too many files when split by chr)
-        //ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_dedup_log.collect{it[1]}.ifEmpty([]))
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_read_counts.collect().ifEmpty([]))
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_gene_stats_combined.collect().ifEmpty([]))
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_transcript_stats_combined.collect().ifEmpty([]))
