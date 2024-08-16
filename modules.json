@@ -90,7 +90,8 @@
                         "git_sha": "c00055a0b13d622b4f1f51a8e5be31deaf99ded7",
                         "installed_by": [
                             "modules"
-                        ]
+                        ],
+                        "patch": "modules/nf-core/pigz/uncompress/pigz-uncompress.diff"
                     },
                     "rseqc/readdistribution": {
                         "branch": "master",
