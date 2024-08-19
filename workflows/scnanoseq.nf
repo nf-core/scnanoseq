@@ -169,9 +169,9 @@ workflow SCNANOSEQ {
     ch_nanocomp_fastq_txt = Channel.empty()
     if (!params.skip_qc && !params.skip_fastq_nanocomp) {
 
-        NANOCOMP_FASTQ ( 
+        NANOCOMP_FASTQ (
             ch_cat_fastq
-                .collect{it[1]} 
+                .collect{it[1]}
                 .map{
                     [ [ 'id': 'nanocomp_fastq.' ] , it ]
                 }
@@ -397,12 +397,13 @@ workflow SCNANOSEQ {
     // MINIMAP2_ALIGN
     //
 
-    MINIMAP2_ALIGN ( ch_extracted_fastq,
-                     ch_minimap_ref,
-                     true,
-                     "bai",
-                     "",
-                     "" )
+    MINIMAP2_ALIGN (
+        ch_extracted_fastq,
+        ch_minimap_ref,
+        true,
+        "bai",
+        "",
+        "" )
 
     ch_versions = ch_versions.mix(MINIMAP2_ALIGN.out.versions)
     ch_minimap_bam = MINIMAP2_ALIGN.out.bam
@@ -455,9 +456,9 @@ workflow SCNANOSEQ {
 
     if (!params.skip_qc && !params.skip_bam_nanocomp) {
 
-        NANOCOMP_BAM ( 
+        NANOCOMP_BAM (
             ch_minimap_sorted_bam
-                .collect{it[1]} 
+                .collect{it[1]}
                 .map{
                     [ [ 'id': 'nanocomp_bam.' ] , it ]
                 }

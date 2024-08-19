@@ -27,7 +27,7 @@ process READ_COUNTS {
         $args \\
         --input ./ \\
         --output read_counts.csv
-    
+
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         perl: \$(perl --version | head -n2 | tail -n1 |  sed -n 's/.*(v\\([^)]*\\)).*/\\1/p')
