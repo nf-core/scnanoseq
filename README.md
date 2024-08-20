@@ -19,7 +19,7 @@
 
 ## Introduction
 
-**nf-core/scnanoseq** is a bioinformatics best-practice analysis pipeline for 10X Genomics single-cell/nuclei RNA-seq for data derived from Oxford Nanopore Q20+ chemistry ([R10.4 flow cells (>Q20)](https://nanoporetech.com/about-us/news/oxford-nanopore-announces-technology-updates-nanopore-community-meeting)). Due to the expectation of >Q20 quality, the input data for the pipeline is not dependent on Illumina paired data. Please note `scnanoseq` can also process Oxford data with older chemistry, but we encourage usage of the Q20+ chemistry.
+**nf-core/scnanoseq** is a bioinformatics best-practice analysis pipeline for 10X Genomics single-cell/nuclei RNA-seq for data derived from Oxford Nanopore Q20+ chemistry ([R10.4 flow cells (>Q20)](https://nanoporetech.com/about-us/news/oxford-nanopore-announces-technology-updates-nanopore-community-meeting)). Due to the expectation of >Q20 quality, the input data for the pipeline is not dependent on Illumina paired data. **Please note `scnanoseq` can also process Oxford data with older chemistry, but we encourage usage of the Q20+ chemistry when possible**.
 
 The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It uses Docker/Singularity containers making installation trivial and results highly reproducible. The [Nextflow DSL2](https://www.nextflow.io/docs/latest/dsl2.html) implementation of this pipeline uses one container per process which makes it much easier to maintain and update software dependencies. Where possible, these processes have been submitted to and installed from [nf-core/modules](https://github.com/nf-core/modules) in order to make them available to all nf-core pipelines, and to everyone within the Nextflow community!
 
@@ -30,7 +30,7 @@ On release, automated continuous integration tests run the pipeline on a full-si
 ![scnanoseq diagram](assets/scnanoseq_diagram.png)
 
 1. Raw read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [`NanoPlot`](https://github.com/wdecoster/NanoPlot), [`NanoComp`](https://github.com/wdecoster/nanocomp) and [`ToulligQC`](https://github.com/GenomiqueENS/toulligQC))
-2. Unzip and split FASTQ ([`gunzip`](https://linux.die.net/man/1/gunzip))
+2. Unzip and split FASTQ ([`pigz`](https://github.com/madler/pigz))
    1. Optional: Split FASTQ for faster processing ([`split`](https://linux.die.net/man/1/split))
 3. Trim and filter reads. ([`Nanofilt`](https://github.com/wdecoster/nanofilt))
 4. Post trim QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [`NanoPlot`](https://github.com/wdecoster/NanoPlot) and [`ToulligQC`](https://github.com/GenomiqueENS/toulligQC))
@@ -100,10 +100,10 @@ If you experience any issues, please make sure to reach out on the [#scnanoseq s
 split_amount: 500000
 ```
 
-- We have seen a recurrent node failure on slurm clusters that does seem to be related to submission of nextflow jobs. This issue is not related to this pipeline per se, but rather to nextflow itself. We are currently working on a resolution. But we have two methods that appear to help overcome should this issue arise:
+- We have seen a recurrent node failure on slurm clusters that does seem to be related to submission of Nextflow jobs. This issue is not related to this pipeline per se, but rather to Nextflow itself. We are currently working on a resolution. But we have two methods that appear to help overcome should this issue arise:
   1. Provide a custom config that increases the memory request for the job that failed. This may take a couple attempts to find the correct requests, but we have noted that there does appear to be a memory issue occasionally with these errors.
   2. Request an interactive session with a decent amount of time and memory and CPUs in order to run the pipeline on the single node. Note that this will take time as there will be minimal parallelization, but this does seem to resolve the issue.
-- We acknowledge that analyzing PromethION is a common use case for this pipeline. Currently, the pipeline has been developed with defaults to analyze GridION and average sized PromethION data. For cases, where jobs have failed due for larger PromethION datasets, the defaults have been overwritten by a custom configuation file (provided by the `-c` Nextflow option) where resources were increased (substantially in some cases). Below are some of the overrides we have used, while these amounts may not work on every dataset, these will hopefully at least note which processes will need to have their resources increased:
+- We acknowledge that analyzing PromethION is a common use case for this pipeline. Currently, the pipeline has been developed with defaults to analyze GridION and average sized PromethION data. For cases, where jobs have fail due for larger PromethION datasets, the defaults can be overwritten by a custom configuation file (provided by the `-c` Nextflow option) where resources are increased (substantially in some cases). Below are some of the overrides we have used, and while these amounts may not work on every dataset, these will hopefully at least note which processes will need to have their resources increased:
 
 ```groovy title="custom.config"
 
@@ -131,6 +131,14 @@ process
 
 process
 {
+    withName: '.*:TAG_BARCODES'
+    {
+        memory = '60.GB'
+    }
+}
+
+process
+{
     withName: '.*:SAMTOOLS_SORT'
     {
         cpus = 20
@@ -149,8 +157,8 @@ process
 {
     withName: '.*:ISOQUANT'
     {
-        cpus = 40
-        time = '135.h'
+        cpus = 30
+        memory = '85.GB'
     }
 }
 ```

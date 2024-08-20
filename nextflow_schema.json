@@ -84,7 +84,8 @@
                     "description": "Do not load the iGenomes reference config.",
                     "fa_icon": "fas fa-ban",
                     "hidden": true,
-                    "help_text": "Do not load `igenomes.config` when running the pipeline. You may choose this option if you observe clashes between custom parameters and those supplied in `igenomes.config`."
+                    "help_text": "Do not load `igenomes.config` when running the pipeline. You may choose this option if you observe clashes between custom parameters and those supplied in `igenomes.config`.",
+                    "default": true
                 }
             },
             "required": ["fasta", "gtf"]
@@ -98,7 +99,7 @@
             "properties": {
                 "split_amount": {
                     "type": "integer",
-                    "description": "The amount of lines to split  the fastq into (Default: 0)",
+                    "description": "The amount of lines to split  the fastq into for faster processing (Default: 0)",
                     "default": 0,
                     "fa_icon": "fas fa-cut"
                 }
