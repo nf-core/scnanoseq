@@ -185,11 +185,6 @@
             "default": "",
             "fa_icon": "fas fa-search",
             "properties": {
-                "analyze_uncorrected_bam": {
-                    "type": "boolean",
-                    "description": "Run downstream steps on the bam that contains reads that could not be corrected. Do not use this if no whitelist is provided.",
-                    "fa_icon": "fas fa-search"
-                },
                 "retain_introns": {
                     "type": "boolean",
                     "default": true,

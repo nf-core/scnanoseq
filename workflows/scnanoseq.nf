@@ -498,8 +498,9 @@ workflow SCNANOSEQ {
     ch_versions = ch_versions.mix(BAM_SORT_STATS_SAMTOOLS_TAGGED.out.versions)
 
     ch_dedup_sorted_bam = ch_tagged_sorted_bam
-    ch_dedup_sorted_bam_bai = ch_tagged_sorted_bai
+    ch_dedup_sorted_bai = ch_tagged_sorted_bai
     ch_dedup_sorted_flagstat = ch_tagged_sorted_flagstat
+    ch_dedup_sorted_idxstats = Channel.empty() 
     ch_dedup_log = Channel.empty()
 
     if (!params.skip_dedup) {
@@ -669,8 +670,10 @@ workflow SCNANOSEQ {
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_tagged_sorted_flagstat.collect{it[1]}.ifEmpty([]))
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_tagged_sorted_idxstats.collect{it[1]}.ifEmpty([]))
 
-        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_dedup_sorted_flagstat.collect{it[1]}.ifEmpty([]))
-        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_dedup_sorted_idxstats.collect{it[1]}.ifEmpty([]))
+        if (!params.skip_dedup) {
+            ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_dedup_sorted_flagstat.collect{it[1]}.ifEmpty([]))
+            ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_dedup_sorted_idxstats.collect{it[1]}.ifEmpty([]))
+        }
 
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_read_counts.collect().ifEmpty([]))
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_gene_stats_combined.collect().ifEmpty([]))
