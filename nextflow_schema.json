@@ -113,7 +113,7 @@
             "properties": {
                 "min_length": {
                     "type": "integer",
-                    "default": 500,
+                    "default": 1,
                     "description": "Choose minimum read length.",
                     "fa_icon": "fas fa-cut"
                 },
