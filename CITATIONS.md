@@ -12,7 +12,7 @@
 
 - [BLAZE](https://pubmed.ncbi.nlm.nih.gov/37024980/)
 
-  > You Y, Prawer YDJ, De Paoli-Iseppi R, Hunt CPJ, Parish CL, Shim H, Clark MB. Identification of cell barcodes from long-read single-cell RNA-seq with BLAZE. Genome Biol. 2023 Apr 6;24(1):66. doi: 10.1186/s13059-023-02907-y. PMID: 37024980; PMCID: PMC10077662. 
+  > You Y, Prawer YDJ, De Paoli-Iseppi R, Hunt CPJ, Parish CL, Shim H, Clark MB. Identification of cell barcodes from long-read single-cell RNA-seq with BLAZE. Genome Biol. 2023 Apr 6;24(1):66. doi: 10.1186/s13059-023-02907-y. PMID: 37024980; PMCID: PMC10077662.
 
 - [FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/)
 

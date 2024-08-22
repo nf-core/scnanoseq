@@ -88,7 +88,7 @@ The above pipeline run specified with a params file in yaml format:
 nextflow run nf-core/scnanoseq -profile <docker/singularity/institute> -params-file params.yaml
 ```
 
-with 
+with
 
 ```yaml title="params.yaml"
 input: "./samplesheet.csv"

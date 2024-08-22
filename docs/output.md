@@ -37,7 +37,9 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 - [Pipeline information](#pipeline-information) - Report metrics generated during the workflow execution
 
 ## Preprocessing
+
 ### Nanofilt
+
 <details markdown="1">
 <summary>Output files</summary>
 
@@ -51,7 +53,9 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 [Nanofilt](https://github.com/wdecoster/nanofilt) is a tool used for filtering and trimming of long read sequencing data.
 
 ## Barcode Calling
+
 ### BLAZE
+
 <details markdown="1">
 <summary>Output files</summary>
 
@@ -59,8 +63,8 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
   - `blaze/`
     - `blaze/*.bc_count.txt` : This is a file containing each barcode and the counts of how many reads support it.
     - `blaze/*.knee_plot.png` : The knee plot detailing the ranking of each barcode.
-    - `blaze/*.putative_bc.csv` : This file contains the naively detected barcode for each read. 
-    - `blaze/*.whitelist.csv` : This is a list of the "true" barcodes detected for a sample. The length of the file should roughly match the expected amount of cells that is expected for the sample. 
+    - `blaze/*.putative_bc.csv` : This file contains the naively detected barcode for each read.
+    - `blaze/*.whitelist.csv` : This is a list of the "true" barcodes detected for a sample. The length of the file should roughly match the expected amount of cells that is expected for the sample.
 
 </details>
 
@@ -71,22 +75,22 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 The knee plot (an example is listed above) that is provided by BLAZE shows all barcodes detected in a sample, ranked from highest to lowest read count. The "cliff-and-knee" shape (similar to the image above) is indicative of good quality. Deviations from this shape can be indicative of concerns with the data, such as low barcode counts. The `*.bc_count.txt` file can be used to accompany this figure to show every barcode and its abundance in the dataset.
 
 ## Alignment
+
 ### Minimap2
 
 <details markdown="1">
 <summary>Output files</summary>
 
 - `<sample_identifier>/`
-  - `bam/`
-    - `original/`
-      - `*.sorted.bam` : The mapped and sorted bam.
-      - `*.sorted.bam.bai` : The bam index for the mapped and sorted bam.
-</details>
+  - `bam/` - `original/` - `*.sorted.bam` : The mapped and sorted bam. - `*.sorted.bam.bai` : The bam index for the mapped and sorted bam.
+  </details>
 
 [Minimap2](https://github.com/lh3/minimap2) is a versatile sequence alignment program that aligns DNA or mRNA sequences against a large reference database. Minimap2 is optimized for large, noisy reads making it a staple for alignment of nanopore reads.
 
 ## Alignment Post-processing
+
 ### Samtools
+
 <details markdown="1">
 <summary>Output files</summary>
 
@@ -95,25 +99,8 @@ The knee plot (an example is listed above) that is provided by BLAZE shows all b
     - `mapped_only/`
       - `*.sorted.bam` : The bam contaning only reads that were able to be mapped.
       - `*.sorted.bam.bai` : The bam index for the bam containing only reads that were able to be mapped.
-  - `qc/`
-    - `samtools/`
-      - `minimap/`
-        - `*.minimap.flagstat` : The flagstat file for the bam obtained from minimap.
-        - `*.minimap.idxstats` : The idxstats file for the bam obtained from minimap.
-        - `*.minimap.stats` : The stats file for the bam obtained from minimap.
-      - `mapped_only/`
-        - `*.mapped_only.flagstat` : The flagstat file for the bam containing only mapped reads.
-        - `*.mapped_only.idxstats` : The idxstats file for the bam containing only mapped reads.
-        - `*.mapped_only.stats` : The stats file for the bam containing only mapped reads.
-      - `corrected/`
-        - `*.corrected.flagstat` : The flagstat file for the bam containing corrected barcodes.
-        - `*.corrected.idxstats` : The idxstat file for the bam containing corrected barcodes.
-        - `*.corrected.stats` : The stat file for the bam containing corrected barcodes.
-      - `dedup/`
-        - `*.dedup.flagstat` : The flagstat file for the bam containing deduplicated umis.
-        - `*.dedup.idxstats` : The idxstats file for the bam containing deduplicated umis.
-        - `*.dedup.stats` : The stats file for the bam containing deduplicated umis.
-</details>
+  - `qc/` - `samtools/` - `minimap/` - `*.minimap.flagstat` : The flagstat file for the bam obtained from minimap. - `*.minimap.idxstats` : The idxstats file for the bam obtained from minimap. - `*.minimap.stats` : The stats file for the bam obtained from minimap. - `mapped_only/` - `*.mapped_only.flagstat` : The flagstat file for the bam containing only mapped reads. - `*.mapped_only.idxstats` : The idxstats file for the bam containing only mapped reads. - `*.mapped_only.stats` : The stats file for the bam containing only mapped reads. - `corrected/` - `*.corrected.flagstat` : The flagstat file for the bam containing corrected barcodes. - `*.corrected.idxstats` : The idxstat file for the bam containing corrected barcodes. - `*.corrected.stats` : The stat file for the bam containing corrected barcodes. - `dedup/` - `*.dedup.flagstat` : The flagstat file for the bam containing deduplicated umis. - `*.dedup.idxstats` : The idxstats file for the bam containing deduplicated umis. - `*.dedup.stats` : The stats file for the bam containing deduplicated umis.
+  </details>
 
 ![MultiQC - samtools idxstats](images/samtools_idxstats.png)
 ![MultiQC - samtools stats](images/samtools_stats.png)
@@ -121,6 +108,7 @@ The knee plot (an example is listed above) that is provided by BLAZE shows all b
 [Samtools](https://www.htslib.org/) is a suite of programs for reading, writing, editing, indexing, and viewing files that are in SAM, BAM, or CRAM format
 
 ### Barcode Tagging
+
 <details markdown="1">
 <summary>Output files</summary>
 
@@ -143,6 +131,7 @@ UMI quality tag = "UY"
 Please see [Barcode Correction](#barcode-correction) below for metadata added post-correction.
 
 ### Barcode Correction
+
 <details markdown="1">
 <summary>Output files</summary>
 
@@ -157,6 +146,7 @@ Please see [Barcode Correction](#barcode-correction) below for metadata added po
 Barcode correction is a custom script that uses the whitelist generated by BLAZE in order to correct barcodes that are not on the whitelist into a whitelisted barcode. During this step, an additional BAM tag is added, `CB`, to indicate a barcode sequence that is error-corected.
 
 ### UMI Deduplication
+
 <details markdown="1">
 <summary>Output files</summary>
 
@@ -171,7 +161,9 @@ Barcode correction is a custom script that uses the whitelist generated by BLAZE
 [UMI-Tools](https://umi-tools.readthedocs.io/en/latest/reference/dedup.html) deduplicate reads based on the mapping co-ordinate and the UMI attached to the read. The identification of duplicate reads is performed in an error-aware manner by building networks of related UMIs
 
 ## Feature-Barcode Quantification
+
 ### IsoQuant
+
 <details markdown="1">
 <summary>Output files</summary>
 
@@ -185,18 +177,13 @@ Barcode correction is a custom script that uses the whitelist generated by BLAZE
 [IsoQuant](https://github.com/ablab/IsoQuant) is a tool for the genome-based analysis of long RNA reads, such as PacBio or Oxford Nanopores. IsoQuant allows to reconstruct and quantify transcript models with high precision and decent recall. If the reference annotation is given, IsoQuant also assigns reads to the annotated isoforms based on their intron and exon structure. IsoQuant further performs annotated gene, isoform, exon and intron quantification. The outputs of IsoQuant can be important for downstream analysis with tools specialized in single-cell/nuclei analysis (e.g.: `Seurat`).
 
 ### Seurat
+
 <details markdown="1">
 <summary>Output files</summary>
 
 - `<sample_identifier>/`
-  - `qc/`
-    - `gene/`
-      - `*.csv`: A file containing statistics about the cell-read distribution for genes.
-      - `*.png`: A series of qc images to determine the quality of the gene quantification.
-    - `transcript/`
-      - `*.csv`: A file containing statistics about the cell-read distribution for transcript.
-      - `*.png`: A series of qc images to determine the quality of the transcript quantification.
-</details>
+  - `qc/` - `gene/` - `*.csv`: A file containing statistics about the cell-read distribution for genes. - `*.png`: A series of qc images to determine the quality of the gene quantification. - `transcript/` - `*.csv`: A file containing statistics about the cell-read distribution for transcript. - `*.png`: A series of qc images to determine the quality of the transcript quantification.
+  </details>
 
 ![MultiQC - seurat](images/seurat.png)
 _High level statistics are provided in the MultiQC report, as show in this image. These provide an overview of the quality of the data in order to assess if the results are suitable for tertiary analysis._
@@ -204,7 +191,9 @@ _High level statistics are provided in the MultiQC report, as show in this image
 [Seurat](https://satijalab.org/seurat/) is an R package designed for QC, analysis, and exploration of single-cell RNA-seq data.
 
 ## Other steps
+
 ### UCSC
+
 <details markdown="1">
 <summary>Output files</summary>
 
@@ -217,7 +206,9 @@ _High level statistics are provided in the MultiQC report, as show in this image
 [`ucsc-gtftogenepred` and `ucsc-genepredtobed`](https://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/) are stand-alone applications developed by UCSC which, together, converts a GTF file the BED file format.
 
 ## Quality Control
+
 ### FastQC
+
 <details markdown="1">
 <summary>Output files</summary>
 
@@ -263,6 +254,7 @@ The FastQC plots displayed in the MultiQC report shows _untrimmed_ reads. They m
 [Nanocomp](https://github.com/wdecoster/nanocomp) compares multiple runs of long read sequencing data and alignments. It creates violin plots or box plots of length, quality and percent identity and creates dynamic, overlaying read length histograms and a cumulative yield plot
 
 ### Nanoplot
+
 <details markdown="1">
 <summary>Output files</summary>
 
@@ -284,6 +276,7 @@ The FastQC plots displayed in the MultiQC report shows _untrimmed_ reads. They m
 [Nanoplot](https://github.com/wdecoster/NanoPlot) is a plotting tool for long read sequencing data and alignments.
 
 ### ToulligQC
+
 <details markdown="1">
 <summary>Output files</summary>
 

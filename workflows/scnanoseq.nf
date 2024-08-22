@@ -500,7 +500,7 @@ workflow SCNANOSEQ {
     ch_dedup_sorted_bam = ch_tagged_sorted_bam
     ch_dedup_sorted_bai = ch_tagged_sorted_bai
     ch_dedup_sorted_flagstat = ch_tagged_sorted_flagstat
-    ch_dedup_sorted_idxstats = Channel.empty() 
+    ch_dedup_sorted_idxstats = Channel.empty()
     ch_dedup_log = Channel.empty()
 
     if (!params.skip_dedup) {
