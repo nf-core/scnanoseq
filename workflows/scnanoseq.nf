@@ -4,15 +4,7 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-// This is if the user passes in direct regex
-def cell_barcode_pattern = ""
 
-// This is for if the user wants to do more human readable regex
-def cell_barcode_lengths = ""
-def umi_lengths = ""
-def blaze_whitelist = ""
-
-// TODO: Move this to a config file
 if (params.barcode_format.equals("10X_3v3")) {
     blaze_whitelist = file("$baseDir/assets/whitelist/3M-february-2018.zip")
 }
@@ -31,11 +23,11 @@ if (params.whitelist) {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-ch_multiqc_config          = Channel.fromPath("$projectDir/assets/multiqc_config.yml", checkIfExists: true)
-ch_multiqc_custom_config   = params.multiqc_config ? Channel.fromPath( params.multiqc_config, checkIfExists: true ) : Channel.empty()
-ch_multiqc_logo            = params.multiqc_logo   ? Channel.fromPath( params.multiqc_logo, checkIfExists: true ) : Channel.empty()
-ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
-ch_dummy_file = Channel.fromPath("$projectDir/assets/dummy_file.txt", checkIfExists: true)
+ch_multiqc_config                       = Channel.fromPath("$projectDir/assets/multiqc_config.yml", checkIfExists: true)
+ch_multiqc_custom_config                = params.multiqc_config ? Channel.fromPath( params.multiqc_config, checkIfExists: true ) : Channel.empty()
+ch_multiqc_logo                         = params.multiqc_logo   ? Channel.fromPath( params.multiqc_logo, checkIfExists: true ) : Channel.empty()
+ch_multiqc_custom_methods_description   = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
+ch_dummy_file                           = Channel.fromPath("$projectDir/assets/dummy_file.txt", checkIfExists: true)
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -48,18 +40,12 @@ ch_dummy_file = Channel.fromPath("$projectDir/assets/dummy_file.txt", checkIfExi
 //
 
 include { NANOFILT                                                 } from "../modules/local/nanofilt"
-include { NANOCOMP as NANOCOMP_FASTQ                               } from "../modules/local/nanocomp"
-include { NANOCOMP as NANOCOMP_BAM                                 } from "../modules/local/nanocomp"
 include { SPLIT_FILE                                               } from "../modules/local/split_file"
-include { SPLIT_FILE as SPLIT_FILE_BC_FASTQ                                               } from "../modules/local/split_file"
-include { SPLIT_FILE as SPLIT_FILE_BC_CSV                                               } from "../modules/local/split_file"
-include { PIGZ as ZIP_TRIM                                         } from "../modules/local/pigz"
+include { SPLIT_FILE as SPLIT_FILE_BC_FASTQ                        } from "../modules/local/split_file"
+include { SPLIT_FILE as SPLIT_FILE_BC_CSV                          } from "../modules/local/split_file"
 include { BLAZE                                                    } from "../modules/local/blaze"
 include { PREEXTRACT_FASTQ                                         } from "../modules/local/preextract_fastq.nf"
 include { READ_COUNTS                                              } from "../modules/local/read_counts.nf"
-include { PAFTOOLS                                                 } from "../modules/local/paftools"
-include { MINIMAP2_INDEX                                           } from "../modules/local/minimap2_index"
-include { MINIMAP2_ALIGN                                           } from "../modules/local/minimap2_align"
 include { TAG_BARCODES                                             } from "../modules/local/tag_barcodes"
 include { CORRECT_BARCODES                                         } from "../modules/local/correct_barcodes"
 include { ISOQUANT                                                 } from "../modules/local/isoquant"
@@ -84,37 +70,41 @@ include { PREPARE_REFERENCE_FILES } from "../subworkflows/local/prepare_referenc
 //
 // MODULE: Installed directly from nf-core/modules
 //
-include { GUNZIP                                } from "../modules/nf-core/gunzip/main"
-include { MULTIQC as MULTIQC_RAWQC              } from '../modules/nf-core/multiqc/main'
-include { MULTIQC as MULTIQC_FINALQC            } from '../modules/nf-core/multiqc/main'
-include { CUSTOM_DUMPSOFTWAREVERSIONS           } from '../modules/nf-core/custom/dumpsoftwareversions/main'
-include { UMITOOLS_DEDUP                        } from '../modules/nf-core/umitools/dedup/main'
-include { SAMTOOLS_VIEW as SAMTOOLS_VIEW_BAM    } from "../modules/nf-core/samtools/view/main"
+include { PIGZ_UNCOMPRESS                       } from "../modules/nf-core/pigz/uncompress/main"
+include { PIGZ_COMPRESS                         } from "../modules/nf-core/pigz/compress/main"
+include { NANOCOMP as NANOCOMP_FASTQ            } from "../modules/nf-core/nanocomp/main"
+include { NANOCOMP as NANOCOMP_BAM              } from "../modules/nf-core/nanocomp/main"
+include { MULTIQC as MULTIQC_RAWQC              } from "../modules/nf-core/multiqc/main"
+include { MULTIQC as MULTIQC_FINALQC            } from "../modules/nf-core/multiqc/main"
+include { CUSTOM_DUMPSOFTWAREVERSIONS           } from "../modules/nf-core/custom/dumpsoftwareversions/main"
+include { UMITOOLS_DEDUP                        } from "../modules/nf-core/umitools/dedup/main"
 include { SAMTOOLS_VIEW as SAMTOOLS_VIEW_FILTER } from "../modules/nf-core/samtools/view/main"
 include { CAT_CAT                               } from "../modules/nf-core/cat/cat/main"
-include { CAT_CAT as CAT_CAT_PREEXTRACT                               } from "../modules/nf-core/cat/cat/main"
-include { CAT_CAT as CAT_CAT_BARCODE                               } from "../modules/nf-core/cat/cat/main"
-include { CAT_FASTQ                             } from '../modules/nf-core/cat/fastq/main'
-include { RSEQC_READDISTRIBUTION                } from '../modules/nf-core/rseqc/readdistribution/main'
-include { BAMTOOLS_SPLIT                        } from '../modules/nf-core/bamtools/split/main'
-include { SAMTOOLS_MERGE                        } from '../modules/nf-core/samtools/merge/main'
-include { paramsSummaryMap } from 'plugin/nf-validation'
+include { CAT_CAT as CAT_CAT_PREEXTRACT         } from "../modules/nf-core/cat/cat/main"
+include { CAT_CAT as CAT_CAT_BARCODE            } from "../modules/nf-core/cat/cat/main"
+include { CAT_FASTQ                             } from "../modules/nf-core/cat/fastq/main"
+include { MINIMAP2_INDEX                        } from "../modules/nf-core/minimap2/index/main"
+include { MINIMAP2_ALIGN                        } from "../modules/nf-core/minimap2/align/main"
+include { RSEQC_READDISTRIBUTION                } from "../modules/nf-core/rseqc/readdistribution/main"
+include { BAMTOOLS_SPLIT                        } from "../modules/nf-core/bamtools/split/main"
+include { SAMTOOLS_MERGE                        } from "../modules/nf-core/samtools/merge/main"
+include { paramsSummaryMap                      } from "plugin/nf-validation"
 
 /*
  * SUBWORKFLOW: Consisting entirely of nf-core/modules
  */
-include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_PRE_TRIM         } from '../subworkflows/nf-core/qcfastq_nanoplot_fastqc'
-include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_POST_TRIM        } from '../subworkflows/nf-core/qcfastq_nanoplot_fastqc'
-include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_POST_EXTRACT     } from '../subworkflows/nf-core/qcfastq_nanoplot_fastqc'
-include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_MINIMAP  } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
-include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_FILTERED } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
-include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_TAGGED } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
+include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_PRE_TRIM          } from "../subworkflows/nf-core/qcfastq_nanoplot_fastqc"
+include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_POST_TRIM         } from "../subworkflows/nf-core/qcfastq_nanoplot_fastqc"
+include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_POST_EXTRACT      } from "../subworkflows/nf-core/qcfastq_nanoplot_fastqc"
+include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_MINIMAP   } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
+include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_FILTERED  } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
+include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_TAGGED    } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
 include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_CORRECTED } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
-include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_SPLIT } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
-include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_DEDUP } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
-include { paramsSummaryMultiqc } from '../subworkflows/nf-core/utils_nfcore_pipeline'
-include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
-include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_scnanoseq_pipeline'
+include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_SPLIT     } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
+include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_DEDUP     } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
+include { paramsSummaryMultiqc                                         } from "../subworkflows/nf-core/utils_nfcore_pipeline"
+include { softwareVersionsToYAML                                       } from "../subworkflows/nf-core/utils_nfcore_pipeline"
+include { methodsDescriptionText                                       } from "../subworkflows/local/utils_nfcore_scnanoseq_pipeline"
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -130,6 +120,7 @@ workflow SCNANOSEQ {
     main:
 
     ch_versions = Channel.empty()
+    ch_multiqc_report = Channel.empty()
 
     //
     // SUBWORKFLOW: Read in samplesheet, validate and stage input files
@@ -178,10 +169,16 @@ workflow SCNANOSEQ {
     ch_nanocomp_fastq_txt = Channel.empty()
     if (!params.skip_qc && !params.skip_fastq_nanocomp) {
 
-        NANOCOMP_FASTQ ( ch_cat_fastq.collect{it[1]},
-                        ch_dummy_file )
-        ch_nanocomp_fastq_html = NANOCOMP_FASTQ.out.html
-        ch_nanocomp_fastq_txt = NANOCOMP_FASTQ.out.txt
+        NANOCOMP_FASTQ (
+            ch_cat_fastq
+                .collect{it[1]}
+                .map{
+                    [ [ 'id': 'nanocomp_fastq.' ] , it ]
+                }
+        )
+
+        ch_nanocomp_fastq_html = NANOCOMP_FASTQ.out.report_html
+        ch_nanocomp_fastq_txt = NANOCOMP_FASTQ.out.stats_txt
 
         ch_versions = ch_versions.mix( NANOCOMP_FASTQ.out.versions )
 
@@ -194,7 +191,7 @@ workflow SCNANOSEQ {
     PREPARE_REFERENCE_FILES ( "",
                             "",
                             params.fasta,
-                            params.gtf)
+                            params.gtf )
 
     fasta = PREPARE_REFERENCE_FILES.out.prepped_fasta
     fai = PREPARE_REFERENCE_FILES.out.prepped_fai
@@ -204,18 +201,9 @@ workflow SCNANOSEQ {
     ch_versions = ch_versions.mix( PREPARE_REFERENCE_FILES.out.versions )
 
     //
-    // MODULE: Generate junction file - paftools
-    //
-
-    PAFTOOLS ( gtf.map { meta, gtf -> [gtf]} )
-    ch_bed = PAFTOOLS.out.bed
-    ch_versions = ch_versions.mix(PAFTOOLS.out.versions)
-
-    //
     // MODULE: Generate bed file from input gtf for rseqc
     //
 
-    //TODO: This uses params.gtf instead of gtf in PAFTOOLS
     // come back to this once intron work is finished (likely input will be fine)
     ch_pred = Channel.empty()
     ch_rseqc_bed = Channel.empty()
@@ -232,15 +220,14 @@ workflow SCNANOSEQ {
     //
     // MODULE: Unzip fastq
     //
-    GUNZIP( ch_cat_fastq )
-    ch_unzipped_fastqs = GUNZIP.out.gunzip
-    ch_versions = ch_versions.mix( GUNZIP.out.versions )
+    PIGZ_UNCOMPRESS( ch_cat_fastq )
+    ch_unzipped_fastqs = PIGZ_UNCOMPRESS.out.file
+    ch_versions = ch_versions.mix( PIGZ_UNCOMPRESS.out.versions )
 
 
     //
     // MODULE: Trim and filter reads
     //
-    //ch_zipped_reads = Channel.empty()
     ch_fastqc_multiqc_postrim = Channel.empty()
     ch_trimmed_reads_combined = Channel.empty()
 
@@ -294,7 +281,6 @@ workflow SCNANOSEQ {
             ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_TRIM.out.fastqc_version.first().ifEmpty(null))
         }
     } else {
-        //ch_zipped_reads = ch_cat_fastq
         ch_trimmed_reads_combined = ch_unzipped_fastqs
     }
 
@@ -302,14 +288,12 @@ workflow SCNANOSEQ {
     // MODULE: Generate whitelist
     //
 
-    BLAZE ( ch_trimmed_reads_combined, blaze_whitelist)
+    BLAZE ( ch_trimmed_reads_combined, blaze_whitelist )
 
     ch_putative_bc = BLAZE.out.putative_bc
     ch_gt_whitelist = BLAZE.out.whitelist
     ch_whitelist_bc_count = BLAZE.out.bc_count
     ch_versions = ch_versions.mix(BLAZE.out.versions)
-
-    ch_multiqc_report = Channel.empty()
 
     ch_split_bc_fastqs = ch_trimmed_reads_combined
     ch_split_bc = ch_putative_bc
@@ -332,7 +316,7 @@ workflow SCNANOSEQ {
     // MODULE: Extract barcodes
     //
 
-    PREEXTRACT_FASTQ( ch_split_bc_fastqs.join(ch_split_bc), params.barcode_format)
+    PREEXTRACT_FASTQ( ch_split_bc_fastqs.join(ch_split_bc), params.barcode_format )
     ch_barcode_info = PREEXTRACT_FASTQ.out.barcode_info
     ch_preextract_fastq = PREEXTRACT_FASTQ.out.extracted_fastq
 
@@ -367,9 +351,9 @@ workflow SCNANOSEQ {
         //
         // MODULE: Zip the reads
         //
-        ZIP_TRIM (ch_cat_preextract_fastq, "filtered" )
-        ch_extracted_fastq = ZIP_TRIM.out.archive
-        ch_versions = ch_versions.mix(ZIP_TRIM.out.versions)
+        PIGZ_COMPRESS (ch_cat_preextract_fastq )
+        ch_extracted_fastq = PIGZ_COMPRESS.out.archive
+        ch_versions = ch_versions.mix(PIGZ_COMPRESS.out.versions)
     }
 
     //
@@ -394,16 +378,18 @@ workflow SCNANOSEQ {
                 ch_corrected_bc_info.collect{it[1]})
 
             ch_read_counts = READ_COUNTS.out.read_counts
+            ch_versions = ch_versions.mix(READ_COUNTS.out.versions)
         }
     }
 
     //
     // MINIMAP2_INDEX
     //
+    ch_minimap_ref = fasta
 
     if (!params.skip_save_minimap2_index) {
-        MINIMAP2_INDEX ( fasta.map { meta, fasta -> [fasta]},  ch_bed)
-        ch_minimap_index = MINIMAP2_INDEX.out.index
+        MINIMAP2_INDEX ( fasta )
+        ch_minimap_ref = MINIMAP2_INDEX.out.index
         ch_versions = ch_versions.mix(MINIMAP2_INDEX.out.versions)
     }
 
@@ -411,25 +397,16 @@ workflow SCNANOSEQ {
     // MINIMAP2_ALIGN
     //
 
-    if (!params.skip_save_minimap2_index) {
-        ch_reference = ch_minimap_index.toList()
-    } else {
-        ch_reference = Channel.fromPath(fasta, checkIfExists: true).toList()
-    }
-    MINIMAP2_ALIGN ( ch_extracted_fastq, ch_bed, ch_reference )
+    MINIMAP2_ALIGN (
+        ch_extracted_fastq,
+        ch_minimap_ref,
+        true,
+        "bai",
+        "",
+        "" )
 
     ch_versions = ch_versions.mix(MINIMAP2_ALIGN.out.versions)
-    MINIMAP2_ALIGN.out.sam
-        .combine( ch_dummy_file )
-        .set { ch_minimap_sam }
-
-    //
-    // MODULE: Samtools view
-    //
-    SAMTOOLS_VIEW_BAM ( ch_minimap_sam, [[],[]], [] )
-
-    ch_minimap_bam = SAMTOOLS_VIEW_BAM.out.bam
-    ch_versions = ch_versions.mix(SAMTOOLS_VIEW_BAM.out.versions)
+    ch_minimap_bam = MINIMAP2_ALIGN.out.bam
 
     // acquire only mapped reads from bam for downstream processing
     // NOTE: some QCs steps are performed on the full BAM
@@ -479,11 +456,17 @@ workflow SCNANOSEQ {
 
     if (!params.skip_qc && !params.skip_bam_nanocomp) {
 
-        NANOCOMP_BAM ( ch_minimap_sorted_bam.collect{it[1]},
-                        ch_minimap_sorted_bai.collect{it[1]})
+        NANOCOMP_BAM (
+            ch_minimap_sorted_bam
+                .collect{it[1]}
+                .map{
+                    [ [ 'id': 'nanocomp_bam.' ] , it ]
+                }
 
-        ch_nanocomp_bam_html = NANOCOMP_BAM.out.html
-        ch_nanocomp_bam_txt = NANOCOMP_BAM.out.txt
+        )
+
+        ch_nanocomp_bam_html = NANOCOMP_BAM.out.report_html
+        ch_nanocomp_bam_txt = NANOCOMP_BAM.out.stats_txt
         ch_versions = ch_versions.mix( NANOCOMP_BAM.out.versions )
     }
 
@@ -514,10 +497,10 @@ workflow SCNANOSEQ {
     ch_tagged_sorted_idxstats =  BAM_SORT_STATS_SAMTOOLS_TAGGED.out.idxstats
     ch_versions = ch_versions.mix(BAM_SORT_STATS_SAMTOOLS_TAGGED.out.versions)
 
-    // TODO: Rename the dedup_bam channel to be more descriptive
     ch_dedup_sorted_bam = ch_tagged_sorted_bam
-    ch_dedup_sorted_bam_bai = ch_tagged_sorted_bai
+    ch_dedup_sorted_bai = ch_tagged_sorted_bai
     ch_dedup_sorted_flagstat = ch_tagged_sorted_flagstat
+    ch_dedup_sorted_idxstats = Channel.empty()
     ch_dedup_log = Channel.empty()
 
     if (!params.skip_dedup) {
@@ -642,9 +625,6 @@ workflow SCNANOSEQ {
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
     )
 
-    ch_multiqc_report = Channel.empty()
-    ch_versions = Channel.empty()
-
     if (!params.skip_qc && !params.skip_multiqc){
 
         //
@@ -690,11 +670,11 @@ workflow SCNANOSEQ {
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_tagged_sorted_flagstat.collect{it[1]}.ifEmpty([]))
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_tagged_sorted_idxstats.collect{it[1]}.ifEmpty([]))
 
-        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_dedup_sorted_flagstat.collect{it[1]}.ifEmpty([]))
-        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_dedup_sorted_idxstats.collect{it[1]}.ifEmpty([]))
+        if (!params.skip_dedup) {
+            ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_dedup_sorted_flagstat.collect{it[1]}.ifEmpty([]))
+            ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_dedup_sorted_idxstats.collect{it[1]}.ifEmpty([]))
+        }
 
-        // see issue #12 (too many files when split by chr)
-        //ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_dedup_log.collect{it[1]}.ifEmpty([]))
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_read_counts.collect().ifEmpty([]))
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_gene_stats_combined.collect().ifEmpty([]))
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_transcript_stats_combined.collect().ifEmpty([]))
@@ -711,7 +691,7 @@ workflow SCNANOSEQ {
 
     emit:
     multiqc_report = ch_multiqc_report.toList()
-    versions = ch_versions
+    versions       = ch_versions
 }
 
 

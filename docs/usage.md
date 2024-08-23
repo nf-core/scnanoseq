@@ -16,7 +16,7 @@ You will need to create a samplesheet with information about the samples you wou
 
 The `sample` identifiers have to be the same when you have re-sequenced the same sample more than once e.g. to increase sequencing depth. The pipeline will concatenate the raw reads before performing any downstream analysis. Below is an example for the same sample sequenced across replicates 1 and 4 (`REP1` and `REP4` respectively):
 
-```console
+```csv title="samplesheet.csv"
 sample,fastq,cell_count
 CONTROL_REP1,AEG588A1_S1.fastq.gz,5000
 CONTROL_REP1,AEG588A1_S2.fastq.gz,5000
@@ -33,7 +33,7 @@ CONTROL_REP4,AEG588A4_S3.fastq.gz,5000
 
 The example `samplesheet.csv` below contains a single FASTQ file per biological replicate with sample specific cell counts.
 
-```console
+```csv title="samplesheet.csv"
 sample,fastq,cell_count
 CONTROL_REP1,AEG588A1_S1.fastq.gz,5000
 CONTROL_REP2,AEG588A2_S1.fastq.gz,6000
@@ -88,12 +88,12 @@ The above pipeline run specified with a params file in yaml format:
 nextflow run nf-core/scnanoseq -profile <docker/singularity/institute> -params-file params.yaml
 ```
 
-with `params.yaml` containing:
+with
 
-```yaml
+```yaml title="params.yaml"
 input: "./samplesheet.csv"
 outdir: "./results/"
-genome: "/path/to/genome.fa"
+fasta: "/path/to/genome.fa"
 gtf: "/path/to/genome.gtf"
 barcode_format: "10X_3v3"
 <...>
@@ -182,7 +182,7 @@ Specify the path to a specific config file (this is a core Nextflow command). Se
 
 Whilst the default requirements set within the pipeline will hopefully work for most people with GridION and average size PromethION data, you may find that you want to customise the compute resources that the pipeline requests. Each step in the pipeline has a default set of requirements for number of CPUs, memory and time. For most of the steps in the pipeline, if the job exits with any of the error codes specified [here](https://github.com/nf-core/rnaseq/blob/4c27ef5610c87db00c3c5a3eed10b1d161abf575/conf/base.config#L18) it will automatically be resubmitted with higher requests (2 x original, then 3 x original). If it still fails after the third attempt then the pipeline execution is stopped.
 
-To change the resource requests, please see the [max resources](https://nf-co.re/docs/usage/configuration#max-resources) and [tuning workflow resources](https://nf-co.re/docs/usage/configuration#tuning-workflow-resources) section of the nf-core website. We have also provided a pipeline specific example of a custom configuration file in the Introduction page or the pipeline's GitHub `README` page.
+To change the resource requests, please see the [max resources](https://nf-co.re/docs/usage/configuration#max-resources) and [tuning workflow resources](https://nf-co.re/docs/usage/configuration#tuning-workflow-resources) section of the nf-core website. We have also provided a pipeline specific example of a custom configuration file in the [Introduction page](https://nf-co.re/scnanoseq/latest/#troubleshooting).
 
 ### Custom Containers
 

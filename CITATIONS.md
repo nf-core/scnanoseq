@@ -10,9 +10,9 @@
 
 ## Pipeline tools
 
-- [BLAZE](https://www.biorxiv.org/content/10.1101/2022.08.16.504056v1)
+- [BLAZE](https://pubmed.ncbi.nlm.nih.gov/37024980/)
 
-  > You Y, Prawer Y D, De Paoli-Iseppi R, Hunt C P, Parish C L, Shim H, Clark M B. Identification of cell barcodes from long-read single-cell RNA-seq with BLAZE. bioRxiv 2022 Aug .08.16.504056; doi: 10.1101/2022.08.16.504056.
+  > You Y, Prawer YDJ, De Paoli-Iseppi R, Hunt CPJ, Parish CL, Shim H, Clark MB. Identification of cell barcodes from long-read single-cell RNA-seq with BLAZE. Genome Biol. 2023 Apr 6;24(1):66. doi: 10.1186/s13059-023-02907-y. PMID: 37024980; PMCID: PMC10077662.
 
 - [FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/)
 

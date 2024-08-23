@@ -1,7 +1,7 @@
-name: gunzip
+name: minimap2_index
 channels:
   - conda-forge
   - bioconda
   - defaults
 dependencies:
-  - conda-forge::sed=4.7
+  - bioconda::minimap2=2.28

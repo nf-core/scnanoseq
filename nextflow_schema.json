@@ -84,7 +84,8 @@
                     "description": "Do not load the iGenomes reference config.",
                     "fa_icon": "fas fa-ban",
                     "hidden": true,
-                    "help_text": "Do not load `igenomes.config` when running the pipeline. You may choose this option if you observe clashes between custom parameters and those supplied in `igenomes.config`."
+                    "help_text": "Do not load `igenomes.config` when running the pipeline. You may choose this option if you observe clashes between custom parameters and those supplied in `igenomes.config`.",
+                    "default": true
                 }
             },
             "required": ["fasta", "gtf"]
@@ -98,7 +99,7 @@
             "properties": {
                 "split_amount": {
                     "type": "integer",
-                    "description": "The amount of lines to split  the fastq into (Default: 0)",
+                    "description": "The amount of lines to split  the fastq into for faster processing (Default: 0)",
                     "default": 0,
                     "fa_icon": "fas fa-cut"
                 }
@@ -112,7 +113,7 @@
             "properties": {
                 "min_length": {
                     "type": "integer",
-                    "default": 500,
+                    "default": 1,
                     "description": "Choose minimum read length.",
                     "fa_icon": "fas fa-cut"
                 },
@@ -184,11 +185,6 @@
             "default": "",
             "fa_icon": "fas fa-search",
             "properties": {
-                "analyze_uncorrected_bam": {
-                    "type": "boolean",
-                    "description": "Run downstream steps on the bam that contains reads that could not be corrected. Do not use this if no whitelist is provided.",
-                    "fa_icon": "fas fa-search"
-                },
                 "retain_introns": {
                     "type": "boolean",
                     "default": true,

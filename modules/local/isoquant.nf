@@ -1,12 +1,11 @@
 process ISOQUANT {
     tag "$meta.id"
     label 'process_high'
-    label 'process_high_memory'
 
-    conda "bioconda::isoquant=3.3.1"
+    conda "bioconda::isoquant=3.5.0"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/isoquant:3.3.1--hdfd78af_0' :
-        'biocontainers/isoquant:3.3.1--hdfd78af_0' }"
+        'https://depot.galaxyproject.org/singularity/isoquant:3.5.0--hdfd78af_0' :
+        'biocontainers/isoquant:3.5.0--hdfd78af_0' }"
 
     input:
     tuple val(meta), path(bam), path(bai)
@@ -41,7 +40,7 @@ process ISOQUANT {
 
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":
-            isoquant: \$(isoquant.py -v 2>&1)
+            isoquant: \$(isoquant.py -v | sed 's#IsoQuant ##')
         END_VERSIONS
         """
     } else {
@@ -62,7 +61,7 @@ process ISOQUANT {
 
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":
-            isoquant: \$(isoquant.py -v 2>&1)
+            isoquant: \$(isoquant.py -v | sed 's#IsoQuant ##')
         END_VERSIONS
         """
 

@@ -13,7 +13,8 @@ process READ_COUNTS {
     path correct_tsv
 
     output:
-    path "read_counts.csv"        , emit: read_counts
+    path "read_counts.csv" , emit: read_counts
+    path "versions.yml"    , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -26,5 +27,10 @@ process READ_COUNTS {
         $args \\
         --input ./ \\
         --output read_counts.csv
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        perl: \$(perl --version | head -n2 | tail -n1 |  sed -n 's/.*(v\\([^)]*\\)).*/\\1/p')
+    END_VERSIONS
     """
 }

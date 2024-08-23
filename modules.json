@@ -30,21 +30,44 @@
                         "git_sha": "f4ae1d942bd50c5c0b9bd2de1393ce38315ba57c",
                         "installed_by": ["modules"]
                     },
-                    "gunzip": {
+                    "minimap2/align": {
                         "branch": "master",
-                        "git_sha": "3a5fef109d113b4997c9822198664ca5f2716208",
+                        "git_sha": "a33ef9475558c6b8da08c5f522ddaca1ec810306",
                         "installed_by": ["modules"]
+                    },
+                    "minimap2/index": {
+                        "branch": "master",
+                        "git_sha": "72e277acfd9e61a9f1368eafb4a9e83f5bcaa9f5",
+                        "installed_by": ["modules"],
+                        "patch": "modules/nf-core/minimap2/index/minimap2-index.diff"
                     },
                     "multiqc": {
                         "branch": "master",
                         "git_sha": "b7ebe95761cd389603f9cc0e0dc384c0f663815a",
                         "installed_by": ["modules"]
                     },
+                    "nanocomp": {
+                        "branch": "master",
+                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
+                        "installed_by": ["modules"],
+                        "patch": "modules/nf-core/nanocomp/nanocomp.diff"
+                    },
                     "nanoplot": {
                         "branch": "master",
                         "git_sha": "a31407dfaf0cb0d04768d5cb439fc6f4523a6981",
                         "installed_by": ["modules"],
                         "patch": "modules/nf-core/nanoplot/nanoplot.diff"
+                    },
+                    "pigz/compress": {
+                        "branch": "master",
+                        "git_sha": "c00055a0b13d622b4f1f51a8e5be31deaf99ded7",
+                        "installed_by": ["modules"]
+                    },
+                    "pigz/uncompress": {
+                        "branch": "master",
+                        "git_sha": "c00055a0b13d622b4f1f51a8e5be31deaf99ded7",
+                        "installed_by": ["modules"],
+                        "patch": "modules/nf-core/pigz/uncompress/pigz-uncompress.diff"
                     },
                     "rseqc/readdistribution": {
                         "branch": "master",

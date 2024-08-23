@@ -13,9 +13,8 @@ process SPLIT_FILE {
     val split_amount
 
     output:
-    // TODO: Make this more generalizable. Gunzip probably a good example
     tuple val(meta), path("*$file_ext"), emit: split_files
-    path "versions.yml"             , emit: versions
+    path "versions.yml"                , emit: versions
 
     when:
     task.ext.when == null || task.ext.when

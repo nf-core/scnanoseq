@@ -1,6 +1,7 @@
 /*
  * FastQ QC with NanoPlot, ToulligQC and fastqc
- * subworkflow from nf-core/nanoseq
+ * subworkflow from nf-core/nanoseq with minor modifications
+ * (e.g: addition of ToulligQC)
  * author: @yuukiiwa
  */
 

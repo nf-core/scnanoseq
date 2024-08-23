@@ -13,7 +13,7 @@ process CORRECT_BARCODES {
 
     output:
     tuple val(meta), path("*.corrected_bc_umi.tsv"), emit: corrected_bc_info
-    path "versions.yml"                     , emit: versions
+    path "versions.yml"                            , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -25,10 +25,10 @@ process CORRECT_BARCODES {
     """
     correct_barcodes.py \\
         ${args} \\
-        -i ${bc_info} \\
-        -o ${prefix}.corrected_bc_umi.tsv \\
-        -w ${whitelist} \\
-        -b ${bc_count_file} \\
+        --infile ${bc_info} \\
+        --outfile ${prefix}.corrected_bc_umi.tsv \\
+        --whitelist ${whitelist} \\
+        --barcode_count ${bc_count_file} \\
         --skip_header
 
     cat <<-END_VERSIONS > versions.yml
