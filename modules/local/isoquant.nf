@@ -29,6 +29,7 @@ process ISOQUANT {
     if ( !group_category?.trim() ){
         """
         isoquant.py ${args} \\
+                    --threads $task.cpus \\
                     --datatype nanopore \\
                     --reference $fasta \\
                     --genedb $gtf \\
@@ -46,6 +47,7 @@ process ISOQUANT {
     } else {
         """
         isoquant.py ${args} \\
+                    --threads $task.cpus \\
                     --data_type nanopore \\
                     --reference $fasta \\
                     --genedb $gtf \\
