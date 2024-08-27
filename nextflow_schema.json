@@ -69,7 +69,8 @@
                     "type": "string",
                     "fa_icon": "far fa-file-code",
                     "description": "Path to GTF file.",
-                    "format": "file-path"
+                    "format": "file-path",
+                    "pattern": "^\\S+\\.gtf(\\.gz)?$"
                 },
                 "igenomes_base": {
                     "type": "string",
@@ -99,7 +100,7 @@
             "properties": {
                 "split_amount": {
                     "type": "integer",
-                    "description": "The amount of lines to split  the fastq into for faster processing (Default: 0)",
+                    "description": "The amount of lines to split  the FASTQ into.",
                     "default": 0,
                     "fa_icon": "fas fa-cut"
                 }
