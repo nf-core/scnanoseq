@@ -7,9 +7,6 @@ process ISOQUANT {
         'https://depot.galaxyproject.org/singularity/isoquant:3.5.0--hdfd78af_0' :
         'biocontainers/isoquant:3.5.0--hdfd78af_0' }"
 
-    // setting custom home mount (see issue #30)
-    containerOptions "--bind ${task.workDir}:/home"
-
     input:
     tuple val(meta), path(bam), path(bai)
     tuple val(meta_gtf), path(gtf)
@@ -29,8 +26,11 @@ process ISOQUANT {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
 
+    // setting custom home via export (see issue #30)
     if ( !group_category?.trim() ){
         """
+        export HOME=\$(pwd)
+
         isoquant.py ${args} \\
                     --threads $task.cpus \\
                     --datatype nanopore \\
@@ -49,6 +49,8 @@ process ISOQUANT {
         """
     } else {
         """
+        export HOME=\$(pwd)
+
         isoquant.py ${args} \\
                     --threads $task.cpus \\
                     --data_type nanopore \\
