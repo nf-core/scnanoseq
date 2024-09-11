@@ -33,7 +33,7 @@ On release, automated continuous integration tests run the pipeline on a full-si
 2. Unzip and split FASTQ ([`pigz`](https://github.com/madler/pigz))
    1. Optional: Split FASTQ for faster processing ([`split`](https://linux.die.net/man/1/split))
 3. Trim and filter reads. ([`Nanofilt`](https://github.com/wdecoster/nanofilt))
-4. Post trim QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [`NanoPlot`](https://github.com/wdecoster/NanoPlot) and [`ToulligQC`](https://github.com/GenomiqueENS/toulligQC))
+4. Post trim QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [`NanoPlot`](https://github.com/wdecoster/NanoPlot), [`NanoComp`](https://github.com/wdecoster/nanocomp) and [`ToulligQC`](https://github.com/GenomiqueENS/toulligQC))
 5. Barcode detection using a custom whitelist or 10X whitelist. [`BLAZE`](https://github.com/shimlab/BLAZE)
 6. Extract barcodes. Consists of the following steps:
    1. Parse FASTQ files into R1 reads containing barcode and UMI and R2 reads containing sequencing without barcode and UMI (custom script `./bin/pre_extract_barcodes.py`)
