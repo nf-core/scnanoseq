@@ -84,7 +84,7 @@ For more details and further functionality, please refer to the [usage documenta
 
 ## Pipeline output
 
-This pipeline produces feature barcode matrices at both the gene and transcript level and can be configured to retain introns within the counts themselves. These feature-barcode matrices are able to be ingested directly by most packages used for downstream analyses such as `Seurat`. Additionally, the pipeline produces a number of quality control metrics to ensure that the samples processed meet expected metrics for single-cell/nuclei data.
+This pipeline produces feature-barcode matrices at both the gene and transcript level and can be configured to retain introns within the counts themselves. These feature-barcode matrices are able to be ingested directly by most packages used for downstream analyses such as `Seurat`. Additionally, the pipeline produces a number of quality control metrics to ensure that the samples processed meet expected metrics for single-cell/nuclei data.
 
 To see the results of an example test run with a full size dataset refer to the [results](https://nf-co.re/scnanoseq/results) tab on the nf-core website pipeline page.
 For more details about the full set of output files and reports, please refer to the
