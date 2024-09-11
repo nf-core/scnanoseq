@@ -39,7 +39,7 @@ On release, automated continuous integration tests run the pipeline on a full-si
    1. Parse FASTQ files into R1 reads containing barcode and UMI and R2 reads containing sequencing without barcode and UMI (custom script `./bin/pre_extract_barcodes.py`)
    2. Re-zip FASTQs ([`pigz`](https://github.com/madler/pigz))
 7. Barcode correction (custom script `./bin/correct_barcodes.py`)
-8. Post-extraction QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [`NanoPlot`](https://github.com/wdecoster/NanoPlot) and [`ToulligQC`](https://github.com/GenomiqueENS/toulligQC))
+8. Post-extraction QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [`NanoPlot`](https://github.com/wdecoster/NanoPlot), [`NanoComp`](https://github.com/wdecoster/nanocomp)  and [`ToulligQC`](https://github.com/GenomiqueENS/toulligQC))
 9. Alignment ([`minimap2`](https://github.com/lh3/minimap2))
 10. Post-alignment filtering of mapped reads and gathering mapping QC ([`SAMtools`](http://www.htslib.org/doc/samtools.html))
 11. Post-alignment QC in unfiltered BAM files ([`NanoComp`](https://github.com/wdecoster/nanocomp), [`RSeQC`](https://rseqc.sourceforge.net/))
