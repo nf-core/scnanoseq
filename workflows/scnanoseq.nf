@@ -27,7 +27,6 @@ ch_multiqc_config                       = Channel.fromPath("$projectDir/assets/m
 ch_multiqc_custom_config                = params.multiqc_config ? Channel.fromPath( params.multiqc_config, checkIfExists: true ) : Channel.empty()
 ch_multiqc_logo                         = params.multiqc_logo   ? Channel.fromPath( params.multiqc_logo, checkIfExists: true ) : Channel.empty()
 ch_multiqc_custom_methods_description   = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
-ch_dummy_file                           = Channel.fromPath("$projectDir/assets/dummy_file.txt", checkIfExists: true)
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -408,15 +407,6 @@ workflow SCNANOSEQ {
     ch_versions = ch_versions.mix(MINIMAP2_ALIGN.out.versions)
     ch_minimap_bam = MINIMAP2_ALIGN.out.bam
 
-    // acquire only mapped reads from bam for downstream processing
-    // NOTE: some QCs steps are performed on the full BAM
-    ch_minimap_bam
-        .combine( ch_dummy_file )
-        .set { ch_minimap_bam_filter }
-
-    SAMTOOLS_VIEW_FILTER ( ch_minimap_bam_filter, [[],[]], [] )
-    ch_minimap_mapped_only_bam = SAMTOOLS_VIEW_FILTER.out.bam
-    ch_versions = ch_versions.mix(SAMTOOLS_VIEW_FILTER.out.versions)
 
     //
     // SUBWORKFLOW: BAM_SORT_STATS_SAMTOOLS
@@ -431,9 +421,23 @@ workflow SCNANOSEQ {
     ch_minimap_sorted_flagstat = BAM_SORT_STATS_SAMTOOLS_MINIMAP.out.flagstat
     ch_minimap_sorted_idxstats = BAM_SORT_STATS_SAMTOOLS_MINIMAP.out.idxstats
     ch_versions = ch_versions.mix(BAM_SORT_STATS_SAMTOOLS_MINIMAP.out.versions)
+    
+    // acquire only mapped reads from bam for downstream processing
+    // NOTE: some QCs steps are performed on the full BAM
+    SAMTOOLS_VIEW_FILTER (
+        ch_minimap_sorted_bam.join( ch_minimap_sorted_bai, by: 0 ),
+        [[],[]],
+        []
+    )
 
-    BAM_SORT_STATS_SAMTOOLS_FILTERED ( ch_minimap_mapped_only_bam,
-                                        fasta )
+    ch_minimap_mapped_only_bam = SAMTOOLS_VIEW_FILTER.out.bam
+    ch_versions = ch_versions.mix(SAMTOOLS_VIEW_FILTER.out.versions)
+
+    BAM_SORT_STATS_SAMTOOLS_FILTERED (
+        ch_minimap_mapped_only_bam,
+        fasta
+    )
+
     ch_minimap_filtered_sorted_bam = BAM_SORT_STATS_SAMTOOLS_FILTERED.out.bam
     ch_minimap_filtered_sorted_bai = BAM_SORT_STATS_SAMTOOLS_FILTERED.out.bai
     ch_versions = ch_versions.mix(BAM_SORT_STATS_SAMTOOLS_FILTERED.out.versions)
