@@ -7,6 +7,7 @@ lint:
     - .github/workflows/linting.yml
     - lib/NfcoreTemplate.groovy
     - docs/images/nf-core-scnanoseq_logo_dark.png
+    - docs/images/nf-core-scnanoseq_logo_light.png
   pipeline_todos:
     - README.md
     - main.nf
