@@ -421,7 +421,7 @@ workflow SCNANOSEQ {
     ch_minimap_sorted_flagstat = BAM_SORT_STATS_SAMTOOLS_MINIMAP.out.flagstat
     ch_minimap_sorted_idxstats = BAM_SORT_STATS_SAMTOOLS_MINIMAP.out.idxstats
     ch_versions = ch_versions.mix(BAM_SORT_STATS_SAMTOOLS_MINIMAP.out.versions)
-    
+
     // acquire only mapped reads from bam for downstream processing
     // NOTE: some QCs steps are performed on the full BAM
     SAMTOOLS_VIEW_FILTER (
