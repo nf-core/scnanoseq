@@ -27,7 +27,7 @@ CONTROL_REP4,AEG588A4_S2.fastq.gz,5000
 CONTROL_REP4,AEG588A4_S3.fastq.gz,5000
 ```
 
-`cell_count` refers to the expected number of cells you expect for each sample, which can vary from sample to sample.
+`cell_count` refers to the expected number of cells for each sample, which can vary from sample to sample.
 
 ### Full samplesheet
 
