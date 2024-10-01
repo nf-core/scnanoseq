@@ -13,13 +13,13 @@ reports:
     display: "FastQC report for individual samples"
   "**/*/qc/nanoplot/*/*.html":
     display: "Nanoplot report for individual samples"
-  "**/*/qc/rseqc/*.txt"
+  "**/*/qc/rseqc/*.txt":
     display: "RSeQC stats for individual samples"
-  "**/*/qc/samtools/*/*"
+  "**/*/qc/samtools/*/*":
     display: "SAMTool stats for individual samples"
-  "**/*/qc/seurat/*/*.png"
+  "**/*/qc/seurat/*/*.png":
     display: "Seurat QC images for individual samples"
-  "**/*/qc/seurat/*/*.csv"
+  "**/*/qc/seurat/*/*.csv":
     display: "Seurat QC stats for individual samples"
-  "**/*/qc/toulligqc/*/*.html"
+  "**/*/qc/toulligqc/*/*.html":
     display: "All samples ToulligQC report"
