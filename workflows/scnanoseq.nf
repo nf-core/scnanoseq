@@ -4,18 +4,17 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-
-if (params.barcode_format.equals("10X_3v3")) {
-    blaze_whitelist = file("$baseDir/assets/whitelist/3M-february-2018.zip")
-}
-else{
-    blaze_whitelist = file("$baseDir/assets/whitelist/737K-august-2016.txt.zip")
-}
-
 if (params.whitelist) {
     blaze_whitelist = params.whitelist
 }
-
+else {
+    if (params.barcode_format.equals("10X_3v3")) {
+        blaze_whitelist = file("$baseDir/assets/whitelist/3M-february-2018.zip")
+    }
+    else if (params.barcode_format.equals("10X_5v2")) {
+        blaze_whitelist = file("$baseDir/assets/whitelist/737K-august-2016.txt.zip")
+    }
+}
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -120,6 +119,8 @@ workflow SCNANOSEQ {
 
     ch_versions = Channel.empty()
     ch_multiqc_report = Channel.empty()
+
+    Channel.of(blaze_whitelist).view()
 
     //
     // SUBWORKFLOW: Read in samplesheet, validate and stage input files

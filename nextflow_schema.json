@@ -140,13 +140,13 @@
             "properties": {
                 "whitelist": {
                     "type": "string",
-                    "description": "The file containing a list of barcodes.",
+                    "description": "User-provided file containing a list of cellular barcodes. Using this parameter will override the default whitelists provided by the pipeline and use the user-provided one instead.",
                     "format": "file-path",
                     "fa_icon": "far fa-file-alt"
                 },
                 "barcode_format": {
                     "type": "string",
-                    "description": "Specify the format for the barcode+umi",
+                    "description": "Specify the format for the barcode+umi. This parameter also defines a default barcode whitelist for the pipeline to use for barcode calling, this can be overidden with the 'whitelist' parameter.",
                     "enum": ["10X_3v3", "10X_5v2"],
                     "fa_icon": "fas fa-barcode"
                 }
