@@ -29,6 +29,7 @@ top_modules:
   - general_stats
   - custom_content
   - samtools
+  - nanostat
   - rseqc
   - umitools
   - fastqc:
