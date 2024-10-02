@@ -27,7 +27,7 @@ On release, automated continuous integration tests run the pipeline on a full-si
 
 ## Pipeline summary
 
-![scnanoseq diagram](assets/scnanoseq_diagram.png)
+![scnanoseq diagram](assets/scnanoseq_tube_map.png)
 
 1. Raw read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [`NanoPlot`](https://github.com/wdecoster/NanoPlot), [`NanoComp`](https://github.com/wdecoster/nanocomp) and [`ToulligQC`](https://github.com/GenomiqueENS/toulligQC))
 2. Unzip and split FASTQ ([`pigz`](https://github.com/madler/pigz))
