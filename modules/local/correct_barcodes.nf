@@ -1,7 +1,6 @@
 process CORRECT_BARCODES {
     tag "$meta.id"
     label 'process_low'
-    label 'process_long'
 
     conda "conda-forge::editdistance=0.6.0 bioconda::pysam=0.19.1 conda-forge::pygtrie=2.5.0 conda-forge::biopython=1.79"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
