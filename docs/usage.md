@@ -12,23 +12,6 @@ You will need to create a samplesheet with information about the samples you wou
 --input '[path to samplesheet file]'
 ```
 
-### Multiple runs of the same sample
-
-The `sample` identifiers have to be the same when you have re-sequenced the same sample more than once e.g. to increase sequencing depth. The pipeline will concatenate the raw reads before performing any downstream analysis. Below is an example for the same sample sequenced across replicates 1 and 4 (`REP1` and `REP4` respectively):
-
-```csv title="samplesheet.csv"
-sample,fastq,cell_count
-CONTROL_REP1,AEG588A1_S1.fastq.gz,5000
-CONTROL_REP1,AEG588A1_S2.fastq.gz,5000
-CONTROL_REP2,AEG588A2_S1.fastq.gz,5000
-CONTROL_REP3,AEG588A3_S1.fastq.gz,5000
-CONTROL_REP4,AEG588A4_S1.fastq.gz,5000
-CONTROL_REP4,AEG588A4_S2.fastq.gz,5000
-CONTROL_REP4,AEG588A4_S3.fastq.gz,5000
-```
-
-`cell_count` refers to the expected number of cells for each sample, which can vary from sample to sample.
-
 ### Full samplesheet
 
 The example `samplesheet.csv` below contains a single FASTQ file per biological replicate with sample specific cell counts.
@@ -47,9 +30,24 @@ TREATMENT_REP3,AEG588A6_S1.fastq.gz,5000
 | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `sample`     | Custom sample name. This entry will be identical for multiple sequencing libraries/runs from the same sample. Spaces in sample names are automatically converted to underscores (`_`). |
 | `fastq`      | Full path to FastQ file for Oxford Nanopore. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                                    |
-| `cell_count` | Expected number of cells/nuclei.                                                                                                                                                       |
+| `cell_count` | Expected number of cells/nuclei. This value is used by the barcode calling tool (BLAZE) as a baseline when determining an acceptable number of detected barcodes.                      |
 
 An [example samplesheet](../assets/samplesheet.csv) has been provided with the pipeline.
+
+### Multiple runs of the same sample
+
+The `sample` identifiers have to be the same when you have re-sequenced the same sample more than once e.g. to increase sequencing depth. The pipeline will concatenate the raw reads before performing any downstream analysis. Below is an example for the same sample sequenced across replicates 1 and 4 (`REP1` and `REP4` respectively):
+
+```csv title="samplesheet.csv"
+sample,fastq,cell_count
+CONTROL_REP1,AEG588A1_S1.fastq.gz,5000
+CONTROL_REP1,AEG588A1_S2.fastq.gz,5000
+CONTROL_REP2,AEG588A2_S1.fastq.gz,2000
+CONTROL_REP3,AEG588A3_S1.fastq.gz,7500
+CONTROL_REP4,AEG588A4_S1.fastq.gz,9000
+CONTROL_REP4,AEG588A4_S2.fastq.gz,9000
+CONTROL_REP4,AEG588A4_S3.fastq.gz,9000
+```
 
 ## Running the pipeline
 
