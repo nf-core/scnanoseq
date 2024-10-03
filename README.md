@@ -165,7 +165,6 @@ process
 
 We further note that while we encourage the use of `split_amount` as discussed above for larger datasets, the pipeline can be executed without enabling this parameter. When doing this, please consider increasing the time limit to `CORRECT_BARCODES` as it can take hours instead of minutes when `split_amount` is disabled:
 
-
 ```groovy title="custom.config"
 //NOTE: with split_amount disabled, consider increasing the time limit to CORRECT_BARCODES
 process
