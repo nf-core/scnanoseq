@@ -28,8 +28,8 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
   - [UCSC](#ucsc) - Annotation BED file
 - [Quality Control](#quality-control)
   - [FastQC](#fastqc) - FASTQ QC
-  - [Nanocomp](#nanocomp) - Long Read FASTQ QC
-  - [Nanoplot](#nanoplot) - Long Read FASTQ QC
+  - [NanoComp](#nanocomp) - Long Read FASTQ QC
+  - [NanoPlot](#nanoplot) - Long Read FASTQ QC
   - [ToulligQC](#toulligqc) - Long Read FASTQ QC
   - [RSeQC](#rseqc) - Various RNA-seq QC metrics
   - [Read Counts](#read-counts) - Read Counts QC
@@ -262,7 +262,7 @@ _High level statistics are provided in the MultiQC report, as show in this image
 The FastQC plots displayed in the MultiQC report shows _untrimmed_ reads. They may contain adapter sequence and potentially regions with low quality.
 :::
 
-### Nanocomp
+### NanoComp
 
 <details markdown="1">
 <summary>Output files</summary>
@@ -280,9 +280,9 @@ The FastQC plots displayed in the MultiQC report shows _untrimmed_ reads. They m
 ![Nanocomp](images/nanocomp_1.png)
 ![Nanocomp](images/nanocomp_2.png)
 
-[Nanocomp](https://github.com/wdecoster/nanocomp) compares multiple runs of long read sequencing data and alignments. It creates violin plots or box plots of length, quality and percent identity and creates dynamic, overlaying read length histograms and a cumulative yield plot
+[NanoComp](https://github.com/wdecoster/nanocomp) compares multiple runs of long read sequencing data and alignments. It creates violin plots or box plots of length, quality and percent identity and creates dynamic, overlaying read length histograms and a cumulative yield plot
 
-### Nanoplot
+### NanoPlot
 
 <details markdown="1">
 <summary>Output files</summary>
@@ -302,7 +302,7 @@ The FastQC plots displayed in the MultiQC report shows _untrimmed_ reads. They m
 ![Nanoplot](images/nanoplot_1.png)
 ![Nanoplot](images/nanoplot_2.png)
 
-[Nanoplot](https://github.com/wdecoster/NanoPlot) is a plotting tool for long read sequencing data and alignments.
+[NanoPlot](https://github.com/wdecoster/NanoPlot) is a plotting tool for long read sequencing data and alignments.
 
 ### ToulligQC
 

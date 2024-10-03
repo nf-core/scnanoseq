@@ -163,6 +163,20 @@ process
 }
 ```
 
+We further note that while we encourage the use of `split_amount` as discussed above for larger datasets, the pipeline can be executed without enabling this parameter. When doing this, please consider increasing the time limit to `CORRECT_BARCODES` as it can take hours instead of minutes when `split_amount` is disabled:
+
+
+```groovy title="custom.config"
+//NOTE: with split_amount disabled, consider increasing the time limit to CORRECT_BARCODES
+process
+{
+    withName: '.*:CORRECT_BARCODES'
+    {
+        time = '15.h'
+    }
+}
+```
+
 ## Credits
 
 nf-core/scnanoseq was originally written by [Austyn Trull](https://github.com/atrull314), and [Dr. Lara Ianov](https://github.com/lianov).
@@ -170,7 +184,7 @@ nf-core/scnanoseq was originally written by [Austyn Trull](https://github.com/at
 We would also like to thank the following people and groups for their support, including financial support:
 
 - Dr. Elizabeth Worthey
-- University of Alabama at Birmingham Biological Data Science Core (U-BDS), RRID:SCR_021766, https://github.com/U-BDS
+- University of Alabama at Birmingham Biological Data Science Core (U-BDS), RRID:SCR_021766, <https://github.com/U-BDS>
 - Support from: 3P30CA013148-48S8
 
 ## Contributions and Support
