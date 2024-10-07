@@ -4,9 +4,8 @@
   |\\ | |__  __ /  ` /  \\ |__) |__         }  {
   | \\| |       \\__, \\__/ |  \\ |___     \\`-._,-`-,
                                         `._,._,'
-  nf-core/scnanoseq v${version}
+  nf-core/scnanoseq ${version}
 ----------------------------------------------------
-
 Run Name: $runName
 
 <% if (success){

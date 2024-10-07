@@ -1,0 +1,25 @@
+reports:
+  multiqc_report.html:
+    display: "MultiQC HTML report"
+  samplesheet.csv:
+    display: "Auto-created samplesheet with collated metadata and FASTQ paths"
+  "**/batch_qcs/nanocomp/*.html":
+    display: "All samples nanocomp report"
+  "**/batch_qcs/read_counts/*.csv":
+    display: "All samples read count information at various points in the pipeline"
+  "**/*/blaze/*.png":
+    display: "Knee plot for individual samples"
+  "**/*/qc/fastqc/*/*.html":
+    display: "FastQC report for individual samples"
+  "**/*/qc/nanoplot/*/*.html":
+    display: "Nanoplot report for individual samples"
+  "**/*/qc/rseqc/*.txt":
+    display: "RSeQC stats for individual samples"
+  "**/*/qc/samtools/*/*":
+    display: "SAMTool stats for individual samples"
+  "**/*/qc/seurat/*/*.png":
+    display: "Seurat QC images for individual samples"
+  "**/*/qc/seurat/*/*.csv":
+    display: "Seurat QC stats for individual samples"
+  "**/*/qc/toulligqc/*/*.html":
+    display: "All samples ToulligQC report"
