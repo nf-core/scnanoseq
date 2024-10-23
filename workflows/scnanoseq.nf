@@ -47,6 +47,8 @@ include { READ_COUNTS                                              } from "../mo
 include { TAG_BARCODES                                             } from "../modules/local/tag_barcodes"
 include { CORRECT_BARCODES                                         } from "../modules/local/correct_barcodes"
 include { ISOQUANT                                                 } from "../modules/local/isoquant"
+include { MERGE_MTX as MERGE_MTX_GENE                              } from "../modules/local/merge_mtx"
+include { MERGE_MTX as MERGE_MTX_TRANSCRIPT                        } from "../modules/local/merge_mtx"
 include { SEURAT as SEURAT_GENE                                    } from "../modules/local/seurat"
 include { SEURAT as SEURAT_TRANSCRIPT                              } from "../modules/local/seurat"
 include { COMBINE_SEURAT_STATS as COMBINE_SEURAT_STATS_GENE        } from "../modules/local/combine_seurat_stats"
@@ -100,6 +102,7 @@ include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_TAGGED    } from ".
 include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_CORRECTED } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
 include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_SPLIT     } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
 include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_DEDUP     } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
+include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_MERGED    } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
 include { paramsSummaryMultiqc                                         } from "../subworkflows/nf-core/utils_nfcore_pipeline"
 include { softwareVersionsToYAML                                       } from "../subworkflows/nf-core/utils_nfcore_pipeline"
 include { methodsDescriptionText                                       } from "../subworkflows/local/utils_nfcore_scnanoseq_pipeline"
@@ -119,8 +122,6 @@ workflow SCNANOSEQ {
 
     ch_versions = Channel.empty()
     ch_multiqc_report = Channel.empty()
-
-    Channel.of(blaze_whitelist).view()
 
     //
     // SUBWORKFLOW: Read in samplesheet, validate and stage input files
@@ -195,7 +196,10 @@ workflow SCNANOSEQ {
 
     fasta = PREPARE_REFERENCE_FILES.out.prepped_fasta
     fai = PREPARE_REFERENCE_FILES.out.prepped_fai
+    split_fasta = PREPARE_REFERENCE_FILES.out.split_fasta
+    split_fai = PREPARE_REFERENCE_FILES.out.split_fai
     gtf = PREPARE_REFERENCE_FILES.out.prepped_gtf
+    split_gtf = PREPARE_REFERENCE_FILES.out.split_gtf
 
 
     ch_versions = ch_versions.mix( PREPARE_REFERENCE_FILES.out.versions )
@@ -501,43 +505,68 @@ workflow SCNANOSEQ {
     ch_tagged_sorted_flagstat =  BAM_SORT_STATS_SAMTOOLS_TAGGED.out.flagstat
     ch_tagged_sorted_idxstats =  BAM_SORT_STATS_SAMTOOLS_TAGGED.out.idxstats
     ch_versions = ch_versions.mix(BAM_SORT_STATS_SAMTOOLS_TAGGED.out.versions)
+    
 
-    ch_dedup_sorted_bam = ch_tagged_sorted_bam
-    ch_dedup_sorted_bai = ch_tagged_sorted_bai
-    ch_dedup_sorted_flagstat = ch_tagged_sorted_flagstat
-    ch_dedup_sorted_idxstats = Channel.empty()
+    // To help with parallel processing for the next two steps, we need to split by chromosome
+
+    //
+    // MODULE: Bamtools Split
+    //
+    BAMTOOLS_SPLIT ( ch_tagged_sorted_bam )
+    ch_split_bams = BAMTOOLS_SPLIT.out.bam
+
+    ch_split_tagged_bam = ch_split_bams
+                                .map{
+                                    meta, bam ->
+                                        [bam]
+                                }
+                                .flatten()
+                                .map{
+                                    bam ->
+                                        bam_basename = bam.toString().split('/')[-1]
+                                        split_bam_basename = bam_basename.split(/\./)
+                                        meta = [
+                                            'id': split_bam_basename.take(split_bam_basename.size()-1).join("."),
+                                        ]
+                                        [ meta, bam ]
+                                }
+    
+    //ch_split_tagged_bam = ch_split_bams
+    //                            .map{
+    //                                meta, bam ->
+    //                                    [bam]
+    //                            }
+    //                            .flatten()
+    //                            .map{
+    //                                bam ->
+    //                                    bam_basename = bam.toString().split('/')[-1]
+    //                                    split_bam_basename = bam_basename.split(/\./)
+    //                                    meta = [
+    //                                        'id': split_bam_basename.take(split_bam_basename.size()-1).join("."),
+    //                                    ]
+    //                                    chr = [
+    //                                        'chr': split_bam_basename[1].replace("REF_","")
+    //                                    ]
+    //                                    [ chr, meta, bam ]
+    //                            }
+    //                            .view()
+
+
+    //
+    // SUBWORKFLOW: BAM_SORT_STATS_SAMTOOLS
+    // The subworkflow is called in both the minimap2 bams and filtered (mapped only) version
+    BAM_SORT_STATS_SAMTOOLS_SPLIT ( ch_split_tagged_bam,
+                                    fasta )
+
+    ch_split_sorted_bam = BAM_SORT_STATS_SAMTOOLS_SPLIT.out.bam
+    ch_split_sorted_bai = BAM_SORT_STATS_SAMTOOLS_SPLIT.out.bai
+
+    ch_dedup_sorted_bam = ch_split_sorted_bam
+    ch_dedup_sorted_bai = ch_split_sorted_bai
+
     ch_dedup_log = Channel.empty()
 
     if (!params.skip_dedup) {
-
-        //
-        // MODULE: Bamtools Split
-        //
-        BAMTOOLS_SPLIT ( ch_tagged_sorted_bam )
-        ch_split_bams = BAMTOOLS_SPLIT.out.bam
-
-        ch_split_tagged_bam = ch_split_bams
-                                    .map{
-                                        meta, bam ->
-                                            [bam]
-                                    }
-                                    .flatten()
-                                    .map{
-                                        bam ->
-                                            bam_basename = bam.toString().split('/')[-1]
-                                            split_bam_basename = bam_basename.split(/\./)
-                                            meta = [ 'id': split_bam_basename.take(split_bam_basename.size()-1).join(".") ]
-                                            [ meta, bam ]
-                                    }
-
-        //
-        // SUBWORKFLOW: BAM_SORT_STATS_SAMTOOLS
-        // The subworkflow is called in both the minimap2 bams and filtered (mapped only) version
-        BAM_SORT_STATS_SAMTOOLS_SPLIT ( ch_split_tagged_bam,
-                                        fasta )
-
-        ch_split_sorted_bam = BAM_SORT_STATS_SAMTOOLS_SPLIT.out.bam
-        ch_split_sorted_bai = BAM_SORT_STATS_SAMTOOLS_SPLIT.out.bai
 
         //
         // MODULE: Umitools Dedup
@@ -547,155 +576,210 @@ workflow SCNANOSEQ {
         ch_dedup_bam = UMITOOLS_DEDUP.out.bam
         ch_dedup_log = UMITOOLS_DEDUP.out.log
         ch_versions = ch_versions.mix(UMITOOLS_DEDUP.out.versions)
-
-        //
-        // MODULE: Samtools merge
-        //
-        ch_bams_to_merge = ch_dedup_bam
-                                .map{
-                                    meta, bam ->
-                                        bam_basename = bam.toString().split('/')[-1]
-                                        split_bam_basename = bam_basename.split(/\./)
-                                        meta = [ 'id': split_bam_basename[0] ]
-                                    [ meta, bam ]
-                                }
-                                .groupTuple()
-
-        SAMTOOLS_MERGE ( ch_bams_to_merge, fasta, fai)
-
-        ch_dedup_merged_bam = SAMTOOLS_MERGE.out.bam
-
+        
         // SUBWORKFLOW: BAM_SORT_STATS_SAMTOOLS
         // The subworkflow is called in both the minimap2 bams and filtered (mapped only) version
-        BAM_SORT_STATS_SAMTOOLS_DEDUP ( ch_dedup_merged_bam,
+        BAM_SORT_STATS_SAMTOOLS_DEDUP ( ch_dedup_bam,
                                         fasta )
 
         ch_dedup_sorted_bam = BAM_SORT_STATS_SAMTOOLS_DEDUP.out.bam
         ch_dedup_sorted_bai = BAM_SORT_STATS_SAMTOOLS_DEDUP.out.bai
 
-        // these stats go for multiqc
-        ch_dedup_sorted_stats = BAM_SORT_STATS_SAMTOOLS_DEDUP.out.stats
-        ch_dedup_sorted_flagstat = BAM_SORT_STATS_SAMTOOLS_DEDUP.out.flagstat
-        ch_dedup_sorted_idxstats = BAM_SORT_STATS_SAMTOOLS_DEDUP.out.idxstats
-        ch_versions = ch_versions.mix(BAM_SORT_STATS_SAMTOOLS_DEDUP.out.versions)
     }
+
+    //
+    // MODULE: Samtools merge
+    //
+    ch_bams_to_merge = ch_dedup_bam
+                            .map{
+                                meta, bam ->
+                                    bam_basename = bam.toString().split('/')[-1]
+                                    split_bam_basename = bam_basename.split(/\./)
+                                    meta = [ 'id': split_bam_basename[0] ]
+                                [ meta, bam ]
+                            }
+                            .groupTuple()
+
+    SAMTOOLS_MERGE ( ch_bams_to_merge, fasta, fai)
+    ch_dedup_merged_bam = SAMTOOLS_MERGE.out.bam
+
+    //
+    // SUBWORKFLOW: BAM_SORT_STATS_SAMTOOLS
+    //
+    BAM_SORT_STATS_SAMTOOLS_MERGED ( ch_dedup_merged_bam,
+                                    fasta )
+
+    // these stats go for multiqc
+    ch_dedup_merged_stats = BAM_SORT_STATS_SAMTOOLS_MERGED.out.stats
+    ch_dedup_merged_flagstat = BAM_SORT_STATS_SAMTOOLS_MERGED.out.flagstat
+    ch_dedup_merged_idxstats = BAM_SORT_STATS_SAMTOOLS_MERGED.out.idxstats
+    ch_versions = ch_versions.mix(BAM_SORT_STATS_SAMTOOLS_MERGED.out.versions)
 
     //
     // MODULE: Isoquant
     //
-    ISOQUANT ( ch_dedup_sorted_bam.join(ch_dedup_sorted_bai, by: [0]), gtf, fasta, fai, 'tag:CB')
+    ISOQUANT (
+        ch_dedup_sorted_bam
+            .join(ch_dedup_sorted_bai, by: [0])
+            .map{
+                meta, bam, bai ->
+                    bam_basename = bam.toString().split('/')[-1]
+                    split_bam_basename = bam_basename.split(/\./)
+                    chr = [
+                        'chr': split_bam_basename[1].replace("REF_","")
+                    ]
+                    [ chr, meta, bam, bai]
+            }
+            .combine(split_fasta, by: [0])
+            .combine(split_fai, by: [0])
+            .combine(split_gtf, by: [0])
+            .map{
+                chr, meta, bam, bai, fasta, fai, gtf ->
+                    [ meta, bam, bai, fasta, fai, gtf ]
+            },
+        'tag:CB'
+    )
     ch_gene_count_mtx = ISOQUANT.out.gene_count_mtx
     ch_transcript_count_mtx = ISOQUANT.out.transcript_count_mtx
     ch_versions = ch_versions.mix(ISOQUANT.out.versions)
-
-    if (!params.skip_qc && !params.skip_seurat){
-        //
-        // MODULE: Seurat
-        //
-        SEURAT_GENE ( ch_gene_count_mtx.join(ch_dedup_sorted_flagstat, by: [0]) )
-        ch_gene_seurat_qc = SEURAT_GENE.out.seurat_stats
-        ch_versions = ch_versions.mix(SEURAT_GENE.out.versions)
-
-        SEURAT_TRANSCRIPT ( ch_transcript_count_mtx.join(ch_dedup_sorted_flagstat, by: [0]) )
-        ch_transcript_seurat_qc = SEURAT_TRANSCRIPT.out.seurat_stats
-        ch_versions = ch_versions.mix(SEURAT_TRANSCRIPT.out.versions)
-
-        //
-        // MODULE: Combine Seurat Stats
-        //
-
-        ch_gene_stats = SEURAT_GENE.out.seurat_stats.collect{it[1]}
-        COMBINE_SEURAT_STATS_GENE ( ch_gene_stats )
-        ch_gene_stats_combined = COMBINE_SEURAT_STATS_GENE.out.combined_stats
-        ch_versions = ch_versions.mix(COMBINE_SEURAT_STATS_GENE.out.versions)
-
-        ch_transcript_stats = SEURAT_TRANSCRIPT.out.seurat_stats.collect{it[1]}
-        COMBINE_SEURAT_STATS_TRANSCRIPT ( ch_transcript_stats )
-        ch_transcript_stats_combined = COMBINE_SEURAT_STATS_TRANSCRIPT.out.combined_stats
-        ch_versions = ch_versions.mix(COMBINE_SEURAT_STATS_TRANSCRIPT.out.versions)
-    }
-
-    //
-    // SOFTWARE_VERSIONS
-    //
-
-    //
-    // Collate and save software versions
-    //
-    //softwareVersionsToYAML(ch_versions)
-    //    .collectFile(storeDir: "${params.outdir}/pipeline_info", name: 'nf_core_pipeline_software_mqc_versions.yml', sort: true, newLine: true)
-    //    .set { ch_collated_versions }
-
-    CUSTOM_DUMPSOFTWAREVERSIONS (
-        ch_versions.unique().collectFile(name: 'collated_versions.yml')
-    )
-
-    if (!params.skip_qc && !params.skip_multiqc){
-
-        //
-        // MODULE: MultiQC for raw data
-        //
-
-        ch_multiqc_rawqc_files = Channel.empty()
-        ch_multiqc_rawqc_files = ch_multiqc_rawqc_files.mix(ch_multiqc_config)
-        ch_multiqc_rawqc_files = ch_multiqc_rawqc_files.mix(ch_multiqc_custom_config.collect().ifEmpty([]))
-        ch_multiqc_rawqc_files = ch_multiqc_rawqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
-        ch_multiqc_rawqc_files = ch_multiqc_rawqc_files.mix(ch_fastqc_multiqc_pretrim.collect().ifEmpty([]))
-        ch_multiqc_rawqc_files = ch_multiqc_rawqc_files.mix(ch_nanocomp_fastq_txt.collect{it[1]}.ifEmpty([]))
-
-        MULTIQC_RAWQC (
-            ch_multiqc_rawqc_files.collect(),
-            ch_multiqc_config,
-            ch_multiqc_custom_config.collect().ifEmpty([]),
-            ch_multiqc_logo.collect().ifEmpty([]),
-            [],
-            []
-        )
-
-        //
-        // MODULE: MultiQC for final pipeline outputs
-        //
-        summary_params = paramsSummaryMap(workflow, parameters_schema: "nextflow_schema.json")
-        ch_workflow_summary    = Channel.value(paramsSummaryMultiqc(summary_params))
-
-        ch_multiqc_finalqc_files = Channel.empty()
-        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_multiqc_config)
-        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_multiqc_custom_config.collect().ifEmpty([]))
-        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
-        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
-
-        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_fastqc_multiqc_postrim.collect().ifEmpty([]))
-        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_fastqc_multiqc_postextract.collect().ifEmpty([]))
-
-        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_minimap_sorted_stats.collect{it[1]}.ifEmpty([]))
-        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_minimap_sorted_flagstat.collect{it[1]}.ifEmpty([]))
-        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_minimap_sorted_idxstats.collect{it[1]}.ifEmpty([]))
-        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_rseqc_read_dist.collect{it[1]}.ifEmpty([]))
-        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_nanocomp_bam_txt.collect{it[1]}.ifEmpty([]))
-
-        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_tagged_sorted_flagstat.collect{it[1]}.ifEmpty([]))
-        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_tagged_sorted_idxstats.collect{it[1]}.ifEmpty([]))
-
-        if (!params.skip_dedup) {
-            ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_dedup_sorted_flagstat.collect{it[1]}.ifEmpty([]))
-            ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_dedup_sorted_idxstats.collect{it[1]}.ifEmpty([]))
-        }
-
-        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_read_counts.collect().ifEmpty([]))
-        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_gene_stats_combined.collect().ifEmpty([]))
-        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_transcript_stats_combined.collect().ifEmpty([]))
-
-        MULTIQC_FINALQC (
-            ch_multiqc_finalqc_files.collect(),
-            ch_multiqc_config,
-            ch_multiqc_custom_config.collect().ifEmpty([]),
-            ch_multiqc_logo.collect().ifEmpty([]),
-            [],
-            []
-        )
-        ch_multiqc_report = MULTIQC_FINALQC.out.report
-        ch_versions    = ch_versions.mix(MULTIQC_FINALQC.out.versions)
-    }
+//
+//    //
+//    // MODULE: Merge Matrix
+//    //
+//    MERGE_MTX_GENE (
+//        ch_gene_count_mtx
+//            .map{
+//                meta, mtx ->
+//                    basename = mtx.toString().split('/')[-1]
+//                    split_basename = basename.split(/\./)
+//                    meta = [ 'id': split_basename[0] ]
+//                [ meta, mtx ]
+//            }
+//            .groupTuple()
+//    )
+//    ch_merged_gene_mtx = MERGE_MTX_GENE.out.merged_mtx
+//
+//    MERGE_MTX_TRANSCRIPT (
+//        ch_transcript_count_mtx
+//            .map{
+//                meta, mtx ->
+//                    basename = mtx.toString().split('/')[-1]
+//                    split_basename = basename.split(/\./)
+//                    meta = [ 'id': split_basename[0] ]
+//                [ meta, mtx ]
+//            }
+//            .groupTuple()
+//    )
+//    ch_merged_transcript_mtx = MERGE_MTX_TRANSCRIPT.out.merged_mtx
+//
+//    if (!params.skip_qc && !params.skip_seurat){
+//        //
+//        // MODULE: Seurat
+//        //
+//        SEURAT_GENE ( ch_merged_gene_mtx.join(ch_dedup_merged_flagstat, by: [0]) )
+//        ch_gene_seurat_qc = SEURAT_GENE.out.seurat_stats
+//        ch_versions = ch_versions.mix(SEURAT_GENE.out.versions)
+//
+//        SEURAT_TRANSCRIPT ( ch_merged_transcript_mtx.join(ch_dedup_merged_flagstat, by: [0]) )
+//        ch_transcript_seurat_qc = SEURAT_TRANSCRIPT.out.seurat_stats
+//        ch_versions = ch_versions.mix(SEURAT_TRANSCRIPT.out.versions)
+//
+//        //
+//        // MODULE: Combine Seurat Stats
+//        //
+//
+//        ch_gene_stats = SEURAT_GENE.out.seurat_stats.collect{it[1]}
+//        COMBINE_SEURAT_STATS_GENE ( ch_gene_stats )
+//        ch_gene_stats_combined = COMBINE_SEURAT_STATS_GENE.out.combined_stats
+//        ch_versions = ch_versions.mix(COMBINE_SEURAT_STATS_GENE.out.versions)
+//
+//        ch_transcript_stats = SEURAT_TRANSCRIPT.out.seurat_stats.collect{it[1]}
+//        COMBINE_SEURAT_STATS_TRANSCRIPT ( ch_transcript_stats )
+//        ch_transcript_stats_combined = COMBINE_SEURAT_STATS_TRANSCRIPT.out.combined_stats
+//        ch_versions = ch_versions.mix(COMBINE_SEURAT_STATS_TRANSCRIPT.out.versions)
+//    }
+//
+//    //
+//    // SOFTWARE_VERSIONS
+//    //
+//
+//    //
+//    // Collate and save software versions
+//    //
+//    //softwareVersionsToYAML(ch_versions)
+//    //    .collectFile(storeDir: "${params.outdir}/pipeline_info", name: 'nf_core_pipeline_software_mqc_versions.yml', sort: true, newLine: true)
+//    //    .set { ch_collated_versions }
+//
+//    CUSTOM_DUMPSOFTWAREVERSIONS (
+//        ch_versions.unique().collectFile(name: 'collated_versions.yml')
+//    )
+//
+//    if (!params.skip_qc && !params.skip_multiqc){
+//
+//        //
+//        // MODULE: MultiQC for raw data
+//        //
+//
+//        ch_multiqc_rawqc_files = Channel.empty()
+//        ch_multiqc_rawqc_files = ch_multiqc_rawqc_files.mix(ch_multiqc_config)
+//        ch_multiqc_rawqc_files = ch_multiqc_rawqc_files.mix(ch_multiqc_custom_config.collect().ifEmpty([]))
+//        ch_multiqc_rawqc_files = ch_multiqc_rawqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
+//        ch_multiqc_rawqc_files = ch_multiqc_rawqc_files.mix(ch_fastqc_multiqc_pretrim.collect().ifEmpty([]))
+//        ch_multiqc_rawqc_files = ch_multiqc_rawqc_files.mix(ch_nanocomp_fastq_txt.collect{it[1]}.ifEmpty([]))
+//
+//        MULTIQC_RAWQC (
+//            ch_multiqc_rawqc_files.collect(),
+//            ch_multiqc_config,
+//            ch_multiqc_custom_config.collect().ifEmpty([]),
+//            ch_multiqc_logo.collect().ifEmpty([]),
+//            [],
+//            []
+//        )
+//
+//        //
+//        // MODULE: MultiQC for final pipeline outputs
+//        //
+//        summary_params = paramsSummaryMap(workflow, parameters_schema: "nextflow_schema.json")
+//        ch_workflow_summary    = Channel.value(paramsSummaryMultiqc(summary_params))
+//
+//        ch_multiqc_finalqc_files = Channel.empty()
+//        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_multiqc_config)
+//        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_multiqc_custom_config.collect().ifEmpty([]))
+//        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
+//        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
+//
+//        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_fastqc_multiqc_postrim.collect().ifEmpty([]))
+//        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_fastqc_multiqc_postextract.collect().ifEmpty([]))
+//
+//        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_minimap_sorted_stats.collect{it[1]}.ifEmpty([]))
+//        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_minimap_sorted_flagstat.collect{it[1]}.ifEmpty([]))
+//        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_minimap_sorted_idxstats.collect{it[1]}.ifEmpty([]))
+//        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_rseqc_read_dist.collect{it[1]}.ifEmpty([]))
+//        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_nanocomp_bam_txt.collect{it[1]}.ifEmpty([]))
+//
+//        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_tagged_sorted_flagstat.collect{it[1]}.ifEmpty([]))
+//        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_tagged_sorted_idxstats.collect{it[1]}.ifEmpty([]))
+//
+//        if (!params.skip_dedup) {
+//            ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_dedup_merged_flagstat.collect{it[1]}.ifEmpty([]))
+//            ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_dedup_merged_idxstats.collect{it[1]}.ifEmpty([]))
+//        }
+//
+//        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_read_counts.collect().ifEmpty([]))
+//        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_gene_stats_combined.collect().ifEmpty([]))
+//        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_transcript_stats_combined.collect().ifEmpty([]))
+//
+//        MULTIQC_FINALQC (
+//            ch_multiqc_finalqc_files.collect(),
+//            ch_multiqc_config,
+//            ch_multiqc_custom_config.collect().ifEmpty([]),
+//            ch_multiqc_logo.collect().ifEmpty([]),
+//            [],
+//            []
+//        )
+//        ch_multiqc_report = MULTIQC_FINALQC.out.report
+//        ch_versions    = ch_versions.mix(MULTIQC_FINALQC.out.versions)
+//    }
 
     emit:
     multiqc_report = ch_multiqc_report.toList()

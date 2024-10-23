@@ -1,6 +1,6 @@
 process ISOQUANT {
     tag "$meta.id"
-    label 'process_high'
+    label 'process_medium'
 
     conda "bioconda::isoquant=3.5.0"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -8,10 +8,7 @@ process ISOQUANT {
         'biocontainers/isoquant:3.5.0--hdfd78af_0' }"
 
     input:
-    tuple val(meta), path(bam), path(bai)
-    tuple val(meta_gtf), path(gtf)
-    tuple val(meta_fa), path(fasta)
-    tuple val(meta_fai), path(fai)
+    tuple val(meta), path(bam), path(bai), path(fasta), path(fai), path(gtf)
     val group_category
 
     output:
