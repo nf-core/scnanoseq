@@ -53,31 +53,27 @@ workflow PREPARE_REFERENCE_FILES {
         //
         SPLIT_FASTA( ch_prepared_fasta )
         ch_split_fasta = SPLIT_FASTA.out.split_fasta
+            .flatten()
             .map{
-                meta, fasta ->
+                fasta ->
                     fasta_basename = fasta.toString().split('/')[-1]
-                    meta.chr = fasta_basename.split(/\./)[0]
+                    meta = [ 'chr': fasta_basename.split(/\./)[0] ]
                     [ meta, fasta ]
             }
-        
-        SAMTOOLS_FAIDX_SPLIT( ch_prepared_fasta, [ [:], "$projectDir/assets/dummy_file.txt" ])
+
+        SAMTOOLS_FAIDX_SPLIT( ch_split_fasta, [ [:], "$projectDir/assets/dummy_file.txt" ])
         ch_split_fai = SAMTOOLS_FAIDX_SPLIT.out.fai
-            .map{
-                meta, fai ->
-                    fai_basename = fai.toString().split('/')[-1]
-                    meta.chr = fai_basename.split(/\./)[0]
-                    [ meta, fai ]
-            }
 
         //
         // MODULE: Split the GTF
         //
         SPLIT_GTF( ch_prepared_gtf )
         ch_split_gtf = SPLIT_GTF.out.split_gtf
+            .flatten()
             .map{
-                meta, gtf ->
+                gtf ->
                     gtf_basename = gtf.toString().split('/')[-1]
-                    meta.chr = gtf_basename.split(/\./)[0]
+                    meta = ['chr': gtf_basename.split(/\./)[0]]
                     [ meta, gtf ]
             }
 

@@ -10,8 +10,8 @@ process SPLIT_FASTA {
     tuple val(meta), path(fasta)
 
     output:
-    tuple val(meta), path("*.split.fa") , emit: split_fasta
-    path "versions.yml"                 , emit: versions
+    path "*.split.fa"   , emit: split_fasta
+    path "versions.yml" , emit: versions
 
     when:
     task.ext.when == null || task.ext.when

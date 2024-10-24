@@ -10,8 +10,8 @@ process SPLIT_GTF {
     tuple val(meta), path(gtf)
 
     output:
-    tuple val(meta), path("*.split.gtf") , emit: split_gtf
-    path "versions.yml"                  , emit: versions
+    path "*.split.gtf"  , emit: split_gtf
+    path "versions.yml" , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
