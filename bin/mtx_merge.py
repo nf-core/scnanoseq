@@ -55,7 +55,7 @@ def merge_matrices(in_mtx):
     final_mtx = None
     for mtx in in_mtx:
         print(mtx)
-        mtx_df = pd.read_csv(mtx, delimiter="\t", header=0, index_col=0)
+        mtx_df = pd.read_csv(mtx, delimiter="\t", header=0, index_col=0).transpose()
 
         # This means the matrix is empty so we can skip it
         if len(mtx_df.columns) <= 1 and 'count' in mtx_df.columns:
@@ -77,7 +77,7 @@ def merge_matrices(in_mtx):
                     final_mtx[dupe_bc_col] = final_mtx[bc_cols].sum(axis=1)
                     final_mtx = final_mtx.drop(columns = bc_cols)
 
-    return final_mtx
+    return final_mtx.transpose().fillna(value=0.0)
 
 def main():
     args = parse_args()
