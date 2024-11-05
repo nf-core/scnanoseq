@@ -544,6 +544,7 @@ workflow SCNANOSEQ {
     ch_dedup_sorted_bai = ch_split_sorted_bai
 
     ch_dedup_log = Channel.empty()
+    ch_dedup_merged_flagstat = ch_tagged_sorted_flagstat
 
     if (!params.skip_dedup) {
 
@@ -564,43 +565,40 @@ workflow SCNANOSEQ {
         ch_dedup_sorted_bam = BAM_SORT_STATS_SAMTOOLS_DEDUP.out.bam
         ch_dedup_sorted_bai = BAM_SORT_STATS_SAMTOOLS_DEDUP.out.bai
 
+
+        //
+        // MODULE: Samtools merge
+        //
+        ch_bams_to_merge = ch_dedup_bam
+                                .map{
+                                    meta, bam ->
+                                        bam_basename = bam.toString().split('/')[-1]
+                                        split_bam_basename = bam_basename.split(/\./)
+                                        meta = [ 'id': split_bam_basename[0] ]
+                                    [ meta, bam ]
+                                }
+                                .groupTuple()
+
+        SAMTOOLS_MERGE ( ch_bams_to_merge, fasta, fai)
+        ch_dedup_merged_bam = SAMTOOLS_MERGE.out.bam
+
+        //
+        // SUBWORKFLOW: BAM_SORT_STATS_SAMTOOLS
+        //
+        BAM_SORT_STATS_SAMTOOLS_MERGED ( ch_dedup_merged_bam,
+                                        fasta )
+
+        // these stats go for multiqc
+        ch_dedup_merged_stats = BAM_SORT_STATS_SAMTOOLS_MERGED.out.stats
+        ch_dedup_merged_flagstat = BAM_SORT_STATS_SAMTOOLS_MERGED.out.flagstat
+        ch_dedup_merged_idxstats = BAM_SORT_STATS_SAMTOOLS_MERGED.out.idxstats
+        ch_versions = ch_versions.mix(BAM_SORT_STATS_SAMTOOLS_MERGED.out.versions)
+
     }
-
-    //
-    // MODULE: Samtools merge
-    //
-    ch_bams_to_merge = ch_dedup_bam
-                            .map{
-                                meta, bam ->
-                                    bam_basename = bam.toString().split('/')[-1]
-                                    split_bam_basename = bam_basename.split(/\./)
-                                    meta = [ 'id': split_bam_basename[0] ]
-                                [ meta, bam ]
-                            }
-                            .groupTuple()
-
-    SAMTOOLS_MERGE ( ch_bams_to_merge, fasta, fai)
-    ch_dedup_merged_bam = SAMTOOLS_MERGE.out.bam
-
-    //
-    // SUBWORKFLOW: BAM_SORT_STATS_SAMTOOLS
-    //
-    BAM_SORT_STATS_SAMTOOLS_MERGED ( ch_dedup_merged_bam,
-                                    fasta )
-
-    // these stats go for multiqc
-    ch_dedup_merged_stats = BAM_SORT_STATS_SAMTOOLS_MERGED.out.stats
-    ch_dedup_merged_flagstat = BAM_SORT_STATS_SAMTOOLS_MERGED.out.flagstat
-    ch_dedup_merged_idxstats = BAM_SORT_STATS_SAMTOOLS_MERGED.out.idxstats
-    ch_versions = ch_versions.mix(BAM_SORT_STATS_SAMTOOLS_MERGED.out.versions)
 
     //
     // MODULE: Isoquant
     //
-    //ch_dedup_sorted_bam.view()
-    //split_fasta.view()
-    //split_fai.view()
-    //split_gtf.view()
     ISOQUANT (
         ch_dedup_sorted_bam
             .join(ch_dedup_sorted_bai, by: [0])
