@@ -120,12 +120,7 @@ process
 {
     withName: '.*:BLAZE'
     {
-        ext.args = {
-            [
-                "--threads 30",
-                params.barcode_format == "10X_3v3" ? "--kit-version 3v3" : params.barcode_format == "10X_5v2" ? "--kit-version 5v2" : ""
-            ].join(' ').trim()
-        }
+        cpus = 30
     }
 }
 
