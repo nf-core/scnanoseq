@@ -160,6 +160,7 @@ workflow SCNANOSEQ {
         ch_versions = ch_versions.mix(FASTQC_NANOPLOT_PRE_TRIM.out.fastqc_version.first().ifEmpty(null))
 
         ch_fastqc_multiqc_pretrim = FASTQC_NANOPLOT_PRE_TRIM.out.fastqc_multiqc.ifEmpty([])
+        ch_nanostat_pretrim = FASTQC_NANOPLOT_PRE_TRIM.out.nanoplot_txt.ifEmpty([])
     }
 
     //
@@ -280,6 +281,7 @@ workflow SCNANOSEQ {
             FASTQC_NANOPLOT_POST_TRIM ( ch_trimmed_reads_combined, params.skip_nanoplot, params.skip_toulligqc, params.skip_fastqc )
 
             ch_fastqc_multiqc_postrim = FASTQC_NANOPLOT_POST_TRIM.out.fastqc_multiqc.ifEmpty([])
+            ch_nanostat_posttrim = FASTQC_NANOPLOT_POST_TRIM.out.nanoplot_txt.ifEmpty([])
             ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_TRIM.out.nanoplot_version.first().ifEmpty(null))
             ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_TRIM.out.toulligqc_version.first().ifEmpty(null))
             ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_TRIM.out.fastqc_version.first().ifEmpty(null))
@@ -369,21 +371,38 @@ workflow SCNANOSEQ {
         FASTQC_NANOPLOT_POST_EXTRACT ( ch_extracted_fastq, params.skip_nanoplot, params.skip_toulligqc, params.skip_fastqc )
 
         ch_fastqc_multiqc_postextract = FASTQC_NANOPLOT_POST_EXTRACT.out.fastqc_multiqc.ifEmpty([])
+        ch_nanostat_postextract = FASTQC_NANOPLOT_POST_EXTRACT.out.nanoplot_txt.ifEmpty([])
         ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_EXTRACT.out.nanoplot_version.first().ifEmpty(null))
         ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_EXTRACT.out.toulligqc_version.first().ifEmpty(null))
         ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_EXTRACT.out.fastqc_version.first().ifEmpty(null))
 
+        //
+        // MODULE: Generate read counts
+        //
+
+        ch_pretrim_counts = Channel.empty()
+        ch_posttrim_counts = Channel.empty()
+        ch_postextract_counts = Channel.empty()
         if (!params.skip_fastqc){
+            ch_pretrim_counts = ch_fastqc_multiqc_pretrim.collect{it[0]}
+            ch_posttrim_counts = ch_fastqc_multiqc_postrim.collect{it[0]}
+            ch_postextract_counts = ch_fastqc_multiqc_postextract.collect{it[0]}
 
-            READ_COUNTS (
-                ch_fastqc_multiqc_pretrim.collect{it[0]},
-                ch_fastqc_multiqc_postrim.collect{it[0]}.ifEmpty([]),
-                ch_fastqc_multiqc_postextract.collect{it[0]},
-                ch_corrected_bc_info.collect{it[1]})
+        } else if (!params.skip_nanoplot){
+            ch_pretrim_counts = ch_nanostat_pretrim.collect{it[1]}
+            ch_posttrim_counts = ch_nanostat_posttrim.collect{it[1]}
+            ch_postextract_counts = ch_nanostat_postextract.collect{it[1]}
 
-            ch_read_counts = READ_COUNTS.out.read_counts
-            ch_versions = ch_versions.mix(READ_COUNTS.out.versions)
         }
+
+        READ_COUNTS (
+            ch_pretrim_counts.ifEmpty([]),
+            ch_posttrim_counts.ifEmpty([]),
+            ch_postextract_counts.ifEmpty([]),
+            ch_corrected_bc_info.collect{it[1]})
+
+        ch_read_counts = READ_COUNTS.out.read_counts
+        ch_versions = ch_versions.mix(READ_COUNTS.out.versions)
     }
 
     //
