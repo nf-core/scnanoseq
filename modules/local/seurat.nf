@@ -1,6 +1,6 @@
 process SEURAT {
     tag "$meta.id"
-    label 'process_low'
+    label 'process_medium'
 
     conda "conda-forge::r-base conda-forge::r-seurat=4.1.1 conda-forge::r-ggplot2 conda-forge::r-optparse"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
