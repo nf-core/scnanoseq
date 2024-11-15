@@ -524,7 +524,6 @@ workflow SCNANOSEQ {
     ch_tagged_sorted_flagstat =  BAM_SORT_STATS_SAMTOOLS_TAGGED.out.flagstat
     ch_tagged_sorted_idxstats =  BAM_SORT_STATS_SAMTOOLS_TAGGED.out.idxstats
     ch_versions = ch_versions.mix(BAM_SORT_STATS_SAMTOOLS_TAGGED.out.versions)
-    
 
     // To help with parallel processing for the next two steps, we need to split by chromosome
 
@@ -575,7 +574,7 @@ workflow SCNANOSEQ {
         ch_dedup_bam = UMITOOLS_DEDUP.out.bam
         ch_dedup_log = UMITOOLS_DEDUP.out.log
         ch_versions = ch_versions.mix(UMITOOLS_DEDUP.out.versions)
-        
+
         // SUBWORKFLOW: BAM_SORT_STATS_SAMTOOLS
         // The subworkflow is called in both the minimap2 bams and filtered (mapped only) version
         BAM_SORT_STATS_SAMTOOLS_DEDUP ( ch_dedup_bam,
