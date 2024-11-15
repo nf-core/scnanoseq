@@ -5,13 +5,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## v1.1.0 [TBD]
 
-### `Added`
+### Enhancements
+- Inputs for IsoQuant are split on chromosome to allow for faster processing
+- The read counts QC metric is now able to leverage NanoPlot counts if FastQC is skipped
 
-### `Fixed`
+### Fixes
+- The 'Post Trim Read QC' and 'Post Extract Read QC' nodes on the metro diagram have been placed in correct locations
+- The BLAZE process in the example config has been corrected to use cpus instead of `--threads`
 
-### `Dependencies`
+### Software dependencies
 
-### `Deprecated`
+| Dependency                    | Old version | New version |
+| ----------------------------- | ----------- | ----------- |
+| `IsoQuant`                    | 3.5.0       | 3.6.1       |
 
 ## v1.0.0 [2024-10-07]
 
