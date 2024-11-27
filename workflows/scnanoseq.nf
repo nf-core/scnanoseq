@@ -66,10 +66,11 @@ include { PREPARE_REFERENCE_FILES } from "../subworkflows/local/prepare_referenc
     IMPORT NF-CORE MODULES/SUBWORKFLOWS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-
 //
 // MODULE: Installed directly from nf-core/modules
 //
+include { FASTQC                                } from '../modules/nf-core/fastqc/main'
+include { MULTIQC                               } from '../modules/nf-core/multiqc/main'
 include { PIGZ_UNCOMPRESS                       } from "../modules/nf-core/pigz/uncompress/main"
 include { PIGZ_COMPRESS                         } from "../modules/nf-core/pigz/compress/main"
 include { NANOCOMP as NANOCOMP_FASTQ            } from "../modules/nf-core/nanocomp/main"
@@ -88,10 +89,10 @@ include { MINIMAP2_ALIGN                        } from "../modules/nf-core/minim
 include { RSEQC_READDISTRIBUTION                } from "../modules/nf-core/rseqc/readdistribution/main"
 include { BAMTOOLS_SPLIT                        } from "../modules/nf-core/bamtools/split/main"
 include { SAMTOOLS_MERGE                        } from "../modules/nf-core/samtools/merge/main"
-include { paramsSummaryMap                      } from "plugin/nf-validation"
+include { paramsSummaryMap                      } from "plugin/nf-schema"
 
 /*
- * SUBWORKFLOW: Consisting entirely of nf-core/modules
+ * SUBWORKFLOW: Consisting entirely of nf-core/subworkflows
  */
 include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_PRE_TRIM          } from "../subworkflows/nf-core/qcfastq_nanoplot_fastqc"
 include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_POST_TRIM         } from "../subworkflows/nf-core/qcfastq_nanoplot_fastqc"
@@ -107,6 +108,7 @@ include { paramsSummaryMultiqc                                         } from ".
 include { softwareVersionsToYAML                                       } from "../subworkflows/nf-core/utils_nfcore_pipeline"
 include { methodsDescriptionText                                       } from "../subworkflows/local/utils_nfcore_scnanoseq_pipeline"
 
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     RUN MAIN WORKFLOW
@@ -117,7 +119,6 @@ workflow SCNANOSEQ {
 
     take:
     ch_samplesheet // channel: samplesheet read in from --input
-
     main:
 
     ch_versions = Channel.empty()
@@ -317,6 +318,7 @@ workflow SCNANOSEQ {
             .transpose()
             .set { ch_split_bc }
     }
+
 
     //
     // MODULE: Extract barcodes
@@ -706,8 +708,12 @@ workflow SCNANOSEQ {
     // Collate and save software versions
     //
     //softwareVersionsToYAML(ch_versions)
-    //    .collectFile(storeDir: "${params.outdir}/pipeline_info", name: 'nf_core_pipeline_software_mqc_versions.yml', sort: true, newLine: true)
-    //    .set { ch_collated_versions }
+    //    .collectFile(
+    //        storeDir: "${params.outdir}/pipeline_info",
+    //        name: 'nf_core_'  + 'pipeline_software_' +  'mqc_'  + 'versions.yml',
+    //        sort: true,
+    //        newLine: true
+    //    ).set { ch_collated_versions }
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')

@@ -2,10 +2,10 @@ process MERGE_MTX {
     tag "$meta.id"
     label 'process_high'
 
-    conda "conda-forge::pandas=1.5.1"
+    conda "conda-forge::pandas=1.5.2"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/pandas:1.5.2' :
-        'biocontainers/pandas:1.5.1_cv1' }"
+        'biocontainers/pandas:1.5.2' }"
 
     input:
     tuple val(meta), path(files_in)
