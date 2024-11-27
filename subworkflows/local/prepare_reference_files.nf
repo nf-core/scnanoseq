@@ -2,12 +2,12 @@
 // Creates gtfs to that add introns as features
 //
 
-include { PIGZ_UNCOMPRESS as UNZIP_FASTA } from '../../modules/nf-core/pigz/uncompress/main'
-include { PIGZ_UNCOMPRESS as UNZIP_GTF   } from '../../modules/nf-core/pigz/uncompress/main'
-include { SAMTOOLS_FAIDX                 } from '../../modules/nf-core/samtools/faidx/main'
+include { PIGZ_UNCOMPRESS as UNZIP_FASTA         } from '../../modules/nf-core/pigz/uncompress/main'
+include { PIGZ_UNCOMPRESS as UNZIP_GTF           } from '../../modules/nf-core/pigz/uncompress/main'
+include { SAMTOOLS_FAIDX                         } from '../../modules/nf-core/samtools/faidx/main'
 include { SAMTOOLS_FAIDX as SAMTOOLS_FAIDX_SPLIT } from '../../modules/nf-core/samtools/faidx/main'
-include { SPLIT_GTF                      } from '../../modules/local/split_gtf'
-include { SPLIT_FASTA                    } from '../../modules/local/split_fasta'
+include { SPLIT_GTF                              } from '../../modules/local/split_gtf'
+include { SPLIT_FASTA                            } from '../../modules/local/split_fasta'
 
 workflow PREPARE_REFERENCE_FILES {
     take:
