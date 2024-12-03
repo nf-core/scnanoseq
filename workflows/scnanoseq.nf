@@ -47,6 +47,8 @@ include { READ_COUNTS                                              } from "../mo
 include { TAG_BARCODES                                             } from "../modules/local/tag_barcodes"
 include { CORRECT_BARCODES                                         } from "../modules/local/correct_barcodes"
 include { ISOQUANT                                                 } from "../modules/local/isoquant"
+include { MERGE_MTX as MERGE_MTX_GENE                              } from "../modules/local/merge_mtx"
+include { MERGE_MTX as MERGE_MTX_TRANSCRIPT                        } from "../modules/local/merge_mtx"
 include { SEURAT as SEURAT_GENE                                    } from "../modules/local/seurat"
 include { SEURAT as SEURAT_TRANSCRIPT                              } from "../modules/local/seurat"
 include { COMBINE_SEURAT_STATS as COMBINE_SEURAT_STATS_GENE        } from "../modules/local/combine_seurat_stats"
@@ -64,10 +66,11 @@ include { PREPARE_REFERENCE_FILES } from "../subworkflows/local/prepare_referenc
     IMPORT NF-CORE MODULES/SUBWORKFLOWS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-
 //
 // MODULE: Installed directly from nf-core/modules
 //
+include { FASTQC                                } from '../modules/nf-core/fastqc/main'
+include { MULTIQC                               } from '../modules/nf-core/multiqc/main'
 include { PIGZ_UNCOMPRESS                       } from "../modules/nf-core/pigz/uncompress/main"
 include { PIGZ_COMPRESS                         } from "../modules/nf-core/pigz/compress/main"
 include { NANOCOMP as NANOCOMP_FASTQ            } from "../modules/nf-core/nanocomp/main"
@@ -86,10 +89,10 @@ include { MINIMAP2_ALIGN                        } from "../modules/nf-core/minim
 include { RSEQC_READDISTRIBUTION                } from "../modules/nf-core/rseqc/readdistribution/main"
 include { BAMTOOLS_SPLIT                        } from "../modules/nf-core/bamtools/split/main"
 include { SAMTOOLS_MERGE                        } from "../modules/nf-core/samtools/merge/main"
-include { paramsSummaryMap                      } from "plugin/nf-validation"
+include { paramsSummaryMap                      } from "plugin/nf-schema"
 
 /*
- * SUBWORKFLOW: Consisting entirely of nf-core/modules
+ * SUBWORKFLOW: Consisting entirely of nf-core/subworkflows
  */
 include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_PRE_TRIM          } from "../subworkflows/nf-core/qcfastq_nanoplot_fastqc"
 include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_POST_TRIM         } from "../subworkflows/nf-core/qcfastq_nanoplot_fastqc"
@@ -100,9 +103,11 @@ include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_TAGGED    } from ".
 include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_CORRECTED } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
 include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_SPLIT     } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
 include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_DEDUP     } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
+include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_MERGED    } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
 include { paramsSummaryMultiqc                                         } from "../subworkflows/nf-core/utils_nfcore_pipeline"
 include { softwareVersionsToYAML                                       } from "../subworkflows/nf-core/utils_nfcore_pipeline"
 include { methodsDescriptionText                                       } from "../subworkflows/local/utils_nfcore_scnanoseq_pipeline"
+
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -114,13 +119,10 @@ workflow SCNANOSEQ {
 
     take:
     ch_samplesheet // channel: samplesheet read in from --input
-
     main:
 
     ch_versions = Channel.empty()
     ch_multiqc_report = Channel.empty()
-
-    Channel.of(blaze_whitelist).view()
 
     //
     // SUBWORKFLOW: Read in samplesheet, validate and stage input files
@@ -159,6 +161,7 @@ workflow SCNANOSEQ {
         ch_versions = ch_versions.mix(FASTQC_NANOPLOT_PRE_TRIM.out.fastqc_version.first().ifEmpty(null))
 
         ch_fastqc_multiqc_pretrim = FASTQC_NANOPLOT_PRE_TRIM.out.fastqc_multiqc.ifEmpty([])
+        ch_nanostat_pretrim = FASTQC_NANOPLOT_PRE_TRIM.out.nanoplot_txt.ifEmpty([])
     }
 
     //
@@ -195,7 +198,10 @@ workflow SCNANOSEQ {
 
     fasta = PREPARE_REFERENCE_FILES.out.prepped_fasta
     fai = PREPARE_REFERENCE_FILES.out.prepped_fai
+    split_fasta = PREPARE_REFERENCE_FILES.out.split_fasta
+    split_fai = PREPARE_REFERENCE_FILES.out.split_fai
     gtf = PREPARE_REFERENCE_FILES.out.prepped_gtf
+    split_gtf = PREPARE_REFERENCE_FILES.out.split_gtf
 
 
     ch_versions = ch_versions.mix( PREPARE_REFERENCE_FILES.out.versions )
@@ -276,6 +282,7 @@ workflow SCNANOSEQ {
             FASTQC_NANOPLOT_POST_TRIM ( ch_trimmed_reads_combined, params.skip_nanoplot, params.skip_toulligqc, params.skip_fastqc )
 
             ch_fastqc_multiqc_postrim = FASTQC_NANOPLOT_POST_TRIM.out.fastqc_multiqc.ifEmpty([])
+            ch_nanostat_posttrim = FASTQC_NANOPLOT_POST_TRIM.out.nanoplot_txt.ifEmpty([])
             ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_TRIM.out.nanoplot_version.first().ifEmpty(null))
             ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_TRIM.out.toulligqc_version.first().ifEmpty(null))
             ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_TRIM.out.fastqc_version.first().ifEmpty(null))
@@ -311,6 +318,7 @@ workflow SCNANOSEQ {
             .transpose()
             .set { ch_split_bc }
     }
+
 
     //
     // MODULE: Extract barcodes
@@ -365,21 +373,38 @@ workflow SCNANOSEQ {
         FASTQC_NANOPLOT_POST_EXTRACT ( ch_extracted_fastq, params.skip_nanoplot, params.skip_toulligqc, params.skip_fastqc )
 
         ch_fastqc_multiqc_postextract = FASTQC_NANOPLOT_POST_EXTRACT.out.fastqc_multiqc.ifEmpty([])
+        ch_nanostat_postextract = FASTQC_NANOPLOT_POST_EXTRACT.out.nanoplot_txt.ifEmpty([])
         ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_EXTRACT.out.nanoplot_version.first().ifEmpty(null))
         ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_EXTRACT.out.toulligqc_version.first().ifEmpty(null))
         ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_EXTRACT.out.fastqc_version.first().ifEmpty(null))
 
+        //
+        // MODULE: Generate read counts
+        //
+
+        ch_pretrim_counts = Channel.empty()
+        ch_posttrim_counts = Channel.empty()
+        ch_postextract_counts = Channel.empty()
         if (!params.skip_fastqc){
+            ch_pretrim_counts = ch_fastqc_multiqc_pretrim.collect{it[0]}
+            ch_posttrim_counts = ch_fastqc_multiqc_postrim.collect{it[0]}
+            ch_postextract_counts = ch_fastqc_multiqc_postextract.collect{it[0]}
 
-            READ_COUNTS (
-                ch_fastqc_multiqc_pretrim.collect{it[0]},
-                ch_fastqc_multiqc_postrim.collect{it[0]}.ifEmpty([]),
-                ch_fastqc_multiqc_postextract.collect{it[0]},
-                ch_corrected_bc_info.collect{it[1]})
+        } else if (!params.skip_nanoplot){
+            ch_pretrim_counts = ch_nanostat_pretrim.collect{it[1]}
+            ch_posttrim_counts = ch_nanostat_posttrim.collect{it[1]}
+            ch_postextract_counts = ch_nanostat_postextract.collect{it[1]}
 
-            ch_read_counts = READ_COUNTS.out.read_counts
-            ch_versions = ch_versions.mix(READ_COUNTS.out.versions)
         }
+
+        READ_COUNTS (
+            ch_pretrim_counts.ifEmpty([]),
+            ch_posttrim_counts.ifEmpty([]),
+            ch_postextract_counts.ifEmpty([]),
+            ch_corrected_bc_info.collect{it[1]})
+
+        ch_read_counts = READ_COUNTS.out.read_counts
+        ch_versions = ch_versions.mix(READ_COUNTS.out.versions)
     }
 
     //
@@ -502,42 +527,46 @@ workflow SCNANOSEQ {
     ch_tagged_sorted_idxstats =  BAM_SORT_STATS_SAMTOOLS_TAGGED.out.idxstats
     ch_versions = ch_versions.mix(BAM_SORT_STATS_SAMTOOLS_TAGGED.out.versions)
 
-    ch_dedup_sorted_bam = ch_tagged_sorted_bam
-    ch_dedup_sorted_bai = ch_tagged_sorted_bai
-    ch_dedup_sorted_flagstat = ch_tagged_sorted_flagstat
-    ch_dedup_sorted_idxstats = Channel.empty()
+    // To help with parallel processing for the next two steps, we need to split by chromosome
+
+    //
+    // MODULE: Bamtools Split
+    //
+    BAMTOOLS_SPLIT ( ch_tagged_sorted_bam )
+    ch_split_bams = BAMTOOLS_SPLIT.out.bam
+
+    ch_split_tagged_bam = ch_split_bams
+                                .map{
+                                    meta, bam ->
+                                        [bam]
+                                }
+                                .flatten()
+                                .map{
+                                    bam ->
+                                        bam_basename = bam.toString().split('/')[-1]
+                                        split_bam_basename = bam_basename.split(/\./)
+                                        meta = [
+                                            'id': split_bam_basename.take(split_bam_basename.size()-1).join("."),
+                                        ]
+                                        [ meta, bam ]
+                                }
+
+    //
+    // SUBWORKFLOW: BAM_SORT_STATS_SAMTOOLS
+    // The subworkflow is called in both the minimap2 bams and filtered (mapped only) version
+    BAM_SORT_STATS_SAMTOOLS_SPLIT ( ch_split_tagged_bam,
+                                    fasta )
+
+    ch_split_sorted_bam = BAM_SORT_STATS_SAMTOOLS_SPLIT.out.bam
+    ch_split_sorted_bai = BAM_SORT_STATS_SAMTOOLS_SPLIT.out.bai
+
+    ch_dedup_sorted_bam = ch_split_sorted_bam
+    ch_dedup_sorted_bai = ch_split_sorted_bai
+
     ch_dedup_log = Channel.empty()
+    ch_dedup_merged_flagstat = ch_tagged_sorted_flagstat
 
     if (!params.skip_dedup) {
-
-        //
-        // MODULE: Bamtools Split
-        //
-        BAMTOOLS_SPLIT ( ch_tagged_sorted_bam )
-        ch_split_bams = BAMTOOLS_SPLIT.out.bam
-
-        ch_split_tagged_bam = ch_split_bams
-                                    .map{
-                                        meta, bam ->
-                                            [bam]
-                                    }
-                                    .flatten()
-                                    .map{
-                                        bam ->
-                                            bam_basename = bam.toString().split('/')[-1]
-                                            split_bam_basename = bam_basename.split(/\./)
-                                            meta = [ 'id': split_bam_basename.take(split_bam_basename.size()-1).join(".") ]
-                                            [ meta, bam ]
-                                    }
-
-        //
-        // SUBWORKFLOW: BAM_SORT_STATS_SAMTOOLS
-        // The subworkflow is called in both the minimap2 bams and filtered (mapped only) version
-        BAM_SORT_STATS_SAMTOOLS_SPLIT ( ch_split_tagged_bam,
-                                        fasta )
-
-        ch_split_sorted_bam = BAM_SORT_STATS_SAMTOOLS_SPLIT.out.bam
-        ch_split_sorted_bai = BAM_SORT_STATS_SAMTOOLS_SPLIT.out.bai
 
         //
         // MODULE: Umitools Dedup
@@ -547,6 +576,15 @@ workflow SCNANOSEQ {
         ch_dedup_bam = UMITOOLS_DEDUP.out.bam
         ch_dedup_log = UMITOOLS_DEDUP.out.log
         ch_versions = ch_versions.mix(UMITOOLS_DEDUP.out.versions)
+
+        // SUBWORKFLOW: BAM_SORT_STATS_SAMTOOLS
+        // The subworkflow is called in both the minimap2 bams and filtered (mapped only) version
+        BAM_SORT_STATS_SAMTOOLS_DEDUP ( ch_dedup_bam,
+                                        fasta )
+
+        ch_dedup_sorted_bam = BAM_SORT_STATS_SAMTOOLS_DEDUP.out.bam
+        ch_dedup_sorted_bai = BAM_SORT_STATS_SAMTOOLS_DEDUP.out.bai
+
 
         //
         // MODULE: Samtools merge
@@ -562,41 +600,88 @@ workflow SCNANOSEQ {
                                 .groupTuple()
 
         SAMTOOLS_MERGE ( ch_bams_to_merge, fasta, fai)
-
         ch_dedup_merged_bam = SAMTOOLS_MERGE.out.bam
 
+        //
         // SUBWORKFLOW: BAM_SORT_STATS_SAMTOOLS
-        // The subworkflow is called in both the minimap2 bams and filtered (mapped only) version
-        BAM_SORT_STATS_SAMTOOLS_DEDUP ( ch_dedup_merged_bam,
+        //
+        BAM_SORT_STATS_SAMTOOLS_MERGED ( ch_dedup_merged_bam,
                                         fasta )
 
-        ch_dedup_sorted_bam = BAM_SORT_STATS_SAMTOOLS_DEDUP.out.bam
-        ch_dedup_sorted_bai = BAM_SORT_STATS_SAMTOOLS_DEDUP.out.bai
-
         // these stats go for multiqc
-        ch_dedup_sorted_stats = BAM_SORT_STATS_SAMTOOLS_DEDUP.out.stats
-        ch_dedup_sorted_flagstat = BAM_SORT_STATS_SAMTOOLS_DEDUP.out.flagstat
-        ch_dedup_sorted_idxstats = BAM_SORT_STATS_SAMTOOLS_DEDUP.out.idxstats
-        ch_versions = ch_versions.mix(BAM_SORT_STATS_SAMTOOLS_DEDUP.out.versions)
+        ch_dedup_merged_stats = BAM_SORT_STATS_SAMTOOLS_MERGED.out.stats
+        ch_dedup_merged_flagstat = BAM_SORT_STATS_SAMTOOLS_MERGED.out.flagstat
+        ch_dedup_merged_idxstats = BAM_SORT_STATS_SAMTOOLS_MERGED.out.idxstats
+        ch_versions = ch_versions.mix(BAM_SORT_STATS_SAMTOOLS_MERGED.out.versions)
+
     }
 
     //
     // MODULE: Isoquant
     //
-    ISOQUANT ( ch_dedup_sorted_bam.join(ch_dedup_sorted_bai, by: [0]), gtf, fasta, fai, 'tag:CB')
+    ISOQUANT (
+        ch_dedup_sorted_bam
+            .join(ch_dedup_sorted_bai, by: [0])
+            .map{
+                meta, bam, bai ->
+                    bam_basename = bam.toString().split('/')[-1]
+                    split_bam_basename = bam_basename.split(/\./)
+                    chr = [
+                        'chr': split_bam_basename[1].replace("REF_","")
+                    ]
+                    [ chr, meta, bam, bai]
+            }
+            .combine(split_fasta, by: [0])
+            .combine(split_fai, by: [0])
+            .combine(split_gtf, by: [0])
+            .map{
+                chr, meta, bam, bai, fasta, fai, gtf ->
+                    [ meta, bam, bai, fasta, fai, gtf ]
+            },
+        'tag:CB'
+    )
     ch_gene_count_mtx = ISOQUANT.out.gene_count_mtx
     ch_transcript_count_mtx = ISOQUANT.out.transcript_count_mtx
     ch_versions = ch_versions.mix(ISOQUANT.out.versions)
+
+    //
+    // MODULE: Merge Matrix
+    //
+    MERGE_MTX_GENE (
+        ch_gene_count_mtx
+            .map{
+                meta, mtx ->
+                    basename = mtx.toString().split('/')[-1]
+                    split_basename = basename.split(/\./)
+                    meta = [ 'id': split_basename[0] ]
+                [ meta, mtx ]
+            }
+            .groupTuple()
+    )
+    ch_merged_gene_mtx = MERGE_MTX_GENE.out.merged_mtx
+
+    MERGE_MTX_TRANSCRIPT (
+        ch_transcript_count_mtx
+            .map{
+                meta, mtx ->
+                    basename = mtx.toString().split('/')[-1]
+                    split_basename = basename.split(/\./)
+                    meta = [ 'id': split_basename[0] ]
+                [ meta, mtx ]
+            }
+            .groupTuple()
+    )
+    ch_merged_transcript_mtx = MERGE_MTX_TRANSCRIPT.out.merged_mtx
 
     if (!params.skip_qc && !params.skip_seurat){
         //
         // MODULE: Seurat
         //
-        SEURAT_GENE ( ch_gene_count_mtx.join(ch_dedup_sorted_flagstat, by: [0]) )
+        SEURAT_GENE ( ch_merged_gene_mtx.join(ch_dedup_merged_flagstat, by: [0]) )
         ch_gene_seurat_qc = SEURAT_GENE.out.seurat_stats
         ch_versions = ch_versions.mix(SEURAT_GENE.out.versions)
 
-        SEURAT_TRANSCRIPT ( ch_transcript_count_mtx.join(ch_dedup_sorted_flagstat, by: [0]) )
+        SEURAT_TRANSCRIPT ( ch_merged_transcript_mtx.join(ch_dedup_merged_flagstat, by: [0]) )
         ch_transcript_seurat_qc = SEURAT_TRANSCRIPT.out.seurat_stats
         ch_versions = ch_versions.mix(SEURAT_TRANSCRIPT.out.versions)
 
@@ -623,8 +708,12 @@ workflow SCNANOSEQ {
     // Collate and save software versions
     //
     //softwareVersionsToYAML(ch_versions)
-    //    .collectFile(storeDir: "${params.outdir}/pipeline_info", name: 'nf_core_pipeline_software_mqc_versions.yml', sort: true, newLine: true)
-    //    .set { ch_collated_versions }
+    //    .collectFile(
+    //        storeDir: "${params.outdir}/pipeline_info",
+    //        name: 'nf_core_'  + 'pipeline_software_' +  'mqc_'  + 'versions.yml',
+    //        sort: true,
+    //        newLine: true
+    //    ).set { ch_collated_versions }
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
@@ -677,8 +766,8 @@ workflow SCNANOSEQ {
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_tagged_sorted_idxstats.collect{it[1]}.ifEmpty([]))
 
         if (!params.skip_dedup) {
-            ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_dedup_sorted_flagstat.collect{it[1]}.ifEmpty([]))
-            ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_dedup_sorted_idxstats.collect{it[1]}.ifEmpty([]))
+            ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_dedup_merged_flagstat.collect{it[1]}.ifEmpty([]))
+            ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_dedup_merged_idxstats.collect{it[1]}.ifEmpty([]))
         }
 
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_read_counts.collect().ifEmpty([]))

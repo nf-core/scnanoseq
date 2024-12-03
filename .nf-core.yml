@@ -1,13 +1,26 @@
-repository_type: pipeline
-nf_core_version: "2.14.1"
-
+bump_version: null
 lint:
-  template_strings: False # "Jinja string found in" bin/create_regex.py and bin/seurat_qc.R
   files_unchanged:
     - .github/workflows/linting.yml
     - lib/NfcoreTemplate.groovy
     - docs/images/nf-core-scnanoseq_logo_dark.png
     - docs/images/nf-core-scnanoseq_logo_light.png
+    - .gitignore
   pipeline_todos:
     - README.md
     - main.nf
+  template_strings: false
+nf_core_version: 3.0.2
+org_path: null
+repository_type: pipeline
+template:
+  author: Austyn Trull, Lara Ianov
+  description: Single-cell/nuclei pipeline for data derived from Oxford Nanopore
+  force: false
+  is_nfcore: true
+  name: scnanoseq
+  org: nf-core
+  outdir: .
+  skip_features: null
+  version: 1.0.0
+update: null

@@ -24,11 +24,20 @@ process NANOPLOT {
     def args = task.ext.args ?: ''
     def input_file = ("$ontfile".endsWith(".fastq.gz") || "$ontfile".endsWith(".fastq")) ? "--fastq ${ontfile}" :
         ("$ontfile".endsWith(".txt")) ? "--summary ${ontfile}" : ''
+    def prefix = task.ext.prefix ?: "${meta.id}"
     """
     NanoPlot \\
         $args \\
         -t $task.cpus \\
         $input_file
+
+    for nanoplot_file in *.html *.png *.txt *.log
+    do
+        if [[ -s \$nanoplot_file ]]
+        then
+            mv \$nanoplot_file ${prefix}_\$nanoplot_file
+        fi
+    done
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
