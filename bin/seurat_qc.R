@@ -57,6 +57,7 @@ plotSingleCellDensity <- function(input_obj,
 
 params_list <- list(
     make_option(c("-i", "--input_matrix"  ), type="character", default=NULL       , metavar="path"   , help="Count file matrix where rows are genes and columns are cells/nuclei."),
+    make_option(c("-j", "--input_dir"     ), type="character", default=NULL       , metavar="path"   , help="Directory containing matrix.mtx, genes.tsv (or features.tsv) , and barcodes.tsv."),
     make_option(c("-s", "--flagstat"      ), type="character", default=NULL       , metavar="path"   , help="Flagstat file from samtools QC."                                     ),
     make_option(c("-d", "--id"            ), type="character", default="scnanoseq", metavar="string" , help="Project name for Seurat object."                                     ),
     make_option(c("-o", "--outdir"        ), type="character", default="./"       , metavar="path"   , help="Output directory."                                                   ),
@@ -66,9 +67,9 @@ params_list <- list(
 opt_parser <- OptionParser(option_list=params_list)
 opt <- parse_args(opt_parser)
 
-if (is.null(opt$input_matrix)) {
+if (is.null(opt$input_matrix) && is.null(opt$input_dir)) {
     print_help(opt_parser)
-    stop("Please provide a single-cell/nuclei matrix.", call. = FALSE)
+    stop("Please provide either a single-cell/nuclei matrix or a directory containing a matrix.mtx, genes.tsv (or features.tsv) and barcodes.tsv.", call. = FALSE)
 }
 
 if (is.null(opt$flagstat)) {
@@ -80,8 +81,26 @@ if (is.null(opt$flagstat)) {
 ### READ IN INPUTs ###
 ######################
 
+# Create the Seurat object
+#NOTE: we do not perform any pre-filtering at this point
+
 # cell or nuclei matrix (calling it cell for simplicity)
-cell_bc_matrix <- read.table(opt$input_matrix, sep="\t", header = TRUE, row.names = 1)
+
+if (!is.null(opt$input_dir)) {
+    cell_bc_matrix <- Read10X(data.dir = opt$input_dir,
+                              gene.column = 1,
+                              cell.column = 2)
+    seurat_obj <- CreateSeuratObject(counts = cell_bc_matrix,
+                                        min.cells = 0,
+                                        min.features = 0,
+                                        project = opt$id)
+} else {
+    cell_bc_matrix <- read.table(opt$input_matrix, sep="\t", header = TRUE, row.names = 1)
+    seurat_obj <- CreateSeuratObject(counts = cell_bc_matrix,
+                                        min.cells = 0,
+                                        min.features = 0,
+                                        project = opt$id)
+}
 
 flagstat_lines <- readLines(opt$flagstat)
 
@@ -95,16 +114,6 @@ index_nums <- grep("total", flagstat_lines)
 # This will parse out the total read count
 total_reads <- as.numeric(gsub("([0-9]+).*$", "\\1", flagstat_lines[index_nums]))
 
-#####################
-### SEURAT OBJECT ###
-#####################
-
-# Create the Seurat object
-#NOTE: we do not perform any pre-filtering at this point
-seurat_obj <- CreateSeuratObject(counts = cell_bc_matrix,
-                                    min.cells = 0,
-                                    min.features = 0,
-                                    project = opt$id)
 
 ######################
 ### GENERATE PLOTS ###

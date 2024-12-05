@@ -1,20 +1,18 @@
 //
-// Creates gtfs to that add introns as features
+// Modifies the reference files for easier analysis
 //
 
-include { PIGZ_UNCOMPRESS as UNZIP_FASTA         } from '../../modules/nf-core/pigz/uncompress/main'
-include { PIGZ_UNCOMPRESS as UNZIP_GTF           } from '../../modules/nf-core/pigz/uncompress/main'
-include { SAMTOOLS_FAIDX                         } from '../../modules/nf-core/samtools/faidx/main'
-include { SAMTOOLS_FAIDX as SAMTOOLS_FAIDX_SPLIT } from '../../modules/nf-core/samtools/faidx/main'
-include { SPLIT_GTF                              } from '../../modules/local/split_gtf'
-include { SPLIT_FASTA                            } from '../../modules/local/split_fasta'
+include { PIGZ_UNCOMPRESS as UNZIP_GENOME_FASTA     } from '../../modules/nf-core/pigz/uncompress/main'
+include { PIGZ_UNCOMPRESS as UNZIP_TRANSCRIPT_FASTA } from '../../modules/nf-core/pigz/uncompress/main'
+include { PIGZ_UNCOMPRESS as UNZIP_GTF              } from '../../modules/nf-core/pigz/uncompress/main'
+include { SAMTOOLS_FAIDX as GENOME_FAIDX            } from '../../modules/nf-core/samtools/faidx/main'
+include { SAMTOOLS_FAIDX as TRANSCRIPT_FAIDX        } from '../../modules/nf-core/samtools/faidx/main'
 
 workflow PREPARE_REFERENCE_FILES {
     take:
-        fasta_preparation_method
-        gtf_preparation_method
-        fasta
-        gtf
+        genome_fasta     // file: path/to/genome.fasta
+        transcript_fasta // file: path/to/transcript.fasta
+        gtf              // file: path/to/genome.gtf
 
     main:
         ch_versions = Channel.empty()
@@ -22,16 +20,49 @@ workflow PREPARE_REFERENCE_FILES {
         // Check if fasta and gtf are zipped
 
         //
-        ch_prepared_fasta = Channel.empty()
-        if (fasta.endsWith('.gz')){
-            UNZIP_FASTA( [ [:], fasta ])
+        // MODULE: Unzip Genome FASTA
+        //
+        ch_genome_fasta = Channel.empty()
+        if (genome_fasta.endsWith('.gz')){
+            UNZIP_GENOME_FASTA( [ [:], genome_fasta ])
 
-            ch_prepared_fasta = UNZIP_FASTA.out.file
-            ch_versions = ch_versions.mix(UNZIP_FASTA.out.versions)
+            ch_genome_fasta = UNZIP_GENOME_FASTA.out.file
+            ch_versions = ch_versions.mix(UNZIP_GENOME_FASTA.out.versions)
         } else {
-            ch_prepared_fasta = [ [:], fasta ]
+            ch_genome_fasta = [ [:], genome_fasta ]
         }
 
+        //
+        // MODULE: Index the genome fasta
+        //
+        GENOME_FAIDX( ch_genome_fasta, [ [:], "$projectDir/assets/dummy_file.txt" ])
+        ch_genome_fai = GENOME_FAIDX.out.fai
+
+        //
+        // MODULE: Unzip Transcript FASTA
+        //
+        ch_transcript_fasta = Channel.empty()
+        ch_transcript_fai = Channel.empty()
+        if (transcript_fasta) {
+            if (transcript_fasta.endsWith('.gz')){
+                UNZIP_TRANSCRIPT_FASTA( [ [:], transcript_fasta ])
+
+                ch_transcript_fasta = UNZIP_TRANSCRIPT_FASTA.out.file
+                ch_versions = ch_versions.mix(UNZIP_TRANSCRIPT_FASTA.out.versions)
+            } else {
+                ch_transcript_fasta = [ [:], transcript_fasta ]
+            }
+
+            //
+            // MODULE: Index the transcript fasta
+            //
+            TRANSCRIPT_FAIDX( ch_transcript_fasta, [ [:], "$projectDir/assets/dummy_file.txt" ])
+            ch_transcript_fai = TRANSCRIPT_FAIDX.out.fai
+        }
+
+        //
+        // MODULE: Unzip GTF
+        //
         ch_prepared_gtf = Channel.empty()
         if (gtf.endsWith('.gz')){
             UNZIP_GTF( [ [:], gtf ])
@@ -42,47 +73,11 @@ workflow PREPARE_REFERENCE_FILES {
             ch_prepared_gtf = [ [:], gtf]
         }
 
-        //
-        // MODULE: Index the fasta
-        //
-        SAMTOOLS_FAIDX( ch_prepared_fasta, [ [:], "$projectDir/assets/dummy_file.txt" ])
-        ch_prepared_fai = SAMTOOLS_FAIDX.out.fai
-
-        //
-        // MODULE: Split the FASTA
-        //
-        SPLIT_FASTA( ch_prepared_fasta )
-        ch_split_fasta = SPLIT_FASTA.out.split_fasta
-            .flatten()
-            .map{
-                fasta ->
-                    fasta_basename = fasta.toString().split('/')[-1]
-                    meta = [ 'chr': fasta_basename.split(/\./)[0] ]
-                    [ meta, fasta ]
-            }
-
-        SAMTOOLS_FAIDX_SPLIT( ch_split_fasta, [ [:], "$projectDir/assets/dummy_file.txt" ])
-        ch_split_fai = SAMTOOLS_FAIDX_SPLIT.out.fai
-
-        //
-        // MODULE: Split the GTF
-        //
-        SPLIT_GTF( ch_prepared_gtf )
-        ch_split_gtf = SPLIT_GTF.out.split_gtf
-            .flatten()
-            .map{
-                gtf ->
-                    gtf_basename = gtf.toString().split('/')[-1]
-                    meta = ['chr': gtf_basename.split(/\./)[0]]
-                    [ meta, gtf ]
-            }
-
     emit:
-        prepped_fasta = ch_prepared_fasta
-        prepped_fai = ch_prepared_fai
-        prepped_gtf = ch_prepared_gtf
-        split_gtf = ch_split_gtf
-        split_fasta = ch_split_fasta
-        split_fai = ch_split_fai
-        versions = ch_versions
+        prepped_genome_fasta     = ch_genome_fasta
+        genome_fai               = ch_genome_fai
+        prepped_transcript_fasta = ch_transcript_fasta
+        transcript_fai           = ch_transcript_fai
+        prepped_gtf              = ch_prepared_gtf
+        versions                 = ch_versions
 }

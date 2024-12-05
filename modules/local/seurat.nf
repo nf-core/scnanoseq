@@ -9,6 +9,7 @@ process SEURAT {
 
     input:
     tuple val(meta), path(counts), path(flagstat)
+    val mtx_format
 
     output:
     tuple val(meta), path("*.csv"), emit: seurat_stats
@@ -21,18 +22,42 @@ process SEURAT {
     script:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
-    """
-    seurat_qc.R \\
-        $args \\
-        -i $counts \\
-        -s $flagstat \\
-        -d $prefix \\
-        -r $prefix
+    
+    if (mtx_format.equals("MEX")) {
+        """
+        mkdir indir
+        for file in $counts
+        do
+            mv \$file indir
+        done
 
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        r-base: \$(echo \$(R --version 2>&1) | sed 's/^.*R version //; s/ .*\$//')
-        r-seurat: \$(Rscript -e "library(Seurat); cat(as.character(packageVersion('Seurat')))")
-    END_VERSIONS
-    """
+        seurat_qc.R \\
+            $args \\
+            -j indir \\
+            -s $flagstat \\
+            -d $prefix \\
+            -r $prefix
+
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            r-base: \$(echo \$(R --version 2>&1) | sed 's/^.*R version //; s/ .*\$//')
+            r-seurat: \$(Rscript -e "library(Seurat); cat(as.character(packageVersion('Seurat')))")
+        END_VERSIONS
+        """
+    } else {
+        """
+        seurat_qc.R \\
+            $args \\
+            -i $counts \\
+            -s $flagstat \\
+            -d $prefix \\
+            -r $prefix
+
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            r-base: \$(echo \$(R --version 2>&1) | sed 's/^.*R version //; s/ .*\$//')
+            r-seurat: \$(Rscript -e "library(Seurat); cat(as.character(packageVersion('Seurat')))")
+        END_VERSIONS
+        """
+    }
 }
