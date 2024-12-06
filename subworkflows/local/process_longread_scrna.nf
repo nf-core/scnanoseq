@@ -9,8 +9,8 @@ include { QUANTIFY_SCRNA_OARFISH  } from '../../subworkflows/local/quantify_scrn
 include { UMITOOLS_DEDUP_SPLIT    } from '../../subworkflows/local/umitools_dedup_split'
 
 // MODULES
-include { SAMTOOLS_INDEX    } from '../../modules/nf-core/samtools/index'
-include { SAMTOOLS_FLAGSTAT } from '../../modules/nf-core/samtools/flagstat' 
+include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_TAGGED       } from '../../modules/nf-core/samtools/index'
+include { SAMTOOLS_FLAGSTAT as SAMTOOLS_FLAGSTAT_TAGGED } from '../../modules/nf-core/samtools/flagstat' 
 
 include { TAG_BARCODES } from '../../modules/local/tag_barcodes'
 
@@ -66,28 +66,27 @@ workflow PROCESS_LONGREAD_SCRNA {
         //
         // MODULE: Index Tagged Bam
         //
-        SAMTOOLS_INDEX ( TAG_BARCODES.out.tagged_bam )
-        ch_versions = ch_versions.mix(SAMTOOLS_INDEX.out.versions)
+        SAMTOOLS_INDEX_TAGGED ( TAG_BARCODES.out.tagged_bam )
+        ch_versions = ch_versions.mix(SAMTOOLS_INDEX_TAGGED.out.versions)
 
         //
         // MODULE: Flagstat Tagged Bam 
         //
-        SAMTOOLS_FLAGSTAT (
+        SAMTOOLS_FLAGSTAT_TAGGED (
             TAG_BARCODES.out.tagged_bam
-                .join( SAMTOOLS_INDEX.out.bai, by: [0])
+                .join( SAMTOOLS_INDEX_TAGGED.out.bai, by: [0])
         )
-        ch_versions = ch_versions.mix(SAMTOOLS_FLAGSTAT.out.versions)
+        ch_versions = ch_versions.mix(SAMTOOLS_FLAGSTAT_TAGGED.out.versions)
 
         //
         // SUBWORKFLOW: UMI Deduplication
         //
-        // TODO: Change 'quantifier.equals('isoquant')' to a user-defined parameter
         if (!params.skip_dedup) {
             UMITOOLS_DEDUP_SPLIT(
                 fasta,
                 fai,
                 TAG_BARCODES.out.tagged_bam,
-                SAMTOOLS_INDEX.out.bai,
+                SAMTOOLS_INDEX_TAGGED.out.bai,
                 split_umitools_bam
             )
         }
@@ -121,6 +120,9 @@ workflow PROCESS_LONGREAD_SCRNA {
                 skip_qc,
                 skip_seurat
             )
+
+            ch_gene_qc_stats = QUANTIFY_SCRNA_ISOQUANT.out.gene_qc_stats
+            ch_transcript_qc_stats = QUANTIFY_SCRNA_ISOQUANT.out.transcript_qc_stats
         }
 
     emit:
@@ -136,11 +138,12 @@ workflow PROCESS_LONGREAD_SCRNA {
         minimap_nanocomp_bam_txt = ALIGN_LONGREADS.out.nanocomp_bam_txt
 
         bc_tagged_bam = TAG_BARCODES.out.tagged_bam
-        bc_tagged_bai = SAMTOOLS_INDEX.out.bai
-        bc_tagged_flagstat = SAMTOOLS_FLAGSTAT.out.flagstat
+        bc_tagged_bai = SAMTOOLS_INDEX_TAGGED.out.bai
+        bc_tagged_flagstat = SAMTOOLS_FLAGSTAT_TAGGED.out.flagstat
 
         dedup_bam = UMITOOLS_DEDUP_SPLIT.out.dedup_bam
         dedup_bai = UMITOOLS_DEDUP_SPLIT.out.dedup_bai
+        dedup_log = UMITOOLS_DEDUP_SPLIT.out.dedup_log
         dedup_flagstat = UMITOOLS_DEDUP_SPLIT.out.dedup_flagstat
         dedup_idxstats = UMITOOLS_DEDUP_SPLIT.out.dedup_idxstats
 

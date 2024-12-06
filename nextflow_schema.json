@@ -199,13 +199,13 @@
                     "description": "Indicate whether to include introns in the count matrices",
                     "fa_icon": "fas fa-filter"
                 },
-                "quantification_type": {
+                "quantifier": {
                     "type": "string",
-                    "description": "Describe what part of the genome the pipeline should process (Options: 'genome', 'transcriptome', 'both')",
-                    "enum": ["genome", "transcriptome", "both"]
+                    "description": "Describe which quantification tool to use",
+                    "enum": ["oarfish", "isoquant", "both"]
                 }
             },
-            "required": ["quantification_type"],
+            "required": ["quantifier"],
             "description": "Options related to post-mapping analysis"
         },
         "process_skipping_options": {

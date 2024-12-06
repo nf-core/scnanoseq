@@ -397,7 +397,7 @@ workflow SCNANOSEQ {
 
     ch_multiqc_finalqc_files = Channel.empty()
 
-    if (params.quantification_type.equals('genome') || params.quantification_type.equals('both')){
+    if (params.quantifier.equals('isoquant') || params.quantifier.equals('both')){
         PROCESS_LONGREAD_SCRNA_GENOME(
             genome_fasta,
             genome_fai,
@@ -456,7 +456,7 @@ workflow SCNANOSEQ {
         )
     } 
     
-    if (params.quantification_type.equals('transcriptome') || params.quantification_type.equals('both')){
+    if (params.quantifier.equals('oarfish') || params.quantifier.equals('both')){
         PROCESS_LONGREAD_SCRNA_TRANSCRIPT (
             transcript_fasta,
             transcript_fai,
@@ -497,6 +497,9 @@ workflow SCNANOSEQ {
         // TODO: Tagged idxstats?
 
         if (!params.skip_dedup) {
+            ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
+                PROCESS_LONGREAD_SCRNA_TRANSCRIPT.out.dedup_log.collect{it[1]}.ifEmpty([])
+            )
             ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
                 PROCESS_LONGREAD_SCRNA_TRANSCRIPT.out.dedup_flagstat.collect{it[1]}.ifEmpty([])
             )
