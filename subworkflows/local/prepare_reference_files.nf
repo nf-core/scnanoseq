@@ -23,20 +23,23 @@ workflow PREPARE_REFERENCE_FILES {
         // MODULE: Unzip Genome FASTA
         //
         ch_genome_fasta = Channel.empty()
-        if (genome_fasta.endsWith('.gz')){
-            UNZIP_GENOME_FASTA( [ [:], genome_fasta ])
+        ch_genome_fai = Channel.empty()
+        if (genome_fasta) {
+            if (genome_fasta.endsWith('.gz')){
+                UNZIP_GENOME_FASTA( [ [:], genome_fasta ])
 
-            ch_genome_fasta = UNZIP_GENOME_FASTA.out.file
-            ch_versions = ch_versions.mix(UNZIP_GENOME_FASTA.out.versions)
-        } else {
-            ch_genome_fasta = [ [:], genome_fasta ]
+                ch_genome_fasta = UNZIP_GENOME_FASTA.out.file
+                ch_versions = ch_versions.mix(UNZIP_GENOME_FASTA.out.versions)
+                //
+                // MODULE: Index the genome fasta
+                //
+                GENOME_FAIDX( ch_genome_fasta, [ [:], "$projectDir/assets/dummy_file.txt" ])
+                ch_genome_fai = GENOME_FAIDX.out.fai
+            } else {
+                ch_genome_fasta = [ [:], genome_fasta ]
+            }
         }
 
-        //
-        // MODULE: Index the genome fasta
-        //
-        GENOME_FAIDX( ch_genome_fasta, [ [:], "$projectDir/assets/dummy_file.txt" ])
-        ch_genome_fai = GENOME_FAIDX.out.fai
 
         //
         // MODULE: Unzip Transcript FASTA
