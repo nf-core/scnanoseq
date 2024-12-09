@@ -47,7 +47,6 @@ include { SPLIT_FILE as SPLIT_FILE_BC_CSV   } from "../modules/local/split_file"
 include { BLAZE                             } from "../modules/local/blaze"
 include { PREEXTRACT_FASTQ                  } from "../modules/local/preextract_fastq.nf"
 include { READ_COUNTS                       } from "../modules/local/read_counts.nf"
-include { TAG_BARCODES                      } from "../modules/local/tag_barcodes"
 include { CORRECT_BARCODES                  } from "../modules/local/correct_barcodes"
 include { UCSC_GTFTOGENEPRED                } from "../modules/local/ucsc_gtftogenepred"
 include { UCSC_GENEPREDTOBED                } from "../modules/local/ucsc_genepredtobed"
@@ -77,8 +76,6 @@ include { CAT_CAT                                       } from "../modules/nf-co
 include { CAT_CAT as CAT_CAT_PREEXTRACT                 } from "../modules/nf-core/cat/cat/main"
 include { CAT_CAT as CAT_CAT_BARCODE                    } from "../modules/nf-core/cat/cat/main"
 include { CAT_FASTQ                                     } from "../modules/nf-core/cat/fastq/main"
-include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_TAGGED       } from "../modules/nf-core/samtools/index/main"
-include { SAMTOOLS_FLAGSTAT as SAMTOOLS_FLAGSTAT_TAGGED } from "../modules/nf-core/samtools/flagstat/main"
 include { paramsSummaryMap                              } from "plugin/nf-schema"
 
 /*
@@ -87,8 +84,6 @@ include { paramsSummaryMap                              } from "plugin/nf-schema
 include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_PRE_TRIM          } from "../subworkflows/nf-core/qcfastq_nanoplot_fastqc"
 include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_POST_TRIM         } from "../subworkflows/nf-core/qcfastq_nanoplot_fastqc"
 include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_POST_EXTRACT      } from "../subworkflows/nf-core/qcfastq_nanoplot_fastqc"
-include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_CORRECTED } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
-include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_SPLIT     } from "../subworkflows/nf-core/bam_sort_stats_samtools/main"
 include { paramsSummaryMultiqc                                         } from "../subworkflows/nf-core/utils_nfcore_pipeline"
 include { softwareVersionsToYAML                                       } from "../subworkflows/nf-core/utils_nfcore_pipeline"
 include { methodsDescriptionText                                       } from "../subworkflows/local/utils_nfcore_scnanoseq_pipeline"
@@ -434,7 +429,6 @@ workflow SCNANOSEQ {
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
             PROCESS_LONGREAD_SCRNA_GENOME.out.bc_tagged_flagstat.collect{it[1]}.ifEmpty([])
         )
-        // TODO: Tagged idxstats?
 
         if (!params.skip_dedup) {
             ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
@@ -481,9 +475,6 @@ workflow SCNANOSEQ {
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
             PROCESS_LONGREAD_SCRNA_TRANSCRIPT.out.minimap_flagstat.collect{it[1]}.ifEmpty([])
         )
-        //ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
-        //    PROCESS_LONGREAD_SCRNA_TRANSCRIPT.out.minimap_idxstats.collect{it[1]}.ifEmpty([])
-        //)
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
             PROCESS_LONGREAD_SCRNA_TRANSCRIPT.out.minimap_rseqc_read_dist.collect{it[1]}.ifEmpty([])
         )
@@ -503,17 +494,11 @@ workflow SCNANOSEQ {
             ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
                 PROCESS_LONGREAD_SCRNA_TRANSCRIPT.out.dedup_flagstat.collect{it[1]}.ifEmpty([])
             )
-            //ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
-            //    PROCESS_LONGREAD_SCRNA_TRANSCRIPT.out.dedup_idxstats.collect{it[1]}.ifEmpty([])
-            //)
         }
 
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
             ch_read_counts.collect().ifEmpty([])
         )
-        //ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
-        //    PROCESS_LONGREAD_SCRNA_TRANSCRIPT.out.gene_qc_stats.collect().ifEmpty([])
-        //)
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
             PROCESS_LONGREAD_SCRNA_TRANSCRIPT.out.transcript_qc_stats.collect().ifEmpty([])
         )
