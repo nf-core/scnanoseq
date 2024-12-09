@@ -33,11 +33,13 @@ workflow PREPARE_REFERENCE_FILES {
                 //
                 // MODULE: Index the genome fasta
                 //
-                GENOME_FAIDX( ch_genome_fasta, [ [:], "$projectDir/assets/dummy_file.txt" ])
-                ch_genome_fai = GENOME_FAIDX.out.fai
             } else {
                 ch_genome_fasta = [ [:], genome_fasta ]
             }
+            
+            
+            GENOME_FAIDX( ch_genome_fasta, [ [:], "$projectDir/assets/dummy_file.txt" ])
+            ch_genome_fai = GENOME_FAIDX.out.fai
         }
 
 
