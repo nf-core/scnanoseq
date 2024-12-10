@@ -42,6 +42,7 @@ workflow QUANTIFY_SCRNA_OARFISH {
                 in_flagstat,
                 "MEX"
             )
+            ch_versions = ch_versions.mix(QC_SCRNA.out.versions)
         }
 
     emit:

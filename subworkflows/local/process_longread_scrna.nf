@@ -89,6 +89,7 @@ workflow PROCESS_LONGREAD_SCRNA {
                 SAMTOOLS_INDEX_TAGGED.out.bai,
                 split_umitools_bam
             )
+            ch_versions = ch_versions.mix(UMITOOLS_DEDUP_SPLIT.out.versions)
         }
 
         //
@@ -107,7 +108,7 @@ workflow PROCESS_LONGREAD_SCRNA {
                 skip_qc,
                 skip_seurat
             )
-
+            ch_versions = ch_versions.mix(QUANTIFY_SCRNA_OARFISH.out.versions)
             ch_transcript_qc_stats = QUANTIFY_SCRNA_OARFISH.out.transcript_qc_stats
         } else {
             QUANTIFY_SCRNA_ISOQUANT (
@@ -120,7 +121,8 @@ workflow PROCESS_LONGREAD_SCRNA {
                 skip_qc,
                 skip_seurat
             )
-
+            
+            ch_versions = ch_versions.mix(QUANTIFY_SCRNA_ISOQUANT.out.versions)
             ch_gene_qc_stats = QUANTIFY_SCRNA_ISOQUANT.out.gene_qc_stats
             ch_transcript_qc_stats = QUANTIFY_SCRNA_ISOQUANT.out.transcript_qc_stats
         }

@@ -29,6 +29,7 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
         // MODULE: Split the FASTA
         //
         SPLIT_FASTA( in_fasta )
+        ch_versions = ch_versions.mix(SPLIT_FASTA.out.versions)
         ch_split_fasta = SPLIT_FASTA.out.split_fasta
             .flatten()
             .map{
@@ -40,6 +41,7 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
     
         SAMTOOLS_FAIDX_SPLIT( ch_split_fasta, [ [:], "$projectDir/assets/dummy_file.txt" ])
         ch_split_fai = SAMTOOLS_FAIDX_SPLIT.out.fai
+        ch_versions = ch_versions.mix(SAMTOOLS_FAIDX_SPLIT.out.versions)
 
         //
         // MODULE: Split the GTF
@@ -53,6 +55,7 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
                     meta = ['chr': gtf_basename.split(/\./)[0]]
                     [ meta, gtf ]
             }
+        ch_versions = ch_versions.mix(SPLIT_GTF.out.versions)
 
         //
         // MODULE: Isoquant
