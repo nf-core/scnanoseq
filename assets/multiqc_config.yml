@@ -94,7 +94,7 @@ custom_data:
     section_name: "IsoQuant Transcript Seurat Stats"
     file_format: "tsv"
     plot_type: "table"
-  
+
   oarfish_transcript_seurat_stats_module:
     parent_id: seurat_section
     parent_name: "Seurat Section"
