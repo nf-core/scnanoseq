@@ -88,8 +88,8 @@ if (is.null(opt$flagstat)) {
 
 if (!is.null(opt$input_dir)) {
     cell_bc_matrix <- Read10X(data.dir = opt$input_dir,
-                              gene.column = 1,
-                              cell.column = 2)
+                                gene.column = 1,
+                                cell.column = 2)
     seurat_obj <- CreateSeuratObject(counts = cell_bc_matrix,
                                         min.cells = 0,
                                         min.features = 0,

@@ -22,7 +22,7 @@ process SEURAT {
     script:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
-    
+
     if (mtx_format.equals("MEX")) {
         """
         mkdir indir

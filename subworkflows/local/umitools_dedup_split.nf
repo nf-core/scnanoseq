@@ -33,7 +33,7 @@ workflow UMITOOLS_DEDUP_SPLIT {
             // MODULE: Bamtools Split
             //
             BAMTOOLS_SPLIT ( in_bam )
-            ch_versions = ch_versions.mix(BAMTOOLS_SPLIT.out.versions.first()) 
+            ch_versions = ch_versions.mix(BAMTOOLS_SPLIT.out.versions.first())
             ch_undedup_bam = BAMTOOLS_SPLIT.out.bam
                 .map{
                     meta, bam ->
@@ -55,7 +55,7 @@ workflow UMITOOLS_DEDUP_SPLIT {
             SAMTOOLS_INDEX_SPLIT( ch_undedup_bam )
             ch_undedup_bai = SAMTOOLS_INDEX_SPLIT.out.bai
             ch_versions = ch_versions.mix(SAMTOOLS_INDEX_SPLIT.out.versions.first())
-        } 
+        }
         else {
             ch_undedup_bam = in_bam
             ch_undedup_bai = in_bai
@@ -66,7 +66,7 @@ workflow UMITOOLS_DEDUP_SPLIT {
         //
         UMITOOLS_DEDUP ( ch_undedup_bam.join(ch_undedup_bai, by: [0]), true )
         ch_versions = ch_versions.mix(UMITOOLS_DEDUP.out.versions)
-    
+
         //
         // MODULE: Samtools Index
         //
@@ -90,7 +90,7 @@ workflow UMITOOLS_DEDUP_SPLIT {
                 fasta,
                 fai)
             ch_dedup_single_bam = SAMTOOLS_MERGE.out.bam
-            
+
             //
             // MODULE: Samtools Index
             //
@@ -107,7 +107,7 @@ workflow UMITOOLS_DEDUP_SPLIT {
         //
         BAM_STATS_SAMTOOLS (
             ch_dedup_single_bam.join(ch_dedup_single_bai),
-            fasta 
+            fasta
         )
         ch_versions = ch_versions.mix(BAM_STATS_SAMTOOLS.out.versions)
 

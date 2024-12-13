@@ -409,7 +409,7 @@ workflow SCNANOSEQ {
             true
         )
         ch_versions = ch_versions.mix(PROCESS_LONGREAD_SCRNA_GENOME.out.versions)
-        
+
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
             PROCESS_LONGREAD_SCRNA_GENOME.out.minimap_flagstat.collect{it[1]}.ifEmpty([])
         )
@@ -445,8 +445,8 @@ workflow SCNANOSEQ {
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
             PROCESS_LONGREAD_SCRNA_GENOME.out.transcript_qc_stats.collect().ifEmpty([])
         )
-    } 
-    
+    }
+
     if (params.quantifier.equals('oarfish') || params.quantifier.equals('both')){
         PROCESS_LONGREAD_SCRNA_TRANSCRIPT (
             transcript_fasta,
@@ -463,9 +463,9 @@ workflow SCNANOSEQ {
             params.skip_seurat,
             false
         )
-        
+
         ch_versions = ch_versions.mix(PROCESS_LONGREAD_SCRNA_TRANSCRIPT.out.versions)
-        
+
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
             PROCESS_LONGREAD_SCRNA_TRANSCRIPT.out.minimap_flagstat.collect{it[1]}.ifEmpty([])
         )

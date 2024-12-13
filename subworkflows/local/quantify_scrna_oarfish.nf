@@ -4,7 +4,7 @@
 
 include { SAMTOOLS_SORT } from '../../modules/nf-core/samtools/sort/main'
 include { OARFISH       } from '../../modules/local/oarfish'
-include { QC_SCRNA      } from '../../subworkflows/local/qc_scrna' 
+include { QC_SCRNA      } from '../../subworkflows/local/qc_scrna'
 
 workflow QUANTIFY_SCRNA_OARFISH {
     take:

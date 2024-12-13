@@ -38,7 +38,7 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
                     meta = [ 'chr': fasta_basename.split(/\./)[0] ]
                     [ meta, fasta ]
             }
-    
+
         SAMTOOLS_FAIDX_SPLIT( ch_split_fasta, [ [:], "$projectDir/assets/dummy_file.txt" ])
         ch_split_fai = SAMTOOLS_FAIDX_SPLIT.out.fai
         ch_versions = ch_versions.mix(SAMTOOLS_FAIDX_SPLIT.out.versions)
@@ -121,7 +121,7 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
                 "BASE"
             )
             ch_versions = ch_versions.mix(QC_SCRNA_GENE.out.versions)
- 
+
             QC_SCRNA_TRANSCRIPT (
                 MERGE_MTX_TRANSCRIPT.out.merged_mtx,
                 in_flagstat,

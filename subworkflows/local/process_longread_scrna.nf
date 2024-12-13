@@ -10,7 +10,7 @@ include { UMITOOLS_DEDUP_SPLIT    } from '../../subworkflows/local/umitools_dedu
 
 // MODULES
 include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_TAGGED       } from '../../modules/nf-core/samtools/index'
-include { SAMTOOLS_FLAGSTAT as SAMTOOLS_FLAGSTAT_TAGGED } from '../../modules/nf-core/samtools/flagstat' 
+include { SAMTOOLS_FLAGSTAT as SAMTOOLS_FLAGSTAT_TAGGED } from '../../modules/nf-core/samtools/flagstat'
 
 include { TAG_BARCODES } from '../../modules/local/tag_barcodes'
 
@@ -49,7 +49,7 @@ workflow PROCESS_LONGREAD_SCRNA {
             skip_qc,
             skip_rseqc,
             skip_bam_nanocomp
-        )   
+        )
         ch_versions = ch_versions.mix(ALIGN_LONGREADS.out.versions)
 
         //
@@ -70,7 +70,7 @@ workflow PROCESS_LONGREAD_SCRNA {
         ch_versions = ch_versions.mix(SAMTOOLS_INDEX_TAGGED.out.versions)
 
         //
-        // MODULE: Flagstat Tagged Bam 
+        // MODULE: Flagstat Tagged Bam
         //
         SAMTOOLS_FLAGSTAT_TAGGED (
             TAG_BARCODES.out.tagged_bam
@@ -121,7 +121,7 @@ workflow PROCESS_LONGREAD_SCRNA {
                 skip_qc,
                 skip_seurat
             )
-            
+
             ch_versions = ch_versions.mix(QUANTIFY_SCRNA_ISOQUANT.out.versions)
             ch_gene_qc_stats = QUANTIFY_SCRNA_ISOQUANT.out.gene_qc_stats
             ch_transcript_qc_stats = QUANTIFY_SCRNA_ISOQUANT.out.transcript_qc_stats

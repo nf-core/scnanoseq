@@ -69,7 +69,7 @@ workflow ALIGN_LONGREADS {
             [[],[]],
             []
         )
-        
+
         ch_minimap_mapped_only_bam = SAMTOOLS_VIEW.out.bam
         ch_versions = ch_versions.mix(SAMTOOLS_VIEW.out.versions)
 
@@ -117,9 +117,9 @@ workflow ALIGN_LONGREADS {
         versions = ch_versions
 
         // Bam and Bai
-        sorted_bam = BAM_SORT_STATS_SAMTOOLS_FILTERED.out.bam 
+        sorted_bam = BAM_SORT_STATS_SAMTOOLS_FILTERED.out.bam
         sorted_bai = BAM_SORT_STATS_SAMTOOLS_FILTERED.out.bai
-        
+
         // SAMtool stats from initial mapping
         stats = BAM_SORT_STATS_SAMTOOLS.out.stats
         flagstat = BAM_SORT_STATS_SAMTOOLS.out.flagstat
