@@ -22,6 +22,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
   - [UMI Deduplication](#umi-deduplication) - UMI-based deduplication
 - [Feature-Barcode Quantification](#feature-barcode-quantification)
   - [IsoQuant](#isoquant) - Feature-barcode quantification (gene and transcript level)
+  - [oarfish] (#oarfish) - Feature-barcode quantification (transcript-level only)
   - [Seurat](#seurat) - Feature-barcode matrix QC
 - [Other steps](#other-steps)
   - [UCSC](#ucsc) - Annotation BED file
@@ -88,9 +89,9 @@ The knee plot (an example is listed above) that is provided by BLAZE shows all b
         - `*.sorted.bam.bai` : The bam index for the genome mapped and sorted bam.
   - `transcriptome`
     - `bam/`
-       - `original/`
-        - `*.sorted.bam` : The transcriptome mapped and sorted bam.
-        - `*.sorted.bam.bai` : The bam index for the transcriptome mapped and sorted bam.
+      - `original/`
+      - `*.sorted.bam` : The transcriptome mapped and sorted bam.
+      - `*.sorted.bam.bai` : The bam index for the transcriptome mapped and sorted bam.
 
 </details>
 
@@ -104,45 +105,44 @@ The knee plot (an example is listed above) that is provided by BLAZE shows all b
 <summary>Output files</summary>
 
 - `<sample_identifier>/`
-   - `genome/`
-      - `bam/`
+  - `genome/`
+    - `bam/`
+      - `mapped_only/`
+        - `*.sorted.bam` : The genome aligned bam contaning only reads that were able to be mapped.
+        - `*.sorted.bam.bai` : The genome aligned bam index for the bam containing only reads that were able to be mapped.
+    - `qc/`
+      - `samtools/`
+        - `minimap/`
+          - `*.minimap.flagstat` : The flagstat file for the genome aligned bam obtained from minimap.
+          - `*.minimap.idxstats` : The idxstats file for the genome aligned bam obtained from minimap.
+          - `*.minimap.stats` : The stats file for the genome aligned bam obtained from minimap.
         - `mapped_only/`
-          - `*.sorted.bam` : The genome aligned bam contaning only reads that were able to be mapped.
-          - `*.sorted.bam.bai` : The genome aligned bam index for the bam containing only reads that were able to be mapped.
-      - `qc/`
-        - `samtools/`
-          - `minimap/`
-            - `*.minimap.flagstat` : The flagstat file for the genome aligned bam obtained from minimap.
-            - `*.minimap.idxstats` : The idxstats file for the genome aligned bam obtained from minimap.
-            - `*.minimap.stats` : The stats file for the genome aligned bam obtained from minimap.
-          - `mapped_only/`
-            - `*.mapped_only.flagstat` : The flagstat file for the genome aligned bam containing only mapped reads.
-            - `*.mapped_only.idxstats` : The idxstats file for the genome aligned bam containing only mapped reads.
-            - `*.mapped_only.stats` : The stats file for the genome aligned bam containing only mapped reads.
-          - `dedup/`
-            - `*.dedup.flagstat` : The flagstat file for the genome aligned bam containing deduplicated umis.
-            - `*.dedup.idxstats` : The idxstats file for the genome aligned bam containing deduplicated umis.
-            - `*.dedup.stats` : The stats file for the genome aligned bam containing deduplicated umis.
+          - `*.mapped_only.flagstat` : The flagstat file for the genome aligned bam containing only mapped reads.
+          - `*.mapped_only.idxstats` : The idxstats file for the genome aligned bam containing only mapped reads.
+          - `*.mapped_only.stats` : The stats file for the genome aligned bam containing only mapped reads.
+        - `dedup/`
+          - `*.dedup.flagstat` : The flagstat file for the genome aligned bam containing deduplicated umis.
+          - `*.dedup.idxstats` : The idxstats file for the genome aligned bam containing deduplicated umis.
+          - `*.dedup.stats` : The stats file for the genome aligned bam containing deduplicated umis.
   - `transcriptome/`
-      - `bam/`
+    - `bam/`
+      - `mapped_only/`
+        - `*.sorted.bam` : The transcriptome aligned bam contaning only reads that were able to be mapped.
+        - `*.sorted.bam.bai` : The transcriptome aligned bam index for the bam containing only reads that were able to be mapped.
+    - `qc/`
+      - `samtools/`
+        - `minimap/`
+          - `*.minimap.flagstat` : The flagstat file for the transcriptome aligned bam obtained from minimap.
+          - `*.minimap.idxstats` : The idxstats file for the transcriptome aligned bam obtained from minimap.
+          - `*.minimap.stats` : The stats file for the transcriptome aligned bam obtained from minimap.
         - `mapped_only/`
-          - `*.sorted.bam` : The transcriptome aligned bam contaning only reads that were able to be mapped.
-          - `*.sorted.bam.bai` : The transcriptome aligned bam index for the bam containing only reads that were able to be mapped.
-      - `qc/`
-        - `samtools/`
-          - `minimap/`
-            - `*.minimap.flagstat` : The flagstat file for the transcriptome aligned bam obtained from minimap.
-            - `*.minimap.idxstats` : The idxstats file for the transcriptome aligned bam obtained from minimap.
-            - `*.minimap.stats` : The stats file for the transcriptome aligned bam obtained from minimap.
-          - `mapped_only/`
-            - `*.mapped_only.flagstat` : The flagstat file for the transcriptome aligned bam containing only mapped reads.
-            - `*.mapped_only.idxstats` : The idxstats file for the transcriptome aligned bam containing only mapped reads.
-            - `*.mapped_only.stats` : The stats file for the transcriptome aligned bam containing only mapped reads.
-          - `dedup/`
-            - `*.dedup.flagstat` : The flagstat file for the transcriptome aligned bam containing deduplicated umis.
-            - `*.dedup.idxstats` : The idxstats file for the transcriptome aligned bam containing deduplicated umis.
-            - `*.dedup.stats` : The stats file for the transcriptome aligned bam containing deduplicated umis.
-
+          - `*.mapped_only.flagstat` : The flagstat file for the transcriptome aligned bam containing only mapped reads.
+          - `*.mapped_only.idxstats` : The idxstats file for the transcriptome aligned bam containing only mapped reads.
+          - `*.mapped_only.stats` : The stats file for the transcriptome aligned bam containing only mapped reads.
+        - `dedup/`
+          - `*.dedup.flagstat` : The flagstat file for the transcriptome aligned bam containing deduplicated umis.
+          - `*.dedup.idxstats` : The idxstats file for the transcriptome aligned bam containing deduplicated umis.
+          - `*.dedup.stats` : The stats file for the transcriptome aligned bam containing deduplicated umis.
 
 </details>
 
@@ -158,14 +158,14 @@ The knee plot (an example is listed above) that is provided by BLAZE shows all b
 
 - `<sample_identifier>/`
   - `genome/`
-      - `bam/`
-        - `barcode_tagged/`
-          - `*.tagged.bam` : The genome aligned bam containing tagged barcode and UMI metadata.
+    - `bam/`
+      - `barcode_tagged/`
+        - `*.tagged.bam` : The genome aligned bam containing tagged barcode and UMI metadata.
   - `transcriptome/`
-      - `bam/`
-        - `barcode_tagged/`
-          - `*.tagged.bam` : The transcriptome aligned bam containing tagged barcode and UMI metadata.
-    
+    - `bam/`
+      - `barcode_tagged/`
+        - `*.tagged.bam` : The transcriptome aligned bam containing tagged barcode and UMI metadata.
+
 </details>
 
 Barcode tagging is a custom script which adds metadata to the BAM files with commonly used single-cell tags which can be useful for custom down stream analysis (e.g.: subsetting BAMs based on cell barcodes). Specifically the following tags are added:
@@ -186,15 +186,15 @@ Please see [Barcode Correction](#barcode-correction) below for metadata added po
 
 - `<sample_identifier>/`
   - `genome/`
-      - `bam/`
-        - `dedup/`
-          - `*.dedup.bam` : The genome aligned bam containing corrected barcodes and deduplicated umis.
-          - `*.dedup.bam.bai` : The genome aligned bam index for the bam containing corrected barcodes and deduplicated umis.
+    - `bam/`
+      - `dedup/`
+        - `*.dedup.bam` : The genome aligned bam containing corrected barcodes and deduplicated umis.
+        - `*.dedup.bam.bai` : The genome aligned bam index for the bam containing corrected barcodes and deduplicated umis.
   - `transcriptome/`
-      - `bam/`
-        - `dedup/`
-          - `*.dedup.bam` : The transcriptome aligned bam containing corrected barcodes and deduplicated umis.
-          - `*.dedup.bam.bai` : The transcriptome aligned bam index for the bam containing corrected barcodes and deduplicated umis.          
+    - `bam/`
+      - `dedup/`
+        - `*.dedup.bam` : The transcriptome aligned bam containing corrected barcodes and deduplicated umis.
+        - `*.dedup.bam.bai` : The transcriptome aligned bam index for the bam containing corrected barcodes and deduplicated umis.
 
 </details>
 
@@ -209,9 +209,9 @@ Please see [Barcode Correction](#barcode-correction) below for metadata added po
 
 - `<sample_identifier>/`
   - `genome/`
-      - `isoquant/`
-        - `*.gene_counts.tsv` : The feature-barcode matrix from gene quantification.
-        - `*.transcript_counts.tsv` : The feature-barcode matrix from transcript quantification.
+    - `isoquant/`
+      - `*.gene_counts.tsv` : The feature-barcode matrix from gene quantification.
+      - `*.transcript_counts.tsv` : The feature-barcode matrix from transcript quantification.
 
 </details>
 
@@ -228,10 +228,10 @@ It should also be noted that IsoQuant can only accurately perform quantification
 
 - `<sample_identifier>/`
   - `transcriptome/`
-      - `oarfish/`
-        - `barcodes.tsv.gz`
-        - `features.tsv.gz`
-        - `matrix.mtx.gz`
+    - `oarfish/`
+      - `barcodes.tsv.gz`
+      - `features.tsv.gz`
+      - `matrix.mtx.gz`
 
 </details>
 
@@ -246,18 +246,18 @@ It should also be noted that IsoQuant can only accurately perform quantification
 
 - `<sample_identifier>/`
   - `genome/`
-      - `qc/`
-        - `gene/`
-          - `*.csv`: A file containing statistics about the isoquant generated cell-read distribution for genes.
-          - `*.png`: A series of qc images to determine the quality of the isoquant generated gene quantification.
-        - `transcript/`
-          - `*.csv`: A file containing statistics about the isoquant generated cell-read distribution for transcript.
-          - `*.png`: A series of qc images to determine the quality of the isoquant generated transcript quantification.
+    - `qc/`
+      - `gene/`
+        - `*.csv`: A file containing statistics about the isoquant generated cell-read distribution for genes.
+        - `*.png`: A series of qc images to determine the quality of the isoquant generated gene quantification.
+      - `transcript/`
+        - `*.csv`: A file containing statistics about the isoquant generated cell-read distribution for transcript.
+        - `*.png`: A series of qc images to determine the quality of the isoquant generated transcript quantification.
   - `transcriptome/`
-      - `qc/`
-        - `transcript/`
-          - `*.csv`: A file containing statistics about the oarfish generated cell-read distribution for transcript.
-          - `*.png`: A series of qc images to determine the quality of the oarfish generated transcript quantification.
+    - `qc/`
+      - `transcript/`
+        - `*.csv`: A file containing statistics about the oarfish generated cell-read distribution for transcript.
+        - `*.png`: A series of qc images to determine the quality of the oarfish generated transcript quantification.
 
 </details>
 
@@ -319,19 +319,19 @@ The FastQC plots displayed in the MultiQC report shows _untrimmed_ reads. They m
       - `*.html`: Nanocomp outputs all the figures in the report as individual files that can be inspected separately.
       - `NanoStats.txt`: This file contains quality control statistics about the dataset.
   - `genome`
-      - `nanocomp/`
-        - `bam/`
-          - `NanoComp_*.log`: This is the log file detailing the nanocomp run.
-          - `NanoComp-report.html` - This is browser-viewable report that contains all the figures in a single location.
-          - `*.html`: Nanocomp outputs all the figures in the report as individual files that can be inspected separately.
-          - `NanoStats.txt`: This file contains quality control statistics about the dataset.
+    - `nanocomp/`
+      - `bam/`
+        - `NanoComp_*.log`: This is the log file detailing the nanocomp run.
+        - `NanoComp-report.html` - This is browser-viewable report that contains all the figures in a single location.
+        - `*.html`: Nanocomp outputs all the figures in the report as individual files that can be inspected separately.
+        - `NanoStats.txt`: This file contains quality control statistics about the dataset.
   - `transcriptome`
-      - `nanocomp/`
-        - `bam/`
-          - `NanoComp_*.log`: This is the log file detailing the nanocomp run.
-          - `NanoComp-report.html` - This is browser-viewable report that contains all the figures in a single location.
-          - `*.html`: Nanocomp outputs all the figures in the report as individual files that can be inspected separately.
-          - `NanoStats.txt`: This file contains quality control statistics about the dataset.
+    - `nanocomp/`
+      - `bam/`
+        - `NanoComp_*.log`: This is the log file detailing the nanocomp run.
+        - `NanoComp-report.html` - This is browser-viewable report that contains all the figures in a single location.
+        - `*.html`: Nanocomp outputs all the figures in the report as individual files that can be inspected separately.
+        - `NanoStats.txt`: This file contains quality control statistics about the dataset.
 
 </details>
 
