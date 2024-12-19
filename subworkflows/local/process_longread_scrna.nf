@@ -102,9 +102,9 @@ workflow PROCESS_LONGREAD_SCRNA {
 
         if (quantifier.equals("oarfish")) {
             QUANTIFY_SCRNA_OARFISH (
-                params.skip_dedup? TAG_BARCODES.out.tagged_bam : UMITOOLS_DEDUP_SPLIT.out.dedup_bam,
-                params.skip_dedup? SAMTOOLS_INDEX_TAGGED.out.bai : UMITOOLS_DEDUP_SPLIT.out.dedup_bai,
-                params.skip_dedup? SAMTOOLS_FLAGSTAT_TAGGED.out.flagstat : UMITOOLS_DEDUP_SPLIT.out.dedup_flagstat,
+                TAG_BARCODES.out.tagged_bam,
+                SAMTOOLS_INDEX_TAGGED.out.bai,
+                SAMTOOLS_FLAGSTAT_TAGGED.out.flagstat,
                 fasta,
                 skip_qc,
                 skip_seurat
