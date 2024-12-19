@@ -29,8 +29,6 @@ process OARFISH {
         --output ${prefix} \\
         --alignments $bam \\
         --threads ${task.cpus} \\
-        --single-cell \\
-        --filter-group no-filters \\
         ${args}
 
     mv *features.txt features.tsv

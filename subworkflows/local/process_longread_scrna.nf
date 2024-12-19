@@ -81,7 +81,7 @@ workflow PROCESS_LONGREAD_SCRNA {
         //
         // SUBWORKFLOW: UMI Deduplication
         //
-        if (!params.skip_dedup) {
+        if (!params.skip_dedup && quanitifer.equals("isoquant")) {
             UMITOOLS_DEDUP_SPLIT(
                 fasta,
                 fai,
