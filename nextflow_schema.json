@@ -179,10 +179,14 @@
                     "description": "Minimizer k-mer length.",
                     "fa_icon": "fas fa-sort-amount-down"
                 },
-                "save_secondary_alignment": {
+                "save_genome_secondary_alignment": {
                     "type": "boolean",
-                    "description": "Save secondary alignment outputs.",
-                    "fa_icon": "far fa-save"
+                    "description": "Save the secondary alignments when aligning to the genome"
+                },
+                "save_transcript_secondary_alignment": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Save the secondary alignments when aligning to the transcriptome"
                 }
             },
             "fa_icon": "far fa-map"
