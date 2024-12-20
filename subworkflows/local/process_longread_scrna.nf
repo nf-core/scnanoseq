@@ -81,6 +81,13 @@ workflow PROCESS_LONGREAD_SCRNA {
         //
         // SUBWORKFLOW: UMI Deduplication
         //
+        ch_bam = Channel.empty()
+        ch_bai = Channel.empty()
+        ch_flagstat = Channel.empty()
+        ch_dedup_log = Channel.empty()
+        ch_idxstats = Channel.empty()
+        
+
         if (!params.skip_dedup && quantifier.equals("isoquant")) {
             UMITOOLS_DEDUP_SPLIT(
                 fasta,
@@ -90,7 +97,17 @@ workflow PROCESS_LONGREAD_SCRNA {
                 split_umitools_bam
             )
 
+            ch_bam = UMITOOLS_DEDUP_SPLIT.out.dedup_bam
+            ch_bai = UMITOOLS_DEDUP_SPLIT.out.dedup_bai
+            ch_log = UMITOOLS_DEDUP_SPLIT.out.dedup_log
+            ch_flagstat = UMITOOLS_DEDUP_SPLIT.out.dedup_flagstat
+            ch_idxstats = UMITOOLS_DEDUP_SPLIT.out.dedup_idxstats
+
             ch_versions = ch_versions.mix(UMITOOLS_DEDUP_SPLIT.out.versions)
+        } else {
+            ch_bam = TAG_BARCODES.out.tagged_bam
+            ch_bai = SAMTOOLS_INDEX_TAGGED.out.bai
+            ch_flagstat = SAMTOOLS_FLAGSTAT_TAGGED.out.flagstat
         }
 
         //
@@ -99,12 +116,11 @@ workflow PROCESS_LONGREAD_SCRNA {
 
         ch_gene_qc_stats = Channel.empty()
         ch_transcript_qc_stats = Channel.empty()
-
         if (quantifier.equals("oarfish")) {
             QUANTIFY_SCRNA_OARFISH (
-                TAG_BARCODES.out.tagged_bam,
-                SAMTOOLS_INDEX_TAGGED.out.bai,
-                SAMTOOLS_FLAGSTAT_TAGGED.out.flagstat,
+                ch_bam,
+                ch_bai,
+                ch_flagstat,
                 fasta,
                 skip_qc,
                 skip_seurat
@@ -113,9 +129,9 @@ workflow PROCESS_LONGREAD_SCRNA {
             ch_transcript_qc_stats = QUANTIFY_SCRNA_OARFISH.out.transcript_qc_stats
         } else {
             QUANTIFY_SCRNA_ISOQUANT (
-                params.skip_dedup? TAG_BARCODES.out.tagged_bam : UMITOOLS_DEDUP_SPLIT.out.dedup_bam,
-                params.skip_dedup? SAMTOOLS_INDEX_TAGGED.out.bai : UMITOOLS_DEDUP_SPLIT.out.dedup_bai,
-                params.skip_dedup? SAMTOOLS_FLAGSTAT_TAGGED.out.flagstat : UMITOOLS_DEDUP_SPLIT.out.dedup_flagstat,
+                ch_bam,
+                ch_bai,
+                ch_flagstat,
                 fasta,
                 fai,
                 gtf,
@@ -144,11 +160,11 @@ workflow PROCESS_LONGREAD_SCRNA {
         bc_tagged_bai = SAMTOOLS_INDEX_TAGGED.out.bai
         bc_tagged_flagstat = SAMTOOLS_FLAGSTAT_TAGGED.out.flagstat
 
-        dedup_bam = params.skip_dedup? Channel.empty() : UMITOOLS_DEDUP_SPLIT.out.dedup_bam
-        dedup_bai = params.skip_dedup? Channel.empty() : UMITOOLS_DEDUP_SPLIT.out.dedup_bai
-        dedup_log = params.skip_dedup? Channel.empty() : UMITOOLS_DEDUP_SPLIT.out.dedup_log
-        dedup_flagstat = params.skip_dedup? Channel.empty() : UMITOOLS_DEDUP_SPLIT.out.dedup_flagstat
-        dedup_idxstats = params.skip_dedup? Channel.empty() : UMITOOLS_DEDUP_SPLIT.out.dedup_idxstats
+        dedup_bam = ch_bam 
+        dedup_bai = ch_bai 
+        dedup_log = ch_dedup_log 
+        dedup_flagstat = ch_flagstat 
+        dedup_idxstats = ch_idxstats 
 
         gene_qc_stats = ch_gene_qc_stats
         transcript_qc_stats = ch_transcript_qc_stats
