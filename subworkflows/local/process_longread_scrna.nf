@@ -87,7 +87,7 @@ workflow PROCESS_LONGREAD_SCRNA {
         ch_dedup_log = Channel.empty()
         ch_idxstats = Channel.empty()
 
-        if (!params.skip_dedup && quantifier.equals("isoquant")) {
+        if (!params.skip_dedup) {
             UMITOOLS_DEDUP_SPLIT(
                 fasta,
                 fai,
