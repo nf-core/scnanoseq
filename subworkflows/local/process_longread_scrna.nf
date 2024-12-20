@@ -86,7 +86,6 @@ workflow PROCESS_LONGREAD_SCRNA {
         ch_flagstat = Channel.empty()
         ch_dedup_log = Channel.empty()
         ch_idxstats = Channel.empty()
-        
 
         if (!params.skip_dedup && quantifier.equals("isoquant")) {
             UMITOOLS_DEDUP_SPLIT(
@@ -160,11 +159,11 @@ workflow PROCESS_LONGREAD_SCRNA {
         bc_tagged_bai = SAMTOOLS_INDEX_TAGGED.out.bai
         bc_tagged_flagstat = SAMTOOLS_FLAGSTAT_TAGGED.out.flagstat
 
-        dedup_bam = ch_bam 
-        dedup_bai = ch_bai 
-        dedup_log = ch_dedup_log 
-        dedup_flagstat = ch_flagstat 
-        dedup_idxstats = ch_idxstats 
+        dedup_bam = ch_bam
+        dedup_bai = ch_bai
+        dedup_log = ch_dedup_log
+        dedup_flagstat = ch_flagstat
+        dedup_idxstats = ch_idxstats
 
         gene_qc_stats = ch_gene_qc_stats
         transcript_qc_stats = ch_transcript_qc_stats
