@@ -16,9 +16,6 @@ else {
     }
 }
 
-//if (params.quantification_type.equals('both') || params.quantification_type.equals('transcript') && !params.transcript_fasta
-
-
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     CONFIG FILES

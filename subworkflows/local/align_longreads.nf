@@ -3,13 +3,13 @@
 //
 
 // SUBWORKFLOWS
-include { BAM_SORT_STATS_SAMTOOLS } from '../../subworkflows/nf-core/bam_sort_stats_samtools/main'
+include { BAM_SORT_STATS_SAMTOOLS                                     } from '../../subworkflows/nf-core/bam_sort_stats_samtools/main'
 include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_FILTERED } from '../../subworkflows/nf-core/bam_sort_stats_samtools/main'
 
 // MODULES
 include { MINIMAP2_INDEX         } from '../../modules/nf-core/minimap2/index'
 include { MINIMAP2_ALIGN         } from '../../modules/nf-core/minimap2/align'
-include { SAMTOOLS_VIEW   } from '../../modules/nf-core/samtools/view'
+include { SAMTOOLS_VIEW          } from '../../modules/nf-core/samtools/view'
 
 include { RSEQC_READDISTRIBUTION } from '../../modules/nf-core/rseqc/readdistribution/main'
 include { NANOCOMP               } from '../../modules/nf-core/nanocomp/main'
