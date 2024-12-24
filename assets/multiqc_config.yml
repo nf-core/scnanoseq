@@ -62,8 +62,9 @@ custom_content:
   seurat_section:
     parent_id: seurat_section
     order:
-      - transcript_seurat_stats_module
-      - gene_seurat_stats_module
+      - isoquant_transcript_seurat_stats_module
+      - isoquant_gene_seurat_stats_module
+      - oarfish_transcript_seurat_stats_module
 
 custom_data:
   read_counts_module:
@@ -74,30 +75,42 @@ custom_data:
     file_format: "csv"
     plot_type: "table"
 
-  gene_seurat_stats_module:
+  isoquant_gene_seurat_stats_module:
     parent_id: seurat_section
     parent_name: "Seurat Section"
     parent_description: "Preliminary expression analysis summary completed with
-      Seurat. Note that these numbers are generated
+      Seurat using IsoQuant generated matrices. Note that these numbers are generated
       without any filtering done on the dataset"
-    section_name: "Gene Seurat Stats"
+    section_name: "IsoQuant Gene Seurat Stats"
     file_format: "tsv"
     plot_type: "table"
 
-  transcript_seurat_stats_module:
+  isoquant_transcript_seurat_stats_module:
     parent_id: seurat_section
     parent_name: "Seurat Section"
     parent_description: "Preliminary expression analysis summary completed with
-      Seurat. Note that these numbers are generated
+      Seurat using IsoQuant generated matrices. Note that these numbers are generated
       without any filtering done on the dataset"
-    section_name: "Transcript Seurat Stats"
+    section_name: "IsoQuant Transcript Seurat Stats"
+    file_format: "tsv"
+    plot_type: "table"
+
+  oarfish_transcript_seurat_stats_module:
+    parent_id: seurat_section
+    parent_name: "Seurat Section"
+    parent_description: "Preliminary expression analysis summary completed with
+      Seurat using OARFISH generated matrices. Note that these numbers are generated
+      without any filtering done on the dataset"
+    section_name: "OARFISH Transcript Seurat Stats"
     file_format: "tsv"
     plot_type: "table"
 
 sp:
-  gene_seurat_stats_module:
-    fn: "gene.*.tsv"
-  transcript_seurat_stats_module:
-    fn: "transcript.*.tsv"
+  isoquant_gene_seurat_stats_module:
+    fn: "isoquant_gene.tsv"
+  isoquant_transcript_seurat_stats_module:
+    fn: "isoquant_transcript.tsv"
+  oarfish_transcript_seurat_stats_module:
+    fn: "oarfish_transcript.tsv"
   read_counts_module:
     fn: "read_counts.csv"

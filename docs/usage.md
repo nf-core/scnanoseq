@@ -57,11 +57,15 @@ The typical command for running the pipeline is as follows:
 nextflow run nf-core/scnanoseq \
   --input ./samplesheet.csv \
   --outdir ./results \
-  --genome /path/to/genome.fa \
-  --gtf /path/to/genome.gtf \
+  --genome_fasta /path/to/genome.fa \
+  --transcript_fasta /path/to/transcriptome.fa \
+  --gtf /path/to/file.gtf \
+  --quantifier "both" \
   --barcode_format 10X_3v3 \
   -profile <docker/singularity/institute>
 ```
+
+Please note that while the above command specifies both transcriptome and genome fasta files, only one is needed for the pipeline and is dependent on which quantifier you wish to use.
 
 Note that the pipeline will create the following files in your working directory:
 
@@ -91,8 +95,10 @@ with
 ```yaml title="params.yaml"
 input: "./samplesheet.csv"
 outdir: "./results/"
-fasta: "/path/to/genome.fa"
-gtf: "/path/to/genome.gtf"
+genome_fasta: "/path/to/genome.fa"
+transcript_fasta: "/path/to/transcript.fa"
+gtf: "/path/to/file.gtf"
+quantifier: "both"
 barcode_format: "10X_3v3"
 <...>
 ```

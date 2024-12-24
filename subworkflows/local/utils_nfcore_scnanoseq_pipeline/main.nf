@@ -150,6 +150,16 @@ workflow PIPELINE_COMPLETION {
 //
 def validateInputParameters() {
     genomeExistsError()
+
+    if ((params.quantifier.equals('isoquant') || params.quantifier.equals('both')) && !params.genome_fasta) {
+        def error_string = "In order to quantify with isoquant, a genome fasta must be provided"
+        error(error_string)
+    }
+
+    if ((params.quantifier.equals('oarfish') || params.quantifier.equals('both')) && !params.transcript_fasta) {
+        def error_string = "In order to quantify with oarfish, a transcript fasta must be provided"
+        error(error_string)
+    }
 }
 
 //

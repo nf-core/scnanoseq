@@ -42,6 +42,10 @@
 
   > De Coster W, D'Hert S, Schultz DT, Cruts M, Van Broeckhoven C. NanoPack: visualizing and processing long-read sequencing data. Bioinformatics. 2018 Aug 1;34(15):2666-2669. doi: 10.1093/bioinformatics/bty149. PubMed PMID: 29547981; PubMed Central PMCID: PMC6061794.
 
+- [oarfish](https://github.com/COMBINE-lab/oarfish)
+
+  > Jousheghani ZZ, Patro R. Oarfish: Enhanced probabilistic modeling leads to improved accuracy in long read transcriptome quantification. bioRxiv [Preprint]. 2024 Mar 1:2024.02.28.582591. doi: 10.1101/2024.02.28.582591. PMID: 38464200; PMCID: PMC10925290.
+
 - [pigz](https://zlib.net/pigz/)
 
 - [SAMtools](https://pubmed.ncbi.nlm.nih.gov/19505943/)

@@ -49,21 +49,24 @@
             "fa_icon": "fas fa-dna",
             "description": "Reference genome related files and options required for the workflow.",
             "properties": {
-                "genome": {
-                    "type": "string",
-                    "description": "Name of iGenomes reference.",
-                    "fa_icon": "fas fa-book",
-                    "help_text": "If using a reference genome configured in the pipeline using iGenomes, use this parameter to give the ID for the reference. This is then used to build the full paths for all required reference genome files e.g. `--genome GRCh38`. \n\nSee the [nf-core website docs](https://nf-co.re/usage/reference_genomes) for more details."
-                },
-                "fasta": {
+                "genome_fasta": {
                     "type": "string",
                     "format": "file-path",
                     "exists": true,
                     "mimetype": "text/plain",
                     "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
-                    "description": "Path to FASTA genome file.",
-                    "help_text": "This parameter is *mandatory* if `--genome` is not specified. If you don't have a BWA index available this will be generated for you automatically. Combine with `--save_reference` to save BWA index for future runs.",
+                    "description": "Path to genome FASTA file.",
+                    "help_text": "This parameter is *mandatory* if `--quantifier \"both\"` or `--quantifier \"isoquant\"` is selected. ",
                     "fa_icon": "far fa-file-code"
+                },
+                "transcript_fasta": {
+                    "type": "string",
+                    "description": "Path to transcriptome FASTA file.",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
+                    "format": "file-path",
+                    "mimetype": "text/plain",
+                    "fa_icon": "far fa-file-code",
+                    "help_text": "This parameter is *mandatory* if `--quantifier \"both\"` or `--quantifier \"oarfish\"` is selected. "
                 },
                 "gtf": {
                     "type": "string",
@@ -72,12 +75,19 @@
                     "format": "file-path",
                     "pattern": "^\\S+\\.gtf(\\.gz)?$"
                 },
+                "genome": {
+                    "type": "string",
+                    "description": "Name of iGenomes reference.",
+                    "fa_icon": "fas fa-book",
+                    "help_text": "If using a reference genome configured in the pipeline using iGenomes, use this parameter to give the ID for the reference. This is then used to build the full paths for all required reference genome files e.g. `--genome GRCh38`. \n\nSee the [nf-core website docs](https://nf-co.re/usage/reference_genomes) for more details."
+                },
                 "igenomes_ignore": {
                     "type": "boolean",
                     "description": "Do not load the iGenomes reference config.",
                     "fa_icon": "fas fa-ban",
                     "hidden": true,
-                    "help_text": "Do not load `igenomes.config` when running the pipeline. You may choose this option if you observe clashes between custom parameters and those supplied in `igenomes.config`."
+                    "help_text": "Do not load `igenomes.config` when running the pipeline. You may choose this option if you observe clashes between custom parameters and those supplied in `igenomes.config`.",
+                    "default": true
                 },
                 "igenomes_base": {
                     "type": "string",
@@ -88,7 +98,7 @@
                     "default": "s3://ngi-igenomes/igenomes/"
                 }
             },
-            "required": ["fasta", "gtf"]
+            "required": ["gtf"]
         },
         "fastq_options": {
             "title": "Fastq options",
@@ -171,10 +181,14 @@
                     "description": "Minimizer k-mer length.",
                     "fa_icon": "fas fa-sort-amount-down"
                 },
-                "save_secondary_alignment": {
+                "save_genome_secondary_alignment": {
                     "type": "boolean",
-                    "description": "Save secondary alignment outputs.",
-                    "fa_icon": "far fa-save"
+                    "description": "Save the secondary alignments when aligning to the genome"
+                },
+                "save_transcript_secondary_alignment": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Save the secondary alignments when aligning to the transcriptome"
                 }
             },
             "fa_icon": "far fa-map"
@@ -190,8 +204,15 @@
                     "default": true,
                     "description": "Indicate whether to include introns in the count matrices",
                     "fa_icon": "fas fa-filter"
+                },
+                "quantifier": {
+                    "type": "string",
+                    "description": "Describe which quantification tool to use",
+                    "enum": ["oarfish", "isoquant", "both"]
                 }
-            }
+            },
+            "required": ["quantifier"],
+            "description": "Options related to post-mapping analysis"
         },
         "process_skipping_options": {
             "title": "Process skipping options",
@@ -404,24 +425,6 @@
         },
         {
             "$ref": "#/$defs/reference_genome_options"
-        },
-        {
-            "$ref": "#/$defs/fastq_options"
-        },
-        {
-            "$ref": "#/$defs/read_trimming_options"
-        },
-        {
-            "$ref": "#/$defs/cell_barcode_options"
-        },
-        {
-            "$ref": "#/$defs/mapping"
-        },
-        {
-            "$ref": "#/$defs/analysis_options"
-        },
-        {
-            "$ref": "#/$defs/process_skipping_options"
         },
         {
             "$ref": "#/$defs/fastq_options"

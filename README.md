@@ -34,18 +34,18 @@ On release, automated continuous integration tests run the pipeline on a full-si
    1. Optional: Split FASTQ for faster processing ([`split`](https://linux.die.net/man/1/split))
 3. Trim and filter reads ([`Nanofilt`](https://github.com/wdecoster/nanofilt))
 4. Post trim QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [`NanoPlot`](https://github.com/wdecoster/NanoPlot), [`NanoComp`](https://github.com/wdecoster/nanocomp) and [`ToulligQC`](https://github.com/GenomiqueENS/toulligQC))
-5. Barcode detection using a custom whitelist or 10X whitelist. [`BLAZE`](https://github.com/shimlab/BLAZE)
+5. Barcode detection using a custom whitelist or 10X whitelist. ([`BLAZE`](https://github.com/shimlab/BLAZE))
 6. Extract barcodes. Consists of the following steps:
    1. Parse FASTQ files into R1 reads containing barcode and UMI and R2 reads containing sequencing without barcode and UMI (custom script `./bin/pre_extract_barcodes.py`)
    2. Re-zip FASTQs ([`pigz`](https://github.com/madler/pigz))
 7. Barcode correction (custom script `./bin/correct_barcodes.py`)
 8. Post-extraction QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [`NanoPlot`](https://github.com/wdecoster/NanoPlot), [`NanoComp`](https://github.com/wdecoster/nanocomp) and [`ToulligQC`](https://github.com/GenomiqueENS/toulligQC))
-9. Alignment ([`minimap2`](https://github.com/lh3/minimap2))
+9. Alignment to the genome, transcriptome, or both ([`minimap2`](https://github.com/lh3/minimap2))
 10. Post-alignment filtering of mapped reads and gathering mapping QC ([`SAMtools`](http://www.htslib.org/doc/samtools.html))
 11. Post-alignment QC in unfiltered BAM files ([`NanoComp`](https://github.com/wdecoster/nanocomp), [`RSeQC`](https://rseqc.sourceforge.net/))
 12. Barcode (BC) tagging with read quality, BC quality, UMI quality (custom script `./bin/tag_barcodes.py`)
-13. UMI-based deduplication [`UMI-tools`](https://github.com/CGATOxford/UMI-tools)
-14. Gene and transcript level matrices generation [`IsoQuant`](https://github.com/ablab/IsoQuant)
+13. UMI-based deduplication ([`UMI-tools`](https://github.com/CGATOxford/UMI-tools))
+14. Gene and transcript level matrices generation with [`IsoQuant`](https://github.com/ablab/IsoQuant) and/or transcript level matrices with [`oarfish`](https://github.com/COMBINE-lab/oarfish)
 15. Preliminary matrix QC ([`Seurat`](https://github.com/satijalab/seurat))
 16. Compile QC for raw reads, trimmed reads, pre and post-extracted reads, mapping metrics and preliminary single-cell/nuclei QC ([`MultiQC`](http://multiqc.info/))
 
@@ -83,7 +83,9 @@ For more details and further functionality, please refer to the [usage documenta
 
 ## Pipeline output
 
-This pipeline produces feature-barcode matrices at both the gene and transcript level and can be configured to retain introns within the counts themselves. These feature-barcode matrices are able to be ingested directly by most packages used for downstream analyses such as `Seurat`. Additionally, the pipeline produces a number of quality control metrics to ensure that the samples processed meet expected metrics for single-cell/nuclei data.
+This pipeline produces feature-barcode matrices as the main output. These feature-barcode matrices are able to be ingested directly by most packages used for downstream analyses such as `Seurat`. Additionally, the pipeline produces a number of quality control metrics to ensure that the samples processed meet expected metrics for single-cell/nuclei data.
+
+The pipeline provides two tools to produce the aforementioned feature-barcode matrices, `IsoQuant` and `oarfish`, and the user is given the ability to choose whether to run both or just one. `IsoQuant` will require a genome fasta to be used as input to the pipeline, and will produce both gene and transcript level matrices. `oarfish` will require a transcriptome fasta to be used as input to the pipeline and will produce only transcript level matrices.
 
 To see the results of an example test run with a full size dataset refer to the [results](https://nf-co.re/scnanoseq/results) tab on the nf-core website pipeline page.
 For more details about the full set of output files and reports, please refer to the
@@ -114,7 +116,6 @@ process
     }
 }
 
-//NOTE: reminder that params set in modules.config need to be copied over to a custom config
 process
 {
     withName: '.*:BLAZE'
