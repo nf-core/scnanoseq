@@ -454,7 +454,7 @@ workflow SCNANOSEQ {
             ch_corrected_bc_info,
             params.skip_save_minimap2_index,
             params.skip_qc,
-            params.skip_rseqc,
+            true,
             params.skip_bam_nanocomp,
             'oarfish',
             params.skip_seurat,
