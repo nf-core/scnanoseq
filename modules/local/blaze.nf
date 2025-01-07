@@ -3,7 +3,7 @@ process BLAZE {
     label 'process_medium'
     label 'process_long'
 
-    conda "atrull314::fast_edit_distance=1.2.1 conda-forge::matplotlib=3.8.4 conda-forge::biopython=1.83 conda-forge::pandas=2.2.2 conda-forge::numpy=2.0.0rc2 conda-forge::tqdm=4.66.4"
+    conda "atrull314::fast_edit_distance=1.2.1 conda-forge::matplotlib=3.8.4 conda-forge::biopython=1.83 conda-forge::pandas=2.2.2 conda-forge::numpy=2.0.2 conda-forge::tqdm=4.66.4"
 
     container "${ workflow.containerEngine == 'singularity' ?
         'docker://agtrull314/blaze:2.2.0' :
