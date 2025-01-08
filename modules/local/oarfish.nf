@@ -21,7 +21,7 @@ process OARFISH {
     task.ext.when == null || task.ext.when
 
     script:
-    def args = task.ext.args ?: ''
+    def args   = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
 
     """
@@ -46,5 +46,14 @@ process OARFISH {
     "${task.process}":
         oarfish: \$(oarfish --version | sed 's#oarfish ##g')
     END_VERSIONS
+    """
+
+    stub:
+    def prefix = task.ext.prefix ?: "${meta.id}"
+    """
+    touch ${prefix}.features.tsv.gz
+    touch ${prefix}.barcodes.tsv.gz
+    touch ${prefix}.matrix.mtx.gz
+    touch ${prefix}.meta_info.json
     """
 }

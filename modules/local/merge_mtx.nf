@@ -18,9 +18,8 @@ process MERGE_MTX {
     task.ext.when == null || task.ext.when
 
     script:
-    def args = task.ext.args ?: ''
+    def args   = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
-    //def file_list = files_in.collect { it.toString() }
 
     """
     mtx_merge.py \\
@@ -28,6 +27,18 @@ process MERGE_MTX {
         -x ".tsv" \\
         -o ${prefix}.merged.tsv
 
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        python: \$(python --version | sed 's/Python //g')
+    END_VERSIONS
+    """
+
+    stub:
+    def prefix = task.ext.prefix ?: "${meta.id}"
+    
+    """
+    touch ${prefix}.merged.tsv
+    
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         python: \$(python --version | sed 's/Python //g')

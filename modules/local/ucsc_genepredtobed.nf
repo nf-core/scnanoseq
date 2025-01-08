@@ -18,13 +18,28 @@ process UCSC_GENEPREDTOBED {
     task.ext.when == null || task.ext.when
 
     script:
-    def args = task.ext.args ?: ''
-    def VERSION = '447' // WARN: Version information not provided by tool on CLI. Please update this string when bumping container versions.
+    def args    = task.ext.args ?: ''
+    def prefix  = task.ext.prefix ?: "${genepred.baseName}"
+    // WARN: Version information not provided by tool on CLI. Please update this string when bumping container versions.
+    def VERSION = '447' 
     """
     genePredToBed \\
         $args \\
         $genepred \\
-        ${genepred.baseName}.bed
+        ${prefix}.bed
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        ucsc: $VERSION
+    END_VERSIONS
+    """
+
+    stub:
+    def prefix  = task.ext.prefix ?: "${genepred.baseName}"
+    // WARN: Version information not provided by tool on CLI. Please update this string when bumping container versions.
+    def VERSION = '447' 
+    """
+    touch ${prefix}.bed
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

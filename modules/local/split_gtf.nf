@@ -27,4 +27,14 @@ process SPLIT_GTF {
         cat: \$(echo \$(cat --version) | sed 's/^.*cat (GNU coreutils) //; s/ .*//')
     END_VERSIONS
     """
+
+    stub:
+    """
+    touch test.split.gtf
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        cat: \$(echo \$(cat --version) | sed 's/^.*cat (GNU coreutils) //; s/ .*//')
+    END_VERSIONS
+    """
 }

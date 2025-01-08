@@ -24,9 +24,10 @@ process BLAZE {
     task.ext.when == null || task.ext.when
 
     script:
-    def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: "${meta.id}"
-    def VERSION = '2.2.0' // WARN: Version information not provided by tool on CLI. Please update this string when bumping BLAZE code
+    def args       = task.ext.args ?: ''
+    def prefix     = task.ext.prefix ?: "${meta.id}"
+    // WARN: Version information not provided by tool on CLI. Please update this string when upgrading BLAZE code
+    def VERSION    = '2.2.0' 
     def cell_count = "${meta.cell_count}"
 
     """
@@ -47,6 +48,21 @@ process BLAZE {
         uniq -c | \\
         awk '{print \$2","\$1}'> ${prefix}.bc_count.txt
 
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        blaze: $VERSION
+    END_VERSIONS
+    """
+
+    stub:
+    def prefix  = task.ext.prefix ?: "${meta.id}"
+    def VERSION = '2.2.0'
+    """
+    touch ${prefix}.putative_bc.no_header.csv
+    touch ${prefix}.whitelist.csv
+    touch ${prefix}.bc_count.txt
+    touch ${prefix}.knee_plot.png
+    
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         blaze: $VERSION

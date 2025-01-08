@@ -20,7 +20,7 @@ process ISOQUANT {
     task.ext.when == null || task.ext.when
 
     script:
-    def args = task.ext.args ?: ''
+    def args   = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
 
     // setting custom home via export (see issue #30)
@@ -68,6 +68,17 @@ process ISOQUANT {
             isoquant: \$(isoquant.py -v | sed 's#IsoQuant ##')
         END_VERSIONS
         """
-
     }
+
+    stub:
+    def prefix = task.ext.prefix ?: "${meta.id}"
+    """
+    touch ${prefix}.gene_counts.tsv
+    touch ${prefix}.transcript_counts.tsv
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        isoquant: \$(isoquant.py -v | sed 's#IsoQuant ##')
+    END_VERSIONS
+    """
 }

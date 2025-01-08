@@ -20,10 +20,21 @@ process SPLIT_FILE {
     task.ext.when == null || task.ext.when
 
     script:
-    def args = task.ext.args ?: ''
+    def args   = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
     split -a10 -l ${split_amount} -d --additional-suffix ${file_ext} ${unsplit_file} ${prefix}.
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        split: \$(echo \$(split --version 2>&1 | head -n1 | sed 's#split (GNU coreutils) ##g'))
+    END_VERSIONS
+    """
+
+    stub:
+    def prefix = task.ext.prefix ?: "${meta.id}"
+    """
+    touch ${prefix}.${file_ext}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
