@@ -145,26 +145,30 @@ workflow PROCESS_LONGREAD_SCRNA {
 
     emit:
         // Versions
-        versions = ch_versions
+        versions                 = ch_versions
 
-        minimap_bam = ALIGN_LONGREADS.out.sorted_bam
-        minimap_bai = ALIGN_LONGREADS.out.sorted_bai
-        minimap_stats = ALIGN_LONGREADS.out.stats
-        minimap_flagstat = ALIGN_LONGREADS.out.flagstat
-        minimap_idxstats = ALIGN_LONGREADS.out.idxstats
-        minimap_rseqc_read_dist = ALIGN_LONGREADS.out.rseqc_read_dist
+        // Minimap results + qc's
+        minimap_bam              = ALIGN_LONGREADS.out.sorted_bam
+        minimap_bai              = ALIGN_LONGREADS.out.sorted_bai
+        minimap_stats            = ALIGN_LONGREADS.out.stats
+        minimap_flagstat         = ALIGN_LONGREADS.out.flagstat
+        minimap_idxstats         = ALIGN_LONGREADS.out.idxstats
+        minimap_rseqc_read_dist  = ALIGN_LONGREADS.out.rseqc_read_dist
         minimap_nanocomp_bam_txt = ALIGN_LONGREADS.out.nanocomp_bam_txt
 
-        bc_tagged_bam = TAG_BARCODES.out.tagged_bam
-        bc_tagged_bai = SAMTOOLS_INDEX_TAGGED.out.bai
-        bc_tagged_flagstat = SAMTOOLS_FLAGSTAT_TAGGED.out.flagstat
+        // Barcode tagging results + qc's
+        bc_tagged_bam            = TAG_BARCODES.out.tagged_bam
+        bc_tagged_bai            = SAMTOOLS_INDEX_TAGGED.out.bai
+        bc_tagged_flagstat       = SAMTOOLS_FLAGSTAT_TAGGED.out.flagstat
 
-        dedup_bam = ch_bam
-        dedup_bai = ch_bai
-        dedup_log = ch_dedup_log
-        dedup_flagstat = ch_flagstat
-        dedup_idxstats = ch_idxstats
+        // Deduplication results
+        dedup_bam                = ch_bam
+        dedup_bai                = ch_bai
+        dedup_log                = ch_dedup_log
+        dedup_flagstat           = ch_flagstat
+        dedup_idxstats           = ch_idxstats
 
-        gene_qc_stats = ch_gene_qc_stats
-        transcript_qc_stats = ch_transcript_qc_stats
+        // Seurat QC Stats
+        gene_qc_stats            = ch_gene_qc_stats
+        transcript_qc_stats      = ch_transcript_qc_stats
 }
