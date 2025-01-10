@@ -23,13 +23,14 @@ workflow PROCESS_LONGREAD_SCRNA {
         fastq        // channel: [ val(meta), path(fastq) ]
         rseqc_bed    // channel: [ val(meta), path(rseqc_bed) ]
         read_bc_info // channel: [ val(meta), path(read_barcode_info) ]
+        quant_list   // list: List of quantifiers to use
 
         skip_save_minimap2_index // bool: Skip saving the minimap2 index
         skip_qc                  // bool: Skip qc steps
         skip_rseqc               // bool: Skip RSeQC
         skip_bam_nanocomp        // bool: Skip Nanocomp
-        quantifier               // str: Quantifier
         skip_seurat              // bool: Skip seurat qc steps
+        skip_dedup               // bool: Skip umitools deduplication
         split_umitools_bam       // bool: Skip splitting on chromsome for umitools
 
     main:
@@ -87,7 +88,7 @@ workflow PROCESS_LONGREAD_SCRNA {
         ch_dedup_log = Channel.empty()
         ch_idxstats = Channel.empty()
 
-        if (!params.skip_dedup) {
+        if (!skip_dedup) {
             UMITOOLS_DEDUP_SPLIT(
                 fasta,
                 fai,
@@ -115,7 +116,8 @@ workflow PROCESS_LONGREAD_SCRNA {
 
         ch_gene_qc_stats = Channel.empty()
         ch_transcript_qc_stats = Channel.empty()
-        if (quantifier.equals("oarfish")) {
+
+        if (quant_list.contains("oarfish")) {
             QUANTIFY_SCRNA_OARFISH (
                 ch_bam,
                 ch_bai,
@@ -126,7 +128,9 @@ workflow PROCESS_LONGREAD_SCRNA {
             )
             ch_versions = ch_versions.mix(QUANTIFY_SCRNA_OARFISH.out.versions)
             ch_transcript_qc_stats = QUANTIFY_SCRNA_OARFISH.out.transcript_qc_stats
-        } else {
+        } 
+
+        if (quant_list.contains("isoquant")) {
             QUANTIFY_SCRNA_ISOQUANT (
                 ch_bam,
                 ch_bai,

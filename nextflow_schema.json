@@ -207,8 +207,8 @@
                 },
                 "quantifier": {
                     "type": "string",
-                    "description": "Describe which quantification tool to use",
-                    "enum": ["oarfish", "isoquant", "both"]
+                    "description": "Provide a comma-delimited options of quantifiers for the pipeline to use. Options: (isoquant, oarfish)",
+                    "pattern": "^(oarfish|isoquant)(,(oarfish|isoquant))*$"
                 }
             },
             "required": ["quantifier"],

@@ -4,6 +4,7 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
+// Whitelist
 if (params.whitelist) {
     blaze_whitelist = params.whitelist
 }
@@ -15,6 +16,25 @@ else {
         blaze_whitelist = file("$baseDir/assets/whitelist/737K-august-2016.txt.zip")
     }
 }
+
+// Quantifiers
+
+// Associate the quantifiers with the kind of alignment needed
+GENOME_QUANT_OPTS = [ 'isoquant' ]
+TRANSCRIPT_QUANT_OPTS = [ 'oarfish' ]
+
+genome_quants = []
+transcript_quants = []
+for (quantifier in params.quantifier.split(',')) {
+    if (quantifier in GENOME_QUANT_OPTS) {
+        genome_quants.add(quantifier)
+    }
+
+    if (quantifier in TRANSCRIPT_QUANT_OPTS) {
+        transcript_quants.add(quantifier)
+    }
+}
+
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -389,7 +409,7 @@ workflow SCNANOSEQ {
 
     ch_multiqc_finalqc_files = Channel.empty()
 
-    if (params.quantifier.equals('isoquant') || params.quantifier.equals('both')){
+    if (genome_quants){
         PROCESS_LONGREAD_SCRNA_GENOME(
             genome_fasta,
             genome_fai,
@@ -397,12 +417,13 @@ workflow SCNANOSEQ {
             ch_extracted_fastq,
             ch_rseqc_bed,
             ch_corrected_bc_info,
+            genome_quants,
             params.skip_save_minimap2_index,
             params.skip_qc,
             params.skip_rseqc,
             params.skip_bam_nanocomp,
-            'isoquant',
             params.skip_seurat,
+            params.skip_dedup,
             true
         )
         ch_versions = ch_versions.mix(PROCESS_LONGREAD_SCRNA_GENOME.out.versions)
@@ -444,7 +465,7 @@ workflow SCNANOSEQ {
         )
     }
 
-    if (params.quantifier.equals('oarfish') || params.quantifier.equals('both')){
+    if (transcript_quants) {
         PROCESS_LONGREAD_SCRNA_TRANSCRIPT (
             transcript_fasta,
             transcript_fai,
@@ -452,12 +473,13 @@ workflow SCNANOSEQ {
             ch_extracted_fastq,
             ch_rseqc_bed,
             ch_corrected_bc_info,
+            transcript_quants,
             params.skip_save_minimap2_index,
             params.skip_qc,
             true,
             params.skip_bam_nanocomp,
-            'oarfish',
             params.skip_seurat,
+            true,
             false
         )
 
