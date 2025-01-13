@@ -21,7 +21,7 @@ process UCSC_GTFTOGENEPRED {
     def args    = task.ext.args ?: ''
     def prefix  = task.ext.prefix ?: "${gtf.baseName}"
     // WARN: Version information not provided by tool on CLI. Please update this string when bumping container versions.
-    def VERSION = '447' 
+    def VERSION = '447'
     """
     gtfToGenePred \\
         $args \\
@@ -37,7 +37,7 @@ process UCSC_GTFTOGENEPRED {
     stub:
     def prefix  = task.ext.prefix ?: "${gtf.baseName}"
     // WARN: Version information not provided by tool on CLI. Please update this string when bumping container versions.
-    def VERSION = '447' 
+    def VERSION = '447'
     """
     touch ${prefix}.genepred
 
