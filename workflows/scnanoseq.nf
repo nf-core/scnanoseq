@@ -465,6 +465,7 @@ workflow SCNANOSEQ {
         )
     }
 
+    // oarfish expects deduplicated reads
     if (transcript_quants) {
         PROCESS_LONGREAD_SCRNA_TRANSCRIPT (
             transcript_fasta,
@@ -479,7 +480,7 @@ workflow SCNANOSEQ {
             true,
             params.skip_bam_nanocomp,
             params.skip_seurat,
-            true,
+            false,
             false
         )
 
