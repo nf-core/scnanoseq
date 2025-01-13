@@ -60,7 +60,7 @@ nextflow run nf-core/scnanoseq \
   --genome_fasta /path/to/genome.fa \
   --transcript_fasta /path/to/transcriptome.fa \
   --gtf /path/to/file.gtf \
-  --quantifier "both" \
+  --quantifier "isoquant|oarfish|isoquant,oarfish" \
   --barcode_format 10X_3v3 \
   -profile <docker/singularity/institute>
 ```
@@ -98,7 +98,7 @@ outdir: "./results/"
 genome_fasta: "/path/to/genome.fa"
 transcript_fasta: "/path/to/transcript.fa"
 gtf: "/path/to/file.gtf"
-quantifier: "both"
+quantifier: "isoquant|oarfish|isoquant,oarfish"
 barcode_format: "10X_3v3"
 <...>
 ```
