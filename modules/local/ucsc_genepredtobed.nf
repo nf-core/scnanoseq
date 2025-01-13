@@ -21,7 +21,7 @@ process UCSC_GENEPREDTOBED {
     def args    = task.ext.args ?: ''
     def prefix  = task.ext.prefix ?: "${genepred.baseName}"
     // WARN: Version information not provided by tool on CLI. Please update this string when bumping container versions.
-    def VERSION = '447' 
+    def VERSION = '447'
     """
     genePredToBed \\
         $args \\
@@ -37,7 +37,7 @@ process UCSC_GENEPREDTOBED {
     stub:
     def prefix  = task.ext.prefix ?: "${genepred.baseName}"
     // WARN: Version information not provided by tool on CLI. Please update this string when bumping container versions.
-    def VERSION = '447' 
+    def VERSION = '447'
     """
     touch ${prefix}.bed
 

@@ -128,7 +128,7 @@ workflow PROCESS_LONGREAD_SCRNA {
             )
             ch_versions = ch_versions.mix(QUANTIFY_SCRNA_OARFISH.out.versions)
             ch_transcript_qc_stats = QUANTIFY_SCRNA_OARFISH.out.transcript_qc_stats
-        } 
+        }
 
         if (quant_list.contains("isoquant")) {
             QUANTIFY_SCRNA_ISOQUANT (

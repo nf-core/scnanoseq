@@ -40,7 +40,7 @@ process CORRECT_BARCODES {
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
     touch ${prefix}.corrected_bc_umi.tsv
-    
+
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         python: \$(python --version | sed 's/Python //g')

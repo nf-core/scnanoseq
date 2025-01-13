@@ -44,7 +44,7 @@ process PREEXTRACT_FASTQ {
     """
     touch ${prefix}.putative_bc_umi.tsv
     touch ${prefix}.extracted.fastq
-    
+
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         python: \$(python --version | sed 's/Python //g')

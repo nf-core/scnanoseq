@@ -27,7 +27,7 @@ process BLAZE {
     def args       = task.ext.args ?: ''
     def prefix     = task.ext.prefix ?: "${meta.id}"
     // WARN: Version information not provided by tool on CLI. Please update this string when upgrading BLAZE code
-    def VERSION    = '2.2.0' 
+    def VERSION    = '2.2.0'
     def cell_count = "${meta.cell_count}"
 
     """
@@ -62,7 +62,7 @@ process BLAZE {
     touch ${prefix}.whitelist.csv
     touch ${prefix}.bc_count.txt
     touch ${prefix}.knee_plot.png
-    
+
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         blaze: $VERSION
