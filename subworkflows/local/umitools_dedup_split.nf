@@ -90,12 +90,14 @@ workflow UMITOOLS_DEDUP_SPLIT {
                 fasta,
                 fai)
             ch_dedup_single_bam = SAMTOOLS_MERGE.out.bam
+            ch_versions = ch_versions.mix(SAMTOOLS_MERGE.out.versions)
 
             //
             // MODULE: Samtools Index
             //
             SAMTOOLS_INDEX_MERGED( ch_dedup_single_bam )
             ch_dedup_single_bai = SAMTOOLS_INDEX_MERGED.out.bai
+            ch_versions = ch_versions.mix(SAMTOOLS_INDEX_MERGED.out.versions)
         }
         else {
             ch_dedup_single_bam = UMITOOLS_DEDUP.out.bam
