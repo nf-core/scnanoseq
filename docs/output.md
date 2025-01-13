@@ -22,7 +22,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
   - [UMI Deduplication](#umi-deduplication) - UMI-based deduplication
 - [Feature-Barcode Quantification](#feature-barcode-quantification)
   - [IsoQuant](#isoquant) - Feature-barcode quantification (gene and transcript level)
-  - [oarfish] (#oarfish) - Feature-barcode quantification (transcript-level only)
+  - [oarfish](#oarfish) - Feature-barcode quantification (transcript-level only)
   - [Seurat](#seurat) - Feature-barcode matrix QC
 - [Other steps](#other-steps)
   - [UCSC](#ucsc) - Annotation BED file
@@ -198,7 +198,9 @@ Please see [Barcode Correction](#barcode-correction) below for metadata added po
 
 </details>
 
-[UMI-Tools](https://umi-tools.readthedocs.io/en/latest/reference/dedup.html) deduplicate reads based on the mapping co-ordinate and the UMI attached to the read. The identification of duplicate reads is performed in an error-aware manner by building networks of related UMIs
+[UMI-Tools](https://umi-tools.readthedocs.io/en/latest/reference/dedup.html) deduplicate reads based on the mapping co-ordinate and the UMI attached to the read. The identification of duplicate reads is performed in an error-aware manner by building networks of related UMIs.
+
+Users should note that `oarfish` requires input reads to be deduplicated. As a result, the `skip_dedup` option is only applicable to `IsoQuant`. By default, `scnanoseq` will perform deduplication for IsoQuant unless the `skip_dedup` option is explicitly enabled, while deduplication will always be executed for `oarfish` quantification.
 
 ## Feature-Barcode Quantification
 
