@@ -6,11 +6,13 @@
 include { ALIGN_LONGREADS         } from '../../subworkflows/local/align_longreads'
 include { QUANTIFY_SCRNA_ISOQUANT } from '../../subworkflows/local/quantify_scrna_isoquant'
 include { QUANTIFY_SCRNA_OARFISH  } from '../../subworkflows/local/quantify_scrna_oarfish'
-include { UMITOOLS_DEDUP_SPLIT    } from '../../subworkflows/local/umitools_dedup_split'
 
 // MODULES
 include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_TAGGED       } from '../../modules/nf-core/samtools/index'
+include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_DEDUP        } from '../../modules/nf-core/samtools/index'
 include { SAMTOOLS_FLAGSTAT as SAMTOOLS_FLAGSTAT_TAGGED } from '../../modules/nf-core/samtools/flagstat'
+include { SAMTOOLS_FLAGSTAT as SAMTOOLS_FLAGSTAT_DEDUP  } from '../../modules/nf-core/samtools/flagstat'
+include { PICARD_MARKDUPLICATES                         } from '../../modules/nf-core/picard/markduplicates/main'
 
 include { TAG_BARCODES } from '../../modules/local/tag_barcodes'
 
@@ -89,25 +91,41 @@ workflow PROCESS_LONGREAD_SCRNA {
         ch_idxstats = Channel.empty()
 
         if (!skip_dedup) {
-            UMITOOLS_DEDUP_SPLIT(
-                fasta,
-                fai,
+//            UMITOOLS_DEDUP_SPLIT(
+//                fasta,
+//                fai,
+//                TAG_BARCODES.out.tagged_bam,
+//                SAMTOOLS_INDEX_TAGGED.out.bai,
+//                split_umitools_bam
+//            )
+//
+//            ch_bam = UMITOOLS_DEDUP_SPLIT.out.dedup_bam
+//            ch_bai = UMITOOLS_DEDUP_SPLIT.out.dedup_bai
+//            ch_log = UMITOOLS_DEDUP_SPLIT.out.dedup_log
+//            ch_flagstat = UMITOOLS_DEDUP_SPLIT.out.dedup_flagstat
+//            ch_idxstats = UMITOOLS_DEDUP_SPLIT.out.dedup_idxstats
+//
+//            ch_versions = ch_versions.mix(UMITOOLS_DEDUP_SPLIT.out.versions)
+//        } else {
+//            ch_bam = TAG_BARCODES.out.tagged_bam
+//            ch_bai = SAMTOOLS_INDEX_TAGGED.out.bai
+//            ch_flagstat = SAMTOOLS_FLAGSTAT_TAGGED.out.flagsta
+            PICARD_MARKDUPLICATES(
                 TAG_BARCODES.out.tagged_bam,
-                SAMTOOLS_INDEX_TAGGED.out.bai,
-                split_umitools_bam
+                fasta,
+                fai
             )
+            ch_bam = PICARD_MARKDUPLICATES.out.bam
 
-            ch_bam = UMITOOLS_DEDUP_SPLIT.out.dedup_bam
-            ch_bai = UMITOOLS_DEDUP_SPLIT.out.dedup_bai
-            ch_log = UMITOOLS_DEDUP_SPLIT.out.dedup_log
-            ch_flagstat = UMITOOLS_DEDUP_SPLIT.out.dedup_flagstat
-            ch_idxstats = UMITOOLS_DEDUP_SPLIT.out.dedup_idxstats
+            SAMTOOLS_INDEX_DEDUP ( ch_bam )
+            ch_bai = SAMTOOLS_INDEX_DEDUP.out.bai
 
-            ch_versions = ch_versions.mix(UMITOOLS_DEDUP_SPLIT.out.versions)
-        } else {
-            ch_bam = TAG_BARCODES.out.tagged_bam
-            ch_bai = SAMTOOLS_INDEX_TAGGED.out.bai
-            ch_flagstat = SAMTOOLS_FLAGSTAT_TAGGED.out.flagstat
+            SAMTOOLS_FLAGSTAT_DEDUP (
+                ch_bam
+                    .join( SAMTOOLS_INDEX_DEDUP.out.bai, by: [0])
+            )
+            ch_flagstat = SAMTOOLS_FLAGSTAT_DEDUP.out.flagstat
+            ch_versions = ch_versions.mix(SAMTOOLS_FLAGSTAT_TAGGED.out.versions)
         }
 
         //
