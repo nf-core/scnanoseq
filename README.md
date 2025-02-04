@@ -44,7 +44,7 @@ On release, automated continuous integration tests run the pipeline on a full-si
 10. Post-alignment filtering of mapped reads and gathering mapping QC ([`SAMtools`](http://www.htslib.org/doc/samtools.html))
 11. Post-alignment QC in unfiltered BAM files ([`NanoComp`](https://github.com/wdecoster/nanocomp), [`RSeQC`](https://rseqc.sourceforge.net/))
 12. Barcode (BC) tagging with read quality, BC quality, UMI quality (custom script `./bin/tag_barcodes.py`)
-13. UMI-based deduplication ([`UMI-tools`](https://github.com/CGATOxford/UMI-tools))
+13. Read deduplication ([`Picard MarkDuplicates`](https://broadinstitute.github.io/picard/))
 14. Gene and transcript level matrices generation with [`IsoQuant`](https://github.com/ablab/IsoQuant) and/or transcript level matrices with [`oarfish`](https://github.com/COMBINE-lab/oarfish)
 15. Preliminary matrix QC ([`Seurat`](https://github.com/satijalab/seurat))
 16. Compile QC for raw reads, trimmed reads, pre and post-extracted reads, mapping metrics and preliminary single-cell/nuclei QC ([`MultiQC`](http://multiqc.info/))

@@ -56,9 +56,7 @@
 
   > Karine Dias, Bérengère Laffay, Lionel Ferrato-Berberian, Sophie Lemoine, Ali Hamraoui, Morgane Thomas-Chollier, Stéphane Le Crom and Laurent Jourdren.
 
-- [UMI-tools](https://pubmed.ncbi.nlm.nih.gov/28100584/)
-
-  > Smith T, Heger A, Sudbery I. UMI-tools: modeling sequencing errors in Unique Molecular Identifiers to improve quantification accuracy Genome Res. 2017 Mar;27(3):491-499. doi: 10.1101/gr.209601.116. Epub 2017 Jan 18. PubMed PMID: 28100584; PubMed Central PMCID: PMC5340976.
+- [Picard](https://broadinstitute.github.io/picard/)
 
 - [UCSC tools](https://pubmed.ncbi.nlm.nih.gov/20639541/)
 

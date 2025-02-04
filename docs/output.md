@@ -19,7 +19,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 - [Alignment Post-processing](#alignment-post-processing)
   - [Samtools](#samtools) - Sort and index alignments and make alignment qc
   - [Barcode Tagging](#barcode-tagging) - Barcode tagging with quality metrics and barcode information
-  - [UMI Deduplication](#umi-deduplication) - UMI-based deduplication
+  - [Deduplication](#deduplication) - Read deduplication
 - [Feature-Barcode Quantification](#feature-barcode-quantification)
   - [IsoQuant](#isoquant) - Feature-barcode quantification (gene and transcript level)
   - [oarfish](#oarfish) - Feature-barcode quantification (transcript-level only)
@@ -179,7 +179,7 @@ UMI quality tag = "UY"
 
 Please see [Barcode Correction](#barcode-correction) below for metadata added post-correction.
 
-### UMI Deduplication
+### Deduplication
 
 <details markdown="1">
 <summary>Output files</summary>
@@ -198,7 +198,7 @@ Please see [Barcode Correction](#barcode-correction) below for metadata added po
 
 </details>
 
-[UMI-Tools](https://umi-tools.readthedocs.io/en/latest/reference/dedup.html) deduplicate reads based on the mapping co-ordinate and the UMI attached to the read. The identification of duplicate reads is performed in an error-aware manner by building networks of related UMIs.
+[Picard MarkDuplicates](https://gatk.broadinstitute.org/hc/en-us/articles/360037052812-MarkDuplicates-Picard) locates and tags duplicate reads in a BAM or SAM file.
 
 Users should note that `oarfish` requires input reads to be deduplicated. As a result, the `skip_dedup` option is only applicable to `IsoQuant`. By default, `scnanoseq` will perform deduplication for IsoQuant unless the `skip_dedup` option is explicitly enabled, while deduplication will always be executed for `oarfish` quantification.
 
