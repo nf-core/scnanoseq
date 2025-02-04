@@ -34,7 +34,6 @@ workflow PROCESS_LONGREAD_SCRNA {
         skip_bam_nanocomp        // bool: Skip Nanocomp
         skip_seurat              // bool: Skip seurat qc steps
         skip_dedup               // bool: Skip umitools deduplication
-        split_umitools_bam       // bool: Skip splitting on chromsome for umitools
 
     main:
         ch_versions = Channel.empty()

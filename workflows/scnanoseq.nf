@@ -423,8 +423,7 @@ workflow SCNANOSEQ {
             params.skip_rseqc,
             params.skip_bam_nanocomp,
             params.skip_seurat,
-            params.skip_dedup,
-            true
+            params.skip_dedup
         )
         ch_versions = ch_versions.mix(PROCESS_LONGREAD_SCRNA_GENOME.out.versions)
 
@@ -480,7 +479,6 @@ workflow SCNANOSEQ {
             true,
             params.skip_bam_nanocomp,
             params.skip_seurat,
-            false,
             false
         )
 
