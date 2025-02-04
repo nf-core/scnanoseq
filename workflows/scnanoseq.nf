@@ -502,9 +502,6 @@ workflow SCNANOSEQ {
 
         if (!params.skip_dedup) {
             ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
-                PROCESS_LONGREAD_SCRNA_TRANSCRIPT.out.dedup_log.collect{it[1]}.ifEmpty([])
-            )
-            ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
                 PROCESS_LONGREAD_SCRNA_TRANSCRIPT.out.dedup_flagstat.collect{it[1]}.ifEmpty([])
             )
         }

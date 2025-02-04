@@ -8,11 +8,12 @@ include { QUANTIFY_SCRNA_ISOQUANT } from '../../subworkflows/local/quantify_scrn
 include { QUANTIFY_SCRNA_OARFISH  } from '../../subworkflows/local/quantify_scrna_oarfish'
 
 // MODULES
-include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_TAGGED       } from '../../modules/nf-core/samtools/index'
-include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_DEDUP        } from '../../modules/nf-core/samtools/index'
+include { PICARD_MARKDUPLICATES                         } from '../../modules/nf-core/picard/markduplicates'
 include { SAMTOOLS_FLAGSTAT as SAMTOOLS_FLAGSTAT_TAGGED } from '../../modules/nf-core/samtools/flagstat'
 include { SAMTOOLS_FLAGSTAT as SAMTOOLS_FLAGSTAT_DEDUP  } from '../../modules/nf-core/samtools/flagstat'
-include { PICARD_MARKDUPLICATES                         } from '../../modules/nf-core/picard/markduplicates/main'
+include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_TAGGED       } from '../../modules/nf-core/samtools/index'
+include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_DEDUP        } from '../../modules/nf-core/samtools/index'
+include { SAMTOOLS_VIEW as SAMTOOLS_FILTER_DEDUP        } from '../../modules/nf-core/samtools/view'
 
 include { TAG_BARCODES } from '../../modules/local/tag_barcodes'
 
@@ -81,9 +82,6 @@ workflow PROCESS_LONGREAD_SCRNA {
         )
         ch_versions = ch_versions.mix(SAMTOOLS_FLAGSTAT_TAGGED.out.versions)
 
-        //
-        // SUBWORKFLOW: UMI Deduplication
-        //
         ch_bam = Channel.empty()
         ch_bai = Channel.empty()
         ch_flagstat = Channel.empty()
@@ -91,38 +89,45 @@ workflow PROCESS_LONGREAD_SCRNA {
         ch_idxstats = Channel.empty()
 
         if (!skip_dedup) {
-//            UMITOOLS_DEDUP_SPLIT(
-//                fasta,
-//                fai,
-//                TAG_BARCODES.out.tagged_bam,
-//                SAMTOOLS_INDEX_TAGGED.out.bai,
-//                split_umitools_bam
-//            )
-//
-//            ch_bam = UMITOOLS_DEDUP_SPLIT.out.dedup_bam
-//            ch_bai = UMITOOLS_DEDUP_SPLIT.out.dedup_bai
-//            ch_log = UMITOOLS_DEDUP_SPLIT.out.dedup_log
-//            ch_flagstat = UMITOOLS_DEDUP_SPLIT.out.dedup_flagstat
-//            ch_idxstats = UMITOOLS_DEDUP_SPLIT.out.dedup_idxstats
-//
-//            ch_versions = ch_versions.mix(UMITOOLS_DEDUP_SPLIT.out.versions)
-//        } else {
-//            ch_bam = TAG_BARCODES.out.tagged_bam
-//            ch_bai = SAMTOOLS_INDEX_TAGGED.out.bai
-//            ch_flagstat = SAMTOOLS_FLAGSTAT_TAGGED.out.flagsta
+            //
+            // MODULE: Picard Mark Duplicates
+            //
             PICARD_MARKDUPLICATES(
                 TAG_BARCODES.out.tagged_bam,
                 fasta,
                 fai
             )
-            ch_bam = PICARD_MARKDUPLICATES.out.bam
+            ch_versions = PICARD_MARKDUPLICATES.out.versions
 
-            SAMTOOLS_INDEX_DEDUP ( ch_bam )
-            ch_bai = SAMTOOLS_INDEX_DEDUP.out.bai
+            //
+            // MODULE: Samtools Index
+            //
+            SAMTOOLS_INDEX_DEDUP ( PICARD_MARKDUPLICATES.out.bam )
+            ch_versions = SAMTOOLS_INDEX_DEDUP.out.versions
 
+            //
+            // MODULE: Samtools View
+            //
+            SAMTOOLS_FILTER_DEDUP (
+                PICARD_MARKDUPLICATES.out.bam.join(SAMTOOLS_INDEX_DEDUP.out.bai),
+                [[],[]],
+                []
+            )
+            ch_bam = SAMTOOLS_FILTER_DEDUP.out.bam
+            ch_bai = SAMTOOLS_FILTER_DEDUP.out.bai
+            ch_versions = SAMTOOLS_FILTER_DEDUP.out.versions
+
+            //
+            // MODULE: Samtools Flagstat
+            //
             SAMTOOLS_FLAGSTAT_DEDUP (
                 ch_bam
                     .join( SAMTOOLS_INDEX_DEDUP.out.bai, by: [0])
+                    .map{
+                        meta, bam, bai->
+                            meta = [ 'id': meta.id ] 
+                            [ meta, bam, bai]
+                    }
             )
             ch_flagstat = SAMTOOLS_FLAGSTAT_DEDUP.out.flagstat
             ch_versions = ch_versions.mix(SAMTOOLS_FLAGSTAT_TAGGED.out.versions)
@@ -186,7 +191,6 @@ workflow PROCESS_LONGREAD_SCRNA {
         // Deduplication results
         dedup_bam                = ch_bam
         dedup_bai                = ch_bai
-        dedup_log                = ch_dedup_log
         dedup_flagstat           = ch_flagstat
         dedup_idxstats           = ch_idxstats
 
