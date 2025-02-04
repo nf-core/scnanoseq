@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Inputs for IsoQuant are split on chromosome to allow for faster processing
 - The read counts QC metric is now able to leverage NanoPlot counts if FastQC is skipped
 - Added `oarfish` as an option for quantification
+- Replace `umitools dedup` with `picard markdupes`
 
 ### Fixes
 

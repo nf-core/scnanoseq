@@ -121,9 +121,7 @@ The knee plot (an example is listed above) that is provided by BLAZE shows all b
           - `*.mapped_only.idxstats` : The idxstats file for the genome aligned bam containing only mapped reads.
           - `*.mapped_only.stats` : The stats file for the genome aligned bam containing only mapped reads.
         - `dedup/`
-          - `*.dedup.flagstat` : The flagstat file for the genome aligned bam containing deduplicated umis.
-          - `*.dedup.idxstats` : The idxstats file for the genome aligned bam containing deduplicated umis.
-          - `*.dedup.stats` : The stats file for the genome aligned bam containing deduplicated umis.
+          - `*.picard_markdedup.flagstat` : The flagstat file for the genome aligned bam containing deduplicated umis.
   - `transcriptome/`
     - `bam/`
       - `mapped_only/`
@@ -140,9 +138,7 @@ The knee plot (an example is listed above) that is provided by BLAZE shows all b
           - `*.mapped_only.idxstats` : The idxstats file for the transcriptome aligned bam containing only mapped reads.
           - `*.mapped_only.stats` : The stats file for the transcriptome aligned bam containing only mapped reads.
         - `dedup/`
-          - `*.dedup.flagstat` : The flagstat file for the transcriptome aligned bam containing deduplicated umis.
-          - `*.dedup.idxstats` : The idxstats file for the transcriptome aligned bam containing deduplicated umis.
-          - `*.dedup.stats` : The stats file for the transcriptome aligned bam containing deduplicated umis.
+          - `*.picard_markdedup.flagstat` : The flagstat file for the transcriptome aligned bam containing deduplicated umis.
 
 </details>
 
