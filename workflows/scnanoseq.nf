@@ -477,7 +477,7 @@ workflow SCNANOSEQ {
             params.skip_save_minimap2_index,
             params.skip_qc,
             true,
-            params.skip_bam_nanocomp,
+            true,
             params.skip_seurat,
             false
         )
