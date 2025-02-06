@@ -14,6 +14,9 @@ workflow QC_SCRNA {
     main:
         ch_versions = Channel.empty()
 
+        in_mtx.view()
+        in_flagstat.view()
+
         //
         // MODULE: Seurat
         //
