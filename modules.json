@@ -161,7 +161,8 @@
                         "git_sha": "0bd7d2333a88483aa0476acea172e9f5f6dd83bb",
                         "installed_by": [
                             "modules"
-                        ]
+                        ],
+                        "patch": "modules/nf-core/samtools/view/samtools-view.diff"
                     },
                     "toulligqc": {
                         "branch": "master",
@@ -170,6 +171,13 @@
                             "modules"
                         ],
                         "patch": "modules/nf-core/toulligqc/toulligqc.diff"
+                    },
+                    "umitools/dedup": {
+                        "branch": "master",
+                        "git_sha": "81880787133db07d9b4c1febd152c090eb8325dc",
+                        "installed_by": [
+                            "modules"
+                        ]
                     }
                 }
             },

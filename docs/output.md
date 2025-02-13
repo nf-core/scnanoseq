@@ -19,7 +19,8 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 - [Alignment Post-processing](#alignment-post-processing)
   - [Samtools](#samtools) - Sort and index alignments and make alignment qc
   - [Barcode Tagging](#barcode-tagging) - Barcode tagging with quality metrics and barcode information
-  - [Deduplication](#deduplication) - Read deduplication
+  - [Umitools Dedup](#umitools-dedup) - Umi-based Read deduplication
+  - [Picard MarkDuplicates](#picard-markduplicates) - Read deduplication
 - [Feature-Barcode Quantification](#feature-barcode-quantification)
   - [IsoQuant](#isoquant) - Feature-barcode quantification (gene and transcript level)
   - [oarfish](#oarfish) - Feature-barcode quantification (transcript-level only)
@@ -121,7 +122,7 @@ The knee plot (an example is listed above) that is provided by BLAZE shows all b
           - `*.mapped_only.idxstats` : The idxstats file for the genome aligned bam containing only mapped reads.
           - `*.mapped_only.stats` : The stats file for the genome aligned bam containing only mapped reads.
         - `dedup/`
-          - `*.picard_markdedup.flagstat` : The flagstat file for the genome aligned bam containing deduplicated umis.
+          - `*.dedup.flagstat` : The flagstat file for the genome aligned bam containing deduplicated umis.
   - `transcriptome/`
     - `bam/`
       - `mapped_only/`
@@ -138,7 +139,7 @@ The knee plot (an example is listed above) that is provided by BLAZE shows all b
           - `*.mapped_only.idxstats` : The idxstats file for the transcriptome aligned bam containing only mapped reads.
           - `*.mapped_only.stats` : The stats file for the transcriptome aligned bam containing only mapped reads.
         - `dedup/`
-          - `*.picard_markdedup.flagstat` : The flagstat file for the transcriptome aligned bam containing deduplicated umis.
+          - `*.dedup.flagstat` : The flagstat file for the transcriptome aligned bam containing deduplicated umis.
 
 </details>
 
@@ -175,7 +176,7 @@ UMI quality tag = "UY"
 
 Please see [Barcode Correction](#barcode-correction) below for metadata added post-correction.
 
-### Deduplication
+### Umitools Dedup
 
 <details markdown="1">
 <summary>Output files</summary>
@@ -183,12 +184,35 @@ Please see [Barcode Correction](#barcode-correction) below for metadata added po
 - `<sample_identifier>/`
   - `genome/`
     - `bam/`
-      - `dedup/`
+      - `dedup_umitools/`
         - `*.dedup.bam` : The genome aligned bam containing corrected barcodes and deduplicated umis.
         - `*.dedup.bam.bai` : The genome aligned bam index for the bam containing corrected barcodes and deduplicated umis.
   - `transcriptome/`
     - `bam/`
-      - `dedup/`
+      - `dedup_umitools/`
+        - `*.dedup.bam` : The transcriptome aligned bam containing corrected barcodes and deduplicated umis.
+        - `*.dedup.bam.bai` : The transcriptome aligned bam index for the bam containing corrected barcodes and deduplicated umis.
+
+</details>
+
+[UMI-Tools](https://umi-tools.readthedocs.io/en/latest/reference/dedup.html) deduplicate reads based on the mapping co-ordinate and the UMI attached to the read. The identification of duplicate reads is performed in an error-aware manner by building networks of related UMIs.
+
+Users should note that `oarfish` requires input reads to be deduplicated. As a result, the `skip_dedup` option is only applicable to `IsoQuant`. By default, `scnanoseq` will perform deduplication for IsoQuant unless the `skip_dedup` option is explicitly enabled, while deduplication will always be executed for `oarfish` quantification.
+
+### Picard MarkDuplicates
+
+<details markdown="1">
+<summary>Output files</summary>
+
+- `<sample_identifier>/`
+  - `genome/`
+    - `bam/`
+      - `dedup_picard/`
+        - `*.dedup.bam` : The genome aligned bam containing corrected barcodes and deduplicated umis.
+        - `*.dedup.bam.bai` : The genome aligned bam index for the bam containing corrected barcodes and deduplicated umis.
+  - `transcriptome/`
+    - `bam/`
+      - `dedup_picard/`
         - `*.dedup.bam` : The transcriptome aligned bam containing corrected barcodes and deduplicated umis.
         - `*.dedup.bam.bai` : The transcriptome aligned bam index for the bam containing corrected barcodes and deduplicated umis.
 

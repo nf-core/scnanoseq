@@ -8,7 +8,7 @@ process SAMTOOLS_VIEW {
         'biocontainers/samtools:1.19.2--h50ea8bc_0' }"
 
     input:
-    tuple val(meta), path(input), path(index)
+    tuple val(meta), path(input), path(index), path(regions)
     tuple val(meta2), path(fasta)
     path qname
 
@@ -34,6 +34,7 @@ process SAMTOOLS_VIEW {
                     args.contains("--output-fmt bam") ? "bam" :
                     args.contains("--output-fmt cram") ? "cram" :
                     input.getExtension()
+    def region_names = regions ? "`cat ${regions}`" : ""
     if ("$input" == "${prefix}.${file_type}") error "Input and output names are the same, use \"task.ext.prefix\" to disambiguate!"
     """
     samtools \\
@@ -44,7 +45,8 @@ process SAMTOOLS_VIEW {
         $args \\
         -o ${prefix}.${file_type} \\
         $input \\
-        $args2
+        $args2 \\
+        $region_names
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

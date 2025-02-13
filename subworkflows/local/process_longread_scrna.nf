@@ -6,6 +6,7 @@
 include { ALIGN_LONGREADS         } from '../../subworkflows/local/align_longreads'
 include { QUANTIFY_SCRNA_ISOQUANT } from '../../subworkflows/local/quantify_scrna_isoquant'
 include { QUANTIFY_SCRNA_OARFISH  } from '../../subworkflows/local/quantify_scrna_oarfish'
+include { DEDUP_UMIS              } from '../../subworkflows/local/dedup_umis'
 
 // MODULES
 include { PICARD_MARKDUPLICATES                         } from '../../modules/nf-core/picard/markduplicates'
@@ -20,13 +21,15 @@ include { TAG_BARCODES } from '../../modules/local/tag_barcodes'
 
 workflow PROCESS_LONGREAD_SCRNA {
     take:
-        fasta        // channel: [ val(meta), path(fasta) ]
-        fai          // channel: [ val(meta), path(fai) ]
-        gtf          // channel: [ val(meta), path(gtf) ]
-        fastq        // channel: [ val(meta), path(fastq) ]
-        rseqc_bed    // channel: [ val(meta), path(rseqc_bed) ]
-        read_bc_info // channel: [ val(meta), path(read_barcode_info) ]
-        quant_list   // list: List of quantifiers to use
+        fasta          // channel: [ val(meta), path(fasta) ]
+        fai            // channel: [ val(meta), path(fai) ]
+        gtf            // channel: [ val(meta), path(gtf) ]
+        fastq          // channel: [ val(meta), path(fastq) ]
+        rseqc_bed      // channel: [ val(meta), path(rseqc_bed) ]
+        read_bc_info   // channel: [ val(meta), path(read_barcode_info) ]
+        quant_list     // list: List of quantifiers to use
+        dedup_tool     // str: Name of deduplication tool to use
+        genome_aligned // bool: Whether the bam is aligned to the genome or not
 
         skip_save_minimap2_index // bool: Skip saving the minimap2 index
         skip_qc                  // bool: Skip qc steps
@@ -88,48 +91,21 @@ workflow PROCESS_LONGREAD_SCRNA {
         ch_idxstats = Channel.empty()
 
         if (!skip_dedup) {
-            //
-            // MODULE: Picard Mark Duplicates
-            //
-            PICARD_MARKDUPLICATES(
-                TAG_BARCODES.out.tagged_bam,
+            DEDUP_UMIS (
                 fasta,
-                fai
+                fai,
+                gtf,
+                TAG_BARCODES.out.tagged_bam,
+                SAMTOOLS_INDEX_TAGGED.out.bai,
+                true,
+                genome_aligned,
+                'umitools'
             )
-            ch_versions = PICARD_MARKDUPLICATES.out.versions
 
-            //
-            // MODULE: Samtools Index
-            //
-            SAMTOOLS_INDEX_DEDUP ( PICARD_MARKDUPLICATES.out.bam )
-            ch_versions = SAMTOOLS_INDEX_DEDUP.out.versions
-
-            //
-            // MODULE: Samtools View
-            //
-            SAMTOOLS_FILTER_DEDUP (
-                PICARD_MARKDUPLICATES.out.bam.join(SAMTOOLS_INDEX_DEDUP.out.bai),
-                [[],[]],
-                []
-            )
-            ch_bam = SAMTOOLS_FILTER_DEDUP.out.bam
-            ch_bai = SAMTOOLS_FILTER_DEDUP.out.bai
-            ch_versions = SAMTOOLS_FILTER_DEDUP.out.versions
-
-            //
-            // MODULE: Samtools Flagstat
-            //
-            SAMTOOLS_FLAGSTAT_DEDUP (
-                ch_bam
-                    .join( SAMTOOLS_INDEX_DEDUP.out.bai, by: [0])
-                    .map{
-                        meta, bam, bai->
-                            meta = [ 'id': meta.id ] 
-                            [ meta, bam, bai]
-                    }
-            )
-            ch_flagstat = SAMTOOLS_FLAGSTAT_DEDUP.out.flagstat
-            ch_versions = ch_versions.mix(SAMTOOLS_FLAGSTAT_TAGGED.out.versions)
+            ch_bam = DEDUP_UMIS.out.dedup_bam
+            ch_bai = DEDUP_UMIS.out.dedup_bai
+            ch_flagstat = DEDUP_UMIS.out.dedup_flagstat
+            ch_versions = DEDUP_UMIS.out.versions
         }
 
         //

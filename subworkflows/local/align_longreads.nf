@@ -65,7 +65,9 @@ workflow ALIGN_LONGREADS {
         // acquire only mapped reads from bam for downstream processing
         // NOTE: some QCs steps are performed on the full BAM
         SAMTOOLS_FILTER_MAPPED (
-            BAM_SORT_STATS_SAMTOOLS.out.bam.join( BAM_SORT_STATS_SAMTOOLS.out.bai, by: 0 ),
+            BAM_SORT_STATS_SAMTOOLS.out.bam
+                .join( BAM_SORT_STATS_SAMTOOLS.out.bai, by: 0 )
+                .combine(["$projectDir/assets/dummy_file.txt"]),
             [[],[]],
             []
         )
