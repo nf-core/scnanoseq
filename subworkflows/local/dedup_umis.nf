@@ -1,5 +1,5 @@
 //
-// Rum UMI Dedupliation and optionally split the bam for better parallel processing
+// Rum UMI Deduplication and optionally split the bam for better parallel processing
 //
 
 //
@@ -28,7 +28,7 @@ workflow DEDUP_UMIS {
         in_bam          // channel: [ val(meta), path(bam) ]
         in_bai          // channel: [ val(meta), path(bai) ]
         split_bam       // bool: Split the bam
-        genome_aligned  // bools: If the bam is aligned to the genome or not
+        genome_aligned  // bool: If the bam is aligned to the genome or not
         dedup_tool      // str: Name of deduplication tool to use
         fasta_delimiter // str: Delimiter character used in the sequence id in fasta
 

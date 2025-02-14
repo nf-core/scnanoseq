@@ -19,7 +19,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 - [Alignment Post-processing](#alignment-post-processing)
   - [Samtools](#samtools) - Sort and index alignments and make alignment qc
   - [Barcode Tagging](#barcode-tagging) - Barcode tagging with quality metrics and barcode information
-  - [Umitools Dedup](#umitools-dedup) - Umi-based Read deduplication
+  - [UMI-tools Dedup](#umi-tools-dedup) - UMI-based Read deduplication
   - [Picard MarkDuplicates](#picard-markduplicates) - Read deduplication
 - [Feature-Barcode Quantification](#feature-barcode-quantification)
   - [IsoQuant](#isoquant) - Feature-barcode quantification (gene and transcript level)
@@ -176,7 +176,7 @@ UMI quality tag = "UY"
 
 Please see [Barcode Correction](#barcode-correction) below for metadata added post-correction.
 
-### Umitools Dedup
+### UMI-tools Dedup
 
 <details markdown="1">
 <summary>Output files</summary>
