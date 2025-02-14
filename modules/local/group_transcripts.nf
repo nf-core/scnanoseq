@@ -18,13 +18,14 @@ process GROUP_TRANSCRIPTS {
     task.ext.when == null || task.ext.when
 
     script:
-    def args   = task.ext.args ?: ''
+    def args      = task.ext.args ?: ''
+    def delim_arg = delimiter ? "-d '${delimiter}'" : ''
 
     """
     group_transcripts.sh \\
-        -f $fasta \\
-        -g $gtf \\
-        -d "$delimiter"
+        -f ${fasta} \\
+        -g ${gtf} \\
+        ${delim_arg}
     
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

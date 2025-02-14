@@ -21,15 +21,16 @@ include { TAG_BARCODES } from '../../modules/local/tag_barcodes'
 
 workflow PROCESS_LONGREAD_SCRNA {
     take:
-        fasta          // channel: [ val(meta), path(fasta) ]
-        fai            // channel: [ val(meta), path(fai) ]
-        gtf            // channel: [ val(meta), path(gtf) ]
-        fastq          // channel: [ val(meta), path(fastq) ]
-        rseqc_bed      // channel: [ val(meta), path(rseqc_bed) ]
-        read_bc_info   // channel: [ val(meta), path(read_barcode_info) ]
-        quant_list     // list: List of quantifiers to use
-        dedup_tool     // str: Name of deduplication tool to use
-        genome_aligned // bool: Whether the bam is aligned to the genome or not
+        fasta           // channel: [ val(meta), path(fasta) ]
+        fai             // channel: [ val(meta), path(fai) ]
+        gtf             // channel: [ val(meta), path(gtf) ]
+        fastq           // channel: [ val(meta), path(fastq) ]
+        rseqc_bed       // channel: [ val(meta), path(rseqc_bed) ]
+        read_bc_info    // channel: [ val(meta), path(read_barcode_info) ]
+        quant_list      // list: List of quantifiers to use
+        dedup_tool      // str: Name of deduplication tool to use
+        genome_aligned  // bool: Whether the bam is aligned to the genome or not
+        fasta_delimiter // str: Delimiter character used in sequence id in fasta
 
         skip_save_minimap2_index // bool: Skip saving the minimap2 index
         skip_qc                  // bool: Skip qc steps
@@ -87,7 +88,6 @@ workflow PROCESS_LONGREAD_SCRNA {
         ch_bam = Channel.empty()
         ch_bai = Channel.empty()
         ch_flagstat = Channel.empty()
-        ch_dedup_log = Channel.empty()
         ch_idxstats = Channel.empty()
 
         if (!skip_dedup) {
@@ -97,9 +97,10 @@ workflow PROCESS_LONGREAD_SCRNA {
                 gtf,
                 TAG_BARCODES.out.tagged_bam,
                 SAMTOOLS_INDEX_TAGGED.out.bai,
-                true,
+                true, // Used to split the bam
                 genome_aligned,
-                'umitools'
+                dedup_tool,
+                fasta_delimiter
             )
 
             ch_bam = DEDUP_UMIS.out.dedup_bam

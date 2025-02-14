@@ -22,14 +22,15 @@ include { BAM_SORT_STATS_SAMTOOLS } from '../../subworkflows/nf-core/bam_sort_st
 
 workflow DEDUP_UMIS {
     take:
-        fasta          // channel: [ val(meta), path(fasta) ]
-        fai            // channel: [ val(meta), path(fai) ]
-        gtf            // channel: [ val(meta), path(gtf) ]
-        in_bam         // channel: [ val(meta), path(bam) ]
-        in_bai         // channel: [ val(meta), path(bai) ]
-        split_bam      // bool: Split the bam
-        genome_aligned // bools: If the bam is aligned to the genome or not
-        dedup_tool     // str: Name of deduplication tool to use
+        fasta           // channel: [ val(meta), path(fasta) ]
+        fai             // channel: [ val(meta), path(fai) ]
+        gtf             // channel: [ val(meta), path(gtf) ]
+        in_bam          // channel: [ val(meta), path(bam) ]
+        in_bai          // channel: [ val(meta), path(bai) ]
+        split_bam       // bool: Split the bam
+        genome_aligned  // bools: If the bam is aligned to the genome or not
+        dedup_tool      // str: Name of deduplication tool to use
+        fasta_delimiter // str: Delimiter character used in the sequence id in fasta
 
     main:
         ch_versions = Channel.empty()
@@ -69,7 +70,7 @@ workflow DEDUP_UMIS {
                 GROUP_TRANSCRIPTS (
                     fasta,
                     gtf,
-                    "|"
+                    fasta_delimiter
                 )
                 ch_versions = ch_versions.mix(GROUP_TRANSCRIPTS.out.versions)
 
@@ -180,7 +181,6 @@ workflow DEDUP_UMIS {
     emit:
         versions       = ch_versions
         dedup_bam      = ch_dedup_bam 
-        dedup_log      = Channel.empty() 
         dedup_bai      = ch_dedup_bai
         dedup_flagstat = BAM_STATS_SAMTOOLS.out.flagstat
 
