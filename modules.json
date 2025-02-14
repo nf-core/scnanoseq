@@ -58,6 +58,11 @@
                         "installed_by": ["modules"],
                         "patch": "modules/nf-core/nanoplot/nanoplot.diff"
                     },
+                    "picard/markduplicates": {
+                        "branch": "master",
+                        "git_sha": "49f4e50534fe4b64101e62ea41d5dc43b1324358",
+                        "installed_by": ["modules"]
+                    },
                     "pigz/compress": {
                         "branch": "master",
                         "git_sha": "c00055a0b13d622b4f1f51a8e5be31deaf99ded7",
@@ -112,7 +117,8 @@
                     "samtools/view": {
                         "branch": "master",
                         "git_sha": "0bd7d2333a88483aa0476acea172e9f5f6dd83bb",
-                        "installed_by": ["modules"]
+                        "installed_by": ["modules"],
+                        "patch": "modules/nf-core/samtools/view/samtools-view.diff"
                     },
                     "toulligqc": {
                         "branch": "master",
@@ -122,7 +128,7 @@
                     },
                     "umitools/dedup": {
                         "branch": "master",
-                        "git_sha": "3bd4f34e3093c2a16e6a8eefc22242b9b94641db",
+                        "git_sha": "81880787133db07d9b4c1febd152c090eb8325dc",
                         "installed_by": ["modules"]
                     }
                 }

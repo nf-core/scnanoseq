@@ -56,8 +56,8 @@
                     "mimetype": "text/plain",
                     "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
                     "description": "Path to genome FASTA file.",
-                    "help_text": "This parameter is *mandatory* if `--quantifier \"both\"` or `--quantifier \"isoquant\"` is selected. ",
-                    "fa_icon": "far fa-file-code"
+                    "help_text": "This parameter is *mandatory* if you wish to use `isoquant` as a quantifier",
+                    "fa_icon": "fas fa-book-open"
                 },
                 "transcript_fasta": {
                     "type": "string",
@@ -65,12 +65,12 @@
                     "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
                     "format": "file-path",
                     "mimetype": "text/plain",
-                    "fa_icon": "far fa-file-code",
-                    "help_text": "This parameter is *mandatory* if `--quantifier \"both\"` or `--quantifier \"oarfish\"` is selected. "
+                    "fa_icon": "fas fa-book-open",
+                    "help_text": "This parameter is *mandatory* if you wish to use `oarfish` as a quantifier"
                 },
                 "gtf": {
                     "type": "string",
-                    "fa_icon": "far fa-file-code",
+                    "fa_icon": "fas fa-book-open",
                     "description": "Path to GTF file.",
                     "format": "file-path",
                     "pattern": "^\\S+\\.gtf(\\.gz)?$"
@@ -96,6 +96,10 @@
                     "fa_icon": "fas fa-ban",
                     "hidden": true,
                     "default": "s3://ngi-igenomes/igenomes/"
+                },
+                "fasta_delimiter": {
+                    "type": "string",
+                    "description": "This is the delimiter the FASTA uses in the sequence identifier to separate the string."
                 }
             },
             "required": ["gtf"]
@@ -158,10 +162,15 @@
                     "description": "Specify the format for the barcode+umi. This parameter also defines a default barcode whitelist for the pipeline to use for barcode calling, this can be overidden with the 'whitelist' parameter.",
                     "enum": ["10X_3v3", "10X_5v2"],
                     "fa_icon": "fas fa-barcode"
+                },
+                "dedup_tool": {
+                    "type": "string",
+                    "description": "Specify which tool to be used for deduplication (Options: picard, umitools)",
+                    "enum": ["umitools", "picard"]
                 }
             },
             "fa_icon": "fas fa-microscope",
-            "required": ["barcode_format"]
+            "required": ["barcode_format", "dedup_tool"]
         },
         "mapping": {
             "title": "Mapping",
@@ -207,7 +216,7 @@
                 },
                 "quantifier": {
                     "type": "string",
-                    "description": "Provide a comma-delimited options of quantifiers for the pipeline to use. Options: (isoquant, oarfish)",
+                    "description": "Provide a comma-delimited options of quantifiers for the pipeline to use. Available tools: isoquant, oarfish",
                     "pattern": "^(oarfish|isoquant)(,(oarfish|isoquant))*$"
                 }
             },

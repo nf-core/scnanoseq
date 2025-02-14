@@ -32,7 +32,6 @@ top_modules:
   - samtools
   - nanostat
   - rseqc
-  - umitools
   - fastqc:
       name: "FastQC (raw)"
       anchor: "fastqc"

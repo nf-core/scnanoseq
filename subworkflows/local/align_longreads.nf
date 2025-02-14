@@ -7,9 +7,9 @@ include { BAM_SORT_STATS_SAMTOOLS                                     } from '..
 include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_FILTERED } from '../../subworkflows/nf-core/bam_sort_stats_samtools/main'
 
 // MODULES
-include { MINIMAP2_INDEX         } from '../../modules/nf-core/minimap2/index'
-include { MINIMAP2_ALIGN         } from '../../modules/nf-core/minimap2/align'
-include { SAMTOOLS_VIEW          } from '../../modules/nf-core/samtools/view'
+include { MINIMAP2_INDEX                          } from '../../modules/nf-core/minimap2/index'
+include { MINIMAP2_ALIGN                          } from '../../modules/nf-core/minimap2/align'
+include { SAMTOOLS_VIEW as SAMTOOLS_FILTER_MAPPED } from '../../modules/nf-core/samtools/view'
 
 include { RSEQC_READDISTRIBUTION } from '../../modules/nf-core/rseqc/readdistribution/main'
 include { NANOCOMP               } from '../../modules/nf-core/nanocomp/main'
@@ -64,14 +64,16 @@ workflow ALIGN_LONGREADS {
 
         // acquire only mapped reads from bam for downstream processing
         // NOTE: some QCs steps are performed on the full BAM
-        SAMTOOLS_VIEW (
-            BAM_SORT_STATS_SAMTOOLS.out.bam.join( BAM_SORT_STATS_SAMTOOLS.out.bai, by: 0 ),
+        SAMTOOLS_FILTER_MAPPED (
+            BAM_SORT_STATS_SAMTOOLS.out.bam
+                .join( BAM_SORT_STATS_SAMTOOLS.out.bai, by: 0 )
+                .combine(["$projectDir/assets/dummy_file.txt"]),
             [[],[]],
             []
         )
 
-        ch_minimap_mapped_only_bam = SAMTOOLS_VIEW.out.bam
-        ch_versions = ch_versions.mix(SAMTOOLS_VIEW.out.versions)
+        ch_minimap_mapped_only_bam = SAMTOOLS_FILTER_MAPPED.out.bam
+        ch_versions = ch_versions.mix(SAMTOOLS_FILTER_MAPPED.out.versions)
 
         BAM_SORT_STATS_SAMTOOLS_FILTERED (
             ch_minimap_mapped_only_bam,
