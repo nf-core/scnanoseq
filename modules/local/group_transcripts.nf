@@ -28,7 +28,7 @@ process GROUP_TRANSCRIPTS {
         -f ${fasta} \\
         -g ${gtf} \\
         ${delim_arg}
-    
+
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         cat: \$(echo \$(cat --version) | sed 's/^.*cat (GNU coreutils) //; s/ .*//')

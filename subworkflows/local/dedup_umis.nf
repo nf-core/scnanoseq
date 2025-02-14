@@ -62,7 +62,7 @@ workflow DEDUP_UMIS {
                             ]
                             [ meta, bam ]
                     }
-    
+
             } else {
                 //
                 // MODULE: Group Transcripts
@@ -180,7 +180,7 @@ workflow DEDUP_UMIS {
 
     emit:
         versions       = ch_versions
-        dedup_bam      = ch_dedup_bam 
+        dedup_bam      = ch_dedup_bam
         dedup_bai      = ch_dedup_bai
         dedup_flagstat = BAM_STATS_SAMTOOLS.out.flagstat
 
