@@ -103,6 +103,7 @@ workflow DEDUP_UMIS {
             )
             ch_undedup_bam = BAM_SORT_STATS_SAMTOOLS.out.bam
             ch_undedup_bai = BAM_SORT_STATS_SAMTOOLS.out.bai
+            ch_versions = ch_versions.mix(BAM_SORT_STATS_SAMTOOLS.out.versions)
 
         }
         else {
