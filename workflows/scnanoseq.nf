@@ -418,13 +418,15 @@ workflow SCNANOSEQ {
             ch_rseqc_bed,
             ch_corrected_bc_info,
             genome_quants,
+            params.dedup_tool,
+            true, // Used to indicate the bam is genome aligned
+            params.fasta_delimiter,
             params.skip_save_minimap2_index,
             params.skip_qc,
             params.skip_rseqc,
             params.skip_bam_nanocomp,
             params.skip_seurat,
-            params.skip_dedup,
-            true
+            params.skip_dedup
         )
         ch_versions = ch_versions.mix(PROCESS_LONGREAD_SCRNA_GENOME.out.versions)
 
@@ -475,13 +477,15 @@ workflow SCNANOSEQ {
             ch_rseqc_bed,
             ch_corrected_bc_info,
             transcript_quants,
+            params.dedup_tool,
+            false, // Indicates this is NOT genome aligned
+            params.fasta_delimiter,
             params.skip_save_minimap2_index,
             params.skip_qc,
-            true,
-            params.skip_bam_nanocomp,
+            true, // RSeQC does not work well with transcriptome alignments
+            true, // Nanocomp does not work well with transcriptome alignments
             params.skip_seurat,
-            false,
-            false
+            false // Oarfish requires deduplication, so cannot skip it
         )
 
         ch_versions = ch_versions.mix(PROCESS_LONGREAD_SCRNA_TRANSCRIPT.out.versions)
@@ -501,9 +505,6 @@ workflow SCNANOSEQ {
         )
 
         if (!params.skip_dedup) {
-            ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
-                PROCESS_LONGREAD_SCRNA_TRANSCRIPT.out.dedup_log.collect{it[1]}.ifEmpty([])
-            )
             ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
                 PROCESS_LONGREAD_SCRNA_TRANSCRIPT.out.dedup_flagstat.collect{it[1]}.ifEmpty([])
             )

@@ -60,12 +60,13 @@ nextflow run nf-core/scnanoseq \
   --genome_fasta /path/to/genome.fa \
   --transcript_fasta /path/to/transcriptome.fa \
   --gtf /path/to/file.gtf \
-  --quantifier "isoquant|oarfish|isoquant,oarfish" \
+  --quantifier "isoquant,oarfish" \
   --barcode_format 10X_3v3 \
   -profile <docker/singularity/institute>
 ```
 
 Please note that while the above command specifies both transcriptome and genome fasta files, only one is needed for the pipeline and is dependent on which quantifier you wish to use.
+Additionally, for the `quantifier` parameter in the above command, we've listed the quantifiers as a comma-delimited string. It is possible to only use one quantifier, and can be accomplished by just providing the name of the quantifying tool you wish to run as a single value, i.e. providing `oarfish` if you only wish to run `oarfish`.
 
 Note that the pipeline will create the following files in your working directory:
 

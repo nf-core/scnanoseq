@@ -10,10 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Inputs for IsoQuant are split on chromosome to allow for faster processing
 - The read counts QC metric is now able to leverage NanoPlot counts if FastQC is skipped
 - Added `oarfish` as an option for quantification
+- Added `picard markdupes` as an option for deduplication
 
 ### Fixes
 
-- The 'Post Trim Read QC' and 'Post Extract Read QC' nodes on the metro diagram have been placed in correct locations
+- The 'Post Trim Read QC' and 'Post Extract Read QC' nodes on the metro diagram have been placed in correct locations (closes issue #36)
 - The BLAZE process in the example config has been corrected to use cpus instead of `--threads`
 
 ### Software dependencies

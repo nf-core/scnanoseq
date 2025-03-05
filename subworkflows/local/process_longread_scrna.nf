@@ -6,32 +6,38 @@
 include { ALIGN_LONGREADS         } from '../../subworkflows/local/align_longreads'
 include { QUANTIFY_SCRNA_ISOQUANT } from '../../subworkflows/local/quantify_scrna_isoquant'
 include { QUANTIFY_SCRNA_OARFISH  } from '../../subworkflows/local/quantify_scrna_oarfish'
-include { UMITOOLS_DEDUP_SPLIT    } from '../../subworkflows/local/umitools_dedup_split'
+include { DEDUP_UMIS              } from '../../subworkflows/local/dedup_umis'
 
 // MODULES
-include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_TAGGED       } from '../../modules/nf-core/samtools/index'
+include { PICARD_MARKDUPLICATES                         } from '../../modules/nf-core/picard/markduplicates'
 include { SAMTOOLS_FLAGSTAT as SAMTOOLS_FLAGSTAT_TAGGED } from '../../modules/nf-core/samtools/flagstat'
+include { SAMTOOLS_FLAGSTAT as SAMTOOLS_FLAGSTAT_DEDUP  } from '../../modules/nf-core/samtools/flagstat'
+include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_TAGGED       } from '../../modules/nf-core/samtools/index'
+include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_DEDUP        } from '../../modules/nf-core/samtools/index'
+include { SAMTOOLS_VIEW as SAMTOOLS_FILTER_DEDUP        } from '../../modules/nf-core/samtools/view'
 
 include { TAG_BARCODES } from '../../modules/local/tag_barcodes'
 
 
 workflow PROCESS_LONGREAD_SCRNA {
     take:
-        fasta        // channel: [ val(meta), path(fasta) ]
-        fai          // channel: [ val(meta), path(fai) ]
-        gtf          // channel: [ val(meta), path(gtf) ]
-        fastq        // channel: [ val(meta), path(fastq) ]
-        rseqc_bed    // channel: [ val(meta), path(rseqc_bed) ]
-        read_bc_info // channel: [ val(meta), path(read_barcode_info) ]
-        quant_list   // list: List of quantifiers to use
+        fasta           // channel: [ val(meta), path(fasta) ]
+        fai             // channel: [ val(meta), path(fai) ]
+        gtf             // channel: [ val(meta), path(gtf) ]
+        fastq           // channel: [ val(meta), path(fastq) ]
+        rseqc_bed       // channel: [ val(meta), path(rseqc_bed) ]
+        read_bc_info    // channel: [ val(meta), path(read_barcode_info) ]
+        quant_list      // list: List of quantifiers to use
+        dedup_tool      // str: Name of deduplication tool to use
+        genome_aligned  // bool: Whether the bam is aligned to the genome or not
+        fasta_delimiter // str: Delimiter character used in sequence id in fasta
 
         skip_save_minimap2_index // bool: Skip saving the minimap2 index
         skip_qc                  // bool: Skip qc steps
         skip_rseqc               // bool: Skip RSeQC
         skip_bam_nanocomp        // bool: Skip Nanocomp
         skip_seurat              // bool: Skip seurat qc steps
-        skip_dedup               // bool: Skip umitools deduplication
-        split_umitools_bam       // bool: Skip splitting on chromsome for umitools
+        skip_dedup               // bool: Skip deduplication
 
     main:
         ch_versions = Channel.empty()
@@ -79,35 +85,28 @@ workflow PROCESS_LONGREAD_SCRNA {
         )
         ch_versions = ch_versions.mix(SAMTOOLS_FLAGSTAT_TAGGED.out.versions)
 
-        //
-        // SUBWORKFLOW: UMI Deduplication
-        //
         ch_bam = Channel.empty()
         ch_bai = Channel.empty()
         ch_flagstat = Channel.empty()
-        ch_dedup_log = Channel.empty()
         ch_idxstats = Channel.empty()
 
         if (!skip_dedup) {
-            UMITOOLS_DEDUP_SPLIT(
+            DEDUP_UMIS (
                 fasta,
                 fai,
+                gtf,
                 TAG_BARCODES.out.tagged_bam,
                 SAMTOOLS_INDEX_TAGGED.out.bai,
-                split_umitools_bam
+                true, // Used to split the bam
+                genome_aligned,
+                dedup_tool,
+                fasta_delimiter
             )
 
-            ch_bam = UMITOOLS_DEDUP_SPLIT.out.dedup_bam
-            ch_bai = UMITOOLS_DEDUP_SPLIT.out.dedup_bai
-            ch_log = UMITOOLS_DEDUP_SPLIT.out.dedup_log
-            ch_flagstat = UMITOOLS_DEDUP_SPLIT.out.dedup_flagstat
-            ch_idxstats = UMITOOLS_DEDUP_SPLIT.out.dedup_idxstats
-
-            ch_versions = ch_versions.mix(UMITOOLS_DEDUP_SPLIT.out.versions)
-        } else {
-            ch_bam = TAG_BARCODES.out.tagged_bam
-            ch_bai = SAMTOOLS_INDEX_TAGGED.out.bai
-            ch_flagstat = SAMTOOLS_FLAGSTAT_TAGGED.out.flagstat
+            ch_bam = DEDUP_UMIS.out.dedup_bam
+            ch_bai = DEDUP_UMIS.out.dedup_bai
+            ch_flagstat = DEDUP_UMIS.out.dedup_flagstat
+            ch_versions = DEDUP_UMIS.out.versions
         }
 
         //
@@ -168,7 +167,6 @@ workflow PROCESS_LONGREAD_SCRNA {
         // Deduplication results
         dedup_bam                = ch_bam
         dedup_bai                = ch_bai
-        dedup_log                = ch_dedup_log
         dedup_flagstat           = ch_flagstat
         dedup_idxstats           = ch_idxstats
 

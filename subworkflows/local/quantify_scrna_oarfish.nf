@@ -37,7 +37,8 @@ workflow QUANTIFY_SCRNA_OARFISH {
                     .join(OARFISH.out.mtx, by: [0])
                     .map{
                         meta,features,barcodes,mtx ->
-                            [ meta, [ features, barcodes, mtx ]]
+                            new_meta = [ 'id' : meta.id ]
+                            [ new_meta, [ features, barcodes, mtx ]]
                     },
                 in_flagstat,
                 "MEX"
