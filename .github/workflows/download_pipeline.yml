@@ -12,15 +12,9 @@ on:
         required: true
         default: "dev"
   pull_request:
-    types:
-      - opened
-      - edited
-      - synchronize
     branches:
       - master
-  pull_request_target:
-    branches:
-      - master
+      - main
 
 env:
   NXF_ANSI_LOG: false
