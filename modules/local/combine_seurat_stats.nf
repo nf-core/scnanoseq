@@ -29,4 +29,14 @@ process COMBINE_SEURAT_STATS {
         cat: \$(echo \$(cat --version) | sed 's/^.*cat (GNU coreutils) //; s/ .*//')
     END_VERSIONS
     """
+
+    stub:
+    """
+    touch combined_seurat.tsv
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        cat: \$(echo \$(cat --version) | sed 's/^.*cat (GNU coreutils) //; s/ .*//')
+    END_VERSIONS
+    """
 }

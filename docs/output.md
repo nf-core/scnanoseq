@@ -19,10 +19,11 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 - [Alignment Post-processing](#alignment-post-processing)
   - [Samtools](#samtools) - Sort and index alignments and make alignment qc
   - [Barcode Tagging](#barcode-tagging) - Barcode tagging with quality metrics and barcode information
-  - [Barcode Correction](#barcode-correction) - Barcode whitelist correction
-  - [UMI Deduplication](#umi-deduplication) - UMI-based deduplication
+  - [UMI-tools Dedup](#umi-tools-dedup) - UMI-based Read deduplication
+  - [Picard MarkDuplicates](#picard-markduplicates) - Read deduplication
 - [Feature-Barcode Quantification](#feature-barcode-quantification)
   - [IsoQuant](#isoquant) - Feature-barcode quantification (gene and transcript level)
+  - [oarfish](#oarfish) - Feature-barcode quantification (transcript-level only)
   - [Seurat](#seurat) - Feature-barcode matrix QC
 - [Other steps](#other-steps)
   - [UCSC](#ucsc) - Annotation BED file
@@ -82,10 +83,16 @@ The knee plot (an example is listed above) that is provided by BLAZE shows all b
 <summary>Output files</summary>
 
 - `<sample_identifier>/`
-  - `bam/`
-    - `original/`
-      - `*.sorted.bam` : The mapped and sorted bam.
-      - `*.sorted.bam.bai` : The bam index for the mapped and sorted bam.
+  - `genome`
+    - `bam/`
+      - `original/`
+        - `*.sorted.bam` : The genome mapped and sorted bam.
+        - `*.sorted.bam.bai` : The bam index for the genome mapped and sorted bam.
+  - `transcriptome`
+    - `bam/`
+      - `original/`
+      - `*.sorted.bam` : The transcriptome mapped and sorted bam.
+      - `*.sorted.bam.bai` : The bam index for the transcriptome mapped and sorted bam.
 
 </details>
 
@@ -99,28 +106,40 @@ The knee plot (an example is listed above) that is provided by BLAZE shows all b
 <summary>Output files</summary>
 
 - `<sample_identifier>/`
-  - `bam/`
-    - `mapped_only/`
-      - `*.sorted.bam` : The bam contaning only reads that were able to be mapped.
-      - `*.sorted.bam.bai` : The bam index for the bam containing only reads that were able to be mapped.
-  - `qc/`
-    - `samtools/`
-      - `minimap/`
-        - `*.minimap.flagstat` : The flagstat file for the bam obtained from minimap.
-        - `*.minimap.idxstats` : The idxstats file for the bam obtained from minimap.
-        - `*.minimap.stats` : The stats file for the bam obtained from minimap.
+  - `genome/`
+    - `bam/`
       - `mapped_only/`
-        - `*.mapped_only.flagstat` : The flagstat file for the bam containing only mapped reads.
-        - `*.mapped_only.idxstats` : The idxstats file for the bam containing only mapped reads.
-        - `*.mapped_only.stats` : The stats file for the bam containing only mapped reads.
-      - `corrected/`
-        - `*.corrected.flagstat` : The flagstat file for the bam containing corrected barcodes.
-        - `*.corrected.idxstats` : The idxstat file for the bam containing corrected barcodes.
-        - `*.corrected.stats` : The stat file for the bam containing corrected barcodes.
-      - `dedup/`
-        - `*.dedup.flagstat` : The flagstat file for the bam containing deduplicated umis.
-        - `*.dedup.idxstats` : The idxstats file for the bam containing deduplicated umis.
-        - `*.dedup.stats` : The stats file for the bam containing deduplicated umis.
+        - `*.sorted.bam` : The genome aligned bam contaning only reads that were able to be mapped.
+        - `*.sorted.bam.bai` : The genome aligned bam index for the bam containing only reads that were able to be mapped.
+    - `qc/`
+      - `samtools/`
+        - `minimap/`
+          - `*.minimap.flagstat` : The flagstat file for the genome aligned bam obtained from minimap.
+          - `*.minimap.idxstats` : The idxstats file for the genome aligned bam obtained from minimap.
+          - `*.minimap.stats` : The stats file for the genome aligned bam obtained from minimap.
+        - `mapped_only/`
+          - `*.mapped_only.flagstat` : The flagstat file for the genome aligned bam containing only mapped reads.
+          - `*.mapped_only.idxstats` : The idxstats file for the genome aligned bam containing only mapped reads.
+          - `*.mapped_only.stats` : The stats file for the genome aligned bam containing only mapped reads.
+        - `dedup/`
+          - `*.dedup.flagstat` : The flagstat file for the genome aligned bam containing deduplicated umis.
+  - `transcriptome/`
+    - `bam/`
+      - `mapped_only/`
+        - `*.sorted.bam` : The transcriptome aligned bam contaning only reads that were able to be mapped.
+        - `*.sorted.bam.bai` : The transcriptome aligned bam index for the bam containing only reads that were able to be mapped.
+    - `qc/`
+      - `samtools/`
+        - `minimap/`
+          - `*.minimap.flagstat` : The flagstat file for the transcriptome aligned bam obtained from minimap.
+          - `*.minimap.idxstats` : The idxstats file for the transcriptome aligned bam obtained from minimap.
+          - `*.minimap.stats` : The stats file for the transcriptome aligned bam obtained from minimap.
+        - `mapped_only/`
+          - `*.mapped_only.flagstat` : The flagstat file for the transcriptome aligned bam containing only mapped reads.
+          - `*.mapped_only.idxstats` : The idxstats file for the transcriptome aligned bam containing only mapped reads.
+          - `*.mapped_only.stats` : The stats file for the transcriptome aligned bam containing only mapped reads.
+        - `dedup/`
+          - `*.dedup.flagstat` : The flagstat file for the transcriptome aligned bam containing deduplicated umis.
 
 </details>
 
@@ -135,9 +154,14 @@ The knee plot (an example is listed above) that is provided by BLAZE shows all b
 <summary>Output files</summary>
 
 - `<sample_identifier>/`
-  - `bam/`
-    - `barcode_tagged/`
-      - `*.tagged.bam` : The bam containing tagged barcode and UMI metadata.
+  - `genome/`
+    - `bam/`
+      - `barcode_tagged/`
+        - `*.tagged.bam` : The genome aligned bam containing tagged barcode and UMI metadata.
+  - `transcriptome/`
+    - `bam/`
+      - `barcode_tagged/`
+        - `*.tagged.bam` : The transcriptome aligned bam containing tagged barcode and UMI metadata.
 
 </details>
 
@@ -152,35 +176,51 @@ UMI quality tag = "UY"
 
 Please see [Barcode Correction](#barcode-correction) below for metadata added post-correction.
 
-### Barcode Correction
+### UMI-tools Dedup
 
 <details markdown="1">
 <summary>Output files</summary>
 
 - `<sample_identifier>/`
-  - `bam/`
-    - `corrected/`
-      - `*.corrected.bam` : The bam containing corrected barcodes.
-      - `*.corected.bam.bai` : The bam index for the bam containing corrected barcodes.
+  - `genome/`
+    - `bam/`
+      - `dedup_umitools/`
+        - `*.dedup.bam` : The genome aligned bam containing corrected barcodes and deduplicated umis.
+        - `*.dedup.bam.bai` : The genome aligned bam index for the bam containing corrected barcodes and deduplicated umis.
+  - `transcriptome/`
+    - `bam/`
+      - `dedup_umitools/`
+        - `*.dedup.bam` : The transcriptome aligned bam containing corrected barcodes and deduplicated umis.
+        - `*.dedup.bam.bai` : The transcriptome aligned bam index for the bam containing corrected barcodes and deduplicated umis.
 
 </details>
 
-Barcode correction is a custom script that uses the whitelist generated by BLAZE in order to correct barcodes that are not on the whitelist into a whitelisted barcode. During this step, an additional BAM tag is added, `CB`, to indicate a barcode sequence that is error-corected.
+[UMI-Tools](https://umi-tools.readthedocs.io/en/latest/reference/dedup.html) deduplicate reads based on the mapping co-ordinate and the UMI attached to the read. The identification of duplicate reads is performed in an error-aware manner by building networks of related UMIs.
 
-### UMI Deduplication
+Users should note that `oarfish` requires input reads to be deduplicated. As a result, the `skip_dedup` option is only applicable to `IsoQuant`. By default, `scnanoseq` will perform deduplication for IsoQuant unless the `skip_dedup` option is explicitly enabled, while deduplication will always be executed for `oarfish` quantification.
+
+### Picard MarkDuplicates
 
 <details markdown="1">
 <summary>Output files</summary>
 
 - `<sample_identifier>/`
-  - `bam/`
-    - `dedup/`
-      - `*.dedup.bam` : The bam containing corrected barcodes and deduplicated umis.
-      - `*.dedup.bam.bai` : The bam index for the bam containing corrected barcodes and deduplicated umis.
+  - `genome/`
+    - `bam/`
+      - `dedup_picard/`
+        - `*.dedup.bam` : The genome aligned bam containing corrected barcodes and deduplicated umis.
+        - `*.dedup.bam.bai` : The genome aligned bam index for the bam containing corrected barcodes and deduplicated umis.
+  - `transcriptome/`
+    - `bam/`
+      - `dedup_picard/`
+        - `*.dedup.bam` : The transcriptome aligned bam containing corrected barcodes and deduplicated umis.
+        - `*.dedup.bam.bai` : The transcriptome aligned bam index for the bam containing corrected barcodes and deduplicated umis.
 
 </details>
 
-[UMI-Tools](https://umi-tools.readthedocs.io/en/latest/reference/dedup.html) deduplicate reads based on the mapping co-ordinate and the UMI attached to the read. The identification of duplicate reads is performed in an error-aware manner by building networks of related UMIs
+[Picard MarkDuplicates](https://gatk.broadinstitute.org/hc/en-us/articles/360037052812-MarkDuplicates-Picard) locates and tags duplicate reads in a BAM or SAM file.
+
+Users should note that `oarfish` requires input reads to be deduplicated. As a result, the `skip_dedup` option is only applicable to `IsoQuant`. By default, `scnanoseq` will perform deduplication for IsoQuant unless the `skip_dedup` option is explicitly enabled, while deduplication will always be executed for `oarfish` quantification.
 
 ## Feature-Barcode Quantification
 
@@ -190,13 +230,36 @@ Barcode correction is a custom script that uses the whitelist generated by BLAZE
 <summary>Output files</summary>
 
 - `<sample_identifier>/`
-  - `isoquant/`
-    - `*.gene_counts.tsv` : The feature-barcode matrix from gene quantification.
-    - `*.transcript_counts.tsv` : The feature-barcode matrix from transcript quantification.
+  - `genome/`
+    - `isoquant/`
+      - `*.gene_counts.tsv` : The feature-barcode matrix from gene quantification.
+      - `*.transcript_counts.tsv` : The feature-barcode matrix from transcript quantification.
 
 </details>
 
 [IsoQuant](https://github.com/ablab/IsoQuant) is a tool for the genome-based analysis of long RNA reads, such as PacBio or Oxford Nanopores. IsoQuant allows to reconstruct and quantify transcript models with high precision and decent recall. If the reference annotation is given, IsoQuant also assigns reads to the annotated isoforms based on their intron and exon structure. IsoQuant further performs annotated gene, isoform, exon and intron quantification. The outputs of IsoQuant can be important for downstream analysis with tools specialized in single-cell/nuclei analysis (e.g.: `Seurat`).
+
+In order to assist with the performance of IsoQuant, the inputs are split by chromosome to add a further degree of parallelization.
+
+It should also be noted that IsoQuant can only accurately perform quantification on a **genome** aligned bam, and will produce both gene and transcript level matrices
+
+### oarfish
+
+<details markdown="1">
+<summary>Output files</summary>
+
+- `<sample_identifier>/`
+  - `transcriptome/`
+    - `oarfish/`
+      - `barcodes.tsv.gz`
+      - `features.tsv.gz`
+      - `matrix.mtx.gz`
+
+</details>
+
+[oarfish](https://github.com/COMBINE-lab/oarfish) is a program, written in Rust (https://www.rust-lang.org/), for quantifying transcript-level expression from long-read (i.e. Oxford nanopore cDNA and direct RNA and PacBio) sequencing technologies. oarfish requires a sample of sequencing reads aligned to the transcriptome (currntly not to the genome). It handles multi-mapping reads through the use of probabilistic allocation via an expectation-maximization (EM) algorithm.
+
+It should also be noted that oarfish can only accurately perform quantification on a **transcript** aligned bam, and will only produce transcript level matrices. It's also recommended to ensure that the `--save_transcript_secondary_alignment` is enabled to produce the most accurate oarfish results (true by default for `oarfish` quantification). Notably, this can lead to much higher number of reads reported as aligned, however, this is expected behavior when secondary aligments are included in the analysis.
 
 ### Seurat
 
@@ -204,18 +267,21 @@ Barcode correction is a custom script that uses the whitelist generated by BLAZE
 <summary>Output files</summary>
 
 - `<sample_identifier>/`
-  - `qc/`
-    - `gene/`
-      - `*.csv`: A file containing statistics about the cell-read distribution for genes.
-      - `*.png`: A series of qc images to determine the quality of the gene quantification.
-    - `transcript/`
-      - `*.csv`: A file containing statistics about the cell-read distribution for transcript.
-      - `*.png`: A series of qc images to determine the quality of the transcript quantification.
+  - `genome/`
+    - `qc/`
+      - `gene/`
+        - `*.csv`: A file containing statistics about the isoquant generated cell-read distribution for genes.
+        - `*.png`: A series of qc images to determine the quality of the isoquant generated gene quantification.
+      - `transcript/`
+        - `*.csv`: A file containing statistics about the isoquant generated cell-read distribution for transcript.
+        - `*.png`: A series of qc images to determine the quality of the isoquant generated transcript quantification.
+  - `transcriptome/`
+    - `qc/`
+      - `transcript/`
+        - `*.csv`: A file containing statistics about the oarfish generated cell-read distribution for transcript.
+        - `*.png`: A series of qc images to determine the quality of the oarfish generated transcript quantification.
 
 </details>
-
-![MultiQC - seurat](images/seurat.png)
-_High level statistics are provided in the MultiQC report, as show in this image. These provide an overview of the quality of the data in order to assess if the results are suitable for tertiary analysis._
 
 [Seurat](https://satijalab.org/seurat/) is an R package designed for QC, analysis, and exploration of single-cell RNA-seq data.
 
@@ -269,11 +335,25 @@ The FastQC plots displayed in the MultiQC report shows _untrimmed_ reads. They m
 
 - `batch_qcs/`
   - `nanocomp/`
-    - `fastq/` and `bam/`
+    - `fastq/`
       - `NanoComp_*.log`: This is the log file detailing the nanocomp run.
       - `NanoComp-report.html` - This is browser-viewable report that contains all the figures in a single location.
       - `*.html`: Nanocomp outputs all the figures in the report as individual files that can be inspected separately.
       - `NanoStats.txt`: This file contains quality control statistics about the dataset.
+  - `genome`
+    - `nanocomp/`
+      - `bam/`
+        - `NanoComp_*.log`: This is the log file detailing the nanocomp run.
+        - `NanoComp-report.html` - This is browser-viewable report that contains all the figures in a single location.
+        - `*.html`: Nanocomp outputs all the figures in the report as individual files that can be inspected separately.
+        - `NanoStats.txt`: This file contains quality control statistics about the dataset.
+  - `transcriptome`
+    - `nanocomp/`
+      - `bam/`
+        - `NanoComp_*.log`: This is the log file detailing the nanocomp run.
+        - `NanoComp-report.html` - This is browser-viewable report that contains all the figures in a single location.
+        - `*.html`: Nanocomp outputs all the figures in the report as individual files that can be inspected separately.
+        - `NanoStats.txt`: This file contains quality control statistics about the dataset.
 
 </details>
 
@@ -355,6 +435,8 @@ The FastQC plots displayed in the MultiQC report shows _untrimmed_ reads. They m
 ![Read Counts](images/read_counts.png)
 
 This is a custom script written using BASH scripting. Its purpose is to report the amount of reads that are filtered out at steps in the pipeline that will result in filtered reads, such as barcode detection, barcode correction, alignment, etc. Elevated levels of filtering can be indicative of quality concerns.
+
+For performance, this step parses the read counts from the output of either FastQC or NanoPlot rather than computing it. If the options `--skip_fastqc` and `--skip_nanoplot` or `--skip_qc` is used, this file will not be produced.
 
 ### MultiQC
 

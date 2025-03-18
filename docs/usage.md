@@ -57,11 +57,16 @@ The typical command for running the pipeline is as follows:
 nextflow run nf-core/scnanoseq \
   --input ./samplesheet.csv \
   --outdir ./results \
-  --genome /path/to/genome.fa \
-  --gtf /path/to/genome.gtf \
+  --genome_fasta /path/to/genome.fa \
+  --transcript_fasta /path/to/transcriptome.fa \
+  --gtf /path/to/file.gtf \
+  --quantifier "isoquant,oarfish" \
   --barcode_format 10X_3v3 \
   -profile <docker/singularity/institute>
 ```
+
+Please note that while the above command specifies both transcriptome and genome fasta files, only one is needed for the pipeline and is dependent on which quantifier you wish to use.
+Additionally, for the `quantifier` parameter in the above command, we've listed the quantifiers as a comma-delimited string. It is possible to only use one quantifier, and can be accomplished by just providing the name of the quantifying tool you wish to run as a single value, i.e. providing `oarfish` if you only wish to run `oarfish`.
 
 Note that the pipeline will create the following files in your working directory:
 
@@ -91,8 +96,10 @@ with
 ```yaml title="params.yaml"
 input: "./samplesheet.csv"
 outdir: "./results/"
-fasta: "/path/to/genome.fa"
-gtf: "/path/to/genome.gtf"
+genome_fasta: "/path/to/genome.fa"
+transcript_fasta: "/path/to/transcript.fa"
+gtf: "/path/to/file.gtf"
+quantifier: "isoquant|oarfish|isoquant,oarfish"
 barcode_format: "10X_3v3"
 <...>
 ```
@@ -201,14 +208,6 @@ In most cases, you will only need to create a custom config as a one-off but if 
 See the main [Nextflow documentation](https://www.nextflow.io/docs/latest/config.html) for more information about creating your own configuration files.
 
 If you have any questions or issues please send us a message on [Slack](https://nf-co.re/join/slack) on the [`#configs` channel](https://nfcore.slack.com/channels/configs).
-
-## Azure Resource Requests
-
-To be used with the `azurebatch` profile by specifying the `-profile azurebatch`.
-We recommend providing a compute `params.vm_type` of `Standard_D16_v3` VMs by default but these options can be changed if required.
-
-Note that the choice of VM size depends on your quota and the overall workload during the analysis.
-For a thorough list, please refer the [Azure Sizes for virtual machines in Azure](https://docs.microsoft.com/en-us/azure/virtual-machines/sizes).
 
 ## Running in the background
 

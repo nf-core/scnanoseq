@@ -21,7 +21,7 @@ process PREEXTRACT_FASTQ {
     task.ext.when == null || task.ext.when
 
     script:
-    def args = task.ext.args ?: ''
+    def args   = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
 
     """
@@ -32,6 +32,18 @@ process PREEXTRACT_FASTQ {
         -f ${bc_format} \\
         -t ${task.cpus} \\
         ${args}
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        python: \$(python --version | sed 's/Python //g')
+    END_VERSIONS
+    """
+
+    stub:
+    def prefix = task.ext.prefix ?: "${meta.id}"
+    """
+    touch ${prefix}.putative_bc_umi.tsv
+    touch ${prefix}.extracted.fastq
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

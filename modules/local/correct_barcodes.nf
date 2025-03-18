@@ -18,7 +18,7 @@ process CORRECT_BARCODES {
     task.ext.when == null || task.ext.when
 
     script:
-    def args = task.ext.args ?: ''
+    def args   = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
 
     """
@@ -29,6 +29,17 @@ process CORRECT_BARCODES {
         --whitelist ${whitelist} \\
         --barcode_count ${bc_count_file} \\
         --skip_header
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        python: \$(python --version | sed 's/Python //g')
+    END_VERSIONS
+    """
+
+    stub:
+    def prefix = task.ext.prefix ?: "${meta.id}"
+    """
+    touch ${prefix}.corrected_bc_umi.tsv
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

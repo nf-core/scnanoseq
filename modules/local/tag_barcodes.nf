@@ -1,6 +1,6 @@
 process TAG_BARCODES {
     tag "$meta.id"
-    label 'process_medium'
+    label 'process_high'
 
     conda "bioconda::pysam=0.19.1"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -18,7 +18,7 @@ process TAG_BARCODES {
     task.ext.when == null || task.ext.when
 
     script:
-    def args = task.ext.args ?: ''
+    def args   = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
 
     """
@@ -26,6 +26,17 @@ process TAG_BARCODES {
         -b ${bam} \\
         -i ${corrected_bc_info} \\
         -o ${prefix}.tagged.bam
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        python: \$(python --version | sed 's/Python //g')
+    END_VERSIONS
+    """
+
+    stub:
+    def prefix = task.ext.prefix ?: "${meta.id}"
+    """
+    touch ${prefix}.tagged.bam
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

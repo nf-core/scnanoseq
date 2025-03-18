@@ -1,10 +1,10 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://raw.githubusercontent.com/nf-core/scnanoseq/master/nextflow_schema.json",
     "title": "nf-core/scnanoseq pipeline parameters",
     "description": "Single-cell/nuclei pipeline for data derived from Oxford Nanopore",
     "type": "object",
-    "definitions": {
+    "$defs": {
         "input_output_options": {
             "title": "Input/output options",
             "type": "object",
@@ -49,36 +49,37 @@
             "fa_icon": "fas fa-dna",
             "description": "Reference genome related files and options required for the workflow.",
             "properties": {
-                "genome": {
-                    "type": "string",
-                    "description": "Name of iGenomes reference.",
-                    "fa_icon": "fas fa-book",
-                    "help_text": "If using a reference genome configured in the pipeline using iGenomes, use this parameter to give the ID for the reference. This is then used to build the full paths for all required reference genome files e.g. `--genome GRCh38`. \n\nSee the [nf-core website docs](https://nf-co.re/usage/reference_genomes) for more details."
-                },
-                "fasta": {
+                "genome_fasta": {
                     "type": "string",
                     "format": "file-path",
                     "exists": true,
                     "mimetype": "text/plain",
                     "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
-                    "description": "Path to FASTA genome file.",
-                    "help_text": "This parameter is *mandatory* if `--genome` is not specified. If you don't have a BWA index available this will be generated for you automatically. Combine with `--save_reference` to save BWA index for future runs.",
-                    "fa_icon": "far fa-file-code"
+                    "description": "Path to genome FASTA file.",
+                    "help_text": "This parameter is *mandatory* if you wish to use `isoquant` as a quantifier",
+                    "fa_icon": "fas fa-book-open"
+                },
+                "transcript_fasta": {
+                    "type": "string",
+                    "description": "Path to transcriptome FASTA file.",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
+                    "format": "file-path",
+                    "mimetype": "text/plain",
+                    "fa_icon": "fas fa-book-open",
+                    "help_text": "This parameter is *mandatory* if you wish to use `oarfish` as a quantifier"
                 },
                 "gtf": {
                     "type": "string",
-                    "fa_icon": "far fa-file-code",
+                    "fa_icon": "fas fa-book-open",
                     "description": "Path to GTF file.",
                     "format": "file-path",
                     "pattern": "^\\S+\\.gtf(\\.gz)?$"
                 },
-                "igenomes_base": {
+                "genome": {
                     "type": "string",
-                    "format": "directory-path",
-                    "description": "Directory / URL base for iGenomes references.",
-                    "default": "s3://ngi-igenomes/igenomes",
-                    "fa_icon": "fas fa-cloud-download-alt",
-                    "hidden": true
+                    "description": "Name of iGenomes reference.",
+                    "fa_icon": "fas fa-book",
+                    "help_text": "If using a reference genome configured in the pipeline using iGenomes, use this parameter to give the ID for the reference. This is then used to build the full paths for all required reference genome files e.g. `--genome GRCh38`. \n\nSee the [nf-core website docs](https://nf-co.re/usage/reference_genomes) for more details."
                 },
                 "igenomes_ignore": {
                     "type": "boolean",
@@ -87,9 +88,21 @@
                     "hidden": true,
                     "help_text": "Do not load `igenomes.config` when running the pipeline. You may choose this option if you observe clashes between custom parameters and those supplied in `igenomes.config`.",
                     "default": true
+                },
+                "igenomes_base": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "description": "The base path to the igenomes reference files",
+                    "fa_icon": "fas fa-ban",
+                    "hidden": true,
+                    "default": "s3://ngi-igenomes/igenomes/"
+                },
+                "fasta_delimiter": {
+                    "type": "string",
+                    "description": "This is the delimiter the FASTA uses in the sequence identifier to separate the string."
                 }
             },
-            "required": ["fasta", "gtf"]
+            "required": ["gtf"]
         },
         "fastq_options": {
             "title": "Fastq options",
@@ -149,10 +162,15 @@
                     "description": "Specify the format for the barcode+umi. This parameter also defines a default barcode whitelist for the pipeline to use for barcode calling, this can be overidden with the 'whitelist' parameter.",
                     "enum": ["10X_3v3", "10X_5v2"],
                     "fa_icon": "fas fa-barcode"
+                },
+                "dedup_tool": {
+                    "type": "string",
+                    "description": "Specify which tool to be used for deduplication (Options: picard, umitools)",
+                    "enum": ["umitools", "picard"]
                 }
             },
             "fa_icon": "fas fa-microscope",
-            "required": ["barcode_format"]
+            "required": ["barcode_format", "dedup_tool"]
         },
         "mapping": {
             "title": "Mapping",
@@ -172,10 +190,14 @@
                     "description": "Minimizer k-mer length.",
                     "fa_icon": "fas fa-sort-amount-down"
                 },
-                "save_secondary_alignment": {
+                "save_genome_secondary_alignment": {
                     "type": "boolean",
-                    "description": "Save secondary alignment outputs.",
-                    "fa_icon": "far fa-save"
+                    "description": "Save the secondary alignments when aligning to the genome"
+                },
+                "save_transcript_secondary_alignment": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Save the secondary alignments when aligning to the transcriptome"
                 }
             },
             "fa_icon": "far fa-map"
@@ -191,8 +213,15 @@
                     "default": true,
                     "description": "Indicate whether to include introns in the count matrices",
                     "fa_icon": "fas fa-filter"
+                },
+                "quantifier": {
+                    "type": "string",
+                    "description": "Provide a comma-delimited options of quantifiers for the pipeline to use. Available tools: isoquant, oarfish",
+                    "pattern": "^(oarfish|isoquant)(,(oarfish|isoquant))*$"
                 }
-            }
+            },
+            "required": ["quantifier"],
+            "description": "Options related to post-mapping analysis"
         },
         "process_skipping_options": {
             "title": "Process skipping options",
@@ -307,41 +336,6 @@
                 }
             }
         },
-        "max_job_request_options": {
-            "title": "Max job request options",
-            "type": "object",
-            "fa_icon": "fab fa-acquisitions-incorporated",
-            "description": "Set the top limit for requested resources for any single job.",
-            "help_text": "If you are running on a smaller system, a pipeline step requesting more resources than are available may cause the Nextflow to stop the run with an error. These options allow you to cap the maximum resources requested by any single job so that the pipeline will run on your system.\n\nNote that you can not _increase_ the resources requested by any job using these options. For that you will need your own configuration file. See [the nf-core website](https://nf-co.re/usage/configuration) for details.",
-            "properties": {
-                "max_cpus": {
-                    "type": "integer",
-                    "description": "Maximum number of CPUs that can be requested for any single job.",
-                    "default": 16,
-                    "fa_icon": "fas fa-microchip",
-                    "hidden": true,
-                    "help_text": "Use to set an upper-limit for the CPU requirement for each process. Should be an integer e.g. `--max_cpus 1`"
-                },
-                "max_memory": {
-                    "type": "string",
-                    "description": "Maximum amount of memory that can be requested for any single job.",
-                    "default": "128.GB",
-                    "fa_icon": "fas fa-memory",
-                    "pattern": "^\\d+(\\.\\d+)?\\.?\\s*(K|M|G|T)?B$",
-                    "hidden": true,
-                    "help_text": "Use to set an upper-limit for the memory requirement for each process. Should be a string in the format integer-unit e.g. `--max_memory '8.GB'`"
-                },
-                "max_time": {
-                    "type": "string",
-                    "description": "Maximum amount of time that can be requested for any single job.",
-                    "default": "240.h",
-                    "fa_icon": "far fa-clock",
-                    "pattern": "^(\\d+\\.?\\s*(s|m|h|d|day)\\s*)+$",
-                    "hidden": true,
-                    "help_text": "Use to set an upper-limit for the time requirement for each process. Should be a string in the format integer-unit e.g. `--max_time '2.h'`"
-                }
-            }
-        },
         "generic_options": {
             "title": "Generic options",
             "type": "object",
@@ -349,12 +343,6 @@
             "description": "Less common options for the pipeline, typically set in a config file.",
             "help_text": "These options are common to all nf-core pipelines and allow you to customise some of the core preferences for how the pipeline runs.\n\nTypically these options would be set in a Nextflow config file loaded for all pipeline runs, such as `~/.nextflow/config`.",
             "properties": {
-                "help": {
-                    "type": "boolean",
-                    "description": "Display help text.",
-                    "fa_icon": "fas fa-question-circle",
-                    "hidden": true
-                },
                 "version": {
                     "type": "boolean",
                     "description": "Display version and exit.",
@@ -430,27 +418,6 @@
                     "fa_icon": "fas fa-check-square",
                     "hidden": true
                 },
-                "validationShowHiddenParams": {
-                    "type": "boolean",
-                    "fa_icon": "far fa-eye-slash",
-                    "description": "Show all params when using `--help`",
-                    "hidden": true,
-                    "help_text": "By default, parameters set as _hidden_ in the schema are not shown on the command line when a user runs with `--help`. Specifying this option will tell the pipeline to show all parameters."
-                },
-                "validationFailUnrecognisedParams": {
-                    "type": "boolean",
-                    "fa_icon": "far fa-check-circle",
-                    "description": "Validation of parameters fails when an unrecognised parameter is found.",
-                    "hidden": true,
-                    "help_text": "By default, when an unrecognised parameter is found, it returns a warinig."
-                },
-                "validationLenientMode": {
-                    "type": "boolean",
-                    "fa_icon": "far fa-check-circle",
-                    "description": "Validation of parameters in lenient more.",
-                    "hidden": true,
-                    "help_text": "Allows string values that are parseable as numbers or booleans. For further information see [JSONSchema docs](https://github.com/everit-org/json-schema#lenient-mode)."
-                },
                 "pipelines_testdata_base_path": {
                     "type": "string",
                     "fa_icon": "far fa-check-circle",
@@ -463,37 +430,34 @@
     },
     "allOf": [
         {
-            "$ref": "#/definitions/input_output_options"
+            "$ref": "#/$defs/input_output_options"
         },
         {
-            "$ref": "#/definitions/reference_genome_options"
+            "$ref": "#/$defs/reference_genome_options"
         },
         {
-            "$ref": "#/definitions/fastq_options"
+            "$ref": "#/$defs/fastq_options"
         },
         {
-            "$ref": "#/definitions/read_trimming_options"
+            "$ref": "#/$defs/read_trimming_options"
         },
         {
-            "$ref": "#/definitions/cell_barcode_options"
+            "$ref": "#/$defs/cell_barcode_options"
         },
         {
-            "$ref": "#/definitions/mapping"
+            "$ref": "#/$defs/mapping"
         },
         {
-            "$ref": "#/definitions/analysis_options"
+            "$ref": "#/$defs/analysis_options"
         },
         {
-            "$ref": "#/definitions/process_skipping_options"
+            "$ref": "#/$defs/process_skipping_options"
         },
         {
-            "$ref": "#/definitions/institutional_config_options"
+            "$ref": "#/$defs/institutional_config_options"
         },
         {
-            "$ref": "#/definitions/max_job_request_options"
-        },
-        {
-            "$ref": "#/definitions/generic_options"
+            "$ref": "#/$defs/generic_options"
         }
     ]
 }

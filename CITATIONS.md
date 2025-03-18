@@ -16,7 +16,7 @@
 
 - [FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/)
 
-  > Andrews, S. (2010). FastQC: A Quality Control Tool for High Throughput Sequence Data [Online].
+> Andrews, S. (2010). FastQC: A Quality Control Tool for High Throughput Sequence Data [Online].
 
 - [IsoQuant](https://pubmed.ncbi.nlm.nih.gov/36593406/)
 
@@ -28,7 +28,7 @@
 
 - [MultiQC](https://pubmed.ncbi.nlm.nih.gov/27312411/)
 
-  > Ewels P, Magnusson M, Lundin S, Käller M. MultiQC: summarize analysis results for multiple tools and samples in a single report. Bioinformatics. 2016 Oct 1;32(19):3047-8. doi: 10.1093/bioinformatics/btw354. Epub 2016 Jun 16. PubMed PMID: 27312411; PubMed Central PMCID: PMC5039924.
+> Ewels P, Magnusson M, Lundin S, Käller M. MultiQC: summarize analysis results for multiple tools and samples in a single report. Bioinformatics. 2016 Oct 1;32(19):3047-8. doi: 10.1093/bioinformatics/btw354. Epub 2016 Jun 16. PubMed PMID: 27312411; PubMed Central PMCID: PMC5039924.
 
 - [NanoComp](https://pubmed.ncbi.nlm.nih.gov/29547981/)
 
@@ -41,6 +41,10 @@
 - [NanoPlot](https://pubmed.ncbi.nlm.nih.gov/29547981/)
 
   > De Coster W, D'Hert S, Schultz DT, Cruts M, Van Broeckhoven C. NanoPack: visualizing and processing long-read sequencing data. Bioinformatics. 2018 Aug 1;34(15):2666-2669. doi: 10.1093/bioinformatics/bty149. PubMed PMID: 29547981; PubMed Central PMCID: PMC6061794.
+
+- [oarfish](https://github.com/COMBINE-lab/oarfish)
+
+  > Jousheghani ZZ, Patro R. Oarfish: Enhanced probabilistic modeling leads to improved accuracy in long read transcriptome quantification. bioRxiv [Preprint]. 2024 Mar 1:2024.02.28.582591. doi: 10.1101/2024.02.28.582591. PMID: 38464200; PMCID: PMC10925290.
 
 - [pigz](https://zlib.net/pigz/)
 
@@ -55,6 +59,8 @@
 - [UMI-tools](https://pubmed.ncbi.nlm.nih.gov/28100584/)
 
   > Smith T, Heger A, Sudbery I. UMI-tools: modeling sequencing errors in Unique Molecular Identifiers to improve quantification accuracy Genome Res. 2017 Mar;27(3):491-499. doi: 10.1101/gr.209601.116. Epub 2017 Jan 18. PubMed PMID: 28100584; PubMed Central PMCID: PMC5340976.
+
+- [Picard](https://broadinstitute.github.io/picard/)
 
 - [UCSC tools](https://pubmed.ncbi.nlm.nih.gov/20639541/)
 

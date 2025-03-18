@@ -18,14 +18,28 @@ process UCSC_GTFTOGENEPRED {
     task.ext.when == null || task.ext.when
 
     script:
-    def args = task.ext.args ?: ''
-    def VERSION = '447' // WARN: Version information not provided by tool on CLI. Please update this string when bumping container versions.
+    def args    = task.ext.args ?: ''
+    def prefix  = task.ext.prefix ?: "${gtf.baseName}"
+    // WARN: Version information not provided by tool on CLI. Please update this string when bumping container versions.
+    def VERSION = '447'
     """
     gtfToGenePred \\
         $args \\
         $gtf  \\
-        ${gtf.baseName}.genepred
+        ${prefix}.genepred
 
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        ucsc: $VERSION
+    END_VERSIONS
+    """
+
+    stub:
+    def prefix  = task.ext.prefix ?: "${gtf.baseName}"
+    // WARN: Version information not provided by tool on CLI. Please update this string when bumping container versions.
+    def VERSION = '447'
+    """
+    touch ${prefix}.genepred
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

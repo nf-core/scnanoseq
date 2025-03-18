@@ -1,17 +1,14 @@
 process ISOQUANT {
     tag "$meta.id"
-    label 'process_high'
+    label 'process_medium'
 
-    conda "bioconda::isoquant=3.5.0"
+    conda "bioconda::isoquant=3.6.1"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/isoquant:3.5.0--hdfd78af_0' :
-        'biocontainers/isoquant:3.5.0--hdfd78af_0' }"
+        'https://depot.galaxyproject.org/singularity/isoquant:3.6.1--hdfd78af_0' :
+        'biocontainers/isoquant:3.6.1--hdfd78af_0' }"
 
     input:
-    tuple val(meta), path(bam), path(bai)
-    tuple val(meta_gtf), path(gtf)
-    tuple val(meta_fa), path(fasta)
-    tuple val(meta_fai), path(fai)
+    tuple val(meta), path(bam), path(bai), path(fasta), path(fai), path(gtf)
     val group_category
 
     output:
@@ -23,7 +20,7 @@ process ISOQUANT {
     task.ext.when == null || task.ext.when
 
     script:
-    def args = task.ext.args ?: ''
+    def args   = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
 
     // setting custom home via export (see issue #30)
@@ -71,6 +68,17 @@ process ISOQUANT {
             isoquant: \$(isoquant.py -v | sed 's#IsoQuant ##')
         END_VERSIONS
         """
-
     }
+
+    stub:
+    def prefix = task.ext.prefix ?: "${meta.id}"
+    """
+    touch ${prefix}.gene_counts.tsv
+    touch ${prefix}.transcript_counts.tsv
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        isoquant: \$(isoquant.py -v | sed 's#IsoQuant ##')
+    END_VERSIONS
+    """
 }

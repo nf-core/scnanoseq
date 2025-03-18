@@ -18,7 +18,7 @@ process NANOFILT {
     task.ext.when == null || task.ext.when
 
     script:
-    def args = task.ext.args ?: ''
+    def args   = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
 
     """
@@ -28,6 +28,16 @@ process NANOFILT {
         FILE_PREFIX=\${FILE_PREFIX}.\${IDX}
     fi
     cat $reads | NanoFilt $args > \${FILE_PREFIX}.filtered.fastq
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        nanofilt: \$( NanoFilt --version | sed -e "s/NanoFilt //g" )
+    END_VERSIONS
+    """
+
+    stub:
+    """
+    touch ${prefix}.filtered.fastq
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
