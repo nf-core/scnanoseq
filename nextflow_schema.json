@@ -54,7 +54,7 @@
                     "format": "file-path",
                     "exists": true,
                     "mimetype": "text/plain",
-                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz|\\.zip)?$",
                     "description": "Path to genome FASTA file.",
                     "help_text": "This parameter is *mandatory* if you wish to use `isoquant` as a quantifier",
                     "fa_icon": "fas fa-book-open"
@@ -62,7 +62,7 @@
                 "transcript_fasta": {
                     "type": "string",
                     "description": "Path to transcriptome FASTA file.",
-                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz|\\.zip)?$",
                     "format": "file-path",
                     "mimetype": "text/plain",
                     "fa_icon": "fas fa-book-open",
@@ -73,7 +73,7 @@
                     "fa_icon": "fas fa-book-open",
                     "description": "Path to GTF file.",
                     "format": "file-path",
-                    "pattern": "^\\S+\\.gtf(\\.gz)?$"
+                    "pattern": "^\\S+\\.gtf(\\.gz|\\.zip)?$"
                 },
                 "genome": {
                     "type": "string",

@@ -2,9 +2,13 @@
 // Modifies the reference files for easier analysis
 //
 
-include { PIGZ_UNCOMPRESS as UNZIP_GENOME_FASTA     } from '../../modules/nf-core/pigz/uncompress/main'
-include { PIGZ_UNCOMPRESS as UNZIP_TRANSCRIPT_FASTA } from '../../modules/nf-core/pigz/uncompress/main'
-include { PIGZ_UNCOMPRESS as UNZIP_GTF              } from '../../modules/nf-core/pigz/uncompress/main'
+include { PIGZ_UNCOMPRESS as GUNZIP_GENOME_FASTA     } from '../../modules/nf-core/pigz/uncompress/main'
+include { PIGZ_UNCOMPRESS as GUNZIP_TRANSCRIPT_FASTA } from '../../modules/nf-core/pigz/uncompress/main'
+include { PIGZ_UNCOMPRESS as GUNZIP_GTF              } from '../../modules/nf-core/pigz/uncompress/main'
+include { UNZIPFILES as UNZIP_GENOME_FASTA           } from '../../modules/nf-core/unzipfiles/main'
+include { UNZIPFILES as UNZIP_TRANSCRIPT_FASTA       } from '../../modules/nf-core/unzipfiles/main'
+include { UNZIPFILES as UNZIP_GTF                    } from '../../modules/nf-core/unzipfiles/main'
+
 include { SAMTOOLS_FAIDX as GENOME_FAIDX            } from '../../modules/nf-core/samtools/faidx/main'
 include { SAMTOOLS_FAIDX as TRANSCRIPT_FAIDX        } from '../../modules/nf-core/samtools/faidx/main'
 
@@ -24,19 +28,27 @@ workflow PREPARE_REFERENCE_FILES {
         //
         ch_genome_fasta = Channel.empty()
         ch_genome_fai = Channel.empty()
+
         if (genome_fasta) {
             if (genome_fasta.endsWith('.gz')){
+                GUNZIP_GENOME_FASTA( [ [:], genome_fasta ])
+
+                ch_genome_fasta = GUNZIP_GENOME_FASTA.out.file
+                ch_versions = ch_versions.mix(GUNZIP_GENOME_FASTA.out.versions)
+
+            } else if (genome_fasta.endsWith('.zip')){
                 UNZIP_GENOME_FASTA( [ [:], genome_fasta ])
 
-                ch_genome_fasta = UNZIP_GENOME_FASTA.out.file
+                ch_genome_fasta = UNZIP_GENOME_FASTA.out.files
                 ch_versions = ch_versions.mix(UNZIP_GENOME_FASTA.out.versions)
-                //
-                // MODULE: Index the genome fasta
-                //
+
             } else {
                 ch_genome_fasta = [ [:], genome_fasta ]
             }
 
+            //
+            // MODULE: Index the genome fasta
+            //
             GENOME_FAIDX( ch_genome_fasta, [ [:], "$projectDir/assets/dummy_file.txt" ])
             ch_genome_fai = GENOME_FAIDX.out.fai
         }
@@ -48,10 +60,17 @@ workflow PREPARE_REFERENCE_FILES {
         ch_transcript_fai = Channel.empty()
         if (transcript_fasta) {
             if (transcript_fasta.endsWith('.gz')){
+                GUNZIP_TRANSCRIPT_FASTA( [ [:], transcript_fasta ])
+
+                ch_transcript_fasta = GUNZIP_TRANSCRIPT_FASTA.out.file
+                ch_versions = ch_versions.mix(GUNZIP_TRANSCRIPT_FASTA.out.versions)
+
+            } else if (transcript_fasta.endsWith('.zip')) {
                 UNZIP_TRANSCRIPT_FASTA( [ [:], transcript_fasta ])
 
-                ch_transcript_fasta = UNZIP_TRANSCRIPT_FASTA.out.file
+                ch_transcript_fasta = UNZIP_TRANSCRIPT_FASTA.out.files
                 ch_versions = ch_versions.mix(UNZIP_TRANSCRIPT_FASTA.out.versions)
+            
             } else {
                 ch_transcript_fasta = [ [:], transcript_fasta ]
             }
@@ -68,10 +87,17 @@ workflow PREPARE_REFERENCE_FILES {
         //
         ch_prepared_gtf = Channel.empty()
         if (gtf.endsWith('.gz')){
+            GUNZIP_GTF( [ [:], gtf ])
+
+            ch_prepared_gtf = GUNZIP_GTF.out.file
+            ch_versions = ch_versions.mix(GUNZIP_GTF.out.versions)
+
+        } else if (gtf.endsWith('.zip')) {
             UNZIP_GTF( [ [:], gtf ])
 
-            ch_prepared_gtf = UNZIP_GTF.out.file
+            ch_prepared_gtf = UNZIP_GTF.out.files
             ch_versions = ch_versions.mix(UNZIP_GTF.out.versions)
+        
         } else {
             ch_prepared_gtf = [ [:], gtf]
         }
