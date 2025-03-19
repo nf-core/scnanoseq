@@ -107,6 +107,8 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
                 .combine(ch_split_gtf, by: [0])
                 .map{
                     chr, meta, bam, bai, fasta, fai, gtf ->
+                        meta.sample_name = meta.id.split(/\./)[0]
+                        meta.chr = meta.id.split(/\./)[1]
                         [ meta, bam, bai, fasta, fai, gtf ]
                 },
             'tag:CB'
@@ -117,7 +119,7 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
         // MODULE: Merge Matrix
         //
         MERGE_MTX_GENE (
-            ISOQUANT.out.gene_count_mtx
+            ISOQUANT.out.grouped_gene_counts
                 .map{
                     meta, mtx ->
                         basename = mtx.toString().split('/')[-1]
@@ -131,7 +133,7 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
         ch_versions = ch_versions.mix(MERGE_MTX_GENE.out.versions)
 
         MERGE_MTX_TRANSCRIPT (
-            ISOQUANT.out.transcript_count_mtx
+            ISOQUANT.out.grouped_transcript_counts
                 .map{
                     meta, mtx ->
                         basename = mtx.toString().split('/')[-1]

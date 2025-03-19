@@ -12,9 +12,30 @@ process ISOQUANT {
     val group_category
 
     output:
-    tuple val(meta), path("*.gene_counts.tsv")      , emit: gene_count_mtx
-    tuple val(meta), path("*.transcript_counts.tsv"), emit: transcript_count_mtx
-    path "versions.yml"                             , emit: versions
+    tuple val(meta), path("*/*/*.read_assignments.tsv.gz"),             emit: read_assignments
+    tuple val(meta), path("*/*/*.corrected_reads.bed.gz"),              emit: corrected_reads
+    tuple val(meta), path("*/*/*.transcript_tpm.tsv"),                  emit: transcript_tpm
+    tuple val(meta), path("*/*/*.transcript_counts.tsv"),               emit: transcript_counts
+    tuple val(meta), path("*/*/*.gene_tpm.tsv"),                        emit: gene_tpm
+    tuple val(meta), path("*/*/*.gene_counts.tsv"),                     emit: gene_counts
+    tuple val(meta), path("*/isoquant.log"),                            emit: log
+    tuple val(meta), path("*/*/*.exon_counts.tsv"),                     emit: exon_counts,                     optional: true
+    tuple val(meta), path("*/*/*.intron_counts.tsv"),                   emit: intron_counts,                   optional: true
+    tuple val(meta), path("*/*/*.novel_vs_known.SQANTI-like.tsv"),      emit: sqanti_output,                   optional: true
+    tuple val(meta), path("*/*/*.gene_grouped_tpm.tsv"),                emit: grouped_gene_tpm,                optional: true
+    tuple val(meta), path("*/*/*.gene_grouped_counts.tsv"),             emit: grouped_gene_counts,             optional: true
+    tuple val(meta), path("*/*/*.transcript_grouped_tpm.tsv"),          emit: grouped_transcript_tpm,          optional: true
+    tuple val(meta), path("*/*/*.transcript_grouped_counts.tsv"),       emit: grouped_transcript_counts,       optional: true
+    tuple val(meta), path("*/*/*.exon_grouped_counts.tsv"),             emit: grouped_exon_counts,             optional: true
+    tuple val(meta), path("*/*/*.intron_grouped_counts.tsv"),           emit: grouped_intron_counts,           optional: true
+    tuple val(meta), path("*/*/*.transcript_models.gtf"),               emit: transcript_models,               optional: true
+    tuple val(meta), path("*/*/*.transcript_model_reads.tsv.gz"),       emit: transcript_model_reads,          optional: true
+    tuple val(meta), path("*/*/*.transcript_model_tpm.tsv"),            emit: transcript_model_tpm,            optional: true
+    tuple val(meta), path("*/*/*.transcript_model_counts.tsv"),         emit: transcript_model_counts,         optional: true
+    tuple val(meta), path("*/*/*.extended_annotation.gtf"),             emit: extended_gtf,                    optional: true
+    tuple val(meta), path("*/*/*.transcript_model_grouped_counts.tsv"), emit: grouped_transcript_model_counts, optional: true
+    tuple val(meta), path("*/*/*.transcript_model_grouped_tpm.tsv"),    emit: grouped_transcript_model_tpm,    optional: true
+    path "versions.yml",                                                emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -22,59 +43,59 @@ process ISOQUANT {
     script:
     def args   = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
+    
+    def group_flag = group_category ? "--read_group $group_category" : ""
+    def ref_flag   = fasta ? "--reference $fasta" : ""
+    def gtf_flag   = gtf ? "--genedb $gtf": ""
 
-    // setting custom home via export (see issue #30)
-    if ( !group_category?.trim() ){
-        """
-        export HOME=\$(pwd)
+    """
+    export HOME=\$(pwd)
 
-        isoquant.py ${args} \\
-                    --threads $task.cpus \\
-                    --datatype nanopore \\
-                    --reference $fasta \\
-                    --genedb $gtf \\
-                    --bam $bam \\
-                    -o .
+    isoquant.py ${args} \\
+        --threads $task.cpus \\
+        --prefix $prefix \\
+        --bam ${bam} \\
+        --output ${prefix} \\
+        ${ref_flag} \\
+        ${gtf_flag} \\
+        ${group_flag}
 
-        mv OUT/OUT.gene_counts.tsv ${prefix}.gene_counts.tsv
-        mv OUT/OUT.transcript_counts.tsv ${prefix}.transcript_counts.tsv
-
-        cat <<-END_VERSIONS > versions.yml
-        "${task.process}":
-            isoquant: \$(isoquant.py -v | sed 's#IsoQuant ##')
-        END_VERSIONS
-        """
-    } else {
-        """
-        export HOME=\$(pwd)
-
-        isoquant.py ${args} \\
-                    --threads $task.cpus \\
-                    --data_type nanopore \\
-                    --reference $fasta \\
-                    --genedb $gtf \\
-                    --bam $bam \\
-                    -o . \\
-                    --read_group $group_category
-
-        mv OUT/OUT.gene_grouped_counts.tsv ${prefix}.gene_counts.tsv
-        mv OUT/OUT.transcript_grouped_counts.tsv ${prefix}.transcript_counts.tsv
-
-        sed -i "1s/#//" ${prefix}.gene_counts.tsv
-        sed -i "1s/#//" ${prefix}.transcript_counts.tsv
-
-        cat <<-END_VERSIONS > versions.yml
-        "${task.process}":
-            isoquant: \$(isoquant.py -v | sed 's#IsoQuant ##')
-        END_VERSIONS
-        """
-    }
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        isoquant: \$(isoquant.py -v | sed 's#IsoQuant ##')
+    END_VERSIONS
+    """
 
     stub:
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    touch ${prefix}.gene_counts.tsv
-    touch ${prefix}.transcript_counts.tsv
+    dir_prefix=\$(isoquant_output/${prefix})
+    mkdir -p \$dir_prefix
+
+
+    touch \$dir_prefix/${prefix}.read_assignments.tsv.gz
+    touch \$dir_prefix/${prefix}.corrected_reads.bed.gz
+    touch \$dir_prefix/${prefix}.transcript_tpm.tsv
+    touch \$dir_prefix/${prefix}.transcript_counts.tsv
+    touch \$dir_prefix/${prefix}.gene_tpm.tsv
+    touch \$dir_prefix/${prefix}.gene_counts.tsv
+    touch \$dir_prefix/isoquant.log
+    touch \$dir_prefix/${prefix}.exon_counts.tsv
+    touch \$dir_prefix/${prefix}.intron_counts.tsv
+    touch \$dir_prefix/${prefix}.novel_vs_known.SQANTI-like.tsv
+    touch \$dir_prefix/${prefix}.gene_grouped_tpm.tsv
+    touch \$dir_prefix/${prefix}.gene_grouped_counts.tsv
+    touch \$dir_prefix/${prefix}.transcript_grouped_tpm.tsv
+    touch \$dir_prefix/${prefix}.transcript_grouped_counts.tsv
+    touch \$dir_prefix/${prefix}.exon_grouped_counts.tsv
+    touch \$dir_prefix/${prefix}.intron_grouped_counts.tsv
+    touch \$dir_prefix/${prefix}.transcript_models.gtf
+    touch \$dir_prefix/${prefix}.transcript_model_reads.tsv.gz
+    touch \$dir_prefix/${prefix}.transcript_model_tpm.tsv
+    touch \$dir_prefix/${prefix}.transcript_model_counts.tsv
+    touch \$dir_prefix/${prefix}.extended_annotation.gtf
+    touch \$dir_prefix/${prefix}.transcript_model_grouped_counts.tsv
+    touch \$dir_prefix/${prefix}.transcript_model_grouped_tpm.tsv
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
