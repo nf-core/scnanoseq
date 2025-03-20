@@ -30,6 +30,7 @@ workflow QUANTIFY_SCRNA_OARFISH {
         OARFISH ( SAMTOOLS_SORT.out.bam )
         ch_versions = ch_versions.mix(OARFISH.out.versions)
 
+        ch_transcript_qc_stats = Channel.empty()
         if (!params.skip_qc && !params.skip_seurat) {
             QC_SCRNA(
                 OARFISH.out.features
@@ -43,10 +44,11 @@ workflow QUANTIFY_SCRNA_OARFISH {
                 in_flagstat,
                 "MEX"
             )
+            ch_transcript_qc_stats = QC_SCRNA.out.seurat_stats
             ch_versions = ch_versions.mix(QC_SCRNA.out.versions)
         }
 
     emit:
-        versions = ch_versions
-        transcript_qc_stats = QC_SCRNA.out.seurat_stats
+        versions            = ch_versions
+        transcript_qc_stats = ch_transcript_qc_stats 
 }
