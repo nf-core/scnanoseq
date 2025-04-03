@@ -160,7 +160,7 @@
                 "barcode_format": {
                     "type": "string",
                     "description": "Specify the format for the barcode+umi. This parameter also defines a default barcode whitelist for the pipeline to use for barcode calling, this can be overidden with the 'whitelist' parameter.",
-                    "enum": ["10X_3v3", "10X_5v2"],
+                    "enum": ["10X_3v3", "10X_3v4", "10X_5v2", "10X_5v3"],
                     "fa_icon": "fas fa-barcode"
                 },
                 "dedup_tool": {
