@@ -180,6 +180,7 @@ We would also like to thank the following people and groups for their support, i
 
 - Dr. Elizabeth Worthey
 - University of Alabama at Birmingham Biological Data Science Core (U-BDS), RRID:SCR_021766, <https://github.com/U-BDS>
+- Civitan International Research Center
 - Support from: 3P30CA013148-48S8
 
 ## Contributions and Support
