@@ -70,7 +70,7 @@ workflow PREPARE_REFERENCE_FILES {
 
                 ch_transcript_fasta = UNZIP_TRANSCRIPT_FASTA.out.files
                 ch_versions = ch_versions.mix(UNZIP_TRANSCRIPT_FASTA.out.versions)
-            
+
             } else {
                 ch_transcript_fasta = [ [:], transcript_fasta ]
             }
@@ -97,7 +97,7 @@ workflow PREPARE_REFERENCE_FILES {
 
             ch_prepared_gtf = UNZIP_GTF.out.files
             ch_versions = ch_versions.mix(UNZIP_GTF.out.versions)
-        
+
         } else {
             ch_prepared_gtf = [ [:], gtf]
         }

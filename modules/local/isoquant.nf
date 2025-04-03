@@ -43,7 +43,7 @@ process ISOQUANT {
     script:
     def args   = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
-    
+
     def group_flag = group_category ? "--read_group $group_category" : ""
     def ref_flag   = fasta ? "--reference $fasta" : ""
     def gtf_flag   = gtf ? "--genedb $gtf": ""

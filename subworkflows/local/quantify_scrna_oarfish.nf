@@ -50,5 +50,5 @@ workflow QUANTIFY_SCRNA_OARFISH {
 
     emit:
         versions            = ch_versions
-        transcript_qc_stats = ch_transcript_qc_stats 
+        transcript_qc_stats = ch_transcript_qc_stats
 }

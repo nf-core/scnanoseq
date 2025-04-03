@@ -171,6 +171,6 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
         versions            = ch_versions
         gene_mtx            = ch_merged_gene_mtx
         transcript_mtx      = ch_merged_transcript_mtx
-        gene_qc_stats       = ch_gene_qc_stats 
-        transcript_qc_stats = ch_transcript_qc_stats 
+        gene_qc_stats       = ch_gene_qc_stats
+        transcript_qc_stats = ch_transcript_qc_stats
 }
