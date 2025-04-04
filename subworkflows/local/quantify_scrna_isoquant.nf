@@ -107,6 +107,8 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
                 .combine(ch_split_gtf, by: [0])
                 .map{
                     chr, meta, bam, bai, fasta, fai, gtf ->
+                        meta.sample_name = meta.id.split(/\./)[0]
+                        meta.chr = meta.id.split(/\./)[1]
                         [ meta, bam, bai, fasta, fai, gtf ]
                 },
             'tag:CB'
@@ -117,7 +119,7 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
         // MODULE: Merge Matrix
         //
         MERGE_MTX_GENE (
-            ISOQUANT.out.gene_count_mtx
+            ISOQUANT.out.grouped_gene_counts
                 .map{
                     meta, mtx ->
                         basename = mtx.toString().split('/')[-1]
@@ -131,7 +133,7 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
         ch_versions = ch_versions.mix(MERGE_MTX_GENE.out.versions)
 
         MERGE_MTX_TRANSCRIPT (
-            ISOQUANT.out.transcript_count_mtx
+            ISOQUANT.out.grouped_transcript_counts
                 .map{
                     meta, mtx ->
                         basename = mtx.toString().split('/')[-1]
@@ -144,12 +146,16 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
         ch_merged_transcript_mtx = MERGE_MTX_TRANSCRIPT.out.merged_mtx
         ch_versions = ch_versions.mix(MERGE_MTX_TRANSCRIPT.out.versions)
 
+        ch_gene_qc_stats = Channel.empty()
+        ch_transcript_qc_stats = Channel.empty()
+
         if (!params.skip_qc && !params.skip_seurat){
             QC_SCRNA_GENE (
                 MERGE_MTX_GENE.out.merged_mtx,
                 in_flagstat,
                 "BASE"
             )
+            ch_gene_qc_stats = QC_SCRNA_GENE.out.seurat_stats
             ch_versions = ch_versions.mix(QC_SCRNA_GENE.out.versions)
 
             QC_SCRNA_TRANSCRIPT (
@@ -157,13 +163,14 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
                 in_flagstat,
                 "BASE"
             )
+            ch_transcript_qc_stats = QC_SCRNA_TRANSCRIPT.out.seurat_stats
             ch_versions = ch_versions.mix(QC_SCRNA_TRANSCRIPT.out.versions)
         }
 
     emit:
-        versions = ch_versions
-        gene_mtx = ch_merged_gene_mtx
-        transcript_mtx = ch_merged_transcript_mtx
-        gene_qc_stats = QC_SCRNA_GENE.out.seurat_stats
-        transcript_qc_stats = QC_SCRNA_TRANSCRIPT.out.seurat_stats
+        versions            = ch_versions
+        gene_mtx            = ch_merged_gene_mtx
+        transcript_mtx      = ch_merged_transcript_mtx
+        gene_qc_stats       = ch_gene_qc_stats
+        transcript_qc_stats = ch_transcript_qc_stats
 }

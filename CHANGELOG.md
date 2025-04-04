@@ -3,6 +3,22 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v1.1.1 [TBD]
+
+### Enhancements
+
+- BLAZE scripts has been removed from the repo so the actual published code can be used
+- Added new whitelists for 10X 3v4 and 10X 5v3
+- Reference files are now accepted in .zip format
+- All output files produced by isoquant are now produced in the results file
+- Fixed an error caused by `--skip_qc` and `--skip_seurat`
+
+### Software dependencies
+
+| Dependency | Old version | New version |
+| ---------- | ----------- | ----------- |
+| `BLAZE`    | 2.2.0       | 2.5.1       |
+
 ## v1.1.0 [2024-03-18]
 
 ### Enhancements

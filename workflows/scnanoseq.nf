@@ -15,6 +15,12 @@ else {
     else if (params.barcode_format.equals("10X_5v2")) {
         blaze_whitelist = file("$baseDir/assets/whitelist/737K-august-2016.txt.zip")
     }
+    else if (params.barcode_format.equals("10X_3v4")) {
+        blaze_whitelist = file("$baseDir/assets/whitelist/3M-3pgex-may-2023_TRU.txt.zip")
+    }
+    else if (params.barcode_format.equals("10X_5v3")) {
+        blaze_whitelist = file("$baseDir/assets/whitelist/3M-5pgex-jan-2023.txt.zip")
+    }
 }
 
 // Quantifiers
@@ -210,7 +216,7 @@ workflow SCNANOSEQ {
     ch_pred = Channel.empty()
     ch_rseqc_bed = Channel.empty()
     if (!params.skip_qc && !params.skip_rseqc) {
-        UCSC_GTFTOGENEPRED( params.gtf )
+        UCSC_GTFTOGENEPRED( gtf )
         ch_pred = UCSC_GTFTOGENEPRED.out.genepred
         ch_versions = ch_versions.mix(UCSC_GTFTOGENEPRED.out.versions)
 
