@@ -5,7 +5,7 @@ process BLAZE {
 
     conda "biconda::blaze2=2.5.1"
 
-    container "${ workflow.containerEngine == 'singularity' ?
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/blaze2:2.5.1--pyhdfd78af_0' :
         'biocontainers/blaze2:2.5.1--pyhdfd78af_0'}"
 
