@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## v1.2.0 [TBD]
 
 ### Enhancements
+
 - (https://github.com/nf-core/scnanoseq/issues/44) All output files produced by isoquant are now produced in the results file
 - (https://github.com/nf-core/scnanoseq/issues/45) Reference files are now accepted in .zip format
 - (https://github.com/nf-core/scnanoseq/issues/47) BLAZE scripts has been removed from the repo so the actual published code can be used
