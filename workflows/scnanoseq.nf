@@ -89,7 +89,8 @@ include { PROCESS_LONGREAD_SCRNA as PROCESS_LONGREAD_SCRNA_TRANSCRIPT } from "..
 //
 // MODULE: Installed directly from nf-core/modules
 //
-include { PIGZ_UNCOMPRESS                               } from "../modules/nf-core/pigz/uncompress/main"
+include { PIGZ_UNCOMPRESS as GUNZIP_FASTQ               } from "../modules/nf-core/pigz/uncompress/main"
+include { PIGZ_UNCOMPRESS as GUNZIP_WHITELIST           } from "../modules/nf-core/pigz/uncompress/main"
 include { PIGZ_COMPRESS                                 } from "../modules/nf-core/pigz/compress/main"
 include { NANOCOMP as NANOCOMP_FASTQ                    } from "../modules/nf-core/nanocomp/main"
 include { MULTIQC as MULTIQC_RAWQC                      } from "../modules/nf-core/multiqc/main"
@@ -228,10 +229,9 @@ workflow SCNANOSEQ {
     //
     // MODULE: Unzip fastq
     //
-    PIGZ_UNCOMPRESS( ch_cat_fastq )
-    ch_unzipped_fastqs = PIGZ_UNCOMPRESS.out.file
-    ch_versions = ch_versions.mix( PIGZ_UNCOMPRESS.out.versions )
-
+    GUNZIP_FASTQ( ch_cat_fastq )
+    ch_unzipped_fastqs = GUNZIP_FASTQ.out.file
+    ch_versions = ch_versions.mix( GUNZIP_FASTQ.out.versions )
 
     //
     // MODULE: Trim and filter reads
@@ -272,7 +272,6 @@ workflow SCNANOSEQ {
             ch_trimmed_reads_combined = CAT_CAT.out.file_out
         }
 
-
         //
         // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - post-trim QC
         //
@@ -294,10 +293,31 @@ workflow SCNANOSEQ {
     }
 
     //
+    // MODULE: Unzip whitelist
+    //
+
+    // NOTE: Blaze does not support '.gzip'
+    ch_blaze_whitelist = blaze_whitelist
+
+    if (blaze_whitelist.endsWith('.gz')){
+
+        GUNZIP_WHITELIST ( [[:], blaze_whitelist ])
+
+        ch_blaze_whitelist =
+            GUNZIP_WHITELIST.out.file
+                .map {
+                    meta, whitelist ->
+                    [whitelist]
+                }
+
+        ch_versions = ch_versions.mix(GUNZIP_WHITELIST.out.versions)
+    }
+
+    //
     // MODULE: Generate whitelist
     //
 
-    BLAZE ( ch_trimmed_reads_combined, blaze_whitelist )
+    BLAZE ( ch_trimmed_reads_combined, ch_blaze_whitelist )
 
     ch_putative_bc = BLAZE.out.putative_bc
     ch_gt_whitelist = BLAZE.out.whitelist
