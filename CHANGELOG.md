@@ -3,14 +3,13 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## v1.1.1 [TBD]
+## v1.2.0 [TBD]
 
 ### Enhancements
-
-- BLAZE scripts has been removed from the repo so the actual published code can be used
-- Added new whitelists for 10X 3v4 and 10X 5v3
-- Reference files are now accepted in .zip format
-- All output files produced by isoquant are now produced in the results file
+- (https://github.com/nf-core/scnanoseq/issues/44) All output files produced by isoquant are now produced in the results file
+- (https://github.com/nf-core/scnanoseq/issues/45) Reference files are now accepted in .zip format
+- (https://github.com/nf-core/scnanoseq/issues/47) BLAZE scripts has been removed from the repo so the actual published code can be used
+- (https://github.com/nf-core/scnanoseq/issues/47) Added new whitelists for 10X 3v4 and 10X 5v3
 - Fixed an error caused by `--skip_qc` and `--skip_seurat`
 
 ### Software dependencies
