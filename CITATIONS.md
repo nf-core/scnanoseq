@@ -2,6 +2,9 @@
 
 ## [nf-core](https://pubmed.ncbi.nlm.nih.gov/32055031/)
 
+## [nf-core/scnanoseq](https://doi.org/10.1101/2025.04.08.647887)
+> Trull A, nf-core community, Worthey EA, Ianov L. scnanoseq: an nf-core pipeline for Oxford Nanopore single-cell RNA-sequencing. bioRxiv 2025.04.08.647887; doi: https://doi.org/10.1101/2025.04.08.647887
+
 > Ewels PA, Peltzer A, Fillinger S, Patel H, Alneberg J, Wilm A, Garcia MU, Di Tommaso P, Nahnsen S. The nf-core framework for community-curated bioinformatics pipelines. Nat Biotechnol. 2020 Mar;38(3):276-278. doi: 10.1038/s41587-020-0439-x. PubMed PMID: 32055031.
 
 ## [Nextflow](https://pubmed.ncbi.nlm.nih.gov/28398311/)
