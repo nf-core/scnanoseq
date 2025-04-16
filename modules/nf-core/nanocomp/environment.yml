@@ -4,4 +4,4 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - bioconda:nanocomp=1.21.0
+  - bioconda::nanocomp=1.21.0
