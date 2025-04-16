@@ -199,7 +199,6 @@ If you use nf-core/scnanoseq for your analysis, please cite the article as follo
 >
 > bioRxiv 2025.04.08.647887; doi: https://doi.org/10.1101/2025.04.08.647887
 
-
 The specific pipleine version can be cited using the following doi: [10.5281/zenodo.13899279](https://doi.org/10.5281/zenodo.13899279)
 
 An extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](CITATIONS.md) file.
