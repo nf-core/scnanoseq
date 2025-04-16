@@ -22,7 +22,7 @@ process NANOPLOT {
 
     script:
     def args = task.ext.args ?: ''
-    def input_file = ("$ontfile".endsWith(".fastq.gz") || "$ontfile".endsWith(".fastq")) ? "--fastq ${ontfile}" :
+    def input_file = [ ".fastq.gz", ".fastq", ".fq", ".fq.gz" ].any { "$ontfile".endsWith(it) } ? "--fastq ${ontfile}" :
         ("$ontfile".endsWith(".txt")) ? "--summary ${ontfile}" : ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
