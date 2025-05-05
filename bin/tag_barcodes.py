@@ -130,15 +130,16 @@ def read_bc_info(bc_info):
 
     with open(bc_info) as fh_bc_info:
         for entry in fh_bc_info:
-            # Sequence names can contain other information and this other
-            #   information can use the underscore as a delimiter
-            entry = entry.strip('\n')
-            read_id, bc, bc_info, umi, umi_qual, corrected_bc = entry.split('\t')
-
-            if corrected_bc:
-                bc_info_dict[read_id] = UmiBcRead(
-                    read_id, bc, bc_info, umi, umi_qual, corrected_bc
-                )
+            entry = entry.strip("\n")
+            fields = entry.split("\t")
+            # Ensure at least five columns exist
+            if len(fields) < 5:
+                continue  # Skip malformed rows
+            read_id, bc, bc_info, umi, umi_qual = fields[:5]
+            corrected_bc = fields[5] if len(fields) > 5 else None  # Handle missing column
+            bc_info_dict[read_id] = UmiBcRead(
+            read_id, bc, bc_info, umi, umi_qual, corrected_bc
+        )
 
     return bc_info_dict
 
