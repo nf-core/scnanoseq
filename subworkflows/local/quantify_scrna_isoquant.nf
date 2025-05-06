@@ -151,7 +151,7 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
 
         if (!params.skip_qc && !params.skip_seurat){
             QC_SCRNA_GENE (
-                MERGE_MTX_GENE.out.merged_mtx,
+                ch_merged_gene_mtx,
                 in_flagstat,
                 "BASE"
             )
@@ -159,7 +159,7 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
             ch_versions = ch_versions.mix(QC_SCRNA_GENE.out.versions)
 
             QC_SCRNA_TRANSCRIPT (
-                MERGE_MTX_TRANSCRIPT.out.merged_mtx,
+                ch_merged_transcript_mtx,
                 in_flagstat,
                 "BASE"
             )
