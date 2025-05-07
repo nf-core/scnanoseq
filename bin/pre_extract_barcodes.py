@@ -26,7 +26,7 @@ def parse_args():
     )
     arg_parser.add_argument("-o", "--output_file", required=True, type=str, help="The output fastq")
     arg_parser.add_argument(
-        "-f", "--barcode-format", required=True, type=str, help="The barcode/umi format (Options: cellranger)"
+        "-f", "--barcode_format", required=True, type=str, help="The barcode/umi format (Options: cellranger)"
     )
     arg_parser.add_argument(
         "-t", "--threads", type=int, help="The number of threads to use")
@@ -34,7 +34,7 @@ def parse_args():
     args = arg_parser.parse_args()
     return args
 
-def extract_bc_umi(bc_queue, bc_out, r2_out):
+def extract_bc_umi(bc_format, bc_queue, bc_out, r2_out):
     """ Will extract the barcode and umi from a read and write them out to a file """
     while True:
         read_id, barcode, orig_seq, orig_quals = bc_queue.get()
@@ -46,9 +46,14 @@ def extract_bc_umi(bc_queue, bc_out, r2_out):
             read_info = {}
 
             # Strip the primer, bc, umi, and poly-T
-            #if bc_format in ["cellranger_3_prime", "cellranger_5_prime"]:
-            #    read_info = strip_read_cellranger(bc_index, seq, quals)
-            read_info = strip_read_cellranger(bc_index, seq, quals)
+            if bc_format in ("10X_3v3", "10X_3v4"):
+                read_info = strip_read_10X_3v3_3v4(bc_index, seq, quals)
+
+            elif bc_format in ("10X_5v2"):
+                read_info = strip_read_10X_5v2(bc_index, seq, quals)
+
+            elif bc_format in ("10X_5v3"):
+                read_info = strip_read_10X_5v3(bc_index, seq, quals)
 
             if read_info:
                 bc_output = "\t".join(
@@ -83,7 +88,7 @@ def extract_barcode(input_file, barcode_file, output, bc_format, threads):
 
     # start worker threads
     for i in range(threads):
-        t = threading.Thread(target=extract_bc_umi, args=(bc_queue, bc_out, r2_out))
+        t = threading.Thread(target=extract_bc_umi, args=(bc_format, bc_queue, bc_out, r2_out))
         t.daemon = True
         t.start()
 
@@ -137,14 +142,32 @@ def find_seq_indices(barcode, sequence, qualities):
 
     return index, sequence, qualities
 
+def strip_read_10X_3v3_3v4(bc_index, seq, quals):
+    bc_length = 16
+    umi_length = 12
+    polyt_length = 10
 
-def strip_read_cellranger(bc_index, seq, quals):
+    return strip_read_10X(bc_index, seq, quals, bc_length, umi_length, polyt_length)
+
+def strip_read_10X_5v3(bc_index, seq, quals):
+    bc_length = 16
+    umi_length = 12
+    polyt_length = 10
+
+    return strip_read_10X(bc_index, seq, quals, bc_length, umi_length, polyt_length)
+
+def strip_read_10X_5v2(bc_index, seq, quals):
+    bc_length = 16
+    umi_length = 10
+    polyt_length = 10
+
+    return strip_read_10X(bc_index, seq, quals, bc_length, umi_length, polyt_length)
+
+def strip_read_10X(bc_index, seq, quals, bc_length, umi_length, polyt_length):
     """Strip the bc and umi from a read, and convert it from a single read
         format to paired read. This function is used for when the barcode is in
         the 10X format, so we expect that the read would look this:
         {bc}{umi}{polyT}{read}
-        where bc is 16 base pairs, umi is 12 base pairs, and the poly T is 10
-        base pairs
 
     Args:
         bc_index (int): The location of the barcode in the read
@@ -162,11 +185,6 @@ def strip_read_cellranger(bc_index, seq, quals):
     """
     read_info = {}
 
-    # TODO: Need to store these somewhere like log_file rather than be hardcoded
-    bc_length = 16
-    umi_length = 12
-    polyt_length = 10
-
     read_info["bc"] = seq[bc_index : bc_index + bc_length ]
     read_info["bc_qual"] = quals[bc_index: bc_index + bc_length ]
     read_info["umi"] = seq[bc_index + bc_length : bc_index + bc_length + umi_length ]
@@ -176,7 +194,6 @@ def strip_read_cellranger(bc_index, seq, quals):
     read_info["r2_qual"] = quals[bc_index + bc_length + umi_length + polyt_length :]
 
     return read_info
-
 
 def main():
     """Main subroutine"""
