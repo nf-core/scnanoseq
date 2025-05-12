@@ -136,7 +136,7 @@ def correct_barcode(infile, outfile, whitelist, barcode_count_file, min_post_pro
         bc_probabilities = calculate_bc_ratios(barcode_count_file)
 
         header = ""
-        
+
         for inline in infile_h.readlines():
             inline = inline.strip('\n')
             if not header:
