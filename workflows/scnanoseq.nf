@@ -141,6 +141,7 @@ workflow SCNANOSEQ {
         }
         .set { ch_fastqs }
 
+
     //
     // MODULE: Combine fastqs from the same sample
     //
@@ -255,10 +256,13 @@ workflow SCNANOSEQ {
                 .set { ch_fastqs }
 
             ch_versions = ch_versions.mix(SPLIT_SEQ.out.versions)
+        } else {
+            ch_fastqs = ch_cat_fastq
         }
 
-        ch_trimmed_reads = ch_fastqs
-        if (!params.skip_trimming) {
+        if (params.skip_trimming){
+            ch_trimmed_reads = ch_fastqs
+        } else {
             CHOPPER ( ch_fastqs )
             ch_trimmed_reads = CHOPPER.out.reads
             ch_versions = ch_versions.mix(CHOPPER.out.versions)
