@@ -6,9 +6,9 @@ results/
 testing/
 testing*
 *.pyc
+null/
 test.sh
 params.yml
 samplesheet.csv
 *.swp
 input*
-null/
