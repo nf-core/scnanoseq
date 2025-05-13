@@ -1,11 +1,11 @@
-process NANOFILT {
+process CHOPPER {
     tag "$meta.id"
-    label 'process_low'
+    label 'process_medium'
 
-    conda "bioconda::nanofilt=2.8.0"
+    conda "bioconda::nanofilt=0.10.0"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/nanofilt:2.8.0--py_0':
-        'biocontainers/nanofilt:2.8.0--py_0' }"
+        'https://depot.galaxyproject.org/singularity/chopper:0.10.0--hcdda2d0_0':
+        'biocontainers/chopper:0.10.0--hcdda2d0_0' }"
 
     input:
     tuple val(meta), path(reads)
@@ -28,16 +28,12 @@ process NANOFILT {
         FILE_PREFIX=\${FILE_PREFIX}.\${IDX}
     fi
 
-    # if reads ends with .gz, then uncompress it
-    if [[ "${reads}" == *.gz ]]; then
-        gunzip -c $reads | NanoFilt $args | gzip -c > \${FILE_PREFIX}.filtered.fastq.gz 
-    else    
-        cat $reads | NanoFilt $args | gzip -c > \${FILE_PREFIX}.filtered.fastq.gz
-    fi
+    chopper -t ${task.cpus} $args --input $reads | \\
+      gzip -c > \${FILE_PREFIX}.filtered.fastq.gz 
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        nanofilt: \$( NanoFilt --version | sed -e "s/NanoFilt //g" )
+        chopper: \$( chopper --version | sed -e "s/chopper //g" )
     END_VERSIONS
     """
 
@@ -48,7 +44,7 @@ process NANOFILT {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        nanofilt: \$( NanoFilt --version | sed -e "s/NanoFilt //g" )
+        chopper: \$( chopper --version | sed -e "s/chopper //g" )
     END_VERSIONS
     """
 }

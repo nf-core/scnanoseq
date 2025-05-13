@@ -11,7 +11,7 @@ The directories listed below will be created in the results directory after the 
 The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes data using the following steps:
 
 - [Preprocessing](#preprocessing)
-  - [Nanofilt](#nanofilt) - Read Quality Filtering and Trimming
+  - [Chopper](#chopper) - Read Quality Filtering and Trimming
 - [Barcode Calling](#barcode-calling)
   - [BLAZE](#blaze) - Barcode caller
 - [Alignment](#alignment)
@@ -39,19 +39,19 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 
 ## Preprocessing
 
-### Nanofilt
+### Chopper
 
 <details markdown="1">
 <summary>Output files</summary>
 
 - `<sample_identifier>/`
   - `fastq/`
-    - `trimmed_nanofilt/`
+    - `trimmed_chopper/`
       - `*_filtered.fastq.gz`: The post-trimmed fastq. By default this will be mostly quality trimmed.
 
 </details>
 
-[Nanofilt](https://github.com/wdecoster/nanofilt) is a tool used for filtering and trimming of long read sequencing data.
+[Chopper](https://github.com/wdecoster/chopper) is a tool used for filtering and trimming of long read sequencing data.
 
 ## Barcode Calling
 

@@ -12,3 +12,4 @@ samplesheet.csv
 *.swp
 input*
 null/
+tmp/
