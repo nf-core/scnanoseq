@@ -38,9 +38,9 @@
 
   > De Coster W, D'Hert S, Schultz DT, Cruts M, Van Broeckhoven C. NanoPack: visualizing and processing long-read sequencing data. Bioinformatics 2018 Aug 1; 34(15):2666-9 doi:10.1093/bioinformatics/bty149. PubMed PMID: 29547981; PubMed Central PMCID: PMC6061794.
 
-- [Nanofilt](https://pubmed.ncbi.nlm.nih.gov/29547981/)
+- [Chopper](https://doi.org/10.1093/bioinformatics/btad311)
 
-  > De Coster W, D'Hert S, Schultz DT, Cruts M, Van Broeckhoven C. NanoPack: visualizing and processing long-read sequencing data. Bioinformatics 2018 Aug 1; 34(15):2666-9 doi:10.1093/bioinformatics/bty149. PubMed PMID: 29547981; PubMed Central PMCID: PMC6061794.
+> Wouter De Coster, Rosa Rademakers, NanoPack2: population-scale evaluation of long-read sequencing data, Bioinformatics, Volume 39, Issue 5, May 2023, btad311, https://doi.org/10.1093/bioinformatics/btad311
 
 - [NanoPlot](https://pubmed.ncbi.nlm.nih.gov/29547981/)
 

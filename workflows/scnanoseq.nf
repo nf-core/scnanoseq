@@ -63,9 +63,9 @@ ch_multiqc_custom_methods_description   = params.multiqc_methods_description ? f
 // MODULE: Loaded from modules/local/
 //
 
-include { NANOFILT                          } from "../modules/local/nanofilt"
-include { SPLIT_FILE                        } from "../modules/local/split_file"
-include { SPLIT_FILE as SPLIT_FILE_BC_FASTQ } from "../modules/local/split_file"
+include { CHOPPER                           } from "../modules/local/chopper"
+include { SPLIT_SEQ                         } from "../modules/local/split_seq"
+include { SPLIT_SEQ as SPLIT_SEQ_BC_FASTQ   } from "../modules/local/split_seq"
 include { SPLIT_FILE as SPLIT_FILE_BC_CSV   } from "../modules/local/split_file"
 include { BLAZE                             } from "../modules/local/blaze"
 include { PREEXTRACT_FASTQ                  } from "../modules/local/preextract_fastq.nf"
@@ -141,6 +141,7 @@ workflow SCNANOSEQ {
         }
         .set { ch_fastqs }
 
+
     //
     // MODULE: Combine fastqs from the same sample
     //
@@ -154,7 +155,7 @@ workflow SCNANOSEQ {
     //
     // SUBWORKFLOW: Fastq QC with Nanoplot, ToulligQC and FastQC - pre-trim QC
     //
-
+    
     ch_fastqc_multiqc_pretrim = Channel.empty()
     if (!params.skip_qc){
 
@@ -229,9 +230,9 @@ workflow SCNANOSEQ {
     //
     // MODULE: Unzip fastq
     //
-    GUNZIP_FASTQ( ch_cat_fastq )
-    ch_unzipped_fastqs = GUNZIP_FASTQ.out.file
-    ch_versions = ch_versions.mix( GUNZIP_FASTQ.out.versions )
+    //GUNZIP_FASTQ( ch_cat_fastq )
+    //ch_unzipped_fastqs = GUNZIP_FASTQ.out.file
+    //ch_versions = ch_versions.mix( GUNZIP_FASTQ.out.versions )
 
     //
     // MODULE: Trim and filter reads
@@ -243,40 +244,42 @@ workflow SCNANOSEQ {
         //
         // MODULE: Split fastq
         //
-        ch_fastqs = ch_unzipped_fastqs
+        //ch_fastqs = ch_unzipped_fastqs
 
         if (params.split_amount > 0) {
-            SPLIT_FILE( ch_unzipped_fastqs, '.fastq', params.split_amount )
+            SPLIT_SEQ( ch_cat_fastq, '.fastq.gz', params.split_amount )
 
             // Temporarily change the meta object so that the id is present on the
             // fastq to prevent duplicated names
-            SPLIT_FILE.out.split_files
+            SPLIT_SEQ.out.split_files
                 .transpose()
                 .set { ch_fastqs }
 
-            ch_versions = ch_versions.mix(SPLIT_FILE.out.versions)
+            ch_versions = ch_versions.mix(SPLIT_SEQ.out.versions)
+        } else {
+            ch_fastqs = ch_cat_fastq
         }
 
-        ch_trimmed_reads = ch_fastqs
-        if (!params.skip_trimming) {
-
-            NANOFILT ( ch_fastqs )
-            ch_trimmed_reads = NANOFILT.out.reads
-            ch_versions = ch_versions.mix(NANOFILT.out.versions)
+        if (params.skip_trimming){
+            ch_trimmed_reads = ch_fastqs
+        } else {
+            CHOPPER ( ch_fastqs )
+            ch_trimmed_reads = CHOPPER.out.reads
+            ch_versions = ch_versions.mix(CHOPPER.out.versions)
         }
 
         // If the fastqs were split, combine them together
-        ch_trimmed_reads_combined = ch_trimmed_reads
         if (params.split_amount > 0){
             CAT_CAT(ch_trimmed_reads.groupTuple())
             ch_trimmed_reads_combined = CAT_CAT.out.file_out
+        } else {
+            ch_trimmed_reads_combined = ch_trimmed_reads
         }
 
         //
         // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - post-trim QC
         //
         if (!params.skip_qc){
-
             //
             // MODULE: Run qc on the post trimmed reads
             //
@@ -289,8 +292,12 @@ workflow SCNANOSEQ {
             ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_TRIM.out.fastqc_version.first().ifEmpty(null))
         }
     } else {
-        ch_trimmed_reads_combined = ch_unzipped_fastqs
+        ch_trimmed_reads_combined = ch_cat_fastq
     }
+
+    ch_trimmed_reads_combined.view() // TODO: Remove
+
+    // compress 
 
     //
     // MODULE: Unzip whitelist
@@ -327,13 +334,13 @@ workflow SCNANOSEQ {
     ch_split_bc_fastqs = ch_trimmed_reads_combined
     ch_split_bc = ch_putative_bc
     if (params.split_amount > 0) {
-        SPLIT_FILE_BC_FASTQ( ch_trimmed_reads_combined, '.fastq', params.split_amount )
+        SPLIT_SEQ_BC_FASTQ( ch_trimmed_reads_combined, '.fastq.gz', params.split_amount )
 
-        SPLIT_FILE_BC_FASTQ.out.split_files
+        SPLIT_SEQ_BC_FASTQ.out.split_files
             .transpose()
             .set { ch_split_bc_fastqs }
 
-        ch_versions = ch_versions.mix(SPLIT_FILE_BC_FASTQ.out.versions)
+        ch_versions = ch_versions.mix(SPLIT_SEQ_BC_FASTQ.out.versions)
 
         SPLIT_FILE_BC_CSV ( ch_putative_bc, '.csv', (params.split_amount / 4) )
         SPLIT_FILE_BC_CSV.out.split_files

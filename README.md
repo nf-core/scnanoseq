@@ -25,6 +25,17 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 
 On release, automated continuous integration tests run the pipeline on a full-sized dataset on the AWS cloud infrastructure. This ensures that the pipeline runs on AWS, has sensible resource allocation defaults set to run on real-world datasets, and permits the persistent storage of results to benchmark between pipeline releases and other analysis sources. The results obtained from the full-sized test can be viewed on the [nf-core website](https://nf-co.re/scnanoseq/results).
 
+## test
+
+
+```bash
+nextflow run main.nf \
+   -profile test,apptainer \
+   --input tmp/samples.csv \
+   --outdir tmp/outdir
+```
+
+
 ## Pipeline summary
 
 ![scnanoseq diagram](assets/scnanoseq_tube_map.png)
@@ -32,7 +43,7 @@ On release, automated continuous integration tests run the pipeline on a full-si
 1. Raw read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [`NanoPlot`](https://github.com/wdecoster/NanoPlot), [`NanoComp`](https://github.com/wdecoster/nanocomp) and [`ToulligQC`](https://github.com/GenomiqueENS/toulligQC))
 2. Unzip and split FASTQ ([`pigz`](https://github.com/madler/pigz))
    1. Optional: Split FASTQ for faster processing ([`split`](https://linux.die.net/man/1/split))
-3. Trim and filter reads ([`Nanofilt`](https://github.com/wdecoster/nanofilt))
+3. Trim and filter reads ([`Chopper`](https://github.com/wdecoster/chopper))
 4. Post trim QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [`NanoPlot`](https://github.com/wdecoster/NanoPlot), [`NanoComp`](https://github.com/wdecoster/nanocomp) and [`ToulligQC`](https://github.com/GenomiqueENS/toulligQC))
 5. Barcode detection using a custom whitelist or 10X whitelist. ([`BLAZE`](https://github.com/shimlab/BLAZE))
 6. Extract barcodes. Consists of the following steps:
