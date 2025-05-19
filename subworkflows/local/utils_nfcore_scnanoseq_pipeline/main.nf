@@ -53,7 +53,7 @@ workflow PIPELINE_INITIALISATION {
     UTILS_NFSCHEMA_PLUGIN (
         workflow,
         validate_params,
-        null
+        "nextflow_schema.json"
     )
 
     //
@@ -74,13 +74,9 @@ workflow PIPELINE_INITIALISATION {
 
     Channel
         .fromList(samplesheetToList(params.input, "${projectDir}/assets/schema_input.json"))
-        .map {
-            meta, fastq_1, fastq_2 ->
-                if (!fastq_2) {
-                    return [ meta.id, meta + [ single_end:true ], [ fastq_1 ] ]
-                } else {
-                    return [ meta.id, meta + [ single_end:false ], [ fastq_1, fastq_2 ] ]
-                }
+        .map{
+            meta, fastq, cell_count_val ->
+                return [ meta.id, meta + [ single_end:true, cell_count: cell_count_val ], [ fastq ] ]
         }
         .groupTuple()
         .map { samplesheet ->
@@ -155,6 +151,16 @@ workflow PIPELINE_COMPLETION {
 //
 def validateInputParameters() {
     genomeExistsError()
+
+    if ((params.quantifier.equals('isoquant') || params.quantifier.equals('both')) && !params.genome_fasta) {
+        def error_string = "In order to quantify with isoquant, a genome fasta must be provided"
+        error(error_string)
+    }
+
+    if ((params.quantifier.equals('oarfish') || params.quantifier.equals('both')) && !params.transcript_fasta) {
+        def error_string = "In order to quantify with oarfish, a transcript fasta must be provided"
+        error(error_string)
+    }
 }
 
 //

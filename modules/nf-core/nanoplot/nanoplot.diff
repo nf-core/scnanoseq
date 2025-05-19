@@ -1,0 +1,43 @@
+Changes in module 'nf-core/nanoplot'
+'modules/nf-core/nanoplot/environment.yml' is unchanged
+'modules/nf-core/nanoplot/meta.yml' is unchanged
+Changes in 'nanoplot/main.nf':
+--- modules/nf-core/nanoplot/main.nf
++++ modules/nf-core/nanoplot/main.nf
+@@ -1,6 +1,6 @@
+ process NANOPLOT {
+     tag "$meta.id"
+-    label 'process_low'
++    label 'process_high'
+ 
+     conda "${moduleDir}/environment.yml"
+     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+@@ -22,13 +22,22 @@
+ 
+     script:
+     def args = task.ext.args ?: ''
+-    def input_file = ("$ontfile".endsWith(".fastq.gz")) ? "--fastq ${ontfile}" :
++    def input_file = [ ".fastq.gz", ".fastq", ".fq", ".fq.gz" ].any { "$ontfile".endsWith(it) } ? "--fastq ${ontfile}" :
+         ("$ontfile".endsWith(".txt")) ? "--summary ${ontfile}" : ''
++    def prefix = task.ext.prefix ?: "${meta.id}"
+     """
+     NanoPlot \\
+         $args \\
+         -t $task.cpus \\
+         $input_file
++
++    for nanoplot_file in *.html *.png *.txt *.log
++    do
++        if [[ -s \$nanoplot_file ]]
++        then
++            mv \$nanoplot_file ${prefix}_\$nanoplot_file
++        fi
++    done
+ 
+     cat <<-END_VERSIONS > versions.yml
+     "${task.process}":
+
+'modules/nf-core/nanoplot/tests/main.nf.test' is unchanged
+'modules/nf-core/nanoplot/tests/tags.yaml' is unchanged
+'modules/nf-core/nanoplot/tests/main.nf.test.snap' is unchanged
+************************************************************

@@ -49,28 +49,45 @@
             "fa_icon": "fas fa-dna",
             "description": "Reference genome related files and options required for the workflow.",
             "properties": {
+                "genome_fasta": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz|\\.zip)?$",
+                    "description": "Path to genome FASTA file.",
+                    "help_text": "This parameter is *mandatory* if you wish to use `isoquant` as a quantifier",
+                    "fa_icon": "fas fa-book-open"
+                },
+                "transcript_fasta": {
+                    "type": "string",
+                    "description": "Path to transcriptome FASTA file.",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz|\\.zip)?$",
+                    "format": "file-path",
+                    "mimetype": "text/plain",
+                    "fa_icon": "fas fa-book-open",
+                    "help_text": "This parameter is *mandatory* if you wish to use `oarfish` as a quantifier"
+                },
+                "gtf": {
+                    "type": "string",
+                    "fa_icon": "fas fa-book-open",
+                    "description": "Path to GTF file.",
+                    "format": "file-path",
+                    "pattern": "^\\S+\\.gtf(\\.gz|\\.zip)?$"
+                },
                 "genome": {
                     "type": "string",
                     "description": "Name of iGenomes reference.",
                     "fa_icon": "fas fa-book",
                     "help_text": "If using a reference genome configured in the pipeline using iGenomes, use this parameter to give the ID for the reference. This is then used to build the full paths for all required reference genome files e.g. `--genome GRCh38`. \n\nSee the [nf-core website docs](https://nf-co.re/usage/reference_genomes) for more details."
                 },
-                "fasta": {
-                    "type": "string",
-                    "format": "file-path",
-                    "exists": true,
-                    "mimetype": "text/plain",
-                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
-                    "description": "Path to FASTA genome file.",
-                    "help_text": "This parameter is *mandatory* if `--genome` is not specified. If you don't have a BWA index available this will be generated for you automatically. Combine with `--save_reference` to save BWA index for future runs.",
-                    "fa_icon": "far fa-file-code"
-                },
                 "igenomes_ignore": {
                     "type": "boolean",
                     "description": "Do not load the iGenomes reference config.",
                     "fa_icon": "fas fa-ban",
                     "hidden": true,
-                    "help_text": "Do not load `igenomes.config` when running the pipeline. You may choose this option if you observe clashes between custom parameters and those supplied in `igenomes.config`."
+                    "help_text": "Do not load `igenomes.config` when running the pipeline. You may choose this option if you observe clashes between custom parameters and those supplied in `igenomes.config`.",
+                    "default": true
                 },
                 "igenomes_base": {
                     "type": "string",
@@ -79,8 +96,197 @@
                     "fa_icon": "fas fa-ban",
                     "hidden": true,
                     "default": "s3://ngi-igenomes/igenomes/"
+                },
+                "fasta_delimiter": {
+                    "type": "string",
+                    "description": "This is the delimiter the FASTA uses in the sequence identifier to separate the string."
+                }
+            },
+            "required": ["gtf"]
+        },
+        "fastq_options": {
+            "title": "Fastq options",
+            "type": "object",
+            "description": "Options related to processing fastqs",
+            "default": "",
+            "fa_icon": "fas fa-file",
+            "properties": {
+                "split_amount": {
+                    "type": "integer",
+                    "description": "The number of lines to split  the FASTQ into.",
+                    "default": 0,
+                    "fa_icon": "fas fa-cut"
                 }
             }
+        },
+        "read_trimming_options": {
+            "title": "Read trimming options",
+            "type": "object",
+            "description": "Options to choose trimming criteria and software.",
+            "default": "",
+            "properties": {
+                "min_length": {
+                    "type": "integer",
+                    "default": 1,
+                    "description": "Choose minimum read length.",
+                    "fa_icon": "fas fa-cut"
+                },
+                "min_q_score": {
+                    "type": "integer",
+                    "default": 10,
+                    "description": "Choose minimum average read quality score.",
+                    "fa_icon": "fas fa-cut"
+                },
+                "skip_trimming": {
+                    "type": "boolean",
+                    "description": "Skip quality trimming step.",
+                    "fa_icon": "fas fa-forward"
+                }
+            },
+            "fa_icon": "fas fa-cut"
+        },
+        "cell_barcode_options": {
+            "title": "Cell barcode options",
+            "type": "object",
+            "description": "Options related to the barcode and umis.",
+            "default": "",
+            "properties": {
+                "whitelist": {
+                    "type": "string",
+                    "description": "User-provided file containing a list of cellular barcodes. Using this parameter will override the default whitelists provided by the pipeline and use the user-provided one instead.",
+                    "format": "file-path",
+                    "fa_icon": "far fa-file-alt"
+                },
+                "barcode_format": {
+                    "type": "string",
+                    "description": "Specify the format for the barcode+umi. This parameter also defines a default barcode whitelist for the pipeline to use for barcode calling, this can be overridden with the 'whitelist' parameter.",
+                    "enum": ["10X_3v3", "10X_3v4", "10X_5v2", "10X_5v3"],
+                    "fa_icon": "fas fa-barcode"
+                },
+                "dedup_tool": {
+                    "type": "string",
+                    "description": "Specify which tool to be used for deduplication (Options: picard, umitools)",
+                    "enum": ["umitools", "picard"]
+                }
+            },
+            "fa_icon": "fas fa-microscope",
+            "required": ["barcode_format", "dedup_tool"]
+        },
+        "mapping": {
+            "title": "Mapping",
+            "type": "object",
+            "description": "Options related to minimap2.",
+            "default": "",
+            "properties": {
+                "stranded": {
+                    "type": "string",
+                    "enum": ["None", "reverse", "forward"],
+                    "description": "Library strandness option.",
+                    "fa_icon": "fas fa-dna"
+                },
+                "kmer_size": {
+                    "type": "integer",
+                    "default": 14,
+                    "description": "Minimizer k-mer length.",
+                    "fa_icon": "fas fa-sort-amount-down"
+                },
+                "save_genome_secondary_alignment": {
+                    "type": "boolean",
+                    "description": "Save the secondary alignments when aligning to the genome"
+                },
+                "save_transcript_secondary_alignment": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Save the secondary alignments when aligning to the transcriptome"
+                }
+            },
+            "fa_icon": "far fa-map"
+        },
+        "analysis_options": {
+            "title": "Analysis options",
+            "type": "object",
+            "default": "",
+            "fa_icon": "fas fa-search",
+            "properties": {
+                "retain_introns": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Indicate whether to include introns in the count matrices",
+                    "fa_icon": "fas fa-filter"
+                },
+                "quantifier": {
+                    "type": "string",
+                    "description": "Provide a comma-delimited options of quantifiers for the pipeline to use. Available tools: isoquant, oarfish",
+                    "pattern": "^(oarfish|isoquant)(,(oarfish|isoquant))*$"
+                }
+            },
+            "required": ["quantifier"],
+            "description": "Options related to post-mapping analysis"
+        },
+        "process_skipping_options": {
+            "title": "Process skipping options",
+            "type": "object",
+            "description": "Options to skip various steps within the workflow.",
+            "default": "",
+            "help_text": "",
+            "properties": {
+                "skip_qc": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-forward",
+                    "description": "Skip all QC."
+                },
+                "skip_fastqc": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-forward",
+                    "description": "Skip FastQC."
+                },
+                "skip_nanoplot": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-forward",
+                    "description": "Skip Nanoplot."
+                },
+                "skip_toulligqc": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-forward",
+                    "description": "Skip ToulligQC."
+                },
+                "skip_fastq_nanocomp": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-forward",
+                    "description": "Skip NanoComp from FASTQ file(s)."
+                },
+                "skip_bam_nanocomp": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-forward",
+                    "description": "Skip NanoComp from BAM file(s)."
+                },
+                "skip_rseqc": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-forward",
+                    "description": "Skip RSeQC."
+                },
+                "skip_seurat": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-forward",
+                    "description": "Skip Seurat QC."
+                },
+                "skip_save_minimap2_index": {
+                    "type": "boolean",
+                    "description": "Skip saving minimap2 index.",
+                    "fa_icon": "fas fa-forward"
+                },
+                "skip_dedup": {
+                    "type": "boolean",
+                    "description": "Skip umi dedup.",
+                    "fa_icon": "fas fa-forward"
+                },
+                "skip_multiqc": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-forward",
+                    "description": "Skip MultiQC."
+                }
+            },
+            "fa_icon": "fas fa-forward"
         },
         "institutional_config_options": {
             "title": "Institutional config options",
@@ -234,6 +440,24 @@
         },
         {
             "$ref": "#/$defs/reference_genome_options"
+        },
+        {
+            "$ref": "#/$defs/fastq_options"
+        },
+        {
+            "$ref": "#/$defs/read_trimming_options"
+        },
+        {
+            "$ref": "#/$defs/cell_barcode_options"
+        },
+        {
+            "$ref": "#/$defs/mapping"
+        },
+        {
+            "$ref": "#/$defs/analysis_options"
+        },
+        {
+            "$ref": "#/$defs/process_skipping_options"
         },
         {
             "$ref": "#/$defs/institutional_config_options"

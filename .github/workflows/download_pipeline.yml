@@ -23,6 +23,7 @@ on:
     branches:
       - main
       - master
+      - main
 
 env:
   NXF_ANSI_LOG: false
