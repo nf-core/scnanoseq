@@ -7,11 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Enhancements
 
+- Fixed issue with linting.yml preventing automatic template PRs
+- Upgraded nf-core template to 3.2.1
+- Upgraded nanocomp nf-core module (no version change)
 - (https://github.com/nf-core/scnanoseq/issues/44) All output files produced by isoquant are now produced in the results file
 - (https://github.com/nf-core/scnanoseq/issues/45) Reference files are now accepted in .zip format
 - (https://github.com/nf-core/scnanoseq/issues/47) BLAZE scripts has been removed from the repo so the actual published code can be used
 - (https://github.com/nf-core/scnanoseq/issues/47) Added new whitelists for 10X 3v4 and 10X 5v3
+- (https://github.com/nf-core/scnanoseq/issues/58) Fixed UMI length for 5 prime chemistries
 - Fixed an error caused by `--skip_qc` and `--skip_seurat`
+- Fixed an error where using `--skip_dedup` would end the pipeline early
+- Seurat now generates the seurat object to pipeline outputs
+- No longer output uncorrected correct barcodes
 
 ### Software dependencies
 
