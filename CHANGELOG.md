@@ -14,11 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - (https://github.com/nf-core/scnanoseq/issues/45) Reference files are now accepted in .zip format
 - (https://github.com/nf-core/scnanoseq/issues/47) BLAZE scripts has been removed from the repo so the actual published code can be used
 - (https://github.com/nf-core/scnanoseq/issues/47) Added new whitelists for 10X 3v4 and 10X 5v3
+- (https://github.com/nf-core/scnanoseq/issues/56) Fixed an error where using `--skip_dedup` would end the pipeline early
 - (https://github.com/nf-core/scnanoseq/issues/58) Fixed UMI length for 5 prime chemistries
 - Fixed an error caused by `--skip_qc` and `--skip_seurat`
-- Fixed an error where using `--skip_dedup` would end the pipeline early
-- Seurat now generates the seurat object to pipeline outputs
+- Seurat process now places the seurat object to pipeline outputs
 - No longer output uncorrected correct barcodes
+- Updated metro diagram
 
 ### Software dependencies
 
