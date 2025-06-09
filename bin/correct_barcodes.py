@@ -153,8 +153,8 @@ def correct_barcode(infile, outfile, whitelist, barcode_count_file, min_post_pro
                 corrected_bc = get_read_bc(
                     bc, bc_qual, whitelist_trie, bc_probabilities, max_edit_dist, min_post_prob
                 )
-
-                outfile_h.write(inline + '\t' + corrected_bc + '\n')
+                if corrected_bc:
+                    outfile_h.write(inline + '\t' + corrected_bc + '\n')
 
 def read_whitelist(in_whitelist):
     """Read the barcode whitelist into a trie. While this does have a hit on
@@ -394,6 +394,7 @@ def find_correct_barcode(potential_bcs, min_prob):
         potential_bc, potential_bc_qual = potential_bc_info
         likelihood = potential_bc_qual / total_probability
         print("INFO: BARCODE_CHECK - ({}) Likelihood {}".format(potential_bc, likelihood))
+
         if likelihood > max_likelihood and likelihood > min_prob:
             max_likelihood = likelihood
             max_likelihood_bc = potential_bc

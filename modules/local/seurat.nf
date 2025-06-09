@@ -14,6 +14,7 @@ process SEURAT {
     output:
     tuple val(meta), path("*.csv"), emit: seurat_stats
     tuple val(meta), path("*.png"), emit: seurat_qcs
+    tuple val(meta), path("*.rds"), emit: seurat_rds
     path "versions.yml"           , emit: versions
 
     when:

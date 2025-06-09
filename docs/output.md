@@ -109,7 +109,7 @@ The knee plot (an example is listed above) that is provided by BLAZE shows all b
   - `genome/`
     - `bam/`
       - `mapped_only/`
-        - `*.sorted.bam` : The genome aligned bam contaning only reads that were able to be mapped.
+        - `*.sorted.bam` : The genome aligned bam containing only reads that were able to be mapped.
         - `*.sorted.bam.bai` : The genome aligned bam index for the bam containing only reads that were able to be mapped.
     - `qc/`
       - `samtools/`
@@ -126,7 +126,7 @@ The knee plot (an example is listed above) that is provided by BLAZE shows all b
   - `transcriptome/`
     - `bam/`
       - `mapped_only/`
-        - `*.sorted.bam` : The transcriptome aligned bam contaning only reads that were able to be mapped.
+        - `*.sorted.bam` : The transcriptome aligned bam containing only reads that were able to be mapped.
         - `*.sorted.bam.bai` : The transcriptome aligned bam index for the bam containing only reads that were able to be mapped.
     - `qc/`
       - `samtools/`
@@ -257,9 +257,9 @@ It should also be noted that IsoQuant can only accurately perform quantification
 
 </details>
 
-[oarfish](https://github.com/COMBINE-lab/oarfish) is a program, written in Rust (https://www.rust-lang.org/), for quantifying transcript-level expression from long-read (i.e. Oxford nanopore cDNA and direct RNA and PacBio) sequencing technologies. oarfish requires a sample of sequencing reads aligned to the transcriptome (currntly not to the genome). It handles multi-mapping reads through the use of probabilistic allocation via an expectation-maximization (EM) algorithm.
+[oarfish](https://github.com/COMBINE-lab/oarfish) is a program, written in Rust (https://www.rust-lang.org/), for quantifying transcript-level expression from long-read (i.e. Oxford nanopore cDNA and direct RNA and PacBio) sequencing technologies. oarfish requires a sample of sequencing reads aligned to the transcriptome (currently not to the genome). It handles multi-mapping reads through the use of probabilistic allocation via an expectation-maximization (EM) algorithm.
 
-It should also be noted that oarfish can only accurately perform quantification on a **transcript** aligned bam, and will only produce transcript level matrices. It's also recommended to ensure that the `--save_transcript_secondary_alignment` is enabled to produce the most accurate oarfish results (true by default for `oarfish` quantification). Notably, this can lead to much higher number of reads reported as aligned, however, this is expected behavior when secondary aligments are included in the analysis.
+It should also be noted that oarfish can only accurately perform quantification on a **transcript** aligned bam, and will only produce transcript level matrices. It's also recommended to ensure that the `--save_transcript_secondary_alignment` is enabled to produce the most accurate oarfish results (true by default for `oarfish` quantification). Notably, this can lead to much higher number of reads reported as aligned, however, this is expected behavior when secondary alignments are included in the analysis.
 
 ### Seurat
 
@@ -273,7 +273,7 @@ It should also be noted that oarfish can only accurately perform quantification 
         - `*.csv`: A file containing statistics about the isoquant generated cell-read distribution for genes.
         - `*.png`: A series of qc images to determine the quality of the isoquant generated gene quantification.
       - `transcript/`
-        - `*.csv`: A file containing statistics about the isoquant generated cell-read distribution for transcript.
+        - `*.csv`: A file containing statistics about the isoquant generated cell-read distribution for transcripts.
         - `*.png`: A series of qc images to determine the quality of the isoquant generated transcript quantification.
   - `transcriptome/`
     - `qc/`
@@ -413,7 +413,7 @@ The FastQC plots displayed in the MultiQC report shows _untrimmed_ reads. They m
 - `<sample_identifier>/`
   - `qc/`
     - `rseqc/`
-      - `*.read_distribution.txt`: This file contains statisitics noting the type of reads located within the dataset
+      - `*.read_distribution.txt`: This file contains statistics noting the type of reads located within the dataset
 
 </details>
 

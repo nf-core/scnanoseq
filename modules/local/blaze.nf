@@ -3,11 +3,11 @@ process BLAZE {
     label 'process_medium'
     label 'process_long'
 
-    conda "atrull314::fast_edit_distance=1.2.1 conda-forge::matplotlib=3.8.4 conda-forge::biopython=1.83 conda-forge::pandas=2.2.2 conda-forge::numpy=2.0.2 conda-forge::tqdm=4.66.4"
+    conda "biconda::blaze2=2.5.1"
 
-    container "${ workflow.containerEngine == 'singularity' ?
-        'docker://agtrull314/blaze:2.2.0' :
-        'docker.io/agtrull314/blaze:2.2.0'}"
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'https://depot.galaxyproject.org/singularity/blaze2:2.5.1--pyhdfd78af_0' :
+        'biocontainers/blaze2:2.5.1--pyhdfd78af_0'}"
 
     input:
     tuple val(meta), path(reads)
@@ -27,11 +27,11 @@ process BLAZE {
     def args       = task.ext.args ?: ''
     def prefix     = task.ext.prefix ?: "${meta.id}"
     // WARN: Version information not provided by tool on CLI. Please update this string when upgrading BLAZE code
-    def VERSION    = '2.2.0'
+    def VERSION    = '2.5.1'
     def cell_count = "${meta.cell_count}"
 
     """
-    main.py \\
+    blaze \\
         --expect-cells ${cell_count} \\
         --full-bc-whitelist ${in_whitelist} \\
         --output-prefix ${prefix}. \\
@@ -56,7 +56,7 @@ process BLAZE {
 
     stub:
     def prefix  = task.ext.prefix ?: "${meta.id}"
-    def VERSION = '2.2.0'
+    def VERSION = '2.5.1'
     """
     touch ${prefix}.putative_bc.no_header.csv
     touch ${prefix}.whitelist.csv

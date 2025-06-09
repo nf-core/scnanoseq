@@ -54,7 +54,7 @@
                     "format": "file-path",
                     "exists": true,
                     "mimetype": "text/plain",
-                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz|\\.zip)?$",
                     "description": "Path to genome FASTA file.",
                     "help_text": "This parameter is *mandatory* if you wish to use `isoquant` as a quantifier",
                     "fa_icon": "fas fa-book-open"
@@ -62,7 +62,7 @@
                 "transcript_fasta": {
                     "type": "string",
                     "description": "Path to transcriptome FASTA file.",
-                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz|\\.zip)?$",
                     "format": "file-path",
                     "mimetype": "text/plain",
                     "fa_icon": "fas fa-book-open",
@@ -73,7 +73,7 @@
                     "fa_icon": "fas fa-book-open",
                     "description": "Path to GTF file.",
                     "format": "file-path",
-                    "pattern": "^\\S+\\.gtf(\\.gz)?$"
+                    "pattern": "^\\S+\\.gtf(\\.gz|\\.zip)?$"
                 },
                 "genome": {
                     "type": "string",
@@ -113,7 +113,7 @@
             "properties": {
                 "split_amount": {
                     "type": "integer",
-                    "description": "The amount of lines to split  the FASTQ into.",
+                    "description": "The number of lines to split  the FASTQ into.",
                     "default": 0,
                     "fa_icon": "fas fa-cut"
                 }
@@ -159,8 +159,8 @@
                 },
                 "barcode_format": {
                     "type": "string",
-                    "description": "Specify the format for the barcode+umi. This parameter also defines a default barcode whitelist for the pipeline to use for barcode calling, this can be overidden with the 'whitelist' parameter.",
-                    "enum": ["10X_3v3", "10X_5v2"],
+                    "description": "Specify the format for the barcode+umi. This parameter also defines a default barcode whitelist for the pipeline to use for barcode calling, this can be overridden with the 'whitelist' parameter.",
+                    "enum": ["10X_3v3", "10X_3v4", "10X_5v2", "10X_5v3"],
                     "fa_icon": "fas fa-barcode"
                 },
                 "dedup_tool": {
@@ -423,6 +423,12 @@
                     "fa_icon": "far fa-check-circle",
                     "description": "Base URL or local path to location of pipeline test dataset files",
                     "default": "https://raw.githubusercontent.com/nf-core/test-datasets/",
+                    "hidden": true
+                },
+                "trace_report_suffix": {
+                    "type": "string",
+                    "fa_icon": "far calendar",
+                    "description": "Suffix to add to the trace report filename. Default is the date and time in the format yyyy-MM-dd_HH-mm-ss.",
                     "hidden": true
                 }
             }

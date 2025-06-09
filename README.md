@@ -180,6 +180,7 @@ We would also like to thank the following people and groups for their support, i
 
 - Dr. Elizabeth Worthey
 - University of Alabama at Birmingham Biological Data Science Core (U-BDS), RRID:SCR_021766, <https://github.com/U-BDS>
+- Civitan International Research Center
 - Support from: 3P30CA013148-48S8
 
 ## Contributions and Support
@@ -190,7 +191,15 @@ For further information or help, don't hesitate to get in touch on the [Slack `#
 
 ## Citations
 
-If you use nf-core/scnanoseq for your analysis, please cite it using the following doi: [10.5281/zenodo.13899279](https://doi.org/10.5281/zenodo.13899279)
+If you use nf-core/scnanoseq for your analysis, please cite the article as follows:
+
+> **scnanoseq: an nf-core pipeline for Oxford Nanopore single-cell RNA-sequencing**
+>
+> Austyn Trull, nf-core community, Elizabeth A. Worthey, Lara Ianov
+>
+> bioRxiv 2025.04.08.647887; doi: https://doi.org/10.1101/2025.04.08.647887
+
+The specific pipleine version can be cited using the following doi: [10.5281/zenodo.13899279](https://doi.org/10.5281/zenodo.13899279)
 
 An extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](CITATIONS.md) file.
 

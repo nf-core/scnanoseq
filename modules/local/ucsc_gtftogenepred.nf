@@ -8,7 +8,7 @@ process UCSC_GTFTOGENEPRED {
         'biocontainers/ucsc-gtftogenepred:447--h954228d_0' }"
 
     input:
-    path gtf
+    tuple val(meta), path(gtf)
 
     output:
     path "*.genepred"    , emit: genepred

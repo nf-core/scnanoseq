@@ -186,6 +186,7 @@ colnames(output_table) <- c("Estimated Cell Number", "Mean Reads Per Cell", "Med
 out_stats <- paste0(opt$outprefix,".csv")
 
 write.csv(output_table, out_stats, row.names = FALSE)
+saveRDS(seurat_obj, file = paste0(opt$outprefix,"_seurat.rds"))
 
 ####################
 ### Session Info ###

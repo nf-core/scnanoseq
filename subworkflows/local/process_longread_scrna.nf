@@ -107,8 +107,18 @@ workflow PROCESS_LONGREAD_SCRNA {
             ch_bai = DEDUP_UMIS.out.dedup_bai
             ch_flagstat = DEDUP_UMIS.out.dedup_flagstat
             ch_versions = DEDUP_UMIS.out.versions
-        }
+        } else {
 
+            ch_bam = TAG_BARCODES.out.tagged_bam
+            ch_bai = SAMTOOLS_INDEX_TAGGED.out.bai
+            ch_flagstat = SAMTOOLS_FLAGSTAT_TAGGED.out.flagstat
+                .map{
+                    meta, flagstat ->
+                        id = ['id': meta.id]
+                    [id, flagstat]
+                }
+
+        }
         //
         // SUBWORKFLOW: Quantify Features
         //
