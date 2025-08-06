@@ -72,7 +72,6 @@ workflow DEMULTIPLEX_BLAZE {
 						.set { ch_split_bc }
 		}
 
-
 		//
 		// MODULE: Extract barcodes
 		//
