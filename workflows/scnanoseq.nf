@@ -21,6 +21,19 @@ else {
     else if (params.barcode_format.equals("10X_5v3")) {
         blaze_whitelist = file("$baseDir/assets/whitelist/3M-5pgex-jan-2023.txt.zip")
     }
+    else if (params.barcode_format.equals("10X_multiome")) {
+        blaze_whitelist = file("$baseDir/assets/whitelist/cellranger_arc_rna.737K-arc-v1.zip")
+    }
+}
+
+if (params.whitelist_dna) {
+    flexiplex_whitelist = params.whitelist_dna
+}
+else if (params.barcode_format.equals("10X_multiome")) {
+    flexiplex_whitelist = file("$baseDir/assets/whitelist/cellranger_arc_atac.737K-arc-v1.zip")
+}
+else {
+    flexiplex_whitelist = Channel.empty()
 }
 
 // Quantifiers
@@ -65,8 +78,6 @@ ch_multiqc_custom_methods_description   = params.multiqc_methods_description ? f
 
 include { NANOFILT                          } from "../modules/local/nanofilt"
 include { SPLIT_FILE                        } from "../modules/local/split_file"
-include { SPLIT_FILE as SPLIT_FILE_BC_FASTQ } from "../modules/local/split_file"
-include { SPLIT_FILE as SPLIT_FILE_BC_CSV   } from "../modules/local/split_file"
 include { BLAZE                             } from "../modules/local/blaze"
 include { PREEXTRACT_FASTQ                  } from "../modules/local/preextract_fastq.nf"
 include { READ_COUNTS                       } from "../modules/local/read_counts.nf"
@@ -77,7 +88,10 @@ include { UCSC_GENEPREDTOBED                } from "../modules/local/ucsc_genepr
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
+
 include { PREPARE_REFERENCE_FILES                                     } from "../subworkflows/local/prepare_reference_files"
+include { DEMULTIPLEX_BLAZE                                           } from "../subworkflows/local/demultiplex_blaze"
+include { DEMULTIPLEX_FLEXIPLEX                                       } from "../subworkflows/local/demultiplex_flexiplex"
 include { PROCESS_LONGREAD_SCRNA as PROCESS_LONGREAD_SCRNA_GENOME     } from "../subworkflows/local/process_longread_scrna"
 include { PROCESS_LONGREAD_SCRNA as PROCESS_LONGREAD_SCRNA_TRANSCRIPT } from "../subworkflows/local/process_longread_scrna"
 
@@ -89,22 +103,20 @@ include { PROCESS_LONGREAD_SCRNA as PROCESS_LONGREAD_SCRNA_TRANSCRIPT } from "..
 //
 // MODULE: Installed directly from nf-core/modules
 //
-include { PIGZ_UNCOMPRESS as GUNZIP_FASTQ               } from "../modules/nf-core/pigz/uncompress/main"
-include { PIGZ_UNCOMPRESS as GUNZIP_WHITELIST           } from "../modules/nf-core/pigz/uncompress/main"
-include { PIGZ_COMPRESS                                 } from "../modules/nf-core/pigz/compress/main"
+
+include { PIGZ_UNCOMPRESS                               } from "../modules/nf-core/pigz/uncompress/main"
 include { NANOCOMP as NANOCOMP_FASTQ                    } from "../modules/nf-core/nanocomp/main"
 include { MULTIQC as MULTIQC_RAWQC                      } from "../modules/nf-core/multiqc/main"
 include { MULTIQC as MULTIQC_FINALQC                    } from "../modules/nf-core/multiqc/main"
 include { CUSTOM_DUMPSOFTWAREVERSIONS                   } from "../modules/nf-core/custom/dumpsoftwareversions/main"
 include { CAT_CAT                                       } from "../modules/nf-core/cat/cat/main"
-include { CAT_CAT as CAT_CAT_PREEXTRACT                 } from "../modules/nf-core/cat/cat/main"
-include { CAT_CAT as CAT_CAT_BARCODE                    } from "../modules/nf-core/cat/cat/main"
 include { CAT_FASTQ                                     } from "../modules/nf-core/cat/fastq/main"
 include { paramsSummaryMap                              } from "plugin/nf-schema"
 
 /*
  * SUBWORKFLOW: Consisting entirely of nf-core/subworkflows
  */
+ 
 include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_PRE_TRIM          } from "../subworkflows/nf-core/qcfastq_nanoplot_fastqc"
 include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_POST_TRIM         } from "../subworkflows/nf-core/qcfastq_nanoplot_fastqc"
 include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_POST_EXTRACT      } from "../subworkflows/nf-core/qcfastq_nanoplot_fastqc"
@@ -131,6 +143,7 @@ workflow SCNANOSEQ {
     //
     // SUBWORKFLOW: Read in samplesheet, validate and stage input files
     //
+    
     ch_samplesheet
         .branch{
             meta, fastq ->
@@ -144,6 +157,7 @@ workflow SCNANOSEQ {
     //
     // MODULE: Combine fastqs from the same sample
     //
+    
     CAT_FASTQ ( ch_fastqs.multiple )
         .reads
         .mix ( ch_fastqs.single )
@@ -229,9 +243,9 @@ workflow SCNANOSEQ {
     //
     // MODULE: Unzip fastq
     //
-    GUNZIP_FASTQ( ch_cat_fastq )
-    ch_unzipped_fastqs = GUNZIP_FASTQ.out.file
-    ch_versions = ch_versions.mix( GUNZIP_FASTQ.out.versions )
+    PIGZ_UNCOMPRESS( ch_cat_fastq )
+    ch_unzipped_fastqs = PIGZ_UNCOMPRESS.out.file
+    ch_versions = ch_versions.mix( PIGZ_UNCOMPRESS.out.versions )
 
     //
     // MODULE: Trim and filter reads
@@ -291,101 +305,49 @@ workflow SCNANOSEQ {
     } else {
         ch_trimmed_reads_combined = ch_unzipped_fastqs
     }
-
+    
+    // Branch channel to dna and cdna
+    ch_trimmed_reads_combined = ch_trimmed_reads_combined
+        .branch {
+            meta, fastq ->
+                dna: meta.type == 'dna'
+                    return [ meta, fastq ]
+                cdna: meta.type == 'cdna'
+                    return [ meta, fastq ]
+        }
+    
     //
-    // MODULE: Unzip whitelist
+    // SUBWORKFLOW: Demultiplex reads using BLAZE for cDNA
     //
-
-    // NOTE: Blaze does not support '.gzip'
-    ch_blaze_whitelist = blaze_whitelist
-
-    if (blaze_whitelist.endsWith('.gz')){
-
-        GUNZIP_WHITELIST ( [[:], blaze_whitelist ])
-
-        ch_blaze_whitelist =
-            GUNZIP_WHITELIST.out.file
-                .map {
-                    meta, whitelist ->
-                    [whitelist]
-                }
-
-        ch_versions = ch_versions.mix(GUNZIP_WHITELIST.out.versions)
-    }
-
-    //
-    // MODULE: Generate whitelist
-    //
-
-    BLAZE ( ch_trimmed_reads_combined, ch_blaze_whitelist )
-
-    ch_putative_bc = BLAZE.out.putative_bc
-    ch_gt_whitelist = BLAZE.out.whitelist
-    ch_whitelist_bc_count = BLAZE.out.bc_count
-    ch_versions = ch_versions.mix(BLAZE.out.versions)
-
-    ch_split_bc_fastqs = ch_trimmed_reads_combined
-    ch_split_bc = ch_putative_bc
-    if (params.split_amount > 0) {
-        SPLIT_FILE_BC_FASTQ( ch_trimmed_reads_combined, '.fastq', params.split_amount )
-
-        SPLIT_FILE_BC_FASTQ.out.split_files
-            .transpose()
-            .set { ch_split_bc_fastqs }
-
-        ch_versions = ch_versions.mix(SPLIT_FILE_BC_FASTQ.out.versions)
-
-        SPLIT_FILE_BC_CSV ( ch_putative_bc, '.csv', (params.split_amount / 4) )
-        SPLIT_FILE_BC_CSV.out.split_files
-            .transpose()
-            .set { ch_split_bc }
-    }
-
-
-    //
-    // MODULE: Extract barcodes
-    //
-
-    PREEXTRACT_FASTQ( ch_split_bc_fastqs.join(ch_split_bc), params.barcode_format )
-    ch_barcode_info = PREEXTRACT_FASTQ.out.barcode_info
-    ch_preextract_fastq = PREEXTRACT_FASTQ.out.extracted_fastq
-
-    //
-    // MODULE: Correct Barcodes
-    //
-
-    CORRECT_BARCODES (
-        ch_barcode_info
-            .combine ( ch_gt_whitelist, by: 0)
-            .combine ( ch_whitelist_bc_count, by: 0 )
+    
+    DEMULTIPLEX_BLAZE ( 
+        ch_trimmed_reads_combined.cdna,
+        blaze_whitelist
     )
-    ch_corrected_bc_file = CORRECT_BARCODES.out.corrected_bc_info
-    ch_versions = ch_versions.mix(CORRECT_BARCODES.out.versions)
+    
+    ch_versions = ch_versions.mix(DEMULTIPLEX_BLAZE.out.versions)
+    ch_extracted_fastq_blaze = DEMULTIPLEX_BLAZE.out.extracted_fastq
+    ch_corrected_bc_info_blaze = DEMULTIPLEX_BLAZE.out.corrected_bc_info
+    
+    //
+    // SUBWORKFLOW: Demultiplex reads using FLEXIPLEX for DNA
+    //
+    
+    DEMULTIPLEX_FLEXIPLEX (
+        ch_trimmed_reads_combined.dna,
+        flexiplex_whitelist
+    )
+    
+    ch_versions = ch_versions.mix(DEMULTIPLEX_FLEXIPLEX.out.versions)
+    ch_extracted_fastq_flexiplex = DEMULTIPLEX_FLEXIPLEX.out.flexiplex_fastq
+    ch_corrected_bc_info_flexiplex = DEMULTIPLEX_FLEXIPLEX.out.flexiplex_barcodes
 
-    ch_extracted_fastq = ch_preextract_fastq
-    ch_corrected_bc_info = ch_corrected_bc_file
-
-    if (params.split_amount > 0){
-        //
-        // MODULE: Cat Preextract
-        //
-        CAT_CAT_PREEXTRACT(ch_preextract_fastq.groupTuple())
-        ch_cat_preextract_fastq = CAT_CAT_PREEXTRACT.out.file_out
-
-        //
-        // MODULE: Cat barcode file
-        //
-        CAT_CAT_BARCODE (ch_corrected_bc_file.groupTuple())
-        ch_corrected_bc_info = CAT_CAT_BARCODE.out.file_out
-
-        //
-        // MODULE: Zip the reads
-        //
-        PIGZ_COMPRESS (ch_cat_preextract_fastq )
-        ch_extracted_fastq = PIGZ_COMPRESS.out.archive
-        ch_versions = ch_versions.mix(PIGZ_COMPRESS.out.versions)
-    }
-
+    // Recombine channels
+    ch_extracted_fastq = ch_extracted_fastq_blaze.mix(ch_extracted_fastq_flexiplex)
+    ch_corrected_bc_info = ch_corrected_bc_info_blaze.mix(ch_corrected_bc_info_flexiplex)
+    
+    ch_extracted_fastq.view()
+    
     //
     // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - post-extract QC
     //
