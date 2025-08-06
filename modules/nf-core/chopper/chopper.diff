@@ -1,0 +1,21 @@
+Changes in component 'nf-core/chopper'
+'modules/nf-core/chopper/meta.yml' is unchanged
+Changes in 'chopper/main.nf':
+--- modules/nf-core/chopper/main.nf
++++ modules/nf-core/chopper/main.nf
+@@ -4,8 +4,8 @@
+ 
+     conda "${moduleDir}/environment.yml"
+     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+-        'https://depot.galaxyproject.org/singularity/chopper:0.9.0--hdcf5f25_0':
+-        'biocontainers/chopper:0.9.0--hdcf5f25_0' }"
++        'https://depot.galaxyproject.org/singularity/chopper:0.10.0--hcdda2d0_0':
++        'biocontainers/chopper:0.10.0--hcdda2d0_0' }"
+ 
+     input:
+     tuple val(meta), path(fastq)
+
+'modules/nf-core/chopper/environment.yml' is unchanged
+'modules/nf-core/chopper/tests/main.nf.test' is unchanged
+'modules/nf-core/chopper/tests/main.nf.test.snap' is unchanged
+************************************************************
