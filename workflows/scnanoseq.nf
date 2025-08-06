@@ -106,6 +106,7 @@ include { PROCESS_LONGREAD_SCRNA as PROCESS_LONGREAD_SCRNA_TRANSCRIPT } from "..
 
 include { PIGZ_UNCOMPRESS                               } from "../modules/nf-core/pigz/uncompress/main"
 include { NANOCOMP as NANOCOMP_FASTQ                    } from "../modules/nf-core/nanocomp/main"
+include { CHOPPER                                       } from "../modules/nf-core/chopper/main"   
 include { MULTIQC as MULTIQC_RAWQC                      } from "../modules/nf-core/multiqc/main"
 include { MULTIQC as MULTIQC_FINALQC                    } from "../modules/nf-core/multiqc/main"
 include { CUSTOM_DUMPSOFTWAREVERSIONS                   } from "../modules/nf-core/custom/dumpsoftwareversions/main"
@@ -239,14 +240,15 @@ workflow SCNANOSEQ {
         ch_rseqc_bed = UCSC_GENEPREDTOBED.out.bed
         ch_versions = ch_versions.mix(UCSC_GENEPREDTOBED.out.versions)
     }
-
+    /*
     //
     // MODULE: Unzip fastq
     //
     PIGZ_UNCOMPRESS( ch_cat_fastq )
     ch_unzipped_fastqs = PIGZ_UNCOMPRESS.out.file
     ch_versions = ch_versions.mix( PIGZ_UNCOMPRESS.out.versions )
-
+    */
+    
     //
     // MODULE: Trim and filter reads
     //
@@ -254,6 +256,17 @@ workflow SCNANOSEQ {
     ch_trimmed_reads_combined = Channel.empty()
 
     if (!params.skip_trimming){
+        
+        //
+        // MODULE: Chopper
+        //
+        
+        CHOPPER ( ch_cat_fastq, [] )
+        
+        versions = CHOPPER.out.versions
+        ch_trimmed_reads_combined = CHOPPER.out.fastq
+        
+        /*
         //
         // MODULE: Split fastq
         //
@@ -285,7 +298,7 @@ workflow SCNANOSEQ {
             CAT_CAT(ch_trimmed_reads.groupTuple())
             ch_trimmed_reads_combined = CAT_CAT.out.file_out
         }
-
+        */
         //
         // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - post-trim QC
         //
