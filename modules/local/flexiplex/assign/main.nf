@@ -11,7 +11,7 @@ process FLEXIPLEX_ASSIGN {
     tuple val(meta), path(reads), path(barcodes)
 
     output:
-    tuple val(meta), path("*flexiplex.fastq.gz")            , emit: reads
+    tuple val(meta), path("*flexiplex.fastq")            , emit: reads
     path "versions.yml"                                     , emit: versions
 
     when:
@@ -29,7 +29,7 @@ process FLEXIPLEX_ASSIGN {
         -k ${barcodes} \\
         -p ${task.cpus} \\
         ${reads} \\
-        | pigz > ${prefix}.flexiplex.fastq.gz
+        > ${prefix}.flexiplex.fastq
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -42,7 +42,7 @@ process FLEXIPLEX_ASSIGN {
     def prefix = task.ext.prefix ?: "${meta.id}"
 
     """
-    touch ${prefix}.flexiplex.fastq.gz
+    touch ${prefix}.flexiplex.fastq
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

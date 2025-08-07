@@ -29,6 +29,8 @@ workflow DEMULTIPLEX_FLEXIPLEX {
         ch_reads = PIGZ_UNCOMPRESS.out.file
         ch_versions = ch_versions.mix(PIGZ_UNCOMPRESS.out.versions)
         
+        //TODO: Split file here and merge all known_barcode files into one, summing the counts
+        //TODO: Also do g(un)zipping during flexiplex instead of saving the unzipped files.
         //
         // MODULE: Run flexiplex
         //
@@ -87,11 +89,27 @@ workflow DEMULTIPLEX_FLEXIPLEX {
         ch_versions = ch_versions.mix(FLEXIPLEX_ASSIGN.out.versions)
         
         //
+        // MODULE: Compress Fastqs
+        //
+        PIGZ_COMPRESS ( FLEXIPLEX_ASSIGN.out.reads )
+        
+        ch_versions = ch_versions.mix(PIGZ_COMPRESS.out.versions)
+        
+        // Group by ID for CATFASTQ
+        PIGZ_COMPRESS.out.archive
+            | map { meta, reads ->
+                [meta.subMap('id', 'single_end'), meta.part, reads] }
+            | groupTuple
+            | map { meta, part, reads -> [meta + [partcount: part.size()], reads] }
+            | set { ch_grouped_flexiplex_fastq }
+        
+        
+        //
         // MODULE: cat fastq
         //
         
         CAT_FASTQ (
-            FLEXIPLEX_ASSIGN.out.reads
+            ch_grouped_flexiplex_fastq
         )
         ch_flexiplex_fastq = CAT_FASTQ.out.reads
         

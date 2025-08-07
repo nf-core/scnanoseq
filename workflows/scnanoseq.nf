@@ -363,7 +363,7 @@ workflow SCNANOSEQ {
 
     DEMULTIPLEX_FLEXIPLEX_CDNA (
         ch_trimmed_reads_combined.cdna,
-        flexiplex_whitelist
+        blaze_whitelist
     )
 
     ch_versions = ch_versions.mix(DEMULTIPLEX_FLEXIPLEX_CDNA.out.versions)
