@@ -3,6 +3,7 @@
 //
 
 include { PIGZ_COMPRESS                             } from '../../modules/nf-core/pigz/compress/main'
+include { PIGZ_UNCOMPRESS                           } from '../../modules/nf-core/pigz/uncompress/main'
 include { SEQKIT_SPLIT2                             } from '../../modules/nf-core/seqkit/split2/main'
 include { FLEXIPLEX_DISCOVERY                       } from '../../modules/local/flexiplex/discovery/main'
 include { FLEXIPLEX_FILTER                          } from '../../modules/local/flexiplex/filter/main'
@@ -12,13 +13,21 @@ include { CAT_FASTQ                                 } from '../../modules/nf-cor
 
 workflow DEMULTIPLEX_FLEXIPLEX {
     take:
-        ch_reads
+        reads
         whitelist
 
     main:
         ch_versions = Channel.empty()
         ch_flexiplex_fastq = Channel.empty()
         ch_flexiplex_barcodes = Channel.empty()
+        
+        //
+        // UNZIP: Unzip reads
+        //
+        PIGZ_UNCOMPRESS( reads )
+
+        ch_reads = PIGZ_UNCOMPRESS.out.file
+        ch_versions = ch_versions.mix(PIGZ_UNCOMPRESS.out.versions)
         
         //
         // MODULE: Run flexiplex
@@ -70,6 +79,7 @@ workflow DEMULTIPLEX_FLEXIPLEX {
         // 
         // MODULE: Assign flexiplex
         //
+        
         FLEXIPLEX_ASSIGN (
             ch_split_fastq_barcode,
         )
@@ -77,27 +87,11 @@ workflow DEMULTIPLEX_FLEXIPLEX {
         ch_versions = ch_versions.mix(FLEXIPLEX_ASSIGN.out.versions)
         
         //
-        // MODULE: Compress Fastqs
-        //
-        PIGZ_COMPRESS ( FLEXIPLEX_ASSIGN.out.reads )
-        
-        ch_versions = ch_versions.mix(PIGZ_COMPRESS.out.versions)
-        
-        // Group by ID for CATFASTQ
-        PIGZ_COMPRESS.out.archive
-            | map { meta, reads ->
-                [meta.subMap('id', 'single_end'), meta.part, reads] }
-            | groupTuple
-            | map { meta, part, reads -> [meta + [partcount: part.size()], reads] }
-            | set { ch_grouped_flexiplex_fastq }
-        
-        
-        //
         // MODULE: cat fastq
         //
         
         CAT_FASTQ (
-            ch_grouped_flexiplex_fastq
+            FLEXIPLEX_ASSIGN.out.reads
         )
         ch_flexiplex_fastq = CAT_FASTQ.out.reads
         

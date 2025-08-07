@@ -91,7 +91,8 @@ include { UCSC_GENEPREDTOBED                } from "../modules/local/ucsc_genepr
 
 include { PREPARE_REFERENCE_FILES                                     } from "../subworkflows/local/prepare_reference_files"
 include { DEMULTIPLEX_BLAZE                                           } from "../subworkflows/local/demultiplex_blaze"
-include { DEMULTIPLEX_FLEXIPLEX                                       } from "../subworkflows/local/demultiplex_flexiplex"
+include { DEMULTIPLEX_FLEXIPLEX as DEMULTIPLEX_FLEXIPLEX_CDNA         } from "../subworkflows/local/demultiplex_flexiplex"
+include { DEMULTIPLEX_FLEXIPLEX as DEMULTIPLEX_FLEXIPLEX_DNA          } from "../subworkflows/local/demultiplex_flexiplex"
 include { PROCESS_LONGREAD_SCRNA as PROCESS_LONGREAD_SCRNA_GENOME     } from "../subworkflows/local/process_longread_scrna"
 include { PROCESS_LONGREAD_SCRNA as PROCESS_LONGREAD_SCRNA_TRANSCRIPT } from "../subworkflows/local/process_longread_scrna"
 
@@ -319,6 +320,7 @@ workflow SCNANOSEQ {
         ch_trimmed_reads_combined = ch_unzipped_fastqs
     }
     
+    
     // Branch channel to dna and cdna
     ch_trimmed_reads_combined = ch_trimmed_reads_combined
         .branch {
@@ -328,7 +330,7 @@ workflow SCNANOSEQ {
                 cdna: meta.type == 'cdna'
                     return [ meta, fastq ]
         }
-    
+    /*
     //
     // SUBWORKFLOW: Demultiplex reads using BLAZE for cDNA
     //
@@ -341,25 +343,37 @@ workflow SCNANOSEQ {
     ch_versions = ch_versions.mix(DEMULTIPLEX_BLAZE.out.versions)
     ch_extracted_fastq_blaze = DEMULTIPLEX_BLAZE.out.extracted_fastq
     ch_corrected_bc_info_blaze = DEMULTIPLEX_BLAZE.out.corrected_bc_info
-    
+    */
     //
     // SUBWORKFLOW: Demultiplex reads using FLEXIPLEX for DNA
     //
     
-    DEMULTIPLEX_FLEXIPLEX (
+    DEMULTIPLEX_FLEXIPLEX_DNA (
         ch_trimmed_reads_combined.dna,
         flexiplex_whitelist
     )
-    
-    ch_versions = ch_versions.mix(DEMULTIPLEX_FLEXIPLEX.out.versions)
-    ch_extracted_fastq_flexiplex = DEMULTIPLEX_FLEXIPLEX.out.flexiplex_fastq
-    ch_corrected_bc_info_flexiplex = DEMULTIPLEX_FLEXIPLEX.out.flexiplex_barcodes
+
+    ch_versions = ch_versions.mix(DEMULTIPLEX_FLEXIPLEX_DNA.out.versions)
+    ch_extracted_fastq_flexiplex_dna = DEMULTIPLEX_FLEXIPLEX_DNA.out.flexiplex_fastq
+    ch_corrected_bc_info_flexiplex_dna = DEMULTIPLEX_FLEXIPLEX_DNA.out.flexiplex_barcodes
+
+    //
+    // SUBWORKFLOW: Demultiplex reads using FLEXIPLEX for cDNA
+    //
+
+    DEMULTIPLEX_FLEXIPLEX_CDNA (
+        ch_trimmed_reads_combined.cdna,
+        flexiplex_whitelist
+    )
+
+    ch_versions = ch_versions.mix(DEMULTIPLEX_FLEXIPLEX_CDNA.out.versions)
+    ch_extracted_fastq_flexiplex_cdna = DEMULTIPLEX_FLEXIPLEX_CDNA.out.flexiplex_fastq
+    ch_corrected_bc_info_flexiplex_cdna = DEMULTIPLEX_FLEXIPLEX_CDNA.out.flexiplex_barcodes
+
 
     // Recombine channels
-    ch_extracted_fastq = ch_extracted_fastq_blaze.mix(ch_extracted_fastq_flexiplex)
-    ch_corrected_bc_info = ch_corrected_bc_info_blaze.mix(ch_corrected_bc_info_flexiplex)
-    
-    ch_extracted_fastq.view()
+    ch_extracted_fastq = ch_extracted_fastq_flexiplex_cdna.mix(ch_extracted_fastq_flexiplex_dna)
+    ch_corrected_bc_info = ch_corrected_bc_info_flexiplex_cdna.mix(ch_corrected_bc_info_flexiplex_dna)
     
     //
     // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - post-extract QC

@@ -11,7 +11,8 @@ include { SPLIT_FILE as SPLIT_FILE_BC_CSV   } from "../../modules/local/split_fi
 include { CAT_CAT as CAT_CAT_PREEXTRACT     } from "../../modules/nf-core/cat/cat/main"
 include { CAT_CAT as CAT_CAT_BARCODE        } from "../../modules/nf-core/cat/cat/main"
 include { PIGZ_COMPRESS 										} from '../../modules/nf-core/pigz/compress/main'
-include { PIGZ_UNCOMPRESS					          } from "../../modules/nf-core/pigz/uncompress/main"
+include { PIGZ_UNCOMPRESS as PIGZ_UNCOMPRESS_WHITELIST	} from "../../modules/nf-core/pigz/uncompress/main"
+include { PIGZ_UNCOMPRESS as PIGZ_UNCOMPRESS_FASTQ	} from "../../modules/nf-core/pigz/uncompress/main"
 
 workflow DEMULTIPLEX_BLAZE {
 	take:
@@ -36,10 +37,10 @@ workflow DEMULTIPLEX_BLAZE {
 
     if (blaze_whitelist.endsWith('.gz')){
 
-        PIGZ_UNCOMPRESS ( [[:], blaze_whitelist ])
+        PIGZ_UNCOMPRESS_WHITELIST ( [[:], blaze_whitelist ])
 
         ch_blaze_whitelist =
-            PIGZ_UNCOMPRESS.out.file
+            PIGZ_UNCOMPRESS_WHITELIST.out.file
                 .map {
                     meta, whitelist ->
                     [whitelist]
@@ -47,6 +48,10 @@ workflow DEMULTIPLEX_BLAZE {
 
         ch_versions = ch_versions.mix(GUNZIP_WHITELIST.out.versions)
     }
+		
+		PIGZ_UNCOMPRESS_FASTQ ( ch_trimmed_reads_combined )
+		ch_trimmed_reads_combined = PIGZ_UNCOMPRESS_FASTQ.out.file
+		ch_versions = ch_versions.mix(PIGZ_UNCOMPRESS_FASTQ.out.versions)
 		
 		BLAZE ( ch_trimmed_reads_combined, ch_blaze_whitelist )
 
@@ -71,6 +76,7 @@ workflow DEMULTIPLEX_BLAZE {
 						.transpose()
 						.set { ch_split_bc }
 		}
+
 
 		//
 		// MODULE: Extract barcodes
