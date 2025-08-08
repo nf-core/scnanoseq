@@ -151,9 +151,15 @@
             "description": "Options related to the barcode and umis.",
             "default": "",
             "properties": {
-                "whitelist": {
+                "cdna_whitelist": {
                     "type": "string",
-                    "description": "User-provided file containing a list of cellular barcodes. Using this parameter will override the default whitelists provided by the pipeline and use the user-provided one instead.",
+                    "description": "User-provided file containing a list of cellular barcodes for cDNA samples. Using this parameter will override the default cDNA whitelists provided by the pipeline and use the user-provided one instead.",
+                    "format": "file-path",
+                    "fa_icon": "far fa-file-alt"
+                },
+                "dna_whitelist": {
+                    "type": "string",
+                    "description": "User-provided file containing a list of cellular barcodes for DNA samples. Using this parameter will override the default DNA whitelists provided by the pipeline and use the user-provided one instead.",
                     "format": "file-path",
                     "fa_icon": "far fa-file-alt"
                 },
