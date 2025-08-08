@@ -4,8 +4,8 @@ process FLEXIPLEX_FILTER {
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/flexiplex:1.02.4--py39h2de1943_0':
-        'biocontainers/flexiplex:1.02.4--py39h2de1943_0' }"
+        'https://depot.galaxyproject.org/singularity/flexiplex:1.02.3--py39h2de1943_0':
+        'biocontainers/flexiplex:1.02.3--py39h2de1943_0' }"
 
     input:
     tuple val(meta), path(barcodes)

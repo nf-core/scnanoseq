@@ -4,14 +4,14 @@ process FLEXIPLEX_ASSIGN {
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/flexiplex:1.02.4--py39h2de1943_0':
-        'biocontainers/flexiplex:1.02.4--py39h2de1943_0' }"
+        'https://depot.galaxyproject.org/singularity/flexiplex:1.02.3--py39h2de1943_0':
+        'biocontainers/flexiplex:1.02.3--py39h2de1943_0' }"
 
     input:
     tuple val(meta), path(reads), path(barcodes)
 
     output:
-    tuple val(meta), path("*flexiplex.fastq")            , emit: reads
+    tuple val(meta), path("*flexiplex.fastq.gz")            , emit: reads
     path "versions.yml"                                     , emit: versions
 
     when:
@@ -24,12 +24,11 @@ process FLEXIPLEX_ASSIGN {
     """
     # Run in assignment mode
 
-    flexiplex \\
+    zcat ${reads} | flexiplex \\
         ${args} \\
         -k ${barcodes} \\
         -p ${task.cpus} \\
-        ${reads} \\
-        > ${prefix}.flexiplex.fastq
+        | gzip -c > ${prefix}.flexiplex.fastq.gz
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -42,7 +41,7 @@ process FLEXIPLEX_ASSIGN {
     def prefix = task.ext.prefix ?: "${meta.id}"
 
     """
-    touch ${prefix}.flexiplex.fastq
+    touch ${prefix}.flexiplex.fastq.gz
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
