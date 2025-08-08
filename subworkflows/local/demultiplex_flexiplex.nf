@@ -9,7 +9,7 @@ include { FLEXIPLEX_DISCOVERY                       } from '../../modules/local/
 include { FLEXIPLEX_FILTER                          } from '../../modules/local/flexiplex/filter/main'
 include { FLEXIPLEX_ASSIGN                          } from '../../modules/local/flexiplex/assign/main'
 include { CAT_FASTQ                                 } from '../../modules/nf-core/cat/fastq/main'
-
+include { MERGEBARCODECOUNTS                        } from '../../modules/local/mergebarcodecounts/main'
 
 workflow DEMULTIPLEX_FLEXIPLEX {
     take:
@@ -21,64 +21,88 @@ workflow DEMULTIPLEX_FLEXIPLEX {
         ch_flexiplex_fastq = Channel.empty()
         ch_flexiplex_barcodes = Channel.empty()
         
-        //
-        // UNZIP: Unzip reads
-        //
-        PIGZ_UNCOMPRESS( reads )
+        // Unzip the whitelist if needed
+        if (whitelist.extension == "gz"){
 
-        ch_reads = PIGZ_UNCOMPRESS.out.file
-        ch_versions = ch_versions.mix(PIGZ_UNCOMPRESS.out.versions)
+            PIGZ_UNCOMPRESS ( [[:], whitelist] )
+
+            ch_whitelist =
+                PIGZ_UNCOMPRESS.out.file
+                    .map {
+                        meta, whitelist ->
+                        [whitelist]
+                    }
+
+            ch_versions = ch_versions.mix(PIGZ_UNCOMPRESS.out.versions)
+        } else {
+            ch_whitelist = whitelist
+        }
         
-        //TODO: Split file here and merge all known_barcode files into one, summing the counts
-        //TODO: Also do g(un)zipping during flexiplex instead of saving the unzipped files.
+        //
+        // MODULE: SPLIT2: Split reads into parts
+        //
+        SEQKIT_SPLIT2 (
+            reads
+        )
+        
+        ch_versions = SEQKIT_SPLIT2.out.versions
+        
+        // Transpose channel and add part to metadata
+        ch_split_fastq = SEQKIT_SPLIT2.out.reads
+            .map { meta, reads -> 
+                  newmeta = [splitcount: reads.size()]
+                  [meta + newmeta, reads] }
+            .transpose()
+            .map { meta , reads -> 
+                  part = (reads =~ /.*part_(\d+)\.fastq(?:\.gz)?$/)[0][1]
+                  newmeta = [part: part]
+                  [meta + newmeta, reads] }
+      
         //
         // MODULE: Run flexiplex
         //
+        
         FLEXIPLEX_DISCOVERY (
-            ch_reads
+            ch_split_fastq
     	)
         
         ch_versions = ch_versions.mix(FLEXIPLEX_DISCOVERY.out.versions)
         
+        //
+        // Merge barcode counts
+        //
+        
+        ch_flexiplex_barcodes = FLEXIPLEX_DISCOVERY.out.barcode_counts
+            .map { meta, barcode_counts -> 
+                  key = groupKey(meta.subMap('id', 'single_end', 'cell_counts', 'type'), meta.splitcount)
+                  [key, barcode_counts] }
+            .groupTuple()
+
+        MERGEBARCODECOUNTS (
+            ch_flexiplex_barcodes
+        )
+        
+        ch_versions = ch_versions.mix(MERGEBARCODECOUNTS.out.versions)
+                
         // 
         // MODULE: Filter flexiplex
         //
         
         FLEXIPLEX_FILTER (
-            FLEXIPLEX_DISCOVERY.out.barcode_counts,
-            whitelist
+            MERGEBARCODECOUNTS.out.barcode_counts,
+            ch_whitelist
         )
         
         ch_versions = ch_versions.mix(FLEXIPLEX_FILTER.out.versions)
         ch_corrected_bc_info = FLEXIPLEX_FILTER.out.barcodes
         
-        //
-        // MODULE: Run SEQKIT_SPLIT2
-        //
-        SEQKIT_SPLIT2 (
-            ch_reads
-        )
-        
-        // Transpose channel and add part to metadata
-        SEQKIT_SPLIT2.out.reads
-            | transpose
-            | map { meta, reads ->
-                part = (reads =~ /.*part_(\d+)\.fastq(?:\.gz)?$/)[0][1]
-                newmap = [part: part]
-                [meta + newmap, reads] }
-            | set { ch_split_fastq }
-                
-        ch_versions = ch_versions.mix(SEQKIT_SPLIT2.out.versions)
-        
         // Merge the reads and barcodes channels
-        ch_split_fastq 
-            | combine(ch_corrected_bc_info)
-            | map { meta, reads, meta2, barcodes -> { 
+        ch_split_fastq_barcode = ch_split_fastq 
+            .combine(ch_corrected_bc_info)
+            .map { meta, reads, meta2, barcodes -> { 
                 meta.id == meta2.id ? [meta, reads, barcodes] : null }}
-            | set { ch_split_fastq_barcode }
-    
-        
-        // 
+
+        //
         // MODULE: Assign flexiplex
         //
         
@@ -89,32 +113,22 @@ workflow DEMULTIPLEX_FLEXIPLEX {
         ch_versions = ch_versions.mix(FLEXIPLEX_ASSIGN.out.versions)
         
         //
-        // MODULE: Compress Fastqs
-        //
-        PIGZ_COMPRESS ( FLEXIPLEX_ASSIGN.out.reads )
-        
-        ch_versions = ch_versions.mix(PIGZ_COMPRESS.out.versions)
-        
-        // Group by ID for CATFASTQ
-        PIGZ_COMPRESS.out.archive
-            | map { meta, reads ->
-                [meta.subMap('id', 'single_end'), meta.part, reads] }
-            | groupTuple
-            | map { meta, part, reads -> [meta + [partcount: part.size()], reads] }
-            | set { ch_grouped_flexiplex_fastq }
-        
-        
-        //
         // MODULE: cat fastq
         //
+        
+        ch_grouped_flexiplex_fastq = FLEXIPLEX_ASSIGN.out.reads
+            .map { meta, reads -> 
+                  key = groupKey(meta.subMap('id', 'single_end', 'cell_counts', 'type'), meta.splitcount)
+                  [key, reads] }
+            .groupTuple()
         
         CAT_FASTQ (
             ch_grouped_flexiplex_fastq
         )
-        ch_flexiplex_fastq = CAT_FASTQ.out.reads
         
+        ch_flexiplex_fastq = CAT_FASTQ.out.reads
         ch_versions = ch_versions.mix(CAT_FASTQ.out.versions)
-          
+        
     emit:
         flexiplex_fastq = ch_flexiplex_fastq
         flexiplex_barcodes = ch_corrected_bc_info
