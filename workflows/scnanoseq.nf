@@ -5,35 +5,35 @@
 */
 
 // Whitelist
-if (params.whitelist) {
-    blaze_whitelist = params.whitelist
+if (params.cdna_whitelist) {
+    cdna_whitelist = params.cdna_whitelist
 }
 else {
     if (params.barcode_format.equals("10X_3v3")) {
-        blaze_whitelist = file("$baseDir/assets/whitelist/3M-february-2018.zip")
+        cdna_whitelist = file("$baseDir/assets/whitelist/3M-february-2018.txt.gz")
     }
     else if (params.barcode_format.equals("10X_5v2")) {
-        blaze_whitelist = file("$baseDir/assets/whitelist/737K-august-2016.txt.zip")
+        cdna_whitelist = file("$baseDir/assets/whitelist/737K-august-2016.txt.gz")
     }
     else if (params.barcode_format.equals("10X_3v4")) {
-        blaze_whitelist = file("$baseDir/assets/whitelist/3M-3pgex-may-2023_TRU.txt.zip")
+        cdna_whitelist = file("$baseDir/assets/whitelist/3M-3pgex-may-2023_TRU.txt.gz")
     }
     else if (params.barcode_format.equals("10X_5v3")) {
-        blaze_whitelist = file("$baseDir/assets/whitelist/3M-5pgex-jan-2023.txt.zip")
+        cdna_whitelist = file("$baseDir/assets/whitelist/3M-5pgex-jan-2023.txt.gz")
     }
     else if (params.barcode_format.equals("10X_multiome")) {
-        blaze_whitelist = file("$baseDir/assets/whitelist/cellranger_arc_rna.737K-arc-v1.zip")
+        cdna_whitelist = file("$baseDir/assets/whitelist/cellranger_arc_rna.737K-arc-v1.txt.gz")
     }
 }
 
-if (params.whitelist_dna) {
-    flexiplex_whitelist = params.whitelist_dna
+if (params.dna_whitelist) {
+    dna_whitelist = params.dna_whitelist
 }
 else if (params.barcode_format.equals("10X_multiome")) {
-    flexiplex_whitelist = file("$baseDir/assets/whitelist/cellranger_arc_atac.737K-arc-v1.zip")
+    dna_whitelist = file("$baseDir/assets/whitelist/cellranger_arc_atac.737K-arc-v1.txt.gz")
 }
 else {
-    flexiplex_whitelist = Channel.empty()
+    dna_whitelist = Channel.empty()
 }
 
 // Quantifiers
@@ -241,15 +241,7 @@ workflow SCNANOSEQ {
         ch_rseqc_bed = UCSC_GENEPREDTOBED.out.bed
         ch_versions = ch_versions.mix(UCSC_GENEPREDTOBED.out.versions)
     }
-    /*
-    //
-    // MODULE: Unzip fastq
-    //
-    PIGZ_UNCOMPRESS( ch_cat_fastq )
-    ch_unzipped_fastqs = PIGZ_UNCOMPRESS.out.file
-    ch_versions = ch_versions.mix( PIGZ_UNCOMPRESS.out.versions )
-    */
-    
+
     //
     // MODULE: Trim and filter reads
     //
@@ -267,39 +259,6 @@ workflow SCNANOSEQ {
         versions = CHOPPER.out.versions
         ch_trimmed_reads_combined = CHOPPER.out.fastq
         
-        /*
-        //
-        // MODULE: Split fastq
-        //
-        ch_fastqs = ch_unzipped_fastqs
-
-        if (params.split_amount > 0) {
-            SPLIT_FILE( ch_unzipped_fastqs, '.fastq', params.split_amount )
-
-            // Temporarily change the meta object so that the id is present on the
-            // fastq to prevent duplicated names
-            SPLIT_FILE.out.split_files
-                .transpose()
-                .set { ch_fastqs }
-
-            ch_versions = ch_versions.mix(SPLIT_FILE.out.versions)
-        }
-
-        ch_trimmed_reads = ch_fastqs
-        if (!params.skip_trimming) {
-
-            NANOFILT ( ch_fastqs )
-            ch_trimmed_reads = NANOFILT.out.reads
-            ch_versions = ch_versions.mix(NANOFILT.out.versions)
-        }
-
-        // If the fastqs were split, combine them together
-        ch_trimmed_reads_combined = ch_trimmed_reads
-        if (params.split_amount > 0){
-            CAT_CAT(ch_trimmed_reads.groupTuple())
-            ch_trimmed_reads_combined = CAT_CAT.out.file_out
-        }
-        */
         //
         // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - post-trim QC
         //
@@ -348,9 +307,10 @@ workflow SCNANOSEQ {
     // SUBWORKFLOW: Demultiplex reads using FLEXIPLEX for DNA
     //
     
+    //TODO: add channel not empty check
     DEMULTIPLEX_FLEXIPLEX_DNA (
         ch_trimmed_reads_combined.dna,
-        flexiplex_whitelist
+        dna_whitelist
     )
 
     ch_versions = ch_versions.mix(DEMULTIPLEX_FLEXIPLEX_DNA.out.versions)
@@ -363,7 +323,7 @@ workflow SCNANOSEQ {
 
     DEMULTIPLEX_FLEXIPLEX_CDNA (
         ch_trimmed_reads_combined.cdna,
-        blaze_whitelist
+        cdna_whitelist
     )
 
     ch_versions = ch_versions.mix(DEMULTIPLEX_FLEXIPLEX_CDNA.out.versions)
