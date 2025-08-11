@@ -94,7 +94,7 @@ include { DEMULTIPLEX_FLEXIPLEX as DEMULTIPLEX_FLEXIPLEX_DNA          } from "..
 include { DEMULTIPLEX_BLAZE                                           } from "../subworkflows/local/demultiplex_blaze"
 include { PROCESS_LONGREAD_SCRNA as PROCESS_LONGREAD_SCRNA_GENOME     } from "../subworkflows/local/process_longread_scrna"
 include { PROCESS_LONGREAD_SCRNA as PROCESS_LONGREAD_SCRNA_TRANSCRIPT } from "../subworkflows/local/process_longread_scrna"
-
+include { ALIGN_DEDUPLICATE_DNA                                       } from "../subworkflows/local/align_deduplicate_dna"
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     IMPORT NF-CORE MODULES/SUBWORKFLOWS
@@ -336,7 +336,7 @@ workflow SCNANOSEQ {
         ch_corrected_bc_info_cdna = DEMULTIPLEX_BLAZE.out.corrected_bc_info
     }
 
-    // Recombine channels
+    // Recombine channels for QC modules
     ch_extracted_fastq = ch_extracted_fastq_cdna.mix(ch_extracted_fastq_dna)
     ch_corrected_bc_info = ch_corrected_bc_info_cdna.mix(ch_corrected_bc_info_dna)
 
@@ -384,7 +384,7 @@ workflow SCNANOSEQ {
     }
 
     //
-    // SUBWORKFLOW: Align Long Read Data
+    // SUBWORKFLOW: Align Long Read cDNA data
     //
 
     ch_multiqc_finalqc_files = Channel.empty()
@@ -394,9 +394,9 @@ workflow SCNANOSEQ {
             genome_fasta,
             genome_fai,
             gtf,
-            ch_extracted_fastq,
+            ch_extracted_fastq_cdna,
             ch_rseqc_bed,
-            ch_corrected_bc_info,
+            ch_corrected_bc_info_cdna,
             genome_quants,
             params.dedup_tool,
             true, // Used to indicate the bam is genome aligned
@@ -453,9 +453,9 @@ workflow SCNANOSEQ {
             transcript_fasta,
             transcript_fai,
             gtf,
-            ch_extracted_fastq,
+            ch_extracted_fastq_cdna,
             ch_rseqc_bed,
-            ch_corrected_bc_info,
+            ch_corrected_bc_info_cdna,
             transcript_quants,
             params.dedup_tool,
             false, // Indicates this is NOT genome aligned
@@ -497,6 +497,25 @@ workflow SCNANOSEQ {
             PROCESS_LONGREAD_SCRNA_TRANSCRIPT.out.transcript_qc_stats.collect().ifEmpty([])
         )
     }
+    
+    //
+    // SUBWORKFLOW: Align and deduplicate DNA samples
+    //
+    
+    ALIGN_DEDUPLICATE_DNA (
+        genome_fasta
+        genome_fai
+        ch_extracted_fastq_dna
+    )
+
+    ch_versions = ch_versions.mix(ALIGN_DEDUPLICATE_DNA.out.versions)
+    
+    ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
+        ALIGN_DEDUPLICATE_DNA.out.flagstat.collect{it[1]}.ifEmpty([])
+    )
+    ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
+        ALIGN_DEDUPLICATE_DNA.out.nanocomp_bam_txt.collect{it[1]}.ifEmpty([])
+    )
 
     //
     // SOFTWARE_VERSIONS
