@@ -9,7 +9,7 @@ include { FLEXIPLEX_DISCOVERY                       } from '../../modules/local/
 include { FLEXIPLEX_FILTER                          } from '../../modules/local/flexiplex/filter/main'
 include { FLEXIPLEX_ASSIGN                          } from '../../modules/local/flexiplex/assign/main'
 include { CAT_FASTQ                                 } from '../../modules/nf-core/cat/fastq/main'
-include { MERGEBARCODECOUNTS                        } from '../../modules/local/mergebarcodecounts/main'
+include { MERGEBARCODECOUNTS as MERGE_BARCODES      } from '../../modules/local/mergebarcodecounts/main'
 
 workflow DEMULTIPLEX_FLEXIPLEX {
     take:
@@ -78,18 +78,18 @@ workflow DEMULTIPLEX_FLEXIPLEX {
                   [key, barcode_counts] }
             .groupTuple()
 
-        MERGEBARCODECOUNTS (
+        MERGE_BARCODES (
             ch_flexiplex_barcodes
         )
-        
-        ch_versions = ch_versions.mix(MERGEBARCODECOUNTS.out.versions)
-                
-        // 
+
+        ch_versions = ch_versions.mix(MERGE_BARCODES.out.versions)
+
+        //
         // MODULE: Filter flexiplex
         //
         
         FLEXIPLEX_FILTER (
-            MERGEBARCODECOUNTS.out.barcode_counts,
+            MERGE_BARCODES.out.barcode_counts,
             ch_whitelist
         )
         

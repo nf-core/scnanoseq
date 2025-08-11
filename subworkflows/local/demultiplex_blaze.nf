@@ -11,13 +11,12 @@ include { SPLIT_FILE as SPLIT_FILE_BC_CSV   } from "../../modules/local/split_fi
 include { CAT_CAT as CAT_CAT_PREEXTRACT     } from "../../modules/nf-core/cat/cat/main"
 include { CAT_CAT as CAT_CAT_BARCODE        } from "../../modules/nf-core/cat/cat/main"
 include { PIGZ_COMPRESS 										} from '../../modules/nf-core/pigz/compress/main'
-include { PIGZ_UNCOMPRESS as PIGZ_UNCOMPRESS_WHITELIST	} from "../../modules/nf-core/pigz/uncompress/main"
-include { PIGZ_UNCOMPRESS as PIGZ_UNCOMPRESS_FASTQ	} from "../../modules/nf-core/pigz/uncompress/main"
+include { PIGZ_UNCOMPRESS					          } from "../../modules/nf-core/pigz/uncompress/main"
 
 workflow DEMULTIPLEX_BLAZE {
 	take:
-		ch_trimmed_reads_combined // channel: [ val(meta), path(trimmed_reads_combined) ]
-		blaze_whitelist        // channel: [ val(meta), path(blaze_whitelist) ]
+		ch_trimmed_reads_combined 	// channel: [ val(meta), path(trimmed_reads_combined) ]
+		whitelist        						// channel: [ val(meta), path(whitelist) ]
 		
 	main:
 		ch_versions = Channel.empty()
@@ -33,14 +32,14 @@ workflow DEMULTIPLEX_BLAZE {
     //
 
     // NOTE: Blaze does not support '.gzip'
-    ch_blaze_whitelist = blaze_whitelist
+    ch_whitelist = whitelist
 
-    if (blaze_whitelist.endsWith('.gz')){
+    if (whitelist.endsWith('.gz')){
 
-        PIGZ_UNCOMPRESS_WHITELIST ( [[:], blaze_whitelist ])
+        PIGZ_UNCOMPRESS ( [[:], whitelist ])
 
-        ch_blaze_whitelist =
-            PIGZ_UNCOMPRESS_WHITELIST.out.file
+        ch_whitelist =
+            PIGZ_UNCOMPRESS.out.file
                 .map {
                     meta, whitelist ->
                     [whitelist]
@@ -49,11 +48,7 @@ workflow DEMULTIPLEX_BLAZE {
         ch_versions = ch_versions.mix(GUNZIP_WHITELIST.out.versions)
     }
 		
-		PIGZ_UNCOMPRESS_FASTQ ( ch_trimmed_reads_combined )
-		ch_trimmed_reads_combined = PIGZ_UNCOMPRESS_FASTQ.out.file
-		ch_versions = ch_versions.mix(PIGZ_UNCOMPRESS_FASTQ.out.versions)
-		
-		BLAZE ( ch_trimmed_reads_combined, ch_blaze_whitelist )
+		BLAZE ( ch_trimmed_reads_combined, ch_whitelist )
 
 		ch_putative_bc = BLAZE.out.putative_bc
 		ch_gt_whitelist = BLAZE.out.whitelist
@@ -76,7 +71,6 @@ workflow DEMULTIPLEX_BLAZE {
 						.transpose()
 						.set { ch_split_bc }
 		}
-
 
 		//
 		// MODULE: Extract barcodes

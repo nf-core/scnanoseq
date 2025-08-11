@@ -78,7 +78,6 @@ ch_multiqc_custom_methods_description   = params.multiqc_methods_description ? f
 
 include { NANOFILT                          } from "../modules/local/nanofilt"
 include { SPLIT_FILE                        } from "../modules/local/split_file"
-include { BLAZE                             } from "../modules/local/blaze"
 include { PREEXTRACT_FASTQ                  } from "../modules/local/preextract_fastq.nf"
 include { READ_COUNTS                       } from "../modules/local/read_counts.nf"
 include { CORRECT_BARCODES                  } from "../modules/local/correct_barcodes"
@@ -90,7 +89,6 @@ include { UCSC_GENEPREDTOBED                } from "../modules/local/ucsc_genepr
 //
 
 include { PREPARE_REFERENCE_FILES                                     } from "../subworkflows/local/prepare_reference_files"
-include { DEMULTIPLEX_BLAZE                                           } from "../subworkflows/local/demultiplex_blaze"
 include { DEMULTIPLEX_FLEXIPLEX as DEMULTIPLEX_FLEXIPLEX_CDNA         } from "../subworkflows/local/demultiplex_flexiplex"
 include { DEMULTIPLEX_FLEXIPLEX as DEMULTIPLEX_FLEXIPLEX_DNA          } from "../subworkflows/local/demultiplex_flexiplex"
 include { PROCESS_LONGREAD_SCRNA as PROCESS_LONGREAD_SCRNA_GENOME     } from "../subworkflows/local/process_longread_scrna"
@@ -105,7 +103,6 @@ include { PROCESS_LONGREAD_SCRNA as PROCESS_LONGREAD_SCRNA_TRANSCRIPT } from "..
 // MODULE: Installed directly from nf-core/modules
 //
 
-include { PIGZ_UNCOMPRESS                               } from "../modules/nf-core/pigz/uncompress/main"
 include { NANOCOMP as NANOCOMP_FASTQ                    } from "../modules/nf-core/nanocomp/main"
 include { CHOPPER                                       } from "../modules/nf-core/chopper/main"   
 include { MULTIQC as MULTIQC_RAWQC                      } from "../modules/nf-core/multiqc/main"
@@ -289,52 +286,58 @@ workflow SCNANOSEQ {
                 cdna: meta.type == 'cdna'
                     return [ meta, fastq ]
         }
-    /*
-    //
-    // SUBWORKFLOW: Demultiplex reads using BLAZE for cDNA
-    //
-    
-    DEMULTIPLEX_BLAZE ( 
-        ch_trimmed_reads_combined.cdna,
-        blaze_whitelist
-    )
-    
-    ch_versions = ch_versions.mix(DEMULTIPLEX_BLAZE.out.versions)
-    ch_extracted_fastq_blaze = DEMULTIPLEX_BLAZE.out.extracted_fastq
-    ch_corrected_bc_info_blaze = DEMULTIPLEX_BLAZE.out.corrected_bc_info
-    */
+
     //
     // SUBWORKFLOW: Demultiplex reads using FLEXIPLEX for DNA
     //
     
-    //TODO: add channel not empty check
+    //TODO: add channel empty check
     DEMULTIPLEX_FLEXIPLEX_DNA (
         ch_trimmed_reads_combined.dna,
         dna_whitelist
     )
 
     ch_versions = ch_versions.mix(DEMULTIPLEX_FLEXIPLEX_DNA.out.versions)
-    ch_extracted_fastq_flexiplex_dna = DEMULTIPLEX_FLEXIPLEX_DNA.out.flexiplex_fastq
-    ch_corrected_bc_info_flexiplex_dna = DEMULTIPLEX_FLEXIPLEX_DNA.out.flexiplex_barcodes
+    ch_extracted_fastq_dna = DEMULTIPLEX_FLEXIPLEX_DNA.out.flexiplex_fastq
+    ch_corrected_bc_info_dna = DEMULTIPLEX_FLEXIPLEX_DNA.out.flexiplex_barcodes
 
-    //
-    // SUBWORKFLOW: Demultiplex reads using FLEXIPLEX for cDNA
-    //
 
-    DEMULTIPLEX_FLEXIPLEX_CDNA (
-        ch_trimmed_reads_combined.cdna,
-        cdna_whitelist
-    )
+    if (params.demux_tool == "flexiplex") {
+        
+        //
+        // SUBWORKFLOW: Demultiplex reads using FLEXIPLEX for cDNA
+        //
+        
+        DEMULTIPLEX_FLEXIPLEX_CDNA (
+            ch_trimmed_reads_combined.cdna,
+            cdna_whitelist
+        )
 
-    ch_versions = ch_versions.mix(DEMULTIPLEX_FLEXIPLEX_CDNA.out.versions)
-    ch_extracted_fastq_flexiplex_cdna = DEMULTIPLEX_FLEXIPLEX_CDNA.out.flexiplex_fastq
-    ch_corrected_bc_info_flexiplex_cdna = DEMULTIPLEX_FLEXIPLEX_CDNA.out.flexiplex_barcodes
+        ch_versions = ch_versions.mix(DEMULTIPLEX_FLEXIPLEX_CDNA.out.versions)
+        
+        ch_extracted_fastq_cdna = DEMULTIPLEX_FLEXIPLEX_CDNA.out.flexiplex_fastq
+        ch_corrected_bc_info_cdna = DEMULTIPLEX_FLEXIPLEX_CDNA.out.flexiplex_barcodes
+    } else if (params.demux_tool == "blaze") {
+        
+        //
+        // SUBWORKFLOW: Demultiplex reads using BLAZE for cDNA
+        //
+        
+        DEMULTIPLEX_BLAZE (
+            ch_trimmed_reads_combined.cdna,
+            cdna_whitelist
+        )
 
+        ch_versions = ch_versions.mix(DEMULTIPLEX_BLAZE.out.versions)
+        
+        ch_extracted_fastq_cdna = DEMULTIPLEX_BLAZE.out.extracted_fastq
+        ch_corrected_bc_info_cdna = DEMULTIPLEX_BLAZE.out.corrected_bc_info
+    }
 
     // Recombine channels
-    ch_extracted_fastq = ch_extracted_fastq_flexiplex_cdna.mix(ch_extracted_fastq_flexiplex_dna)
-    ch_corrected_bc_info = ch_corrected_bc_info_flexiplex_cdna.mix(ch_corrected_bc_info_flexiplex_dna)
-    
+    ch_extracted_fastq = ch_extracted_fastq_cdna.mix(ch_extracted_fastq_dna)
+    ch_corrected_bc_info = ch_corrected_bc_info_cdna.mix(ch_corrected_bc_info_dna)
+
     //
     // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - post-extract QC
     //

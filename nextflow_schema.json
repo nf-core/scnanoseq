@@ -169,6 +169,11 @@
                     "enum": ["10X_3v3", "10X_3v4", "10X_5v2", "10X_5v3", "10X_multiome"],
                     "fa_icon": "fas fa-barcode"
                 },
+                "demux_tool": {
+                    "type": "string",
+                    "description": "Specify which tool to be used for demultiplexing (Options: flexiplex, blaze)",
+                    "enum": ["flexiplex", "blaze"]
+                },
                 "dedup_tool": {
                     "type": "string",
                     "description": "Specify which tool to be used for deduplication (Options: picard, umitools)",
