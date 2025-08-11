@@ -3,52 +3,62 @@
 //
 
 // MODULES
-include { BLAZE 														} from '../../modules/local/blaze'
-include { PREEXTRACT_FASTQ 									} from '../../modules/local/preextract_fastq'
-include { CORRECT_BARCODES 									} from '../../modules/local/correct_barcodes'
-include { SPLIT_FILE as SPLIT_FILE_BC_FASTQ } from "../../modules/local/split_file"
-include { SPLIT_FILE as SPLIT_FILE_BC_CSV   } from "../../modules/local/split_file"
-include { CAT_CAT as CAT_CAT_PREEXTRACT     } from "../../modules/nf-core/cat/cat/main"
-include { CAT_CAT as CAT_CAT_BARCODE        } from "../../modules/nf-core/cat/cat/main"
-include { PIGZ_COMPRESS 										} from '../../modules/nf-core/pigz/compress/main'
-include { PIGZ_UNCOMPRESS					          } from "../../modules/nf-core/pigz/uncompress/main"
+include { BLAZE 																		} from '../../modules/local/blaze'
+include { PREEXTRACT_FASTQ 													} from '../../modules/local/preextract_fastq'
+include { CORRECT_BARCODES 													} from '../../modules/local/correct_barcodes'
+include { SPLIT_FILE as SPLIT_FILE_BC_FASTQ 				} from "../../modules/local/split_file"
+include { SPLIT_FILE as SPLIT_FILE_BC_CSV   				} from "../../modules/local/split_file"
+include { CAT_CAT as CAT_CAT_PREEXTRACT     				} from "../../modules/nf-core/cat/cat/main"
+include { CAT_CAT as CAT_CAT_BARCODE        				} from "../../modules/nf-core/cat/cat/main"
+include { PIGZ_COMPRESS 														} from '../../modules/nf-core/pigz/compress/main'
+include { PIGZ_UNCOMPRESS	as PIGZ_UNCOMPRESS_BC			} from "../../modules/nf-core/pigz/uncompress/main"
+include { PIGZ_UNCOMPRESS	as PIGZ_UNCOMPRESS_FASTQ	} from "../../modules/nf-core/pigz/uncompress/main"
 
 workflow DEMULTIPLEX_BLAZE {
 	take:
-		ch_trimmed_reads_combined 	// channel: [ val(meta), path(trimmed_reads_combined) ]
-		whitelist        						// channel: [ val(meta), path(whitelist) ]
+		ch_trimmed_reads_combined // channel: [ val(meta), path(trimmed_reads_combined) ]
+		whitelist        					// channel: [ val(meta), path(whitelist) ]
 		
 	main:
 		ch_versions = Channel.empty()
 		ch_extracted_fastq = Channel.empty()
 		ch_corrected_bc_info = Channel.empty()
-
+		
+		//
+		// MODULE: Uncompress fastq.gz
+		//
+		
 		//
 		// MODULE: Generate whitelist
 		//
+		
+		PIGZ_UNCOMPRESS_FASTQ ( ch_trimmed_reads_combined )
+
+		ch_versions = ch_versions.mix(PIGZ_UNCOMPRESS_FASTQ.out.versions)
+		ch_trimmed_reads_combined_fastq = PIGZ_UNCOMPRESS_FASTQ.out.file
 
 		//
     // MODULE: Unzip whitelist
     //
 
-    // NOTE: Blaze does not support '.gzip'
-    ch_whitelist = whitelist
+		// Unzip the whitelist if needed
+		if (whitelist.extension == "gz"){
 
-    if (whitelist.endsWith('.gz')){
+				PIGZ_UNCOMPRESS_BC ( [[:], whitelist] )
 
-        PIGZ_UNCOMPRESS ( [[:], whitelist ])
+				ch_whitelist =
+						PIGZ_UNCOMPRESS_BC.out.file
+								.map {
+										meta, whitelist ->
+										[whitelist]
+								}
 
-        ch_whitelist =
-            PIGZ_UNCOMPRESS.out.file
-                .map {
-                    meta, whitelist ->
-                    [whitelist]
-                }
+				ch_versions = ch_versions.mix(PIGZ_UNCOMPRESS_BC.out.versions)
+		} else {
+				ch_whitelist = whitelist
+		}
 
-        ch_versions = ch_versions.mix(GUNZIP_WHITELIST.out.versions)
-    }
-		
-		BLAZE ( ch_trimmed_reads_combined, ch_whitelist )
+		BLAZE ( ch_trimmed_reads_combined_fastq, ch_whitelist )
 
 		ch_putative_bc = BLAZE.out.putative_bc
 		ch_gt_whitelist = BLAZE.out.whitelist
@@ -58,7 +68,7 @@ workflow DEMULTIPLEX_BLAZE {
 		ch_split_bc_fastqs = ch_trimmed_reads_combined
 		ch_split_bc = ch_putative_bc
 		if (params.split_amount > 0) {
-				SPLIT_FILE_BC_FASTQ( ch_trimmed_reads_combined, '.fastq', params.split_amount )
+				SPLIT_FILE_BC_FASTQ( ch_trimmed_reads_combined_fastq, '.fastq', params.split_amount )
 
 				SPLIT_FILE_BC_FASTQ.out.split_files
 						.transpose()
@@ -76,7 +86,7 @@ workflow DEMULTIPLEX_BLAZE {
 		// MODULE: Extract barcodes
 		//
 
-		PREEXTRACT_FASTQ( ch_split_bc_fastqs.join(ch_split_bc), params.barcode_format )
+		PREEXTRACT_FASTQ( ch_split_bc_fastqs.join(ch_split_bc) )
 		ch_barcode_info = PREEXTRACT_FASTQ.out.barcode_info
 		ch_preextract_fastq = PREEXTRACT_FASTQ.out.extracted_fastq
 
