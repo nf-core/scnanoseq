@@ -33,7 +33,7 @@ else if (params.barcode_format.equals("10X_multiome")) {
     dna_whitelist = file("$baseDir/assets/whitelist/cellranger_arc_atac.737K-arc-v1.txt.gz")
 }
 else {
-    dna_whitelist = Channel.empty()
+    dna_whitelist = file("$baseDir/assets/dummy_file.txt")
 }
 
 // Quantifiers
@@ -91,6 +91,7 @@ include { UCSC_GENEPREDTOBED                } from "../modules/local/ucsc_genepr
 include { PREPARE_REFERENCE_FILES                                     } from "../subworkflows/local/prepare_reference_files"
 include { DEMULTIPLEX_FLEXIPLEX as DEMULTIPLEX_FLEXIPLEX_CDNA         } from "../subworkflows/local/demultiplex_flexiplex"
 include { DEMULTIPLEX_FLEXIPLEX as DEMULTIPLEX_FLEXIPLEX_DNA          } from "../subworkflows/local/demultiplex_flexiplex"
+include { DEMULTIPLEX_BLAZE                                           } from "../subworkflows/local/demultiplex_blaze"
 include { PROCESS_LONGREAD_SCRNA as PROCESS_LONGREAD_SCRNA_GENOME     } from "../subworkflows/local/process_longread_scrna"
 include { PROCESS_LONGREAD_SCRNA as PROCESS_LONGREAD_SCRNA_TRANSCRIPT } from "../subworkflows/local/process_longread_scrna"
 
@@ -286,17 +287,17 @@ workflow SCNANOSEQ {
                 cdna: meta.type == 'cdna'
                     return [ meta, fastq ]
         }
-
+      
     //
     // SUBWORKFLOW: Demultiplex reads using FLEXIPLEX for DNA
     //
     
-    //TODO: add channel empty check
+    //TODO: add channel empty check   
     DEMULTIPLEX_FLEXIPLEX_DNA (
         ch_trimmed_reads_combined.dna,
         dna_whitelist
     )
-
+    
     ch_versions = ch_versions.mix(DEMULTIPLEX_FLEXIPLEX_DNA.out.versions)
     ch_extracted_fastq_dna = DEMULTIPLEX_FLEXIPLEX_DNA.out.flexiplex_fastq
     ch_corrected_bc_info_dna = DEMULTIPLEX_FLEXIPLEX_DNA.out.flexiplex_barcodes
@@ -317,6 +318,7 @@ workflow SCNANOSEQ {
         
         ch_extracted_fastq_cdna = DEMULTIPLEX_FLEXIPLEX_CDNA.out.flexiplex_fastq
         ch_corrected_bc_info_cdna = DEMULTIPLEX_FLEXIPLEX_CDNA.out.flexiplex_barcodes
+    
     } else if (params.demux_tool == "blaze") {
         
         //

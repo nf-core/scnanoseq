@@ -59,6 +59,8 @@ workflow ALIGN_LONGREADS {
         //
         // SUBWORKFLOW: BAM_SORT_STATS_SAMTOOLS
         // The subworkflow is called in both the minimap2 bams and filtered (mapped only) version
+        // TODO: No reason that this is again sorting and indexing.
+        // Change to STATS_SAMTOOLS
         BAM_SORT_STATS_SAMTOOLS ( MINIMAP2_ALIGN.out.bam, fasta )
         ch_versions = ch_versions.mix(BAM_SORT_STATS_SAMTOOLS.out.versions)
 

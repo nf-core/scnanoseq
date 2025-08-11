@@ -65,7 +65,7 @@ workflow DEMULTIPLEX_BLAZE {
 		ch_whitelist_bc_count = BLAZE.out.bc_count
 		ch_versions = ch_versions.mix(BLAZE.out.versions)
 
-		ch_split_bc_fastqs = ch_trimmed_reads_combined
+		ch_split_bc_fastqs = ch_trimmed_reads_combined_fastq
 		ch_split_bc = ch_putative_bc
 		if (params.split_amount > 0) {
 				SPLIT_FILE_BC_FASTQ( ch_trimmed_reads_combined_fastq, '.fastq', params.split_amount )
