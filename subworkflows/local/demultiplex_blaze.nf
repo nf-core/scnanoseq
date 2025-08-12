@@ -68,7 +68,7 @@ workflow DEMULTIPLEX_BLAZE {
 		ch_split_bc_fastqs = ch_trimmed_reads_combined_fastq
 		ch_split_bc = ch_putative_bc
 		if (params.split_amount > 0) {
-				SPLIT_FILE_BC_FASTQ( ch_trimmed_reads_combined_fastq, '.fastq', params.split_amount )
+				SPLIT_FILE_BC_FASTQ( ch_trimmed_reads_combined_fastq, '.fastq', params.split_amount * 4 )
 
 				SPLIT_FILE_BC_FASTQ.out.split_files
 						.transpose()
@@ -76,7 +76,7 @@ workflow DEMULTIPLEX_BLAZE {
 
 				ch_versions = ch_versions.mix(SPLIT_FILE_BC_FASTQ.out.versions)
 
-				SPLIT_FILE_BC_CSV ( ch_putative_bc, '.csv', (params.split_amount / 4) )
+				SPLIT_FILE_BC_CSV ( ch_putative_bc, '.csv', (params.split_amount ) )
 				SPLIT_FILE_BC_CSV.out.split_files
 						.transpose()
 						.set { ch_split_bc }
