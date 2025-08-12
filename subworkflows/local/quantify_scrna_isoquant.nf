@@ -65,7 +65,7 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
         BAMTOOLS_SPLIT ( in_bam )
         ch_versions = ch_versions.mix(BAMTOOLS_SPLIT.out.versions.first())
         ch_split_bam = BAMTOOLS_SPLIT.out.bam
-            .map { meta, bam -> 
+            .map { meta, bam ->
                 def bam_basename = bam.toString().split('/')[-1]
                 def chrom = bam_basename.split(/\./)[1].replace("REF_", "")
                 def new_meta = meta + [ 'chr': chrom ]
@@ -78,7 +78,7 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
         SAMTOOLS_INDEX_SPLIT( ch_split_bam )
         ch_split_bai = SAMTOOLS_INDEX_SPLIT.out.bai
         ch_versions = ch_versions.mix(SAMTOOLS_INDEX_SPLIT.out.versions.first())
-    
+
         // Prepare isoquant input channel
         // bam and bai files need to be joined with split fasta, fai and gtf files
         isoquant_input = ch_split_bam
@@ -93,7 +93,7 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
             .map { chrom, meta, bam, bai, fasta, fai, gtf ->
                 [ meta, bam, bai, fasta, fai, gtf ]
             }
-    
+
         //
         // MODULE: Isoquant
         //
