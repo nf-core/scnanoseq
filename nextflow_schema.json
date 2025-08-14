@@ -169,6 +169,14 @@
                     "enum": ["10X_3v3", "10X_3v4", "10X_5v2", "10X_5v3", "10X_multiome"],
                     "fa_icon": "fas fa-barcode"
                 },
+                "custom_flexiplex_barcode_dna": {
+                    "type": "string",
+                    "description": "Custom DNA flexiplex barcode format to use. Example: '-x CTACACGACGCTCTTCCGATCT -b ???????????????? -u ???????????? -x TTTTTTTTT -f 8 -e 2'. For information on structure: https://davidsongroup.github.io/flexiplex/#usage"
+                },
+                "custom_flexiplex_barcode_cdna": {
+                    "type": "string",
+                    "description": "Custom cDNA flexiplex barcode format to use. Example: '-x CTACACGACGCTCTTCCGATCT -b ???????????????? -u ???????????? -x TTTTTTTTT -f 8 -e 2'. For information on structure: https://davidsongroup.github.io/flexiplex/#usage"
+                },
                 "demux_tool": {
                     "type": "string",
                     "description": "Specify which tool to be used for demultiplexing (Options: flexiplex, blaze)",
