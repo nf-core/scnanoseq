@@ -23,6 +23,8 @@ else {
     }
     else if (params.barcode_format.equals("10X_multiome")) {
         cdna_whitelist = file("$baseDir/assets/whitelist/cellranger_arc_rna.737K-arc-v1.txt.gz")
+    } else {
+        cdna_whitelist = []
     }
 }
 
@@ -31,6 +33,8 @@ if (params.dna_whitelist) {
 }
 else if (params.barcode_format.equals("10X_multiome")) {
     dna_whitelist = file("$baseDir/assets/whitelist/cellranger_arc_atac.737K-arc-v1.txt.gz")
+} else {
+    dna_whitelist = []
 }
 
 // Quantifiers
