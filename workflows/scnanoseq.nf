@@ -220,7 +220,7 @@ workflow SCNANOSEQ {
     transcript_fasta = PREPARE_REFERENCE_FILES.out.prepped_transcript_fasta
     transcript_fai = PREPARE_REFERENCE_FILES.out.transcript_fai
     gtf = PREPARE_REFERENCE_FILES.out.prepped_gtf
-
+    
     ch_versions = ch_versions.mix( PREPARE_REFERENCE_FILES.out.versions )
 
     //
@@ -503,9 +503,13 @@ workflow SCNANOSEQ {
     //
     
     ALIGN_DEDUPLICATE_DNA (
-        genome_fasta
-        genome_fai
-        ch_extracted_fastq_dna
+        genome_fasta,
+        genome_fai,
+        ch_extracted_fastq_dna,
+        params.skip_save_minimap2_index,
+        params.skip_qc,
+        params.skip_bam_nanocomp,
+        params.skip_dedup
     )
 
     ch_versions = ch_versions.mix(ALIGN_DEDUPLICATE_DNA.out.versions)
