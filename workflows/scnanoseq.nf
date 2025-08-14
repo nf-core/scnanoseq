@@ -6,7 +6,7 @@
 
 // Whitelist
 if (params.cdna_whitelist) {
-    cdna_whitelist = params.cdna_whitelist
+    cdna_whitelist = file(params.cdna_whitelist)
 }
 else {
     if (params.barcode_format.equals("10X_3v3")) {
@@ -27,13 +27,10 @@ else {
 }
 
 if (params.dna_whitelist) {
-    dna_whitelist = params.dna_whitelist
+    dna_whitelist = file(params.dna_whitelist)
 }
 else if (params.barcode_format.equals("10X_multiome")) {
     dna_whitelist = file("$baseDir/assets/whitelist/cellranger_arc_atac.737K-arc-v1.txt.gz")
-}
-else {
-    dna_whitelist = file("$baseDir/assets/dummy_file.txt")
 }
 
 // Quantifiers
@@ -292,7 +289,8 @@ workflow SCNANOSEQ {
     // SUBWORKFLOW: Demultiplex reads using FLEXIPLEX for DNA
     //
     
-    //TODO: add channel empty check   
+    //TODO: Add check for nonempty dna channels not whitelist presence
+       
     DEMULTIPLEX_FLEXIPLEX_DNA (
         ch_trimmed_reads_combined.dna,
         dna_whitelist
@@ -372,7 +370,7 @@ workflow SCNANOSEQ {
             ch_postextract_counts = ch_nanostat_postextract.collect{it[1]}
 
         }
-
+        
         READ_COUNTS (
             ch_pretrim_counts.ifEmpty([]),
             ch_posttrim_counts.ifEmpty([]),
