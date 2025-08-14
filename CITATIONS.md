@@ -14,6 +14,14 @@
 
 ## Pipeline tools
 
+- [SeqKit2](https://pubmed.ncbi.nlm.nih.gov/38898985/)
+
+  > Shen W, Sipos B, Zhao L. SeqKit2: A Swiss army knife for sequence and alignment processing. Imeta. 2024 Apr 5;3(3):e191. doi: 10.1002/imt2.191. PMID: 38898985; PMCID: PMC11183193.
+
+- [Flexiplex](https://pubmed.ncbi.nlm.nih.gov/38379414/)
+
+  > Cheng O, Ling MH, Wang C, Wu S, Ritchie ME, Göke J, Amin N, Davidson NM. Flexiplex: a versatile demultiplexer and search tool for omics data. Bioinformatics. 2024 Mar 4;40(3):btae102. doi: 10.1093/bioinformatics/btae102. PMID: 38379414; PMCID: PMC10914444.
+
 - [BLAZE](https://pubmed.ncbi.nlm.nih.gov/37024980/)
 
   > You Y, Prawer YDJ, De Paoli-Iseppi R, Hunt CPJ, Parish CL, Shim H, Clark MB. Identification of cell barcodes from long-read single-cell RNA-seq with BLAZE. Genome Biol. 2023 Apr 6;24(1):66. doi: 10.1186/s13059-023-02907-y. PMID: 37024980; PMCID: PMC10077662.
@@ -38,10 +46,10 @@
 
   > De Coster W, D'Hert S, Schultz DT, Cruts M, Van Broeckhoven C. NanoPack: visualizing and processing long-read sequencing data. Bioinformatics 2018 Aug 1; 34(15):2666-9 doi:10.1093/bioinformatics/bty149. PubMed PMID: 29547981; PubMed Central PMCID: PMC6061794.
 
-- [Nanofilt](https://pubmed.ncbi.nlm.nih.gov/29547981/)
+- [Chopper](https://pubmed.ncbi.nlm.nih.gov/37171891/)
 
-  > De Coster W, D'Hert S, Schultz DT, Cruts M, Van Broeckhoven C. NanoPack: visualizing and processing long-read sequencing data. Bioinformatics 2018 Aug 1; 34(15):2666-9 doi:10.1093/bioinformatics/bty149. PubMed PMID: 29547981; PubMed Central PMCID: PMC6061794.
-
+  > De Coster W, Rademakers R. NanoPack2: population-scale evaluation of long-read sequencing data. Bioinformatics. 2023 May 4;39(5):btad311. doi: 10.1093/bioinformatics/btad311. PMID: 37171891; PMCID: PMC10196664.
+  
 - [NanoPlot](https://pubmed.ncbi.nlm.nih.gov/29547981/)
 
   > De Coster W, D'Hert S, Schultz DT, Cruts M, Van Broeckhoven C. NanoPack: visualizing and processing long-read sequencing data. Bioinformatics. 2018 Aug 1;34(15):2666-2669. doi: 10.1093/bioinformatics/bty149. PubMed PMID: 29547981; PubMed Central PMCID: PMC6061794.
