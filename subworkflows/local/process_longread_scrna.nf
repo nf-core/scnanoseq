@@ -16,8 +16,7 @@ include { SAMTOOLS_FLAGSTAT as SAMTOOLS_FLAGSTAT_TAGGED } from '../../modules/nf
 include { SAMTOOLS_FLAGSTAT as SAMTOOLS_FLAGSTAT_DEDUP  } from '../../modules/nf-core/samtools/flagstat'
 include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_DEDUP        } from '../../modules/nf-core/samtools/index'
 include { SAMTOOLS_VIEW as SAMTOOLS_FILTER_DEDUP        } from '../../modules/nf-core/samtools/view'
-
-include { FLEXIFORMATTER } from '../../modules/local/flexiformatter'
+include { FLEXIFORMATTER                                } from '../../modules/local/flexiformatter'
 
 
 workflow PROCESS_LONGREAD_SCRNA {
