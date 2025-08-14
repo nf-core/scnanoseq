@@ -1,24 +1,14 @@
 //
-// Performs alignment
+// Performs alignment and deduplication for DNA samples
 //
 
-// SUBWORKFLOWS
-include { ALIGN_LONGREADS         } from '../../subworkflows/local/align_longreads'
-include { QUANTIFY_SCRNA_ISOQUANT } from '../../subworkflows/local/quantify_scrna_isoquant'
-include { QUANTIFY_SCRNA_OARFISH  } from '../../subworkflows/local/quantify_scrna_oarfish'
-include { DEDUP_UMIS              } from '../../subworkflows/local/dedup_umis'
-
 // MODULES
-include { MINIMAP2                                  		} from '../../modules/nf-core/minimap2'
-include { SAMTOOLS_INDEX                                } from '../../modules/nf-core/samtools/index'
-include { PICARD_MARKDUPLICATES                         } from '../../modules/nf-core/picard/markduplicates'
-include { SAMTOOLS_FLAGSTAT as SAMTOOLS_FLAGSTAT_TAGGED } from '../../modules/nf-core/samtools/flagstat'
-include { SAMTOOLS_FLAGSTAT as SAMTOOLS_FLAGSTAT_DEDUP  } from '../../modules/nf-core/samtools/flagstat'
-include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_DEDUP        } from '../../modules/nf-core/samtools/index'
-include { SAMTOOLS_VIEW as SAMTOOLS_FILTER_DEDUP        } from '../../modules/nf-core/samtools/view'
-
-include { FLEXIFORMATTER } from '../../modules/local/flexiformatter'
-
+include { MINIMAP2_INDEX                          } from '../../modules/nf-core/minimap2/index'
+include { MINIMAP2_ALIGN                          } from '../../modules/nf-core/minimap2/align'
+include { PICARD_MARKDUPLICATES                   } from '../../modules/nf-core/picard/markduplicates'
+include { BAM_SORT_STATS_SAMTOOLS                 } from '../../subworkflows/nf-core/bam_sort_stats_samtools'
+include { FLEXIFORMATTER                          } from '../../modules/local/flexiformatter'
+include { NANOCOMP                                } from '../../modules/nf-core/nanocomp/main'
 
 workflow ALIGN_DEDUPLICATE_DNA {
     take:
@@ -28,7 +18,6 @@ workflow ALIGN_DEDUPLICATE_DNA {
 				
         skip_save_minimap2_index // bool: Skip saving the minimap2 index
         skip_qc                  // bool: Skip qc steps
-        skip_rseqc               // bool: Skip RSeQC
         skip_bam_nanocomp        // bool: Skip Nanocomp
         skip_dedup               // bool: Skip deduplication
 
@@ -130,8 +119,8 @@ workflow ALIGN_DEDUPLICATE_DNA {
         versions                 = ch_versions
 
         // Minimap results
-        minimap_bam              = ALIGN_LONGREADS.out.sorted_bam
-        minimap_bai              = ALIGN_LONGREADS.out.sorted_bai
+        minimap_bam              = MINIMAP2_ALIGN.out.bam
+        minimap_bai              = MINIMAP2_ALIGN.out.index
         
         // Deduplicated bam file
         dedup_bam                = BAM_SORT_STATS_SAMTOOLS.out.bam
