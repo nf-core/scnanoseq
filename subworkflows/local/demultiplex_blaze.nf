@@ -125,10 +125,10 @@ workflow DEMULTIPLEX_BLAZE {
                 ch_extracted_fastq = PIGZ_COMPRESS.out.archive
                 ch_versions = ch_versions.mix(PIGZ_COMPRESS.out.versions)
         }
-    emit: 
+    emit:
         // Versions
         versions = ch_versions
-        
+
         extracted_fastq = ch_extracted_fastq
         corrected_bc_info = ch_corrected_bc_info
 }
