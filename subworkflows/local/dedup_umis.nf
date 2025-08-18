@@ -55,12 +55,12 @@ workflow DEDUP_UMIS {
                     .flatten()
                     .map{
                         bam ->
-                            bam_basename = bam.toString().split('/')[-1]
-                            split_bam_basename = bam_basename.split(/\./)
-                            meta = [
+                            def bam_basename = bam.toString().split('/')[-1]
+                            def split_bam_basename = bam_basename.split(/\./)
+                            def new_meta = [
                                 'id': split_bam_basename.take(split_bam_basename.size()-1).join("."),
                             ]
-                            [ meta, bam ]
+                            [ new_meta, bam ]
                     }
 
             } else {
@@ -83,8 +83,8 @@ workflow DEDUP_UMIS {
                         .combine(GROUP_TRANSCRIPTS.out.grouped_transcripts.flatten())
                         .map{
                             meta, bam, bai, region ->
-                                region_basename = region.toString().split('/')[-1]
-                                split_region_basename = region_basename.split(/\./)
+                                def region_basename = region.toString().split('/')[-1]
+                                def split_region_basename = region_basename.split(/\./)
                                 [['id': meta.id + "." + split_region_basename[0]], bam, bai, region]
                         },
                     [[],[]],
@@ -151,10 +151,10 @@ workflow DEDUP_UMIS {
                     ch_dedup_bam
                     .map{
                         meta, bam ->
-                            bam_basename = bam.toString().split('/')[-1]
-                            split_bam_basename = bam_basename.split(/\./)
-                            meta = [ 'id': split_bam_basename[0] ]
-                        [ meta, bam ]
+                            def bam_basename = bam.toString().split('/')[-1]
+                            def split_bam_basename = bam_basename.split(/\./)
+                            def new_meta = [ 'id': split_bam_basename[0] ]
+                        [ new_meta, bam ]
                     }
                     .groupTuple(),
                 fasta,
