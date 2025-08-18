@@ -64,11 +64,22 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
         //
         BAMTOOLS_SPLIT ( in_bam )
         ch_versions = ch_versions.mix(BAMTOOLS_SPLIT.out.versions.first())
+
         ch_split_bam = BAMTOOLS_SPLIT.out.bam
-            .map { meta, bam ->
+            .map {
+                meta, bam ->
+                    return [ bam ]
+            }
+            .flatten()
+            .map { bam ->
                 def bam_basename = bam.toString().split('/')[-1]
+
                 def chrom = bam_basename.split(/\./)[1].replace("REF_", "")
-                def new_meta = meta + [ 'chr': chrom ]
+
+                def split_bam_basename = bam_basename.split(/\./)
+                def new_id = split_bam_basename.take(split_bam_basename.size()-2).join(".")
+
+                def new_meta = ['id': new_id, 'chr': chrom]
                 return [ new_meta, bam ]
             }
 
@@ -108,12 +119,6 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
         //
         MERGE_MTX_GENE (
             ISOQUANT.out.grouped_gene_counts
-                .map{ meta, mtx ->
-                    def basename = mtx.toString().split('/')[-1]
-                    def split_basename = basename.split(/\./)
-                    def new_meta = [ 'id': split_basename[0] ]
-                    [ new_meta, mtx ]
-                }
                 .groupTuple()
         )
         ch_merged_gene_mtx = MERGE_MTX_GENE.out.merged_mtx
