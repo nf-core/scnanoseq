@@ -5,7 +5,7 @@ process FLEXIFORMATTER {
     conda "${moduleDir}/environment.yaml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/flexiformatter%3A1.0.3--pyhdfd78af_0':
-        'https://quay.io/biocontainers/flexiformatter:1.0.3--pyhdfd78af_0' }"
+        'biocontainers/flexiformatter:1.0.3--pyhdfd78af_0' }"
 
     input:
     tuple val(meta), path(bam)
