@@ -52,11 +52,11 @@ workflow DEMULTIPLEX_FLEXIPLEX {
 
             // Transpose channel and add part to metadata
             flexiplex_input = SEQKIT_SPLIT2.out.reads
-                .map { meta, reads -> 
+                .map { meta, reads ->
                     newmeta = [splitcount: reads.size()]
                     [meta + newmeta, reads] }
                 .transpose()
-                .map { meta , reads -> 
+                .map { meta , reads ->
                     part = (reads =~ /.*part_(\d+)\.fastq(?:\.gz)?$/)[0][1]
                     newmeta = [part: part]
                     [meta + newmeta, reads] }
@@ -68,7 +68,7 @@ workflow DEMULTIPLEX_FLEXIPLEX {
 
         FLEXIPLEX_DISCOVERY (
             flexiplex_input
-    	)
+        )
 
         ch_versions = ch_versions.mix(FLEXIPLEX_DISCOVERY.out.versions)
 
@@ -80,7 +80,7 @@ workflow DEMULTIPLEX_FLEXIPLEX {
         if (params.split_amount > 0 ) {
 
             ch_flexiplex_barcodes = FLEXIPLEX_DISCOVERY.out.barcode_counts
-                .map { meta, barcode_counts -> 
+                .map { meta, barcode_counts ->
                     key = groupKey(meta.subMap('id', 'single_end', 'cell_counts', 'type'), meta.splitcount)
                     [key, barcode_counts] }
                 .groupTuple()
@@ -130,8 +130,8 @@ workflow DEMULTIPLEX_FLEXIPLEX {
 
             ch_grouped_flexiplex_fastq = FLEXIPLEX_ASSIGN.out.reads
             .map { meta, reads ->
-                  key = groupKey(meta.subMap('id', 'single_end', 'cell_counts', 'type'), meta.splitcount)
-                  [key, reads] }
+                key = groupKey(meta.subMap('id', 'single_end', 'cell_counts', 'type'), meta.splitcount)
+                [key, reads] }
             .groupTuple()
 
             CAT_FASTQ (

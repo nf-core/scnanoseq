@@ -3,7 +3,7 @@
 //
 
 // MODULES
-include { BLAZE 											} from '../../modules/local/blaze'
+include { BLAZE                                             } from '../../modules/local/blaze'
 include { PREEXTRACT_FASTQ                                  } from '../../modules/local/preextract_fastq'
 include { CORRECT_BARCODES                                  } from '../../modules/local/correct_barcodes'
 include { SPLIT_FILE as SPLIT_FILE_BC_FASTQ                 } from "../../modules/local/split_file"
@@ -15,120 +15,120 @@ include { PIGZ_UNCOMPRESS as PIGZ_UNCOMPRESS_BC             } from "../../module
 include { PIGZ_UNCOMPRESS as PIGZ_UNCOMPRESS_FASTQ          } from "../../modules/nf-core/pigz/uncompress/main"
 
 workflow DEMULTIPLEX_BLAZE {
-	take:
-		ch_trimmed_reads_combined           // channel: [ val(meta), path(trimmed_reads_combined) ]
-		whitelist        					// channel: [ val(meta), path(whitelist) ]
-		
-	main:
-		ch_versions = Channel.empty()
-		ch_extracted_fastq = Channel.empty()
-		ch_corrected_bc_info = Channel.empty()
-		
-		//
-		// MODULE: Uncompress fastq.gz
-		//
-		
-		//
-		// MODULE: Generate whitelist
-		//
-		
-		PIGZ_UNCOMPRESS_FASTQ ( ch_trimmed_reads_combined )
+    take:
+        ch_trimmed_reads_combined           // channel: [ val(meta), path(trimmed_reads_combined) ]
+        whitelist                            // channel: [ val(meta), path(whitelist) ]
 
-		ch_versions = ch_versions.mix(PIGZ_UNCOMPRESS_FASTQ.out.versions)
-		ch_trimmed_reads_combined_fastq = PIGZ_UNCOMPRESS_FASTQ.out.file
+    main:
+        ch_versions = Channel.empty()
+        ch_extracted_fastq = Channel.empty()
+        ch_corrected_bc_info = Channel.empty()
 
-		//
-    // MODULE: Unzip whitelist
-    //
+        //
+        // MODULE: Uncompress fastq.gz
+        //
 
-		// Unzip the whitelist if needed
-		if (whitelist.extension == "gz"){
+        //
+        // MODULE: Generate whitelist
+        //
 
-				PIGZ_UNCOMPRESS_BC ( [[:], whitelist] )
+        PIGZ_UNCOMPRESS_FASTQ ( ch_trimmed_reads_combined )
 
-				ch_whitelist =
-						PIGZ_UNCOMPRESS_BC.out.file
-								.map {
-										meta, whitelist ->
-										[whitelist]
-								}
+        ch_versions = ch_versions.mix(PIGZ_UNCOMPRESS_FASTQ.out.versions)
+        ch_trimmed_reads_combined_fastq = PIGZ_UNCOMPRESS_FASTQ.out.file
 
-				ch_versions = ch_versions.mix(PIGZ_UNCOMPRESS_BC.out.versions)
-		} else {
-				ch_whitelist = whitelist
-		}
+        //
+        // MODULE: Unzip whitelist
+        //
 
-		BLAZE ( ch_trimmed_reads_combined_fastq, ch_whitelist )
+        // Unzip the whitelist if needed
+        if (whitelist.extension == "gz"){
 
-		ch_putative_bc = BLAZE.out.putative_bc
-		ch_gt_whitelist = BLAZE.out.whitelist
-		ch_whitelist_bc_count = BLAZE.out.bc_count
-		ch_versions = ch_versions.mix(BLAZE.out.versions)
+                PIGZ_UNCOMPRESS_BC ( [[:], whitelist] )
 
-		ch_split_bc_fastqs = ch_trimmed_reads_combined_fastq
-		ch_split_bc = ch_putative_bc
-		if (params.split_amount > 0) {
-				SPLIT_FILE_BC_FASTQ( ch_trimmed_reads_combined_fastq, '.fastq', params.split_amount * 4 )
+                ch_whitelist =
+                        PIGZ_UNCOMPRESS_BC.out.file
+                                .map {
+                                        meta, whitelist ->
+                                        [whitelist]
+                                }
 
-				SPLIT_FILE_BC_FASTQ.out.split_files
-						.transpose()
-						.set { ch_split_bc_fastqs }
+                ch_versions = ch_versions.mix(PIGZ_UNCOMPRESS_BC.out.versions)
+        } else {
+                ch_whitelist = whitelist
+        }
 
-				ch_versions = ch_versions.mix(SPLIT_FILE_BC_FASTQ.out.versions)
+        BLAZE ( ch_trimmed_reads_combined_fastq, ch_whitelist )
 
-				SPLIT_FILE_BC_CSV ( ch_putative_bc, '.csv', (params.split_amount ) )
-				SPLIT_FILE_BC_CSV.out.split_files
-						.transpose()
-						.set { ch_split_bc }
-		}
+        ch_putative_bc = BLAZE.out.putative_bc
+        ch_gt_whitelist = BLAZE.out.whitelist
+        ch_whitelist_bc_count = BLAZE.out.bc_count
+        ch_versions = ch_versions.mix(BLAZE.out.versions)
 
-		//
-		// MODULE: Extract barcodes
-		//
+        ch_split_bc_fastqs = ch_trimmed_reads_combined_fastq
+        ch_split_bc = ch_putative_bc
+        if (params.split_amount > 0) {
+                SPLIT_FILE_BC_FASTQ( ch_trimmed_reads_combined_fastq, '.fastq', params.split_amount * 4 )
 
-		PREEXTRACT_FASTQ( ch_split_bc_fastqs.join(ch_split_bc) )
-		ch_barcode_info = PREEXTRACT_FASTQ.out.barcode_info
-		ch_preextract_fastq = PREEXTRACT_FASTQ.out.extracted_fastq
+                SPLIT_FILE_BC_FASTQ.out.split_files
+                        .transpose()
+                        .set { ch_split_bc_fastqs }
 
-		//
-		// MODULE: Correct Barcodes
-		//
+                ch_versions = ch_versions.mix(SPLIT_FILE_BC_FASTQ.out.versions)
 
-		CORRECT_BARCODES (
-				ch_barcode_info
-						.combine ( ch_gt_whitelist, by: 0)
-						.combine ( ch_whitelist_bc_count, by: 0 )
-		)
-		ch_corrected_bc_file = CORRECT_BARCODES.out.corrected_bc_info
-		ch_versions = ch_versions.mix(CORRECT_BARCODES.out.versions)
+                SPLIT_FILE_BC_CSV ( ch_putative_bc, '.csv', (params.split_amount ) )
+                SPLIT_FILE_BC_CSV.out.split_files
+                        .transpose()
+                        .set { ch_split_bc }
+        }
 
-		ch_extracted_fastq = ch_preextract_fastq
-		ch_corrected_bc_info = ch_corrected_bc_file
+        //
+        // MODULE: Extract barcodes
+        //
 
-		if (params.split_amount > 0){
-				//
-				// MODULE: Cat Preextract
-				//
-				CAT_CAT_PREEXTRACT(ch_preextract_fastq.groupTuple())
-				ch_cat_preextract_fastq = CAT_CAT_PREEXTRACT.out.file_out
+        PREEXTRACT_FASTQ( ch_split_bc_fastqs.join(ch_split_bc) )
+        ch_barcode_info = PREEXTRACT_FASTQ.out.barcode_info
+        ch_preextract_fastq = PREEXTRACT_FASTQ.out.extracted_fastq
 
-				//
-				// MODULE: Cat barcode file
-				//
-				CAT_CAT_BARCODE (ch_corrected_bc_file.groupTuple())
-				ch_corrected_bc_info = CAT_CAT_BARCODE.out.file_out
+        //
+        // MODULE: Correct Barcodes
+        //
 
-				//
-				// MODULE: Zip the reads
-				//
-				PIGZ_COMPRESS (ch_cat_preextract_fastq )
-				ch_extracted_fastq = PIGZ_COMPRESS.out.archive
-				ch_versions = ch_versions.mix(PIGZ_COMPRESS.out.versions)
-		}
-	emit: 
-		// Versions
-		versions = ch_versions
-		
-		extracted_fastq = ch_extracted_fastq
-		corrected_bc_info = ch_corrected_bc_info
+        CORRECT_BARCODES (
+                ch_barcode_info
+                        .combine ( ch_gt_whitelist, by: 0)
+                        .combine ( ch_whitelist_bc_count, by: 0 )
+        )
+        ch_corrected_bc_file = CORRECT_BARCODES.out.corrected_bc_info
+        ch_versions = ch_versions.mix(CORRECT_BARCODES.out.versions)
+
+        ch_extracted_fastq = ch_preextract_fastq
+        ch_corrected_bc_info = ch_corrected_bc_file
+
+        if (params.split_amount > 0){
+                //
+                // MODULE: Cat Preextract
+                //
+                CAT_CAT_PREEXTRACT(ch_preextract_fastq.groupTuple())
+                ch_cat_preextract_fastq = CAT_CAT_PREEXTRACT.out.file_out
+
+                //
+                // MODULE: Cat barcode file
+                //
+                CAT_CAT_BARCODE (ch_corrected_bc_file.groupTuple())
+                ch_corrected_bc_info = CAT_CAT_BARCODE.out.file_out
+
+                //
+                // MODULE: Zip the reads
+                //
+                PIGZ_COMPRESS (ch_cat_preextract_fastq )
+                ch_extracted_fastq = PIGZ_COMPRESS.out.archive
+                ch_versions = ch_versions.mix(PIGZ_COMPRESS.out.versions)
+        }
+    emit: 
+        // Versions
+        versions = ch_versions
+        
+        extracted_fastq = ch_extracted_fastq
+        corrected_bc_info = ch_corrected_bc_info
 }

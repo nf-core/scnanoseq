@@ -514,7 +514,7 @@ workflow SCNANOSEQ {
     )
 
     ch_versions = ch_versions.mix(ALIGN_DEDUPLICATE_DNA.out.versions)
-    
+
     ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
         ALIGN_DEDUPLICATE_DNA.out.flagstat.collect{it[1]}.ifEmpty([])
     )

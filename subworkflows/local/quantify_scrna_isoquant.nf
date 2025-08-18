@@ -90,7 +90,7 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
         //
         // MODULE: Isoquant
         //
-        
+
         ISOQUANT (
             ch_split_bam
                 .join(ch_split_bai, by: [0])
