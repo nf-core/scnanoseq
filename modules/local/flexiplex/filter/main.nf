@@ -26,7 +26,7 @@ process FLEXIPLEX_FILTER {
     flexiplex-filter \\
         ${barcodes} \\
         --whitelist ${whitelist} \\
-        --outfile ${prefix}_known_barcodes.txt  
+        --outfile ${prefix}_known_barcodes.txt
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

@@ -62,7 +62,7 @@ workflow PROCESS_LONGREAD_SCRNA {
         //
         // MODULE: Tag Barcodes
         //
-        
+
         if (params.demux_tool == "flexiplex") {
             FLEXIFORMATTER (
                 ALIGN_LONGREADS.out.sorted_bam,
@@ -81,7 +81,7 @@ workflow PROCESS_LONGREAD_SCRNA {
                     .join( read_bc_info, by: 0)
             )
             ch_versions = ch_versions.mix(TAG_BARCODES.out.versions)
-            
+
             //
             // MODULE: Index Tagged Bam
             //

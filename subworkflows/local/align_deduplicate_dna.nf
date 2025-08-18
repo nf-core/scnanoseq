@@ -15,7 +15,7 @@ workflow ALIGN_DEDUPLICATE_DNA {
         fasta           // channel: [ val(meta), path(fasta) ]
         fai             // channel: [ val(meta), path(fai) ]
         fastq           // channel: [ val(meta), path(fastq) ]
-				
+
         skip_save_minimap2_index // bool: Skip saving the minimap2 index
         skip_qc                  // bool: Skip qc steps
         skip_bam_nanocomp        // bool: Skip Nanocomp
@@ -64,9 +64,9 @@ workflow ALIGN_DEDUPLICATE_DNA {
             "",
             ""
         )
-		    
-		ch_versions = ch_versions.mix(MINIMAP2_ALIGN.out.versions)
-			
+
+        ch_versions = ch_versions.mix(MINIMAP2_ALIGN.out.versions)
+
         //
         // MODULE: MarkDuplicates
         //
@@ -83,8 +83,8 @@ workflow ALIGN_DEDUPLICATE_DNA {
             final_bam = PICARD_MARKDUPLICATES.out.bam
             ch_versions = ch_versions.mix(PICARD_MARKDUPLICATES.out.versions)
         }
-        
-        
+
+
         //
         // SUBWORKFLOW: BAM_SORT_STATS_SAMTOOLS
         // The subworkflow is called in both the minimap2 bams and filtered (mapped only) version
@@ -92,8 +92,8 @@ workflow ALIGN_DEDUPLICATE_DNA {
         // Change to STATS_SAMTOOLS
         BAM_SORT_STATS_SAMTOOLS ( final_bam, fasta )
         ch_versions = ch_versions.mix(BAM_SORT_STATS_SAMTOOLS.out.versions)
-			
-		//
+
+        //
         // MODULE: NanoComp for BAM files (unfiltered for QC purposes)
         //
         ch_nanocomp_bam_html = Channel.empty()
@@ -112,7 +112,7 @@ workflow ALIGN_DEDUPLICATE_DNA {
             ch_nanocomp_bam_html = NANOCOMP.out.report_html
             ch_nanocomp_bam_txt = NANOCOMP.out.stats_txt
             ch_versions = ch_versions.mix( NANOCOMP.out.versions )
-        }	
+        }
 
     emit:
         // Versions
@@ -121,11 +121,11 @@ workflow ALIGN_DEDUPLICATE_DNA {
         // Minimap results
         minimap_bam              = MINIMAP2_ALIGN.out.bam
         minimap_bai              = MINIMAP2_ALIGN.out.index
-        
+
         // Deduplicated bam file
         dedup_bam                = BAM_SORT_STATS_SAMTOOLS.out.bam
         dedup_bai                = BAM_SORT_STATS_SAMTOOLS.out.bai
-        
+
         // SAMtool stats after dedup
         stats                    = BAM_SORT_STATS_SAMTOOLS.out.stats
         flagstat                 = BAM_SORT_STATS_SAMTOOLS.out.flagstat

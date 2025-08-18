@@ -20,7 +20,7 @@ process MERGEBARCODECOUNTS {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    
+
     awk -F'\t' '{counts[\$1]+=\$2} END {for (b in counts) print b "\t" counts[b]}' ${barcode_counts} \
     | sort -k2,2nr > merged_barcode_counts.txt
 
@@ -35,7 +35,7 @@ process MERGEBARCODECOUNTS {
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
     echo $args
-    
+
     touch merged_barcode_counts.txt
 
     cat <<-END_VERSIONS > versions.yml

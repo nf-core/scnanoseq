@@ -3,20 +3,20 @@
 //
 
 // MODULES
-include { BLAZE 																		} from '../../modules/local/blaze'
-include { PREEXTRACT_FASTQ 													} from '../../modules/local/preextract_fastq'
-include { CORRECT_BARCODES 													} from '../../modules/local/correct_barcodes'
-include { SPLIT_FILE as SPLIT_FILE_BC_FASTQ 				} from "../../modules/local/split_file"
-include { SPLIT_FILE as SPLIT_FILE_BC_CSV   				} from "../../modules/local/split_file"
-include { CAT_CAT as CAT_CAT_PREEXTRACT     				} from "../../modules/nf-core/cat/cat/main"
-include { CAT_CAT as CAT_CAT_BARCODE        				} from "../../modules/nf-core/cat/cat/main"
-include { PIGZ_COMPRESS 														} from '../../modules/nf-core/pigz/compress/main'
-include { PIGZ_UNCOMPRESS	as PIGZ_UNCOMPRESS_BC			} from "../../modules/nf-core/pigz/uncompress/main"
-include { PIGZ_UNCOMPRESS	as PIGZ_UNCOMPRESS_FASTQ	} from "../../modules/nf-core/pigz/uncompress/main"
+include { BLAZE 											} from '../../modules/local/blaze'
+include { PREEXTRACT_FASTQ                                  } from '../../modules/local/preextract_fastq'
+include { CORRECT_BARCODES                                  } from '../../modules/local/correct_barcodes'
+include { SPLIT_FILE as SPLIT_FILE_BC_FASTQ                 } from "../../modules/local/split_file"
+include { SPLIT_FILE as SPLIT_FILE_BC_CSV                   } from "../../modules/local/split_file"
+include { CAT_CAT as CAT_CAT_PREEXTRACT                     } from "../../modules/nf-core/cat/cat/main"
+include { CAT_CAT as CAT_CAT_BARCODE                        } from "../../modules/nf-core/cat/cat/main"
+include { PIGZ_COMPRESS                                     } from '../../modules/nf-core/pigz/compress/main'
+include { PIGZ_UNCOMPRESS as PIGZ_UNCOMPRESS_BC             } from "../../modules/nf-core/pigz/uncompress/main"
+include { PIGZ_UNCOMPRESS as PIGZ_UNCOMPRESS_FASTQ          } from "../../modules/nf-core/pigz/uncompress/main"
 
 workflow DEMULTIPLEX_BLAZE {
 	take:
-		ch_trimmed_reads_combined // channel: [ val(meta), path(trimmed_reads_combined) ]
+		ch_trimmed_reads_combined           // channel: [ val(meta), path(trimmed_reads_combined) ]
 		whitelist        					// channel: [ val(meta), path(whitelist) ]
 		
 	main:

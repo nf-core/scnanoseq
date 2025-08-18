@@ -20,7 +20,7 @@ workflow DEMULTIPLEX_FLEXIPLEX {
         ch_versions = Channel.empty()
         ch_flexiplex_fastq = Channel.empty()
         ch_flexiplex_barcodes = Channel.empty()
-        
+
         // Unzip the whitelist if needed
         if (whitelist.extension == "gz"){
 
@@ -37,8 +37,8 @@ workflow DEMULTIPLEX_FLEXIPLEX {
         } else {
             ch_whitelist = whitelist
         }
-        
-        
+
+
         flexiplex_input = reads
         if (params.split_amount > 0) {
             //
@@ -47,9 +47,9 @@ workflow DEMULTIPLEX_FLEXIPLEX {
             SEQKIT_SPLIT2 (
                 reads
             )
-            
+
             ch_versions = SEQKIT_SPLIT2.out.versions
-            
+
             // Transpose channel and add part to metadata
             flexiplex_input = SEQKIT_SPLIT2.out.reads
                 .map { meta, reads -> 
@@ -62,26 +62,23 @@ workflow DEMULTIPLEX_FLEXIPLEX {
                     [meta + newmeta, reads] }
         }
 
-        
-
-      
         //
         // MODULE: Run flexiplex
         //
-        
+
         FLEXIPLEX_DISCOVERY (
             flexiplex_input
     	)
-        
+
         ch_versions = ch_versions.mix(FLEXIPLEX_DISCOVERY.out.versions)
-        
-        
+
+
         //
         // Merge barcode counts if split
         //
         ch_barcodes = FLEXIPLEX_DISCOVERY.out.barcode_counts
         if (params.split_amount > 0 ) {
-                       
+
             ch_flexiplex_barcodes = FLEXIPLEX_DISCOVERY.out.barcode_counts
                 .map { meta, barcode_counts -> 
                     key = groupKey(meta.subMap('id', 'single_end', 'cell_counts', 'type'), meta.splitcount)
@@ -99,31 +96,32 @@ workflow DEMULTIPLEX_FLEXIPLEX {
         //
         // MODULE: Filter flexiplex
         //
-        
+
         FLEXIPLEX_FILTER (
             ch_barcodes,
             ch_whitelist
         )
-        
+
         ch_versions = ch_versions.mix(FLEXIPLEX_FILTER.out.versions)
         ch_corrected_bc_info = FLEXIPLEX_FILTER.out.barcodes
-        
+
         // Merge the reads and barcodes channels
-        flexiplex_input_barcodes = flexiplex_input 
+        flexiplex_input_barcodes = flexiplex_input
             .combine(ch_corrected_bc_info)
-            .map { meta, reads, meta2, barcodes -> { 
-                meta.id == meta2.id ? [meta, reads, barcodes] : null }}
+            .map { meta, reads, meta2, barcodes -> {
+                meta.id == meta2.id ? [meta, reads, barcodes] : null }
+            }
 
         //
         // MODULE: Assign flexiplex
         //
-        
+
         FLEXIPLEX_ASSIGN (
             flexiplex_input_barcodes,
         )
-        
+
         ch_versions = ch_versions.mix(FLEXIPLEX_ASSIGN.out.versions)
-        
+
         ch_flexiplex_fastq = FLEXIPLEX_ASSIGN.out.reads
         if (params.split_amount > 0) {
             //
@@ -131,19 +129,19 @@ workflow DEMULTIPLEX_FLEXIPLEX {
             //
 
             ch_grouped_flexiplex_fastq = FLEXIPLEX_ASSIGN.out.reads
-            .map { meta, reads -> 
+            .map { meta, reads ->
                   key = groupKey(meta.subMap('id', 'single_end', 'cell_counts', 'type'), meta.splitcount)
                   [key, reads] }
             .groupTuple()
-        
+
             CAT_FASTQ (
                 ch_grouped_flexiplex_fastq
             )
-            
+
             ch_flexiplex_fastq = CAT_FASTQ.out.reads
             ch_versions = ch_versions.mix(CAT_FASTQ.out.versions)
         }
-        
+
     emit:
         flexiplex_fastq = ch_flexiplex_fastq
         flexiplex_barcodes = ch_corrected_bc_info

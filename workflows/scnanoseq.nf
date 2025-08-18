@@ -106,7 +106,7 @@ include { ALIGN_DEDUPLICATE_DNA                                       } from "..
 //
 
 include { NANOCOMP as NANOCOMP_FASTQ                    } from "../modules/nf-core/nanocomp/main"
-include { CHOPPER                                       } from "../modules/nf-core/chopper/main"   
+include { CHOPPER                                       } from "../modules/nf-core/chopper/main"
 include { MULTIQC as MULTIQC_RAWQC                      } from "../modules/nf-core/multiqc/main"
 include { MULTIQC as MULTIQC_FINALQC                    } from "../modules/nf-core/multiqc/main"
 include { CUSTOM_DUMPSOFTWAREVERSIONS                   } from "../modules/nf-core/custom/dumpsoftwareversions/main"
@@ -117,14 +117,13 @@ include { paramsSummaryMap                              } from "plugin/nf-schema
 /*
  * SUBWORKFLOW: Consisting entirely of nf-core/subworkflows
  */
- 
+
 include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_PRE_TRIM          } from "../subworkflows/nf-core/qcfastq_nanoplot_fastqc"
 include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_POST_TRIM         } from "../subworkflows/nf-core/qcfastq_nanoplot_fastqc"
 include { QCFASTQ_NANOPLOT_FASTQC as FASTQC_NANOPLOT_POST_EXTRACT      } from "../subworkflows/nf-core/qcfastq_nanoplot_fastqc"
 include { paramsSummaryMultiqc                                         } from "../subworkflows/nf-core/utils_nfcore_pipeline"
 include { softwareVersionsToYAML                                       } from "../subworkflows/nf-core/utils_nfcore_pipeline"
 include { methodsDescriptionText                                       } from "../subworkflows/local/utils_nfcore_scnanoseq_pipeline"
-
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -144,9 +143,9 @@ workflow SCNANOSEQ {
     //
     // SUBWORKFLOW: Read in samplesheet, validate and stage input files
     //
-    
+
     ch_samplesheet
-        .branch{
+        .branch {
             meta, fastq ->
                 single: fastq.size() == 1
                     return [ meta, fastq.flatten() ]
@@ -158,7 +157,7 @@ workflow SCNANOSEQ {
     //
     // MODULE: Combine fastqs from the same sample
     //
-    
+
     CAT_FASTQ ( ch_fastqs.multiple )
         .reads
         .mix ( ch_fastqs.single )
@@ -221,7 +220,7 @@ workflow SCNANOSEQ {
     transcript_fasta = PREPARE_REFERENCE_FILES.out.prepped_transcript_fasta
     transcript_fai = PREPARE_REFERENCE_FILES.out.transcript_fai
     gtf = PREPARE_REFERENCE_FILES.out.prepped_gtf
-    
+
     ch_versions = ch_versions.mix( PREPARE_REFERENCE_FILES.out.versions )
 
     //
@@ -248,16 +247,16 @@ workflow SCNANOSEQ {
     ch_trimmed_reads_combined = Channel.empty()
 
     if (!params.skip_trimming){
-        
+
         //
         // MODULE: Chopper
         //
-        
+
         CHOPPER ( ch_cat_fastq, [] )
-        
+
         versions = CHOPPER.out.versions
         ch_trimmed_reads_combined = CHOPPER.out.fastq
-        
+
         //
         // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - post-trim QC
         //
@@ -277,8 +276,8 @@ workflow SCNANOSEQ {
     } else {
         ch_trimmed_reads_combined = ch_unzipped_fastqs
     }
-    
-    
+
+
     // Branch channel to dna and cdna
     ch_trimmed_reads_combined = ch_trimmed_reads_combined
         .branch {
@@ -288,52 +287,52 @@ workflow SCNANOSEQ {
                 cdna: meta.type == 'cdna'
                     return [ meta, fastq ]
         }
-      
+
     //
     // SUBWORKFLOW: Demultiplex reads using FLEXIPLEX for DNA
     //
-    
+
     //TODO: Add check for nonempty dna channels not whitelist presence
-       
+
     DEMULTIPLEX_FLEXIPLEX_DNA (
         ch_trimmed_reads_combined.dna,
         dna_whitelist
     )
-    
+
     ch_versions = ch_versions.mix(DEMULTIPLEX_FLEXIPLEX_DNA.out.versions)
     ch_extracted_fastq_dna = DEMULTIPLEX_FLEXIPLEX_DNA.out.flexiplex_fastq
     ch_corrected_bc_info_dna = DEMULTIPLEX_FLEXIPLEX_DNA.out.flexiplex_barcodes
 
 
     if (params.demux_tool == "flexiplex") {
-        
+
         //
         // SUBWORKFLOW: Demultiplex reads using FLEXIPLEX for cDNA
         //
-        
+
         DEMULTIPLEX_FLEXIPLEX_CDNA (
             ch_trimmed_reads_combined.cdna,
             cdna_whitelist
         )
 
         ch_versions = ch_versions.mix(DEMULTIPLEX_FLEXIPLEX_CDNA.out.versions)
-        
+
         ch_extracted_fastq_cdna = DEMULTIPLEX_FLEXIPLEX_CDNA.out.flexiplex_fastq
         ch_corrected_bc_info_cdna = DEMULTIPLEX_FLEXIPLEX_CDNA.out.flexiplex_barcodes
-    
+
     } else if (params.demux_tool == "blaze") {
-        
+
         //
         // SUBWORKFLOW: Demultiplex reads using BLAZE for cDNA
         //
-        
+
         DEMULTIPLEX_BLAZE (
             ch_trimmed_reads_combined.cdna,
             cdna_whitelist
         )
 
         ch_versions = ch_versions.mix(DEMULTIPLEX_BLAZE.out.versions)
-        
+
         ch_extracted_fastq_cdna = DEMULTIPLEX_BLAZE.out.extracted_fastq
         ch_corrected_bc_info_cdna = DEMULTIPLEX_BLAZE.out.corrected_bc_info
     }
@@ -374,7 +373,7 @@ workflow SCNANOSEQ {
             ch_postextract_counts = ch_nanostat_postextract.collect{it[1]}
 
         }
-        
+
         READ_COUNTS (
             ch_pretrim_counts.ifEmpty([]),
             ch_posttrim_counts.ifEmpty([]),
@@ -499,11 +498,11 @@ workflow SCNANOSEQ {
             PROCESS_LONGREAD_SCRNA_TRANSCRIPT.out.transcript_qc_stats.collect().ifEmpty([])
         )
     }
-    
+
     //
     // SUBWORKFLOW: Align and deduplicate DNA samples
     //
-    
+
     ALIGN_DEDUPLICATE_DNA (
         genome_fasta,
         genome_fai,
