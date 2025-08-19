@@ -10,7 +10,7 @@ process MERGEBARCODECOUNTS {
     tuple val(meta), path(barcode_counts)
 
     output:
-    tuple val(meta), path("merged_barcode_counts.txt"), emit: barcode_counts
+    tuple val(meta), path("${prefix}_barcode_counts.txt"), emit: barcode_counts
     path "versions.yml"           , emit: versions
 
     when:
@@ -22,7 +22,7 @@ process MERGEBARCODECOUNTS {
     """
 
     awk -F'\t' '{counts[\$1]+=\$2} END {for (b in counts) print b "\t" counts[b]}' ${barcode_counts} \
-    | sort -k2,2nr > merged_barcode_counts.txt
+    | sort -k2,2nr > ${prefix}_barcode_counts.txt
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
