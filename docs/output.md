@@ -6,6 +6,8 @@ This document describes the output produced by the pipeline. Most of the plots a
 
 The directories listed below will be created in the results directory after the pipeline has finished. All paths are relative to the top-level results directory.
 
+TODO: Should here be added which output is cDNA/DNA specific? 
+
 ## Pipeline overview
 
 The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes data using the following steps:
@@ -13,6 +15,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 - [Preprocessing](#preprocessing)
   - [Nanofilt](#nanofilt) - Read Quality Filtering and Trimming
 - [Barcode Calling](#barcode-calling)
+  - [Flexiplex](#flexiplex) - Barcode caller
   - [BLAZE](#blaze) - Barcode caller
 - [Alignment](#alignment)
   - [Minimap2](#minimap2) - Long read alignment
@@ -54,6 +57,20 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 [Nanofilt](https://github.com/wdecoster/nanofilt) is a tool used for filtering and trimming of long read sequencing data.
 
 ## Barcode Calling
+
+### Flexiplex
+
+<details markdown="1">
+<summary>Output files</summary>
+
+- `<sample_identifier>/`
+  - `flexiplex/`
+    - `*.barcodes_counts.txt` : This is a file containing each barcode and the counts of how many reads support it.
+    - `*.known_barcodes` : This file is a list of all "true" barcodes and the counts associated to it in the sample. Can be used as whitelist for downstream tools.
+
+</details>
+
+[Flexiplex](https://github.com/DavidsonGroup/flexiplex/) is a fast, multithreaded, and user-configurable demultiplexer. Given a set of reads as either FASTQ or FASTA, it will demultiplex and/or identify a sequence of interest, reporting matching reads and read-barcode assignment. Flexiplex works in two modes: (i) when one or more sequences of interest are known, such as barcodes, and (ii) discovery mode—when only the sequence which flanks the region of interest is known.
 
 ### BLAZE
 
