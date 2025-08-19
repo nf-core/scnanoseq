@@ -36,9 +36,9 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
             .flatten()
             .map{
                 fasta ->
-                    fasta_basename = fasta.toString().split('/')[-1]
-                    meta = [ 'chr': fasta_basename.split(/\./)[0] ]
-                    [ meta, fasta ]
+                    def fasta_basename = fasta.toString().split('/')[-1]
+                    def new_meta = [ 'chr': fasta_basename.split(/\./)[0] ]
+                    [ new_meta, fasta ]
             }
 
         SAMTOOLS_FAIDX_SPLIT( ch_split_fasta, [ [:], "$projectDir/assets/dummy_file.txt" ])
@@ -53,9 +53,9 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
             .flatten()
             .map{
                 gtf ->
-                    gtf_basename = gtf.toString().split('/')[-1]
-                    meta = ['chr': gtf_basename.split(/\./)[0]]
-                    [ meta, gtf ]
+                    def gtf_basename = gtf.toString().split('/')[-1]
+                    def new_meta = ['chr': gtf_basename.split(/\./)[0]]
+                    [ new_meta, gtf ]
             }
         ch_versions = ch_versions.mix(SPLIT_GTF.out.versions)
 
@@ -64,20 +64,23 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
         //
         BAMTOOLS_SPLIT ( in_bam )
         ch_versions = ch_versions.mix(BAMTOOLS_SPLIT.out.versions.first())
+
         ch_split_bam = BAMTOOLS_SPLIT.out.bam
-            .map{
+            .map {
                 meta, bam ->
-                    [bam]
+                    return [ bam ]
             }
             .flatten()
-            .map{
-                bam ->
-                    bam_basename = bam.toString().split('/')[-1]
-                    split_bam_basename = bam_basename.split(/\./)
-                    meta = [
-                        'id': split_bam_basename.take(split_bam_basename.size()-1).join("."),
-                    ]
-                    [ meta, bam ]
+            .map { bam ->
+                def bam_basename = bam.toString().split('/')[-1]
+
+                def chrom = bam_basename.split(/\./)[1].replace("REF_", "")
+
+                def split_bam_basename = bam_basename.split(/\./)
+                def new_id = split_bam_basename.take(split_bam_basename.size()-2).join(".")
+
+                def new_meta = ['id': new_id, 'chr': chrom]
+                return [ new_meta, bam ]
             }
 
         //
@@ -87,31 +90,27 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
         ch_split_bai = SAMTOOLS_INDEX_SPLIT.out.bai
         ch_versions = ch_versions.mix(SAMTOOLS_INDEX_SPLIT.out.versions.first())
 
+        // Prepare isoquant input channel
+        // bam and bai files need to be joined with split fasta, fai and gtf files
+        isoquant_input = ch_split_bam
+            .join(ch_split_bai, by: [0])
+            .map { meta, bam, bai ->
+                def chrom = [ 'chr': meta.chr ]
+                [ chrom, meta, bam, bai ]
+            }
+            .combine(ch_split_fasta, by: [0])
+            .combine(ch_split_fai, by: [0])
+            .combine(ch_split_gtf, by: [0])
+            .map { chrom, meta, bam, bai, fasta, fai, gtf ->
+                [ meta, bam, bai, fasta, fai, gtf ]
+            }
+
         //
         // MODULE: Isoquant
         //
 
         ISOQUANT (
-            ch_split_bam
-                .join(ch_split_bai, by: [0])
-                .map{
-                    meta, bam, bai ->
-                        bam_basename = bam.toString().split('/')[-1]
-                        split_bam_basename = bam_basename.split(/\./)
-                        chr = [
-                            'chr': split_bam_basename[1].replace("REF_","")
-                        ]
-                        [ chr, meta, bam, bai]
-                }
-                .combine(ch_split_fasta, by: [0])
-                .combine(ch_split_fai, by: [0])
-                .combine(ch_split_gtf, by: [0])
-                .map{
-                    chr, meta, bam, bai, fasta, fai, gtf ->
-                        meta.sample_name = meta.id.split(/\./)[0]
-                        meta.chr = meta.id.split(/\./)[1]
-                        [ meta, bam, bai, fasta, fai, gtf ]
-                },
+            isoquant_input,
             'tag:CB'
         )
         ch_versions = ch_versions.mix(ISOQUANT.out.versions)
@@ -121,13 +120,6 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
         //
         MERGE_MTX_GENE (
             ISOQUANT.out.grouped_gene_counts
-                .map{
-                    meta, mtx ->
-                        basename = mtx.toString().split('/')[-1]
-                        split_basename = basename.split(/\./)
-                        meta = [ 'id': split_basename[0] ]
-                    [ meta, mtx ]
-                }
                 .groupTuple()
         )
         ch_merged_gene_mtx = MERGE_MTX_GENE.out.merged_mtx
@@ -137,10 +129,10 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
             ISOQUANT.out.grouped_transcript_counts
                 .map{
                     meta, mtx ->
-                        basename = mtx.toString().split('/')[-1]
-                        split_basename = basename.split(/\./)
-                        meta = [ 'id': split_basename[0] ]
-                    [ meta, mtx ]
+                        def basename = mtx.toString().split('/')[-1]
+                        def split_basename = basename.split(/\./)
+                        def new_meta = [ 'id': split_basename[0] ]
+                    [ new_meta, mtx ]
                 }
                 .groupTuple()
         )
