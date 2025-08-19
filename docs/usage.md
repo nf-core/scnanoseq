@@ -6,7 +6,7 @@
 
 ## Samplesheet input
 
-You will need to create a samplesheet with information about the samples you would like to analyse before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row as shown in the examples below.
+You will need to create a samplesheet with information about the samples you would like to analyse before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 4 columns, and a header row as shown in the examples below.
 
 ```bash
 --input '[path to samplesheet file]'
@@ -17,20 +17,23 @@ You will need to create a samplesheet with information about the samples you wou
 The example `samplesheet.csv` below contains a single FASTQ file per biological replicate with sample specific cell counts.
 
 ```csv title="samplesheet.csv"
-sample,fastq,cell_count
-CONTROL_REP1,AEG588A1_S1.fastq.gz,5000
-CONTROL_REP2,AEG588A2_S1.fastq.gz,6000
-CONTROL_REP3,AEG588A3_S1.fastq.gz,5000
-TREATMENT_REP1,AEG588A4_S1.fastq.gz,5500
-TREATMENT_REP2,AEG588A5_S1.fastq.gz,6000
-TREATMENT_REP3,AEG588A6_S1.fastq.gz,5000
+sample,fastq,cell_count,type
+CONTROL_REP1,AEG588A1_S1.fastq.gz,5000,cdna
+CONTROL_REP2,AEG588A2_S1.fastq.gz,6000,cdna
+TREATMENT_REP1,AEG588A4_S1.fastq.gz,5500,cdna
+TREATMENT_REP2,AEG588A5_S1.fastq.gz,6000,cdna
+CONTROL_REP1,AEG588A1_S1.fastq.gz,5000,dna
+CONTROL_REP2,AEG588A2_S1.fastq.gz,6000,dna
+TREATMENT_REP1,AEG588A4_S1.fastq.gz,5500,dna
+TREATMENT_REP2,AEG588A5_S1.fastq.gz,6000,dna
 ```
 
 | Column       | Description                                                                                                                                                                            |
 | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `sample`     | Custom sample name. This entry will be identical for multiple sequencing libraries/runs from the same sample. Spaces in sample names are automatically converted to underscores (`_`). |
 | `fastq`      | Full path to FastQ file for Oxford Nanopore. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                                    |
-| `cell_count` | Expected number of cells/nuclei. This value is used by the barcode calling tool (BLAZE) as a baseline when determining an acceptable number of detected barcodes.                      |
+| `cell_count` | Expected number of cells/nuclei. This value is used by the barcode calling tool (BLAZE and/or Flexiplex) as a baseline when determining an acceptable number of detected barcodes.                      |
+| `type` | An optional column specifiying whether the sample is DNA or cDNA. If omitted, the default `cdna` is used.
 
 An [example samplesheet](../assets/samplesheet.csv) has been provided with the pipeline.
 
@@ -39,14 +42,14 @@ An [example samplesheet](../assets/samplesheet.csv) has been provided with the p
 The `sample` identifiers have to be the same when you have re-sequenced the same sample more than once e.g. to increase sequencing depth. The pipeline will concatenate the raw reads before performing any downstream analysis. Below is an example for the same sample sequenced across replicates 1 and 4 (`REP1` and `REP4` respectively):
 
 ```csv title="samplesheet.csv"
-sample,fastq,cell_count
-CONTROL_REP1,AEG588A1_S1.fastq.gz,5000
-CONTROL_REP1,AEG588A1_S2.fastq.gz,5000
-CONTROL_REP2,AEG588A2_S1.fastq.gz,2000
-CONTROL_REP3,AEG588A3_S1.fastq.gz,7500
-CONTROL_REP4,AEG588A4_S1.fastq.gz,9000
-CONTROL_REP4,AEG588A4_S2.fastq.gz,9000
-CONTROL_REP4,AEG588A4_S3.fastq.gz,9000
+sample,fastq,cell_count,type
+CONTROL_REP1,AEG588A1_S1.fastq.gz,5000,cdna
+CONTROL_REP1,AEG588A1_S2.fastq.gz,5000,cdna
+CONTROL_REP2,AEG588A2_S1.fastq.gz,2000,cdna
+CONTROL_REP3,AEG588A3_S1.fastq.gz,7500,cdna
+CONTROL_REP4,AEG588A4_S1.fastq.gz,9000,cdna
+CONTROL_REP4,AEG588A4_S2.fastq.gz,9000,cdna
+CONTROL_REP4,AEG588A4_S3.fastq.gz,9000,cdna
 ```
 
 ## Running the pipeline
@@ -61,12 +64,15 @@ nextflow run nf-core/scnanoseq \
   --transcript_fasta /path/to/transcriptome.fa \
   --gtf /path/to/file.gtf \
   --quantifier "isoquant,oarfish" \
+  --demux_tool flexiplex \
   --barcode_format 10X_3v3 \
   -profile <docker/singularity/institute>
 ```
 
-Please note that while the above command specifies both transcriptome and genome fasta files, only one is needed for the pipeline and is dependent on which quantifier you wish to use.
+Please note that while the above command specifies both transcriptome and genome fasta files, only one is needed for the pipeline and is dependent on which quantifier you wish to use. Furthermore, if you have any DNA samples, the `genome_fasta` is required.
 Additionally, for the `quantifier` parameter in the above command, we've listed the quantifiers as a comma-delimited string. It is possible to only use one quantifier, and can be accomplished by just providing the name of the quantifying tool you wish to run as a single value, i.e. providing `oarfish` if you only wish to run `oarfish`.
+
+The pipeline supports barcode identification and extraction through both `flexiplex` and `blaze` and can be set through `demux_tool` parameter. The barcode format can be specified through the `barcode_format` parameter. When working with completely custom barcode structures, you can additionally specify these with `custom_flexiplex_barcode_dna` and `custom_flexiplex_barcode_cdna` parameters. Note: ensure that you are using `flexiplex` as the barcode calling tool. This can be a string formatted as follows `"-x CTACACGACGCTCTTCCGATCT -b ???????????????? -u ?????????? -x TTTCTTATATGGG -f 8 -e 2"`, for more information check the documentation: https://davidsongroup.github.io/flexiplex/ 
 
 Note that the pipeline will create the following files in your working directory:
 
