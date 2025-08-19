@@ -2,4 +2,4 @@ name: flexiplex
 channels:
   - bioconda
 dependencies:
-  - bioconda::flexiplex=1.0.1
+  - bioconda::flexiplex=1.02.5
