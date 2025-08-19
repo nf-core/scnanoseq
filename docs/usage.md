@@ -32,8 +32,8 @@ TREATMENT_REP2,AEG588A5_S1.fastq.gz,6000,dna
 | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `sample`     | Custom sample name. This entry will be identical for multiple sequencing libraries/runs from the same sample. Spaces in sample names are automatically converted to underscores (`_`). |
 | `fastq`      | Full path to FastQ file for Oxford Nanopore. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                                    |
-| `cell_count` | Expected number of cells/nuclei. This value is used by the barcode calling tool (BLAZE and/or Flexiplex) as a baseline when determining an acceptable number of detected barcodes.                      |
-| `type` | An optional column specifiying whether the sample is DNA or cDNA. If omitted, the default `cdna` is used.
+| `cell_count` | Expected number of cells/nuclei. This value is used by the barcode calling tool (BLAZE and/or Flexiplex) as a baseline when determining an acceptable number of detected barcodes.     |
+| `type`       | An optional column specifiying whether the sample is DNA or cDNA. If omitted, the default `cdna` is used.                                                                              |
 
 An [example samplesheet](../assets/samplesheet.csv) has been provided with the pipeline.
 
@@ -72,7 +72,7 @@ nextflow run nf-core/scnanoseq \
 Please note that while the above command specifies both transcriptome and genome fasta files, only one is needed for the pipeline and is dependent on which quantifier you wish to use. Furthermore, if you have any DNA samples, the `genome_fasta` is required.
 Additionally, for the `quantifier` parameter in the above command, we've listed the quantifiers as a comma-delimited string. It is possible to only use one quantifier, and can be accomplished by just providing the name of the quantifying tool you wish to run as a single value, i.e. providing `oarfish` if you only wish to run `oarfish`.
 
-The pipeline supports barcode identification and extraction through both `flexiplex` and `blaze` and can be set through `demux_tool` parameter. The barcode format can be specified through the `barcode_format` parameter. When working with completely custom barcode structures, you can additionally specify these with `custom_flexiplex_barcode_dna` and `custom_flexiplex_barcode_cdna` parameters. Note: ensure that you are using `flexiplex` as the barcode calling tool. This can be a string formatted as follows `"-x CTACACGACGCTCTTCCGATCT -b ???????????????? -u ?????????? -x TTTCTTATATGGG -f 8 -e 2"`, for more information check the documentation: https://davidsongroup.github.io/flexiplex/ 
+The pipeline supports barcode identification and extraction through both `flexiplex` and `blaze` and can be set through `demux_tool` parameter. The barcode format can be specified through the `barcode_format` parameter. When working with completely custom barcode structures, you can additionally specify these with `custom_flexiplex_barcode_dna` and `custom_flexiplex_barcode_cdna` parameters. Note: ensure that you are using `flexiplex` as the barcode calling tool. This can be a string formatted as follows `"-x CTACACGACGCTCTTCCGATCT -b ???????????????? -u ?????????? -x TTTCTTATATGGG -f 8 -e 2"`, for more information check the documentation: https://davidsongroup.github.io/flexiplex/
 
 Note that the pipeline will create the following files in your working directory:
 

@@ -6,7 +6,7 @@ This document describes the output produced by the pipeline. Most of the plots a
 
 The directories listed below will be created in the results directory after the pipeline has finished. All paths are relative to the top-level results directory.
 
-TODO: Should here be added which output is cDNA/DNA specific? 
+TODO: Should here be added which output is cDNA/DNA specific?
 
 ## Pipeline overview
 
