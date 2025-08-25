@@ -117,23 +117,30 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
         //
         // MODULE: Merge Matrix
         //
+        ch_split_gene_mtx = ISOQUANT.out.grouped_gene_counts
+            .map { 
+                meta, gene_mtx ->
+                    def new_meta = [ 'id': meta.id ]
+                    return [ new_meta, gene_mtx ]
+            }
+            .groupTuple()
+
         MERGE_MTX_GENE (
-            ISOQUANT.out.grouped_gene_counts
-                .groupTuple()
+            ch_split_gene_mtx
         )
         ch_merged_gene_mtx = MERGE_MTX_GENE.out.merged_mtx
         ch_versions = ch_versions.mix(MERGE_MTX_GENE.out.versions)
 
+        ch_split_transcript_mtx = ISOQUANT.out.grouped_transcript_counts
+            .map { 
+                meta, transcript_mtx ->
+                    def new_meta = [ 'id': meta.id ]
+                    return [ new_meta, transcript_mtx ]
+            }
+            .groupTuple()
+
         MERGE_MTX_TRANSCRIPT (
-            ISOQUANT.out.grouped_transcript_counts
-                .map{
-                    meta, mtx ->
-                        def basename = mtx.toString().split('/')[-1]
-                        def split_basename = basename.split(/\./)
-                        def new_meta = [ 'id': split_basename[0] ]
-                    [ new_meta, mtx ]
-                }
-                .groupTuple()
+            ch_split_transcript_mtx
         )
         ch_merged_transcript_mtx = MERGE_MTX_TRANSCRIPT.out.merged_mtx
         ch_versions = ch_versions.mix(MERGE_MTX_TRANSCRIPT.out.versions)
