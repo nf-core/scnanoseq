@@ -15,7 +15,7 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { SCNANOSEQ  } from './workflows/scnanoseq'
+include { SCNANOSEQ               } from './workflows/scnanoseq'
 include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_scnanoseq_pipeline'
 include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_scnanoseq_pipeline'
 include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_scnanoseq_pipeline'
