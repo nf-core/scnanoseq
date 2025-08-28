@@ -48,7 +48,7 @@
 
 - [oarfish](https://github.com/COMBINE-lab/oarfish)
 
-  > Jousheghani ZZ, Patro R. Oarfish: Enhanced probabilistic modeling leads to improved accuracy in long read transcriptome quantification. bioRxiv [Preprint]. 2024 Mar 1:2024.02.28.582591. doi: 10.1101/2024.02.28.582591. PMID: 38464200; PMCID: PMC10925290.
+  > Jousheghani ZZ, Singh NP, Patro R. Oarfish: Enhanced probabilistic modeling leads to improved accuracy in long read transcriptome quantification. Bioinformatics. 2025 Jul 1;41(Supplement_1):i304-i313. doi: 10.1093/bioinformatics/btaf240. PMID: 40662837; PMCID: PMC12261437.
 
 - [pigz](https://zlib.net/pigz/)
 
