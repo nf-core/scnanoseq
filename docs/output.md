@@ -170,11 +170,12 @@ Barcode tagging is a custom script which adds metadata to the BAM files with com
 ```
 barcode tag = "CR"
 barcode quality tag = "CY"
+corrected barcode tag = "CB"
 UMI tag = "UR"
 UMI quality tag = "UY"
 ```
 
-Please see [Barcode Correction](#barcode-correction) below for metadata added post-correction.
+Note that barcodes are corrected with the custom script, `correct_barcodes.py`.
 
 ### UMI-tools Dedup
 

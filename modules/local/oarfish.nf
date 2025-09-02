@@ -13,7 +13,7 @@ process OARFISH {
     output:
     tuple val(meta), path("*features.tsv.gz") , emit: features
     tuple val(meta), path("*barcodes.tsv.gz") , emit: barcodes
-    tuple val(meta), path("*matrix.mtx.gz")    , emit: mtx
+    tuple val(meta), path("*matrix.mtx.gz")   , emit: mtx
     tuple val(meta), path("*meta_info.json")  , emit: meta_info
     path "versions.yml"                       , emit: versions
 

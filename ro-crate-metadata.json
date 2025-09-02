@@ -1,35 +1,24 @@
 {
-    "@context": [
-        "https://w3id.org/ro/crate/1.1/context",
-        {
-            "GithubService": "https://w3id.org/ro/terms/test#GithubService",
-            "JenkinsService": "https://w3id.org/ro/terms/test#JenkinsService",
-            "PlanemoEngine": "https://w3id.org/ro/terms/test#PlanemoEngine",
-            "TestDefinition": "https://w3id.org/ro/terms/test#TestDefinition",
-            "TestInstance": "https://w3id.org/ro/terms/test#TestInstance",
-            "TestService": "https://w3id.org/ro/terms/test#TestService",
-            "TestSuite": "https://w3id.org/ro/terms/test#TestSuite",
-            "TravisService": "https://w3id.org/ro/terms/test#TravisService",
-            "definition": "https://w3id.org/ro/terms/test#definition",
-            "engineVersion": "https://w3id.org/ro/terms/test#engineVersion",
-            "instance": "https://w3id.org/ro/terms/test#instance",
-            "resource": "https://w3id.org/ro/terms/test#resource",
-            "runsOn": "https://w3id.org/ro/terms/test#runsOn"
-        }
-    ],
+    "@context": "https://w3id.org/ro/crate/1.1/context",
     "@graph": [
         {
             "@id": "./",
             "@type": "Dataset",
             "creativeWorkStatus": "Stable",
-            "datePublished": "2025-05-15T08:27:46+00:00",
-            "description": "<h1>\n  <picture>\n    <source media=\"(prefers-color-scheme: dark)\" srcset=\"docs/images/nf-core-scnanoseq_logo_dark.png\">\n    <img alt=\"nf-core/scnanoseq\" src=\"docs/images/nf-core-scnanoseq_logo_light.png\">\n  </picture>\n</h1>\n\n[![GitHub Actions CI Status](https://github.com/nf-core/scnanoseq/actions/workflows/ci.yml/badge.svg)](https://github.com/nf-core/scnanoseq/actions/workflows/ci.yml)\n[![GitHub Actions Linting Status](https://github.com/nf-core/scnanoseq/actions/workflows/linting.yml/badge.svg)](https://github.com/nf-core/scnanoseq/actions/workflows/linting.yml)[![AWS CI](https://img.shields.io/badge/CI%20tests-full%20size-FF9900?labelColor=000000&logo=Amazon%20AWS)](https://nf-co.re/scnanoseq/results)[![Cite with Zenodo](http://img.shields.io/badge/DOI-10.5281/zenodo.XXXXXXX-1073c8?labelColor=000000)](https://doi.org/10.5281/zenodo.XXXXXXX)\n[![nf-test](https://img.shields.io/badge/unit_tests-nf--test-337ab7.svg)](https://www.nf-test.com)\n\n[![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A524.04.2-23aa62.svg)](https://www.nextflow.io/)\n[![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/)\n[![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)\n[![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)\n[![Launch on Seqera Platform](https://img.shields.io/badge/Launch%20%F0%9F%9A%80-Seqera%20Platform-%234256e7)](https://cloud.seqera.io/launch?pipeline=https://github.com/nf-core/scnanoseq)\n\n[![Get help on Slack](http://img.shields.io/badge/slack-nf--core%20%23scnanoseq-4A154B?labelColor=000000&logo=slack)](https://nfcore.slack.com/channels/scnanoseq)[![Follow on Twitter](http://img.shields.io/badge/twitter-%40nf__core-1DA1F2?labelColor=000000&logo=twitter)](https://twitter.com/nf_core)[![Follow on Mastodon](https://img.shields.io/badge/mastodon-nf__core-6364ff?labelColor=FFFFFF&logo=mastodon)](https://mstdn.science/@nf_core)[![Watch on YouTube](http://img.shields.io/badge/youtube-nf--core-FF0000?labelColor=000000&logo=youtube)](https://www.youtube.com/c/nf-core)\n\n## Introduction\n\n**nf-core/scnanoseq** is a bioinformatics pipeline that ...\n\n<!-- TODO nf-core:\n   Complete this sentence with a 2-3 sentence summary of what types of data the pipeline ingests, a brief overview of the\n   major pipeline sections and the types of output it produces. You're giving an overview to someone new\n   to nf-core here, in 15-20 seconds. For an example, see https://github.com/nf-core/rnaseq/blob/master/README.md#introduction\n-->\n\n<!-- TODO nf-core: Include a figure that guides the user through the major workflow steps. Many nf-core\n     workflows use the \"tube map\" design for that. See https://nf-co.re/docs/contributing/design_guidelines#examples for examples.   -->\n<!-- TODO nf-core: Fill in short bullet-pointed list of the default steps in the pipeline -->1. Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/))2. Present QC for raw reads ([`MultiQC`](http://multiqc.info/))\n\n## Usage\n\n> [!NOTE]\n> If you are new to Nextflow and nf-core, please refer to [this page](https://nf-co.re/docs/usage/installation) on how to set-up Nextflow. Make sure to [test your setup](https://nf-co.re/docs/usage/introduction#how-to-run-a-pipeline) with `-profile test` before running the workflow on actual data.\n\n<!-- TODO nf-core: Describe the minimum required steps to execute the pipeline, e.g. how to prepare samplesheets.\n     Explain what rows and columns represent. For instance (please edit as appropriate):\n\nFirst, prepare a samplesheet with your input data that looks as follows:\n\n`samplesheet.csv`:\n\n```csv\nsample,fastq_1,fastq_2\nCONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz\n```\n\nEach row represents a fastq file (single-end) or a pair of fastq files (paired end).\n\n-->\n\nNow, you can run the pipeline using:\n\n<!-- TODO nf-core: update the following command to include all required parameters for a minimal example -->\n\n```bash\nnextflow run nf-core/scnanoseq \\\n   -profile <docker/singularity/.../institute> \\\n   --input samplesheet.csv \\\n   --outdir <OUTDIR>\n```\n\n> [!WARNING]\n> Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_; see [docs](https://nf-co.re/docs/usage/getting_started/configuration#custom-configuration-files).\n\nFor more details and further functionality, please refer to the [usage documentation](https://nf-co.re/scnanoseq/usage) and the [parameter documentation](https://nf-co.re/scnanoseq/parameters).\n\n## Pipeline output\n\nTo see the results of an example test run with a full size dataset refer to the [results](https://nf-co.re/scnanoseq/results) tab on the nf-core website pipeline page.\nFor more details about the output files and reports, please refer to the\n[output documentation](https://nf-co.re/scnanoseq/output).\n\n## Credits\n\nnf-core/scnanoseq was originally written by Austyn Trull, Lara Ianov.\n\nWe thank the following people for their extensive assistance in the development of this pipeline:\n\n<!-- TODO nf-core: If applicable, make list of people who have also contributed -->\n\n## Contributions and Support\n\nIf you would like to contribute to this pipeline, please see the [contributing guidelines](.github/CONTRIBUTING.md).\n\nFor further information or help, don't hesitate to get in touch on the [Slack `#scnanoseq` channel](https://nfcore.slack.com/channels/scnanoseq) (you can join with [this invite](https://nf-co.re/join/slack)).\n\n## Citations\n\n<!-- TODO nf-core: Add citation for pipeline after first release. Uncomment lines below and update Zenodo doi and badge at the top of this file. -->\n<!-- If you use nf-core/scnanoseq for your analysis, please cite it using the following doi: [10.5281/zenodo.XXXXXX](https://doi.org/10.5281/zenodo.XXXXXX) -->\n\n<!-- TODO nf-core: Add bibliography of tools and data used in your pipeline -->\n\nAn extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](CITATIONS.md) file.\n\nYou can cite the `nf-core` publication as follows:\n\n> **The nf-core framework for community-curated bioinformatics pipelines.**\n>\n> Philip Ewels, Alexander Peltzer, Sven Fillinger, Harshil Patel, Johannes Alneberg, Andreas Wilm, Maxime Ulysse Garcia, Paolo Di Tommaso & Sven Nahnsen.\n>\n> _Nat Biotechnol._ 2020 Feb 13. doi: [10.1038/s41587-020-0439-x](https://dx.doi.org/10.1038/s41587-020-0439-x).\n",
+            "datePublished": "2025-09-02T17:05:47+00:00",
+            "description": "<h1>\n  <picture>\n    <source media=\"(prefers-color-scheme: dark)\" srcset=\"docs/images/nf-core-scnanoseq_logo_dark.png\">\n    <img alt=\"nf-core/scnanoseq\" src=\"docs/images/nf-core-scnanoseq_logo_light.png\">\n  </picture>\n</h1>\n\n[![GitHub Actions CI Status](https://github.com/nf-core/scnanoseq/actions/workflows/ci.yml/badge.svg)](https://github.com/nf-core/scnanoseq/actions/workflows/ci.yml)\n[![GitHub Actions Linting Status](https://github.com/nf-core/scnanoseq/actions/workflows/linting.yml/badge.svg)](https://github.com/nf-core/scnanoseq/actions/workflows/linting.yml)[![AWS CI](https://img.shields.io/badge/CI%20tests-full%20size-FF9900?labelColor=000000&logo=Amazon%20AWS)](https://nf-co.re/scnanoseq/results)[![Cite with Zenodo](http://img.shields.io/badge/DOI-10.5281/zenodo.13899279-1073c8?labelColor=000000)](https://doi.org/10.5281/zenodo.13899279)\n[![nf-test](https://img.shields.io/badge/unit_tests-nf--test-337ab7.svg)](https://www.nf-test.com)\n\n[![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A524.04.2-23aa62.svg)](https://www.nextflow.io/)\n[![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/)\n[![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)\n[![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)\n[![Launch on Seqera Platform](https://img.shields.io/badge/Launch%20%F0%9F%9A%80-Seqera%20Platform-%234256e7)](https://cloud.seqera.io/launch?pipeline=https://github.com/nf-core/scnanoseq)\n\n[![Get help on Slack](http://img.shields.io/badge/slack-nf--core%20%23scnanoseq-4A154B?labelColor=000000&logo=slack)](https://nfcore.slack.com/channels/scnanoseq)[![Follow on Twitter](http://img.shields.io/badge/twitter-%40nf__core-1DA1F2?labelColor=000000&logo=twitter)](https://twitter.com/nf_core)[![Follow on Mastodon](https://img.shields.io/badge/mastodon-nf__core-6364ff?labelColor=FFFFFF&logo=mastodon)](https://mstdn.science/@nf_core)[![Watch on YouTube](http://img.shields.io/badge/youtube-nf--core-FF0000?labelColor=000000&logo=youtube)](https://www.youtube.com/c/nf-core)\n\n## Introduction\n\n**nf-core/scnanoseq** is a bioinformatics best-practice analysis pipeline for 10X Genomics single-cell/nuclei RNA-seq data derived from Oxford Nanopore Q20+ chemistry ([R10.4 flow cells (>Q20)](https://nanoporetech.com/about-us/news/oxford-nanopore-announces-technology-updates-nanopore-community-meeting)). Due to the expectation of >Q20 quality, the input data for the pipeline does not depend on Illumina paired data. **Please note `scnanoseq` can also process Oxford data with older chemistry, but we encourage usage of the Q20+ chemistry when possible**.\n\nThe pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It uses Docker/Singularity containers making installation trivial and results highly reproducible. The [Nextflow DSL2](https://www.nextflow.io/docs/latest/dsl2.html) implementation of this pipeline uses one container per process which makes it much easier to maintain and update software dependencies. Where possible, these processes have been submitted to and installed from [nf-core/modules](https://github.com/nf-core/modules) in order to make them available to all nf-core pipelines, and to everyone within the Nextflow community!\n\nOn release, automated continuous integration tests run the pipeline on a full-sized dataset on the AWS cloud infrastructure. This ensures that the pipeline runs on AWS, has sensible resource allocation defaults set to run on real-world datasets, and permits the persistent storage of results to benchmark between pipeline releases and other analysis sources. The results obtained from the full-sized test can be viewed on the [nf-core website](https://nf-co.re/scnanoseq/results).\n\n## Pipeline summary\n\n![scnanoseq diagram](assets/scnanoseq_tube_map.png)\n\n1. Raw read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [`NanoPlot`](https://github.com/wdecoster/NanoPlot), [`NanoComp`](https://github.com/wdecoster/nanocomp) and [`ToulligQC`](https://github.com/GenomiqueENS/toulligQC))\n2. Unzip and split FASTQ ([`pigz`](https://github.com/madler/pigz))\n   1. Optional: Split FASTQ for faster processing ([`split`](https://linux.die.net/man/1/split))\n3. Trim and filter reads ([`Nanofilt`](https://github.com/wdecoster/nanofilt))\n4. Post trim QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [`NanoPlot`](https://github.com/wdecoster/NanoPlot), [`NanoComp`](https://github.com/wdecoster/nanocomp) and [`ToulligQC`](https://github.com/GenomiqueENS/toulligQC))\n5. Barcode detection using a custom whitelist or 10X whitelist. ([`BLAZE`](https://github.com/shimlab/BLAZE))\n6. Extract barcodes. Consists of the following steps:\n   1. Parse FASTQ files into R1 reads containing barcode and UMI and R2 reads containing sequencing without barcode and UMI (custom script `./bin/pre_extract_barcodes.py`)\n   2. Re-zip FASTQs ([`pigz`](https://github.com/madler/pigz))\n7. Barcode correction (custom script `./bin/correct_barcodes.py`)\n8. Post-extraction QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [`NanoPlot`](https://github.com/wdecoster/NanoPlot), [`NanoComp`](https://github.com/wdecoster/nanocomp) and [`ToulligQC`](https://github.com/GenomiqueENS/toulligQC))\n9. Alignment to the genome, transcriptome, or both ([`minimap2`](https://github.com/lh3/minimap2))\n10. Post-alignment filtering of mapped reads and gathering mapping QC ([`SAMtools`](http://www.htslib.org/doc/samtools.html))\n11. Post-alignment QC in unfiltered BAM files ([`NanoComp`](https://github.com/wdecoster/nanocomp), [`RSeQC`](https://rseqc.sourceforge.net/))\n12. Barcode (BC) tagging with read quality, BC quality, UMI quality (custom script `./bin/tag_barcodes.py`)\n13. Read deduplication ([`UMI-tools`](https://github.com/CGATOxford/UMI-tools) OR [`Picard MarkDuplicates`](https://broadinstitute.github.io/picard/))\n14. Gene and transcript level matrices generation with [`IsoQuant`](https://github.com/ablab/IsoQuant) and/or transcript level matrices with [`oarfish`](https://github.com/COMBINE-lab/oarfish)\n15. Preliminary matrix QC ([`Seurat`](https://github.com/satijalab/seurat))\n16. Compile QC for raw reads, trimmed reads, pre and post-extracted reads, mapping metrics and preliminary single-cell/nuclei QC ([`MultiQC`](http://multiqc.info/))\n\n## Usage\n\n> [!NOTE]\n> If you are new to Nextflow and nf-core, please refer to [this page](https://nf-co.re/docs/usage/installation) on how to set-up Nextflow. Make sure to [test your setup](https://nf-co.re/docs/usage/introduction#how-to-run-a-pipeline) with `-profile test` before running the workflow on actual data.\n\nFirst, prepare a samplesheet with your input data that looks as follows:\n\n```csv title=\"samplesheet.csv\"\nsample,fastq,cell_count\nCONTROL_REP1,AEG588A1_S1.fastq.gz,5000\nCONTROL_REP1,AEG588A1_S2.fastq.gz,5000\nCONTROL_REP2,AEG588A2_S1.fastq.gz,5000\nCONTROL_REP3,AEG588A3_S1.fastq.gz,5000\nCONTROL_REP4,AEG588A4_S1.fastq.gz,5000\nCONTROL_REP4,AEG588A4_S2.fastq.gz,5000\nCONTROL_REP4,AEG588A4_S3.fastq.gz,5000\n```\n\nEach row represents a single-end fastq file. Rows with the same sample identifier are considered technical replicates and will be automatically merged. `cell_count` refers to the expected number of cells you expect.\n\n```bash\nnextflow run nf-core/scnanoseq \\\n   -profile <docker/singularity/.../institute> \\\n   --input samplesheet.csv \\\n   --outdir <OUTDIR>\n```\n\n> [!WARNING]\n> Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_; see [docs](https://nf-co.re/docs/usage/getting_started/configuration#custom-configuration-files).\n\nFor more details and further functionality, please refer to the [usage documentation](https://nf-co.re/scnanoseq/usage) and the [parameter documentation](https://nf-co.re/scnanoseq/parameters).\n\n## Pipeline output\n\nThis pipeline produces feature-barcode matrices as the main output. These feature-barcode matrices are able to be ingested directly by most packages used for downstream analyses such as `Seurat`. Additionally, the pipeline produces a number of quality control metrics to ensure that the samples processed meet expected metrics for single-cell/nuclei data.\n\nThe pipeline provides two tools to produce the aforementioned feature-barcode matrices, `IsoQuant` and `oarfish`, and the user is given the ability to choose whether to run both or just one. `IsoQuant` will require a genome fasta to be used as input to the pipeline, and will produce both gene and transcript level matrices. `oarfish` will require a transcriptome fasta to be used as input to the pipeline and will produce only transcript level matrices.\n\nTo see the results of an example test run with a full size dataset refer to the [results](https://nf-co.re/scnanoseq/results) tab on the nf-core website pipeline page.\nFor more details about the full set of output files and reports, please refer to the\n[output documentation](https://nf-co.re/scnanoseq/output).\n\n## Troubleshooting\n\nIf you experience any issues, please make sure to reach out on the [#scnanoseq slack channel](https://nfcore.slack.com/archives/C03TUE2K6NS) or [open an issue on our GitHub repository](https://github.com/nf-core/scnanoseq/issues/new/choose). However, some resolutions for common issues will be noted below:\n\n- Due to the nature of the data this pipeline analyzes, some tools may experience increased runtimes. For some of the custom tools made for this pipeline (`preextract_fastq.py` and `correct_barcodes.py`), we have leveraged the splitting done via the `split_amount` parameter to decrease their overall runtimes. The `split_amount` parameter will split the input FASTQs into a number of FASTQ files, each containing a number of lines based on the value used for this parameter. As a result, it is important not to set this parameter to be too low as doing so would cause the creation of a large number of files the pipeline will be processed. While this value can be highly dependent on the data, a good starting point for an analysis would be to set this value to `500000`. If you find that `PREEXTRACT_FASTQ` and `CORRECT_BARCODES` are still taking long amounts of time to run, it would be worth reducing this parameter to `200000` or `100000`, but keeping the value on the order of hundred of thousands or tens of thousands should help with keeping the total number of processes minimal. An example of setting this parameter to be equal to 500000 is shown below:\n\n```yml title=\"params.yml\"\nsplit_amount: 500000\n```\n\n- We have seen a recurrent node failure on slurm clusters that does seem to be related to submission of Nextflow jobs. This issue is not related to this pipeline per se, but rather to Nextflow itself. We are currently working on a resolution. But we have two methods that appear to help overcome should this issue arise:\n  1. Provide a custom config that increases the memory request for the job that failed. This may take a couple attempts to find the correct requests, but we have noted that there does appear to be a memory issue occasionally with these errors.\n  2. Request an interactive session with a decent amount of time and memory and CPUs in order to run the pipeline on the single node. Note that this will take time as there will be minimal parallelization, but this does seem to resolve the issue.\n- We note that umitools dedup can take a large amount of time in order to perform deduplication. One approach we have implemented to assist with speed is to split input files based on chromosome. However for the transcriptome aligned bams, there is some additional work required that involves grouping transcripts into appropriate chromosomes. In order to accomplish this, the pipeline needs to parse the transcript id from the transcriptome FASTA file. The transcript id is often nested in the sequence identifier with additional data and the data is delimited. We have included the delimiters used by reference files obtained from GENCODE, NCBI, and Ensembl. However in case you wish to explicitly control this or if the reference file source uses a different delimiter, you are able to manually set it via the `--fasta_delimiter` parameter.\n- We acknowledge that analyzing PromethION data is a common use case for this pipeline. Currently, the pipeline has been developed with defaults to analyze GridION and average sized PromethION data. For cases, where jobs have fail due for larger PromethION datasets, the defaults can be overwritten by a custom configuation file (provided by the `-c` Nextflow option) where resources can be increased (substantially in some cases). Below are some of the overrides we have used, and while these amounts may not work on every dataset, these will hopefully at least note which processes will need to have their resources increased:\n\n```groovy title=\"custom.config\"\n\nprocess\n{\n    withName: '.*:.*FASTQC.*'\n    {\n        cpus = 20\n    }\n}\n\nprocess\n{\n    withName: '.*:BLAZE'\n    {\n        cpus = 30\n    }\n}\n\nprocess\n{\n    withName: '.*:TAG_BARCODES'\n    {\n        memory = '60.GB'\n    }\n}\n\nprocess\n{\n    withName: '.*:SAMTOOLS_SORT'\n    {\n        cpus = 20\n    }\n}\n\nprocess\n{\n    withName: '.*:MINIMAP2_ALIGN'\n    {\n        cpus = 20\n    }\n}\n\nprocess\n{\n    withName: '.*:ISOQUANT'\n    {\n        cpus = 30\n        memory = '85.GB'\n    }\n}\n```\n\nWe further note that while we encourage the use of `split_amount` as discussed above for larger datasets, the pipeline can be executed without enabling this parameter. When doing this, please consider increasing the time limit to `CORRECT_BARCODES` as it can take hours instead of minutes when `split_amount` is disabled:\n\n```groovy title=\"custom.config\"\n//NOTE: with split_amount disabled, consider increasing the time limit to CORRECT_BARCODES\nprocess\n{\n    withName: '.*:CORRECT_BARCODES'\n    {\n        time = '15.h'\n    }\n}\n```\n\n## Credits\n\nnf-core/scnanoseq was originally written by [Austyn Trull](https://github.com/atrull314), and [Dr. Lara Ianov](https://github.com/lianov).\n\nWe would also like to thank the following people and groups for their support, including financial support:\n\n- Dr. Elizabeth Worthey\n- University of Alabama at Birmingham Biological Data Science Core (U-BDS), RRID:SCR_021766, <https://github.com/U-BDS>\n- Civitan International Research Center\n- Support from: 3P30CA013148-48S8\n\n## Contributions and Support\n\nIf you would like to contribute to this pipeline, please see the [contributing guidelines](.github/CONTRIBUTING.md).\n\nFor further information or help, don't hesitate to get in touch on the [Slack `#scnanoseq` channel](https://nfcore.slack.com/channels/scnanoseq) (you can join with [this invite](https://nf-co.re/join/slack)).\n\n## Citations\n\nIf you use nf-core/scnanoseq for your analysis, please cite the article as follows:\n\n> **scnanoseq: an nf-core pipeline for Oxford Nanopore single-cell RNA-sequencing**\n>\n> Austyn Trull, nf-core community, Elizabeth A. Worthey, Lara Ianov\n>\n> bioRxiv 2025.04.08.647887; doi: https://doi.org/10.1101/2025.04.08.647887\n\nThe specific pipleine version can be cited using the following doi: [10.5281/zenodo.13899279](https://doi.org/10.5281/zenodo.13899279)\n\nAn extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](CITATIONS.md) file.\n\nYou can cite the `nf-core` publication as follows:\n\n> **The nf-core framework for community-curated bioinformatics pipelines.**\n>\n> Philip Ewels, Alexander Peltzer, Sven Fillinger, Harshil Patel, Johannes Alneberg, Andreas Wilm, Maxime Ulysse Garcia, Paolo Di Tommaso & Sven Nahnsen.\n>\n> _Nat Biotechnol._ 2020 Feb 13. doi: [10.1038/s41587-020-0439-x](https://dx.doi.org/10.1038/s41587-020-0439-x).\n",
             "hasPart": [
                 {
                     "@id": "main.nf"
                 },
                 {
+                    "@id": "assets/scnanoseq_tube_map.png"
+                },
+                {
                     "@id": "assets/"
+                },
+                {
+                    "@id": "bin/"
                 },
                 {
                     "@id": "conf/"
@@ -42,6 +31,9 @@
                 },
                 {
                     "@id": "modules/"
+                },
+                {
+                    "@id": "modules/local/"
                 },
                 {
                     "@id": "modules/nf-core/"
@@ -97,11 +89,6 @@
             "mainEntity": {
                 "@id": "main.nf"
             },
-            "mentions": [
-                {
-                    "@id": "#1a8e9b73-5e4d-4f81-b0c0-55b27200979b"
-                }
-            ],
             "name": "nf-core/scnanoseq"
         },
         {
@@ -121,7 +108,11 @@
         },
         {
             "@id": "main.nf",
-            "@type": ["File", "SoftwareSourceCode", "ComputationalWorkflow"],
+            "@type": [
+                "File",
+                "SoftwareSourceCode",
+                "ComputationalWorkflow"
+            ],
             "creator": [
                 {
                     "@id": "https://orcid.org/0000-0002-1859-2118"
@@ -131,8 +122,11 @@
                 }
             ],
             "dateCreated": "",
-            "dateModified": "2025-05-15T08:27:46Z",
+            "dateModified": "2025-09-02T12:05:47Z",
             "dct:conformsTo": "https://bioschemas.org/profiles/ComputationalWorkflow/1.0-RELEASE/",
+            "image": {
+                "@id": "assets/scnanoseq_tube_map.png"
+            },
             "keywords": [
                 "nf-core",
                 "nextflow",
@@ -142,7 +136,9 @@
                 "scrna-seq",
                 "single-cell"
             ],
-            "license": ["MIT"],
+            "license": [
+                "MIT"
+            ],
             "maintainer": [
                 {
                     "@id": "https://orcid.org/0000-0002-1859-2118"
@@ -151,15 +147,22 @@
                     "@id": "https://orcid.org/0000-0002-9262-4202"
                 }
             ],
-            "name": ["nf-core/scnanoseq"],
+            "name": [
+                "nf-core/scnanoseq"
+            ],
             "programmingLanguage": {
                 "@id": "https://w3id.org/workflowhub/workflow-ro-crate#nextflow"
             },
             "sdPublisher": {
                 "@id": "https://nf-co.re/"
             },
-            "url": ["https://github.com/nf-core/scnanoseq", "https://nf-co.re/scnanoseq/1.0.0/"],
-            "version": ["1.0.0"]
+            "url": [
+                "https://github.com/nf-core/scnanoseq",
+                "https://nf-co.re/scnanoseq/1.2.1/"
+            ],
+            "version": [
+                "1.2.1"
+            ]
         },
         {
             "@id": "https://w3id.org/workflowhub/workflow-ro-crate#nextflow",
@@ -174,40 +177,22 @@
             "version": "!>=24.04.2"
         },
         {
-            "@id": "#1a8e9b73-5e4d-4f81-b0c0-55b27200979b",
-            "@type": "TestSuite",
-            "instance": [
-                {
-                    "@id": "#7fb42ce6-22e5-4a50-a08d-387817bcf0f9"
-                }
+            "@id": "assets/scnanoseq_tube_map.png",
+            "@type": [
+                "File",
+                "ImageObject"
             ],
-            "mainEntity": {
-                "@id": "main.nf"
-            },
-            "name": "Test suite for nf-core/scnanoseq"
-        },
-        {
-            "@id": "#7fb42ce6-22e5-4a50-a08d-387817bcf0f9",
-            "@type": "TestInstance",
-            "name": "GitHub Actions workflow for testing nf-core/scnanoseq",
-            "resource": "repos/nf-core/scnanoseq/actions/workflows/ci.yml",
-            "runsOn": {
-                "@id": "https://w3id.org/ro/terms/test#GithubService"
-            },
-            "url": "https://api.github.com"
-        },
-        {
-            "@id": "https://w3id.org/ro/terms/test#GithubService",
-            "@type": "TestService",
-            "name": "Github Actions",
-            "url": {
-                "@id": "https://github.com"
-            }
+            "name": "Workflow diagram"
         },
         {
             "@id": "assets/",
             "@type": "Dataset",
             "description": "Additional files"
+        },
+        {
+            "@id": "bin/",
+            "@type": "Dataset",
+            "description": "Scripts that must be callable from a pipeline process"
         },
         {
             "@id": "conf/",
@@ -228,6 +213,11 @@
             "@id": "modules/",
             "@type": "Dataset",
             "description": "Modules used by the pipeline"
+        },
+        {
+            "@id": "modules/local/",
+            "@type": "Dataset",
+            "description": "Pipeline-specific modules"
         },
         {
             "@id": "modules/nf-core/",
