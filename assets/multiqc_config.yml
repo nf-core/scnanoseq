@@ -28,30 +28,30 @@ disable_version_detection: true
 log_filesize_limit: 2000000000
 
 top_modules:
-- general_stats
-- custom_content
-- samtools
-- nanostat
-- rseqc
-- fastqc:
-    name: "FastQC (raw)"
-    anchor: "fastqc"
-    info: "This section of the report shows FastQC results of the raw data"
-    path_filters:
-    - "*raw*fastqc*"
-- fastqc:
-    name: "FastQC (post trimmed)"
-    anchor: "fastqc_posttrim"
-    info: "This section of the report shows FastQC results of the trimmed data"
-    path_filters:
-    - "*trimmed*fastqc*"
-- fastqc:
-    name: "FastQC (post extract)"
-    anchor: "fastqc_postextract"
-    info: "This section of the report shows FastQC results of the trimmed and umi
-      extracted data"
-    path_filters:
-    - "*extracted*fastqc*"
+  - general_stats
+  - custom_content
+  - samtools
+  - nanostat
+  - rseqc
+  - fastqc:
+      name: "FastQC (raw)"
+      anchor: "fastqc"
+      info: "This section of the report shows FastQC results of the raw data"
+      path_filters:
+        - "*raw*fastqc*"
+  - fastqc:
+      name: "FastQC (post trimmed)"
+      anchor: "fastqc_posttrim"
+      info: "This section of the report shows FastQC results of the trimmed data"
+      path_filters:
+        - "*trimmed*fastqc*"
+  - fastqc:
+      name: "FastQC (post extract)"
+      anchor: "fastqc_postextract"
+      info: "This section of the report shows FastQC results of the trimmed and umi
+        extracted data"
+      path_filters:
+        - "*extracted*fastqc*"
 
 custom_content:
   read_counts_section:
@@ -61,9 +61,9 @@ custom_content:
   seurat_section:
     parent_id: seurat_section
     order:
-    - isoquant_transcript_seurat_stats_module
-    - isoquant_gene_seurat_stats_module
-    - oarfish_transcript_seurat_stats_module
+      - isoquant_transcript_seurat_stats_module
+      - isoquant_gene_seurat_stats_module
+      - oarfish_transcript_seurat_stats_module
 
 custom_data:
   read_counts_module:

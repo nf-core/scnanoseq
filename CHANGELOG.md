@@ -6,7 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## v1.2.1 [2025-09-02]
 
 ### Fixes
-* Fixed issue where `-resume` would not always cache IsoQuant steps, resulting in silently skipping chromosomes
+
+- Fixed issue where `-resume` would not always cache IsoQuant steps, resulting in silently skipping chromosomes
 
 ## v1.2.0 [2025-06-09]
 
