@@ -151,17 +151,36 @@
             "description": "Options related to the barcode and umis.",
             "default": "",
             "properties": {
-                "whitelist": {
+                "cdna_whitelist": {
                     "type": "string",
-                    "description": "User-provided file containing a list of cellular barcodes. Using this parameter will override the default whitelists provided by the pipeline and use the user-provided one instead.",
+                    "description": "User-provided file containing a list of cellular barcodes for cDNA samples. Using this parameter will override the default cDNA whitelists provided by the pipeline and use the user-provided one instead.",
+                    "format": "file-path",
+                    "fa_icon": "far fa-file-alt"
+                },
+                "dna_whitelist": {
+                    "type": "string",
+                    "description": "User-provided file containing a list of cellular barcodes for DNA samples. Using this parameter will override the default DNA whitelists provided by the pipeline and use the user-provided one instead.",
                     "format": "file-path",
                     "fa_icon": "far fa-file-alt"
                 },
                 "barcode_format": {
                     "type": "string",
                     "description": "Specify the format for the barcode+umi. This parameter also defines a default barcode whitelist for the pipeline to use for barcode calling, this can be overridden with the 'whitelist' parameter.",
-                    "enum": ["10X_3v3", "10X_3v4", "10X_5v2", "10X_5v3"],
+                    "enum": ["10X_3v3", "10X_3v4", "10X_5v2", "10X_5v3", "10X_multiome"],
                     "fa_icon": "fas fa-barcode"
+                },
+                "custom_flexiplex_barcode_dna": {
+                    "type": "string",
+                    "description": "Custom DNA flexiplex barcode format to use. Example: '-x CTACACGACGCTCTTCCGATCT -b ???????????????? -u ???????????? -x TTTTTTTTT -f 8 -e 2'. For information on structure: https://davidsongroup.github.io/flexiplex/#usage"
+                },
+                "custom_flexiplex_barcode_cdna": {
+                    "type": "string",
+                    "description": "Custom cDNA flexiplex barcode format to use. Example: '-x CTACACGACGCTCTTCCGATCT -b ???????????????? -u ???????????? -x TTTTTTTTT -f 8 -e 2'. For information on structure: https://davidsongroup.github.io/flexiplex/#usage"
+                },
+                "demux_tool": {
+                    "type": "string",
+                    "description": "Specify which tool to be used for demultiplexing (Options: flexiplex, blaze)",
+                    "enum": ["flexiplex", "blaze"]
                 },
                 "dedup_tool": {
                     "type": "string",

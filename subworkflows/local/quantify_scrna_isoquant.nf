@@ -108,6 +108,7 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
         //
         // MODULE: Isoquant
         //
+
         ISOQUANT (
             isoquant_input,
             'tag:CB'

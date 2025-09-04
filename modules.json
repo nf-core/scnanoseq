@@ -20,6 +20,12 @@
                         "git_sha": "0997b47c93c06b49aa7b3fefda87e728312cf2ca",
                         "installed_by": ["modules"]
                     },
+                    "chopper": {
+                        "branch": "master",
+                        "git_sha": "41dfa3f7c0ffabb96a6a813fe321c6d1cc5b6e46",
+                        "installed_by": ["modules"],
+                        "patch": "modules/nf-core/chopper/chopper.diff"
+                    },
                     "custom/dumpsoftwareversions": {
                         "branch": "master",
                         "git_sha": "de45447d060b8c8b98575bc637a4a575fd0638e1",
@@ -119,6 +125,12 @@
                         "git_sha": "0bd7d2333a88483aa0476acea172e9f5f6dd83bb",
                         "installed_by": ["modules"],
                         "patch": "modules/nf-core/samtools/view/samtools-view.diff"
+                    },
+                    "seqkit/split2": {
+                        "branch": "master",
+                        "git_sha": "41dfa3f7c0ffabb96a6a813fe321c6d1cc5b6e46",
+                        "installed_by": ["modules"],
+                        "patch": "modules/nf-core/seqkit/split2/seqkit-split2.diff"
                     },
                     "toulligqc": {
                         "branch": "master",

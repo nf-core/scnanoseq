@@ -75,8 +75,8 @@ workflow PIPELINE_INITIALISATION {
     Channel
         .fromList(samplesheetToList(params.input, "${projectDir}/assets/schema_input.json"))
         .map{
-            meta, fastq, cell_count_val ->
-                return [ meta.id, meta + [ single_end:true, cell_count: cell_count_val ], [ fastq ] ]
+            meta, fastq, cell_count_val, type ->
+                return [ meta.id, meta + [ single_end:true, cell_count: cell_count_val, type: type ], [ fastq ] ]
         }
         .groupTuple()
         .map { samplesheet ->
