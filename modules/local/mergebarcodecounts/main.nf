@@ -26,7 +26,7 @@ process MERGEBARCODECOUNTS {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        GNU Awk: \$(awk --version | sed -n '1s/.*GNU Awk \\([0-9.]*\\).*/\1/p')
+        mawk: \$(awk -W version | sed -n '1s/^mawk \([0-9.]*\).*/\1/p')
     END_VERSIONS
     """
 
@@ -40,7 +40,7 @@ process MERGEBARCODECOUNTS {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        GNU Awk: \$(awk --version | sed -n '1s/.*GNU Awk \\([0-9.]*\\).*/\1/p')
+        mawk: \$(awk -W version | sed -n '1s/^mawk \([0-9.]*\).*/\1/p')
     END_VERSIONS
     """
 }
