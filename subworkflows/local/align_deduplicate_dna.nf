@@ -68,9 +68,22 @@ workflow ALIGN_DEDUPLICATE_DNA {
         ch_versions = ch_versions.mix(MINIMAP2_ALIGN.out.versions)
 
         //
+        // MODULE: Run FLEXIFORMATTER
+        //
+        FLEXIFORMATTER (
+            MINIMAP2_ALIGN.out.bam,
+            'bai'
+        )
+
+        ch_versions = ch_versions.mix(FLEXIFORMATTER.out.versions)
+
+        FLEXIFORMATTER.out.bam
+            .set { ch_tagged_bam }
+
+        //
         // MODULE: MarkDuplicates
         //
-        final_bam = MINIMAP2_ALIGN.out.bam
+        final_bam = ch_tagged_bam
         if( !skip_dedup ) {
             //
             // MODULE: Picard Mark Duplicates
