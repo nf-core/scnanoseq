@@ -4,8 +4,8 @@ process FLEXIFORMATTER {
 
     conda "${moduleDir}/environment.yaml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/flexiformatter%3A1.0.3--pyhdfd78af_0':
-        'biocontainers/flexiformatter:1.0.3--pyhdfd78af_0' }"
+        'https://depot.galaxyproject.org/singularity/flexiformatter%3A1.0.4--pyhdfd78af_0':
+        'biocontainers/flexiformatter:1.0.4--pyhdfd78af_0' }"
 
     input:
     tuple val(meta), path(bam)
@@ -13,7 +13,8 @@ process FLEXIFORMATTER {
 
     output:
     tuple val(meta), path("*_tagged.bam")       , emit: bam
-    tuple val(meta), path("*_tagged.bam.bai")   , emit: bai
+    tuple val(meta), path("*_tagged.bam.bai")   , optional: true, emit: bai
+    tuple val(meta), path("*_tagged.bam.csi")   , optional: true, emit: csi
     path "versions.yml"                         , emit: versions
 
     when:
