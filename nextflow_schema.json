@@ -177,15 +177,21 @@
                     "type": "string",
                     "description": "Custom cDNA flexiplex barcode format to use. Example: '-x CTACACGACGCTCTTCCGATCT -b ???????????????? -u ???????????? -x TTTTTTTTT -f 8 -e 2'. For information on structure: https://davidsongroup.github.io/flexiplex/#usage"
                 },
-                "demux_tool": {
+                "demux_tool_dna": {
                     "type": "string",
-                    "description": "Specify which tool to be used for demultiplexing (Options: flexiplex, blaze)",
-                    "enum": ["flexiplex", "blaze"]
+                    "default": "flexiplex",
+                    "description": "Demultiplexing tool to use for DNA (options: flexiplex)"
+                },
+                "demux_tool_cdna": {
+                    "type": "string",
+                    "default": "flexiplex",
+                    "description": "Demultiplexing tool to use for DNA (options: flexiplex or blaze)"
                 },
                 "dedup_tool": {
                     "type": "string",
                     "description": "Specify which tool to be used for deduplication (Options: picard, umitools)",
-                    "enum": ["umitools", "picard"]
+                    "enum": ["umitools", "picard"],
+                    "default": "umitools"
                 }
             },
             "fa_icon": "fas fa-microscope",
