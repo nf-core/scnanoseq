@@ -7,13 +7,14 @@ This document describes the output produced by the pipeline. Most of the plots a
 The directories listed below will be created in the results directory after the pipeline has finished. All paths are relative to the top-level results directory.
 
 TODO: Should here be added which output is cDNA/DNA specific?
+TODO: Go over entire output section and remove/add flexiplex etc where needed.
 
 ## Pipeline overview
 
 The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes data using the following steps:
 
 - [Preprocessing](#preprocessing)
-  - [Nanofilt](#nanofilt) - Read Quality Filtering and Trimming
+  - [Chopper](#chopper) - Read Quality Filtering and Trimming
 - [Barcode Calling](#barcode-calling)
   - [Flexiplex](#flexiplex) - Barcode caller
   - [BLAZE](#blaze) - Barcode caller
@@ -21,36 +22,38 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
   - [Minimap2](#minimap2) - Long read alignment
 - [Alignment Post-processing](#alignment-post-processing)
   - [Samtools](#samtools) - Sort and index alignments and make alignment qc
-  - [Barcode Tagging](#barcode-tagging) - Barcode tagging with quality metrics and barcode information
+  - [Barcode Tagging Blaze](#barcode-tagging-blaze) - Barcode tagging with quality metrics and barcode information
+  - [Barcode Tagging Flexiplex]($barcode-tagging-flexiplex) - Moving Barcode and/or UMI tag from read name to bam tags
   - [UMI-tools Dedup](#umi-tools-dedup) - UMI-based Read deduplication
   - [Picard MarkDuplicates](#picard-markduplicates) - Read deduplication
-- [Feature-Barcode Quantification](#feature-barcode-quantification)
+- [Feature-Barcode Quantification](#feature-barcode-quantification)\*
   - [IsoQuant](#isoquant) - Feature-barcode quantification (gene and transcript level)
   - [oarfish](#oarfish) - Feature-barcode quantification (transcript-level only)
   - [Seurat](#seurat) - Feature-barcode matrix QC
-- [Other steps](#other-steps)
+- [Other steps](#other-steps)\*
   - [UCSC](#ucsc) - Annotation BED file
 - [Quality Control](#quality-control)
   - [FastQC](#fastqc) - FASTQ QC
   - [NanoComp](#nanocomp) - Long Read FASTQ QC
   - [NanoPlot](#nanoplot) - Long Read FASTQ QC
   - [ToulligQC](#toulligqc) - Long Read FASTQ QC
-  - [RSeQC](#rseqc) - Various RNA-seq QC metrics
+  - [RSeQC](#rseqc) - Various RNA-seq QC metrics\*
   - [Read Counts](#read-counts) - Read Counts QC
   - [MultiQC](#multiqc) - Aggregate report describing results and QC from the whole pipeline
 - [Pipeline information](#pipeline-information) - Report metrics generated during the workflow execution
 
+\* Indicates RNA only output
+
+\*\* Indicates DNA only output
+
 ## Preprocessing
 
-### Nanofilt
+### Chopper
 
 <details markdown="1">
 <summary>Output files</summary>
 
-- `<sample_identifier>/`
-  - `fastq/`
-    - `trimmed_nanofilt/`
-      - `*_filtered.fastq.gz`: The post-trimmed fastq. By default this will be mostly quality trimmed.
+`*_trimmed.fastq.gz`: The post-trimmed fastq. By default this will be mostly quality trimmed.
 
 </details>
 
@@ -165,7 +168,7 @@ The knee plot (an example is listed above) that is provided by BLAZE shows all b
 
 [Samtools](https://www.htslib.org/) is a suite of programs for reading, writing, editing, indexing, and viewing files that are in SAM, BAM, or CRAM format
 
-### Barcode Tagging
+### Barcode Tagging Blaze
 
 <details markdown="1">
 <summary>Output files</summary>
@@ -192,6 +195,32 @@ UMI quality tag = "UY"
 ```
 
 Please see [Barcode Correction](#barcode-correction) below for metadata added post-correction.
+
+### Barcode Tagging Flexiplex
+
+<details markdown="1">
+<summary>Output files</summary>
+
+- `<sample_identifier>/`
+  - `genome/`
+    - `bam/`
+      - `barcode_tagged/`
+        - `*.tagged.bam` : The genome aligned bam containing tagged barcode and UMI metadata.
+  - `transcriptome/`
+    - `bam/`
+      - `barcode_tagged/`
+        - `*.tagged.bam` : The transcriptome aligned bam containing tagged barcode and UMI metadata.
+
+</details>
+
+Barcode tagging is a custom python package specifically created to move barcode and/or umi tags that were added to the read name by flexiplex to the BAM tags, Useful for custom down stream analysis (e.g.: subsetting BAMs based on cell barcodes). Specifically the following tags are added:
+
+```
+barcode tag = "CB"
+UMI tag = "UR"
+```
+
+Flexiplex barcodes are already corrected during the initial Flexiplex run and are thus not post-corrected.
 
 ### UMI-tools Dedup
 
