@@ -35,6 +35,8 @@ TREATMENT_REP2,AEG588A5_S1.fastq.gz,6000,dna
 | `cell_count` | Expected number of cells/nuclei. This value is used by the barcode calling tool (BLAZE and/or Flexiplex) as a baseline when determining an acceptable number of detected barcodes.     |
 | `type`       | An optional column specifiying whether the sample is DNA or cDNA. If omitted, the default `cdna` is used.                                                                              |
 
+Note: DNA samples are only compatible with `flexiplex` demultiplexing.
+
 An [example samplesheet](../assets/samplesheet.csv) has been provided with the pipeline.
 
 ### Multiple runs of the same sample
