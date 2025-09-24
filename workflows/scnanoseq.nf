@@ -303,8 +303,9 @@ workflow SCNANOSEQ {
     ch_extracted_fastq_dna = DEMULTIPLEX_FLEXIPLEX_DNA.out.flexiplex_fastq
     ch_corrected_bc_info_dna = DEMULTIPLEX_FLEXIPLEX_DNA.out.flexiplex_barcodes
 
-
-    if (params.demux_tool == "flexiplex") {
+    ch_extracted_fastq_cdna = Channel.empty()
+    ch_corrected_bc_info_cdna = Channel.empty()
+    if (params.demux_tool_cdna == "flexiplex") {
 
         //
         // SUBWORKFLOW: Demultiplex reads using FLEXIPLEX for cDNA
@@ -320,7 +321,7 @@ workflow SCNANOSEQ {
         ch_extracted_fastq_cdna = DEMULTIPLEX_FLEXIPLEX_CDNA.out.flexiplex_fastq
         ch_corrected_bc_info_cdna = DEMULTIPLEX_FLEXIPLEX_CDNA.out.flexiplex_barcodes
 
-    } else if (params.demux_tool == "blaze") {
+    } else if (params.demux_tool_cdna == "blaze") {
 
         //
         // SUBWORKFLOW: Demultiplex reads using BLAZE for cDNA
