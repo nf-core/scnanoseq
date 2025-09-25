@@ -307,7 +307,8 @@ workflow SCNANOSEQ {
         error "Blaze demultiplexing is not currently supported for DNA reads. Please use flexiplex."
     }
 
-
+    ch_extracted_fastq_cdna = Channel.empty()
+    ch_corrected_bc_info_cdna = Channel.empty()
     if (params.demux_tool_cdna == "flexiplex") {
 
         //

@@ -62,6 +62,8 @@ workflow PROCESS_LONGREAD_SCRNA {
         //
         // MODULE: Tag Barcodes
         //
+        ch_tagged_bam = Channel.empty()
+        ch_tagged_bai = Channel.empty()
 
         if (params.demux_tool_cdna == "flexiplex") {
             FLEXIFORMATTER (
@@ -70,8 +72,8 @@ workflow PROCESS_LONGREAD_SCRNA {
             )
 
             ch_versions = ch_versions.mix(FLEXIFORMATTER.out.versions)
-            tagged_bam = FLEXIFORMATTER.out.bam
-            tagged_bai = FLEXIFORMATTER.out.bai
+            ch_tagged_bam = FLEXIFORMATTER.out.bam
+            ch_tagged_bai = FLEXIFORMATTER.out.bai
 
 
         } else if (params.demux_tool_cdna == "blaze") {
@@ -88,15 +90,15 @@ workflow PROCESS_LONGREAD_SCRNA {
             SAMTOOLS_INDEX ( TAG_BARCODES.out.tagged_bam )
             ch_versions = ch_versions.mix(SAMTOOLS_INDEX.out.versions)
 
-            tagged_bam = TAG_BARCODES.out.tagged_bam
-            tagged_bai = SAMTOOLS_INDEX.out.bai
+            ch_tagged_bam = TAG_BARCODES.out.tagged_bam
+            ch_tagged_bai = SAMTOOLS_INDEX.out.bai
         }
 
         //
         // MODULE: Flagstat Tagged Bam
         //
         SAMTOOLS_FLAGSTAT_TAGGED (
-            tagged_bam.join(tagged_bai)
+            ch_tagged_bam.join(ch_tagged_bai)
         )
         ch_versions = ch_versions.mix(SAMTOOLS_FLAGSTAT_TAGGED.out.versions)
 
@@ -110,8 +112,8 @@ workflow PROCESS_LONGREAD_SCRNA {
                 fasta,
                 fai,
                 gtf,
-                tagged_bam,
-                tagged_bai,
+                ch_tagged_bam,
+                ch_tagged_bai,
                 true, // Used to split the bam
                 genome_aligned,
                 dedup_tool,
@@ -124,8 +126,8 @@ workflow PROCESS_LONGREAD_SCRNA {
             ch_versions = DEDUP_UMIS.out.versions
         } else {
 
-            ch_bam = tagged_bam
-            ch_bai = tagged_bai
+            ch_bam = ch_tagged_bam
+            ch_bai = ch_tagged_bai
             ch_flagstat = SAMTOOLS_FLAGSTAT_TAGGED.out.flagstat
                 .map{
                     meta, flagstat ->
@@ -185,8 +187,8 @@ workflow PROCESS_LONGREAD_SCRNA {
         minimap_nanocomp_bam_txt = ALIGN_LONGREADS.out.nanocomp_bam_txt
 
         // Barcode tagging results + qc's
-        bc_tagged_bam            = tagged_bam
-        bc_tagged_bai            = tagged_bai
+        bc_tagged_bam            = ch_tagged_bam
+        bc_tagged_bai            = ch_tagged_bai
         bc_tagged_flagstat       = SAMTOOLS_FLAGSTAT_TAGGED.out.flagstat
 
         // Deduplication results
