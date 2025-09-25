@@ -63,7 +63,7 @@ workflow PROCESS_LONGREAD_SCRNA {
         // MODULE: Tag Barcodes
         //
 
-        if (params.demux_tool == "flexiplex") {
+        if (params.demux_tool_cdna == "flexiplex") {
             FLEXIFORMATTER (
                 ALIGN_LONGREADS.out.sorted_bam,
                 "bai"
@@ -74,7 +74,7 @@ workflow PROCESS_LONGREAD_SCRNA {
             tagged_bai = FLEXIFORMATTER.out.bai
 
 
-        } else if (params.demux_tool == "blaze") {
+        } else if (params.demux_tool_cdna == "blaze") {
             TAG_BARCODES (
                 ALIGN_LONGREADS.out.sorted_bam
                     .join( ALIGN_LONGREADS.out.sorted_bai, by: 0 )

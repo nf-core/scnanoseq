@@ -292,19 +292,23 @@ workflow SCNANOSEQ {
     // SUBWORKFLOW: Demultiplex reads using FLEXIPLEX for DNA
     //
 
-    //TODO: Add check for nonempty dna channels not whitelist presence
+    ch_extracted_fastq_dna = Channel.empty()
+    ch_corrected_bc_info_dna = Channel.empty()
+    if (params.demux_tool_dna == "flexiplex") {
+        DEMULTIPLEX_FLEXIPLEX_DNA (
+            ch_trimmed_reads_combined.dna,
+            dna_whitelist
+        )
 
-    DEMULTIPLEX_FLEXIPLEX_DNA (
-        ch_trimmed_reads_combined.dna,
-        dna_whitelist
-    )
-
-    ch_versions = ch_versions.mix(DEMULTIPLEX_FLEXIPLEX_DNA.out.versions)
-    ch_extracted_fastq_dna = DEMULTIPLEX_FLEXIPLEX_DNA.out.flexiplex_fastq
-    ch_corrected_bc_info_dna = DEMULTIPLEX_FLEXIPLEX_DNA.out.flexiplex_barcodes
+        ch_versions = ch_versions.mix(DEMULTIPLEX_FLEXIPLEX_DNA.out.versions)
+        ch_extracted_fastq_dna = DEMULTIPLEX_FLEXIPLEX_DNA.out.flexiplex_fastq
+        ch_corrected_bc_info_dna = DEMULTIPLEX_FLEXIPLEX_DNA.out.flexiplex_barcodes
+    } else if (params.demux_tool_dna == "blaze") {
+        error "Blaze demultiplexing is not currently supported for DNA reads. Please use flexiplex."
+    }
 
 
-    if (params.demux_tool == "flexiplex") {
+    if (params.demux_tool_cdna == "flexiplex") {
 
         //
         // SUBWORKFLOW: Demultiplex reads using FLEXIPLEX for cDNA
@@ -320,7 +324,7 @@ workflow SCNANOSEQ {
         ch_extracted_fastq_cdna = DEMULTIPLEX_FLEXIPLEX_CDNA.out.flexiplex_fastq
         ch_corrected_bc_info_cdna = DEMULTIPLEX_FLEXIPLEX_CDNA.out.flexiplex_barcodes
 
-    } else if (params.demux_tool == "blaze") {
+    } else if (params.demux_tool_cdna == "blaze") {
 
         //
         // SUBWORKFLOW: Demultiplex reads using BLAZE for cDNA

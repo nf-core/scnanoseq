@@ -4,8 +4,8 @@ process FLEXIFORMATTER {
 
     conda "${moduleDir}/environment.yaml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/flexiformatter%3A1.0.4--pyhdfd78af_0':
-        'biocontainers/flexiformatter:1.0.4--pyhdfd78af_0' }"
+        'https://depot.galaxyproject.org/singularity/flexiformatter%3A1.0.5--pyhdfd78af_0':
+        'biocontainers/flexiformatter:1.0.5--pyhdfd78af_0' }"
 
     input:
     tuple val(meta), path(bam)
@@ -25,7 +25,7 @@ process FLEXIFORMATTER {
     def args2 = task.ext.args2 ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}_tagged"
     def bam_index = bam_index_extension ? "${prefix}.bam##idx##${prefix}.bam.${bam_index_extension} --write-index" : "${prefix}.bam"
-    def bam_output = " | samtools sort -@ ${task.cpus-1} -o ${bam_index} ${args2}"
+    def bam_output = " | samtools sort -@ ${task.cpus} -o ${bam_index} ${args2}"
 
     """
     flexiformatter \\
