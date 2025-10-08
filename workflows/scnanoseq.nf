@@ -274,7 +274,7 @@ workflow SCNANOSEQ {
             ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_TRIM.out.fastqc_version.first().ifEmpty(null))
         }
     } else {
-        ch_trimmed_reads_combined = ch_unzipped_fastqs
+        ch_trimmed_reads_combined = ch_cat_fastq
     }
 
 
