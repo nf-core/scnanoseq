@@ -24,7 +24,7 @@
 
 - [Flexiformatter](https://github.com/ljwharbers/flexiformatter)
 
-  > Luuk Harbers. (2025). ljwharbers/flexiformatter: 1.0.6 (1.0.6). Zenodo. https://doi.org/10.5281/zenodo.18096495
+  > Luuk Harbers. (2025). ljwharbers/flexiformatter: 1.0.6 (1.0.6). Zenodo. https://doi.org/10.5281/zenodo.18098066
 
 - [BLAZE](https://pubmed.ncbi.nlm.nih.gov/37024980/)
 
