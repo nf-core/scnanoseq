@@ -12,9 +12,9 @@ process PREEXTRACT_FASTQ {
     tuple val(meta), path(reads), path(bc_list)
 
     output:
-    tuple val(meta), path("*.putative_bc_umi.tsv"), emit: barcode_info
-    tuple val(meta), path("*.extracted.fastq"), emit: extracted_fastq
-    path "versions.yml"                , emit: versions
+    tuple val(meta), path("*.putative_bc_umi.tsv")  , emit: barcode_info
+    tuple val(meta), path("*.extracted.fastq")      , emit: extracted_fastq
+    path "versions.yml"                             , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
