@@ -3,6 +3,12 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v1.2.1 [2025-09-02]
+
+### Fixes
+
+- Fixed issue where `-resume` would not always cache IsoQuant steps, resulting in silently skipping chromosomes
+
 ## v1.2.0 [2025-06-09]
 
 ### Enhancements
