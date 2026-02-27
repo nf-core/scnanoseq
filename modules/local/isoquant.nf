@@ -13,7 +13,7 @@ process ISOQUANT {
 
     output:
     tuple val(meta), path("*/*/*.read_assignments.tsv.gz"),             emit: read_assignments
-    tuple val(meta), path("*/*/*.corrected_reads.bed.gz"),              emit: corrected_reads
+    tuple val(meta), path("*/*/*.corrected_reads.bed.gz"),              emit: corrected_reads,                 optional: true
     tuple val(meta), path("*/*/*.transcript_tpm.tsv"),                  emit: transcript_tpm
     tuple val(meta), path("*/*/*.transcript_counts.tsv"),               emit: transcript_counts
     tuple val(meta), path("*/*/*.gene_tpm.tsv"),                        emit: gene_tpm
