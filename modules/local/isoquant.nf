@@ -17,7 +17,7 @@ process ISOQUANT {
     tuple val(meta), path("*/*/*.transcript_tpm.tsv"),                  emit: transcript_tpm,                  optional: true
     tuple val(meta), path("*/*/*.transcript_counts.tsv"),               emit: transcript_counts,               optional: true
     tuple val(meta), path("*/*/*.gene_tpm.tsv"),                        emit: gene_tpm,                        optional: true
-    tuple val(meta), path("*/*/*.gene_counts.tsv"),                     emit: gene_counts                      optional: true
+    tuple val(meta), path("*/*/*.gene_counts.tsv"),                     emit: gene_counts,                     optional: true
     tuple val(meta), path("*/isoquant.log"),                            emit: log
     tuple val(meta), path("*/*/*.exon_counts.tsv"),                     emit: exon_counts,                     optional: true
     tuple val(meta), path("*/*/*.intron_counts.tsv"),                   emit: intron_counts,                   optional: true
