@@ -124,7 +124,6 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
                     def new_meta = [ 'id': meta.id ]
                     return [ new_meta, gene_mtx ]
             }
-            .view()
             .groupTuple()
 
         MERGE_MTX_GENE (
