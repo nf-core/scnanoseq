@@ -1,6 +1,6 @@
 process ISOQUANT {
     tag "$meta.id"
-    label 'process_medium'
+    label 'process_high'
 
     conda "bioconda::isoquant=3.11.1"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
