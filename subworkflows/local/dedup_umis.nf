@@ -10,7 +10,7 @@ include { UMITOOLS_DEDUP                          } from '../../modules/nf-core/
 include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_DEDUP  } from '../../modules/nf-core/samtools/index/main'
 include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_MERGED } from '../../modules/nf-core/samtools/index/main'
 include { SAMTOOLS_MERGE                          } from '../../modules/nf-core/samtools/merge/main'
-include { SAMTOOLS_VIEW as SAMTOOLS_VIEW_SPLIT    } from '../../modules/nf-core/samtools/view/main'
+include { SPLIT_BAM                               } from '../../modules/local/split_bam'
 
 include { GROUP_TRANSCRIPTS } from '../../modules/local/group_transcripts'
 
@@ -77,7 +77,7 @@ workflow DEDUP_UMIS {
                 //
                 // MODULE: Samtools View
                 //
-                SAMTOOLS_VIEW_SPLIT(
+                SPLIT_BAM(
                     in_bam
                         .join(in_bai)
                         .combine(GROUP_TRANSCRIPTS.out.grouped_transcripts.flatten())
@@ -86,12 +86,10 @@ workflow DEDUP_UMIS {
                                 def region_basename = region.toString().split('/')[-1]
                                 def split_region_basename = region_basename.split(/\./)
                                 [['id': meta.id + "." + split_region_basename[0]], bam, bai, region]
-                        },
-                    [[],[]],
-                    []
+                        }
                 )
-                ch_split_bam = SAMTOOLS_VIEW_SPLIT.out.bam
-                ch_versions = ch_versions.mix(SAMTOOLS_VIEW_SPLIT.out.versions)
+                ch_split_bam = SPLIT_BAM.out.split_bam
+                ch_versions = ch_versions.mix(SPLIT_BAM.out.versions)
             }
 
             //
