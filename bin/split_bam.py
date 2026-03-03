@@ -39,12 +39,12 @@ def parse_args():
 
 def split_bam_by_contig(input_bam, output_bam, contigs_file):
     """ Split a BAM file into multiple BAM files based on contig names.
-    
+
     Args:
         input_bam (str): Path to the input BAM file.
         output_bam (str): Path to the output BAM file.
         contigs_file (str): Path to the file containing contig names to include in the output BAM file.
-    
+
     Returns:
         None
     """
@@ -77,4 +77,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
+
