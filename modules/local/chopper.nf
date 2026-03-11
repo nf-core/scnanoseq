@@ -2,7 +2,7 @@ process CHOPPER {
     tag "$meta.id"
     label 'process_medium'
 
-    conda "bioconda::nanofilt=0.10.0"
+    conda "bioconda::chopper=0.10.0"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/chopper:0.10.0--hcdda2d0_0':
         'biocontainers/chopper:0.10.0--hcdda2d0_0' }"

@@ -89,7 +89,6 @@ include { PROCESS_LONGREAD_SCRNA as PROCESS_LONGREAD_SCRNA_TRANSCRIPT } from "..
 //
 // MODULE: Installed directly from nf-core/modules
 //
-include { PIGZ_UNCOMPRESS as GUNZIP_FASTQ               } from "../modules/nf-core/pigz/uncompress/main"
 include { PIGZ_UNCOMPRESS as GUNZIP_WHITELIST           } from "../modules/nf-core/pigz/uncompress/main"
 include { PIGZ_COMPRESS                                 } from "../modules/nf-core/pigz/compress/main"
 include { NANOCOMP as NANOCOMP_FASTQ                    } from "../modules/nf-core/nanocomp/main"
@@ -228,13 +227,6 @@ workflow SCNANOSEQ {
     }
 
     //
-    // MODULE: Unzip fastq
-    //
-    //GUNZIP_FASTQ( ch_cat_fastq )
-    //ch_unzipped_fastqs = GUNZIP_FASTQ.out.file
-    //ch_versions = ch_versions.mix( GUNZIP_FASTQ.out.versions )
-
-    //
     // MODULE: Trim and filter reads
     //
     ch_fastqc_multiqc_postrim = Channel.empty()
@@ -244,7 +236,6 @@ workflow SCNANOSEQ {
         //
         // MODULE: Split fastq
         //
-        //ch_fastqs = ch_unzipped_fastqs
 
         if (params.split_amount > 0) {
             SPLIT_SEQ( ch_cat_fastq, '.fastq.gz', params.split_amount )
@@ -260,9 +251,13 @@ workflow SCNANOSEQ {
             ch_fastqs = ch_cat_fastq
         }
 
+        ch_trimmed_reads = Channel.empty()
         if (params.skip_trimming){
             ch_trimmed_reads = ch_fastqs
         } else {
+            //
+            // MODULE: Filter and Trim fastq
+            //
             CHOPPER ( ch_fastqs )
             ch_trimmed_reads = CHOPPER.out.reads
             ch_versions = ch_versions.mix(CHOPPER.out.versions)
@@ -294,10 +289,6 @@ workflow SCNANOSEQ {
     } else {
         ch_trimmed_reads_combined = ch_cat_fastq
     }
-
-    ch_trimmed_reads_combined.view() // TODO: Remove
-
-    // compress 
 
     //
     // MODULE: Unzip whitelist
