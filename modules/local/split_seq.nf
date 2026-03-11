@@ -24,8 +24,12 @@ process SPLIT_SEQ {
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
     # Split the file by number of reads
-    seqkit -j ${task.cpus} split2 ${args} \\
-      -s ${split_amount} --out-dir output --force ${unsplit_file}
+    seqkit -j ${task.cpus} \\
+        split2 \\
+        ${args} \\
+        -s ${split_amount} \\
+        --out-dir output \\
+        --force ${unsplit_file}
 
     # rename files to have the correct extension
     for file in ./output/*.part_*; do

@@ -29,7 +29,7 @@ process CHOPPER {
     fi
 
     chopper -t ${task.cpus} $args --input $reads | \\
-      gzip -c > \${FILE_PREFIX}.filtered.fastq.gz 
+        gzip -c > \${FILE_PREFIX}.filtered.fastq.gz
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

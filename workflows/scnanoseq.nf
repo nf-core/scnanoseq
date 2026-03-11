@@ -154,7 +154,7 @@ workflow SCNANOSEQ {
     //
     // SUBWORKFLOW: Fastq QC with Nanoplot, ToulligQC and FastQC - pre-trim QC
     //
-    
+
     ch_fastqc_multiqc_pretrim = Channel.empty()
     if (!params.skip_qc){
 
