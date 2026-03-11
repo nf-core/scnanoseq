@@ -27,83 +27,13 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
     main:
         ch_versions = Channel.empty()
 
-        //
-        // MODULE: Split the FASTA
-        //
-        SPLIT_FASTA( in_fasta )
-        ch_versions = ch_versions.mix(SPLIT_FASTA.out.versions)
-        ch_split_fasta = SPLIT_FASTA.out.split_fasta
-            .flatten()
-            .map{
-                fasta ->
-                    def fasta_basename = fasta.toString().split('/')[-1]
-                    def new_meta = [ 'chr': fasta_basename.split(/\./)[0] ]
-                    [ new_meta, fasta ]
-            }
-
-        SAMTOOLS_FAIDX_SPLIT( ch_split_fasta, [ [:], "$projectDir/assets/dummy_file.txt" ])
-        ch_split_fai = SAMTOOLS_FAIDX_SPLIT.out.fai
-        ch_versions = ch_versions.mix(SAMTOOLS_FAIDX_SPLIT.out.versions)
-
-        //
-        // MODULE: Split the GTF
-        //
-        SPLIT_GTF( in_gtf )
-        ch_split_gtf = SPLIT_GTF.out.split_gtf
-            .flatten()
-            .map{
-                gtf ->
-                    def gtf_basename = gtf.toString().split('/')[-1]
-                    def new_meta = ['chr': gtf_basename.split(/\./)[0]]
-                    [ new_meta, gtf ]
-            }
-        ch_versions = ch_versions.mix(SPLIT_GTF.out.versions)
-
-        //
-        // MODULE: Bamtools split
-        //
-        BAMTOOLS_SPLIT ( in_bam )
-        ch_versions = ch_versions.mix(BAMTOOLS_SPLIT.out.versions.first())
-
-        ch_split_bam = BAMTOOLS_SPLIT.out.bam
-            .map {
-                meta, bam ->
-                    return [ bam ]
-            }
-            .flatten()
-            .map { bam ->
-                def bam_basename = bam.toString().split('/')[-1]
-
-                def chrom = bam_basename.split(/\./)[1].replace("REF_", "")
-
-                def split_bam_basename = bam_basename.split(/\./)
-                def new_id = split_bam_basename.take(split_bam_basename.size()-2).join(".")
-
-                def new_meta = ['id': new_id, 'chr': chrom]
-                return [ new_meta, bam ]
-            }
-
-        //
-        // MODULE: Samtools Index
-        //
-        SAMTOOLS_INDEX_SPLIT( ch_split_bam )
-        ch_split_bai = SAMTOOLS_INDEX_SPLIT.out.bai
-        ch_versions = ch_versions.mix(SAMTOOLS_INDEX_SPLIT.out.versions.first())
-
         // Prepare isoquant input channel
         // bam and bai files need to be joined with split fasta, fai and gtf files
-        isoquant_input = ch_split_bam
-            .join(ch_split_bai, by: [0])
-            .map { meta, bam, bai ->
-                def chrom = [ 'chr': meta.chr ]
-                [ chrom, meta, bam, bai ]
-            }
-            .combine(ch_split_fasta, by: [0])
-            .combine(ch_split_fai, by: [0])
-            .combine(ch_split_gtf, by: [0])
-            .map { chrom, meta, bam, bai, fasta, fai, gtf ->
-                [ meta, bam, bai, fasta, fai, gtf ]
-            }
+        isoquant_input = in_bam
+            .join(in_bai, by: [0])
+            .combine(in_fasta, by: [0])
+            .combine(in_fai, by: [0])
+            .combine(in_gtf, by: [0])
 
         //
         // MODULE: Isoquant
@@ -113,44 +43,10 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
             'tag:CB'
         )
         ch_versions = ch_versions.mix(ISOQUANT.out.versions)
-
-        //
-        // MODULE: Merge Matrix
-        //
-        ch_split_gene_mtx = ISOQUANT.out.grouped_gene_counts
-            .map {
-                meta, gene_mtx ->
-                    def new_meta = [ 'id': meta.id ]
-                    return [ new_meta, gene_mtx ]
-            }
-            .groupTuple()
-
-        MERGE_MTX_GENE (
-            ch_split_gene_mtx
-        )
-        ch_merged_gene_mtx = MERGE_MTX_GENE.out.merged_mtx
-        ch_versions = ch_versions.mix(MERGE_MTX_GENE.out.versions)
-
-        ch_split_transcript_mtx = ISOQUANT.out.grouped_transcript_counts
-            .map {
-                meta, transcript_mtx ->
-                    def new_meta = [ 'id': meta.id ]
-                    return [ new_meta, transcript_mtx ]
-            }
-            .groupTuple()
-
-        MERGE_MTX_TRANSCRIPT (
-            ch_split_transcript_mtx
-        )
-        ch_merged_transcript_mtx = MERGE_MTX_TRANSCRIPT.out.merged_mtx
-        ch_versions = ch_versions.mix(MERGE_MTX_TRANSCRIPT.out.versions)
-
-        ch_gene_qc_stats = Channel.empty()
-        ch_transcript_qc_stats = Channel.empty()
-
+    
         if (!params.skip_qc && !params.skip_seurat){
             QC_SCRNA_GENE (
-                ch_merged_gene_mtx,
+                ISOQUANT.out.grouped_gene_counts,
                 in_flagstat,
                 "BASE"
             )
@@ -158,7 +54,7 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
             ch_versions = ch_versions.mix(QC_SCRNA_GENE.out.versions)
 
             QC_SCRNA_TRANSCRIPT (
-                ch_merged_transcript_mtx,
+                ISOQUANT.out.grouped_transcript_counts,
                 in_flagstat,
                 "BASE"
             )
@@ -168,8 +64,8 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
 
     emit:
         versions            = ch_versions
-        gene_mtx            = ch_merged_gene_mtx
-        transcript_mtx      = ch_merged_transcript_mtx
-        gene_qc_stats       = ch_gene_qc_stats
-        transcript_qc_stats = ch_transcript_qc_stats
+        gene_mtx            = Channel.empty()
+        transcript_mtx      = Channel.empty()
+        gene_qc_stats       = Channel.empty()
+        transcript_qc_stats = Channel.empty()
 }
