@@ -58,6 +58,11 @@
                         "installed_by": ["modules"],
                         "patch": "modules/nf-core/nanoplot/nanoplot.diff"
                     },
+                    "parabricks/minimap2": {
+                        "branch": "master",
+                        "git_sha": "f0b0dc3c3f001b1b7bf814a3c353baecbab17ea1",
+                        "installed_by": ["modules"]
+                    },
                     "picard/markduplicates": {
                         "branch": "master",
                         "git_sha": "49f4e50534fe4b64101e62ea41d5dc43b1324358",
