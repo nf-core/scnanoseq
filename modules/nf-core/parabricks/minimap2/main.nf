@@ -10,15 +10,14 @@ process PARABRICKS_MINIMAP2 {
     input:
     tuple val(meta),  path(reads)
     tuple val(meta2), path(fasta)
-    tuple val(meta3), path(intervals)
-    tuple val(meta4), path(known_sites)
+    tuple val(meta3), path(index)
+    tuple val(meta4), path(intervals)
+    tuple val(meta5), path(known_sites)
     val output_fmt
 
     output:
-    tuple val(meta), path("*.bam"),                   emit: bam,                 optional: true
-    tuple val(meta), path("*.bai"),                   emit: bai,                 optional: true
-    tuple val(meta), path("*.cram"),                  emit: cram,                optional: true
-    tuple val(meta), path("*.crai"),                  emit: crai,                optional: true
+    tuple val(meta), path("*.{bam,cram}"),            emit: bam,                 optional: true
+    tuple val(meta), path("*.{bai,crai}"),            emit: index,               optional: true
     tuple val(meta), path("*.table"),                 emit: bqsr_table,          optional: true
     tuple val(meta), path("*_qc_metrics"),            emit: qc_metrics,          optional: true
     tuple val(meta), path("*.duplicate-metrics.txt"), emit: duplicate_metrics,   optional: true

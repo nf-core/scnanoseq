@@ -50,13 +50,13 @@ workflow ALIGN_LONGREADS {
         if (gpu_align) {
             MINIMAP2_ALIGN_GPU (
                 fastq,
+                fasta,
                 ch_minimap_ref,
-                true,
-                "bai",
-                "",
-                ""
+                [],
+                [],
+                "bam"
             )
-            ch_versions = ch_versions.mix(MINIMAP2_ALIGN_GPU.out.versions)
+            ch_versions = ch_versions.mix(MINIMAP2_ALIGN_GPU.out.compatible_versions)
 
         } else {
             MINIMAP2_ALIGN (
