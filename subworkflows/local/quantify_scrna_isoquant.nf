@@ -49,14 +49,14 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
         ch_merged_gene_mtx = ISOQUANT.out.grouped_gene_counts
             .map {
                 meta, gene_mtx ->
-                    def new_meta = [ 'id': meta.id ]
+                    def new_meta = meta
                     return [ new_meta, gene_mtx ]
             }
 
         ch_merged_transcript_mtx = ISOQUANT.out.grouped_transcript_counts
             .map {
                 meta, transcript_mtx ->
-                    def new_meta = [ 'id': meta.id ]
+                    def new_meta = meta
                     return [ new_meta, transcript_mtx ]
             }
 

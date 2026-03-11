@@ -48,19 +48,14 @@ workflow DEDUP_UMIS {
                 BAMTOOLS_SPLIT ( in_bam )
                 ch_versions = ch_versions.mix(BAMTOOLS_SPLIT.out.versions.first())
                 ch_split_bam = BAMTOOLS_SPLIT.out.bam
-                    .map{
+                    .flatMap{
                         meta, bam ->
-                            [bam]
-                    }
-                    .flatten()
-                    .map{
-                        bam ->
-                            def bam_basename = bam.toString().split('/')[-1]
-                            def split_bam_basename = bam_basename.split(/\./)
-                            def new_meta = [
-                                'id': split_bam_basename.take(split_bam_basename.size()-1).join("."),
-                            ]
-                            [ new_meta, bam ]
+                            def bamList = bam instanceof List ? bam : [bam]
+                            bamList.collect { b ->
+                                def bam_basename = b.toString().split('/')[-1]
+                                def split_bam_basename = bam_basename.split(/\./)
+                                [ meta + [ 'id': split_bam_basename.take(split_bam_basename.size()-1).join(".") ], b ]
+                            }
                     }
 
             } else {
@@ -153,7 +148,7 @@ workflow DEDUP_UMIS {
                         meta, bam ->
                             def bam_basename = bam.toString().split('/')[-1]
                             def split_bam_basename = bam_basename.split(/\./)
-                            def new_meta = [ 'id': split_bam_basename[0] ]
+                            def new_meta = meta + [ 'id': split_bam_basename[0] ]
                         [ new_meta, bam ]
                     }
                     .groupTuple(),

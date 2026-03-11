@@ -131,7 +131,7 @@ workflow PROCESS_LONGREAD_SCRNA {
             ch_flagstat = SAMTOOLS_FLAGSTAT_TAGGED.out.flagstat
                 .map{
                     meta, flagstat ->
-                        id = ['id': meta.id]
+                        id = meta
                     [id, flagstat]
                 }
 

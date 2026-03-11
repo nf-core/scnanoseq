@@ -105,7 +105,8 @@ include { ALIGN_DEDUPLICATE_DNA                                       } from "..
 // MODULE: Installed directly from nf-core/modules
 //
 
-include { NANOCOMP as NANOCOMP_FASTQ                    } from "../modules/nf-core/nanocomp/main"
+include { NANOCOMP as NANOCOMP_FASTQ_CDNA               } from "../modules/nf-core/nanocomp/main"
+include { NANOCOMP as NANOCOMP_FASTQ_DNA                } from "../modules/nf-core/nanocomp/main"
 include { CHOPPER                                       } from "../modules/nf-core/chopper/main"
 include { MULTIQC as MULTIQC_RAWQC                      } from "../modules/nf-core/multiqc/main"
 include { MULTIQC as MULTIQC_FINALQC                    } from "../modules/nf-core/multiqc/main"
@@ -190,18 +191,29 @@ workflow SCNANOSEQ {
     ch_nanocomp_fastq_txt = Channel.empty()
     if (!params.skip_qc && !params.skip_fastq_nanocomp) {
 
-        NANOCOMP_FASTQ (
+        NANOCOMP_FASTQ_CDNA (
             ch_cat_fastq
+                .filter{ meta, fastq -> meta.type == 'cdna' }
                 .collect{it[1]}
                 .map{
-                    [ [ 'id': 'nanocomp_fastq.' ] , it ]
+                    [ [ 'id': 'cdna_fastq.', 'type': 'cdna' ] , it ]
                 }
         )
 
-        ch_nanocomp_fastq_html = NANOCOMP_FASTQ.out.report_html
-        ch_nanocomp_fastq_txt = NANOCOMP_FASTQ.out.stats_txt
+        NANOCOMP_FASTQ_DNA (
+            ch_cat_fastq
+                .filter{ meta, fastq -> meta.type == 'dna' }
+                .collect{it[1]}
+                .map{
+                    [ [ 'id': 'dna_fastq.', 'type': 'dna' ] , it ]
+                }
+        )
 
-        ch_versions = ch_versions.mix( NANOCOMP_FASTQ.out.versions )
+        ch_nanocomp_fastq_html = NANOCOMP_FASTQ_CDNA.out.report_html.mix( NANOCOMP_FASTQ_DNA.out.report_html )
+        ch_nanocomp_fastq_txt  = NANOCOMP_FASTQ_CDNA.out.stats_txt.mix( NANOCOMP_FASTQ_DNA.out.stats_txt )
+
+        ch_versions = ch_versions.mix( NANOCOMP_FASTQ_CDNA.out.versions )
+        ch_versions = ch_versions.mix( NANOCOMP_FASTQ_DNA.out.versions )
 
     }
 
