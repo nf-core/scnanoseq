@@ -24,7 +24,7 @@ workflow ALIGN_LONGREADS {
         fastq       // channel: [ val(meta), path(fastq) ]
         rseqc_bed   // channel: [ val(meta), path(rseqc_bed) ]
 
-        gpu                      // bool: Run GPU accelerated version of minimap2
+        gpu_align                // bool: Run GPU accelerated version of minimap2
         skip_save_minimap2_index // bool: Skip saving the minimap2 index
         skip_qc                  // bool: Skip qc steps
         skip_rseqc               // bool: Skip RSeQC
@@ -47,7 +47,7 @@ workflow ALIGN_LONGREADS {
         // MINIMAP2_ALIGN: Supports GPU and CPU
         //
 
-        if (gpu) {
+        if (gpu_align) {
             MINIMAP2_ALIGN_GPU (
                 fastq,
                 ch_minimap_ref,

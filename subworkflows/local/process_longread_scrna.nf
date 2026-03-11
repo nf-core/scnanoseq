@@ -32,7 +32,7 @@ workflow PROCESS_LONGREAD_SCRNA {
         genome_aligned  // bool: Whether the bam is aligned to the genome or not
         fasta_delimiter // str: Delimiter character used in sequence id in fasta
 
-        gpu                      // bool: Run GPU accelerated version of minimap2
+        gpu_align                // bool: Run GPU accelerated version of minimap2
         skip_save_minimap2_index // bool: Skip saving the minimap2 index
         skip_qc                  // bool: Skip qc steps
         skip_rseqc               // bool: Skip RSeQC
@@ -53,7 +53,7 @@ workflow PROCESS_LONGREAD_SCRNA {
             gtf,
             fastq,
             rseqc_bed,
-            gpu,
+            gpu_align,
             skip_save_minimap2_index,
             skip_qc,
             skip_rseqc,
