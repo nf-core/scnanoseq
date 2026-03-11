@@ -198,6 +198,11 @@
                     "type": "boolean",
                     "default": true,
                     "description": "Save the secondary alignments when aligning to the transcriptome"
+                },
+                "gpu_align": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Use the Parabricks GPU-accelerated version of minimap2"
                 }
             },
             "fa_icon": "far fa-map"

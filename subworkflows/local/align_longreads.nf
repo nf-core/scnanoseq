@@ -7,9 +7,10 @@ include { BAM_SORT_STATS_SAMTOOLS                                     } from '..
 include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_FILTERED } from '../../subworkflows/nf-core/bam_sort_stats_samtools/main'
 
 // MODULES
-include { MINIMAP2_INDEX                          } from '../../modules/nf-core/minimap2/index'
-include { MINIMAP2_ALIGN                          } from '../../modules/nf-core/minimap2/align'
-include { SAMTOOLS_VIEW as SAMTOOLS_FILTER_MAPPED } from '../../modules/nf-core/samtools/view'
+include { MINIMAP2_INDEX                            } from '../../modules/nf-core/minimap2/index'
+include { MINIMAP2_ALIGN                            } from '../../modules/nf-core/minimap2/align'
+include { PARABRICKS_MINIMAP2 as MINIMAP2_ALIGN_GPU } from '../../modules/nf-core/parabricks/minimap2/main'
+include { SAMTOOLS_VIEW as SAMTOOLS_FILTER_MAPPED   } from '../../modules/nf-core/samtools/view'
 
 include { RSEQC_READDISTRIBUTION } from '../../modules/nf-core/rseqc/readdistribution/main'
 include { NANOCOMP               } from '../../modules/nf-core/nanocomp/main'
@@ -23,6 +24,7 @@ workflow ALIGN_LONGREADS {
         fastq       // channel: [ val(meta), path(fastq) ]
         rseqc_bed   // channel: [ val(meta), path(rseqc_bed) ]
 
+        gpu                      // bool: Run GPU accelerated version of minimap2
         skip_save_minimap2_index // bool: Skip saving the minimap2 index
         skip_qc                  // bool: Skip qc steps
         skip_rseqc               // bool: Skip RSeQC
@@ -42,19 +44,31 @@ workflow ALIGN_LONGREADS {
         }
 
         //
-        // MINIMAP2_ALIGN
+        // MINIMAP2_ALIGN: Supports GPU and CPU
         //
 
-        MINIMAP2_ALIGN (
-            fastq,
-            ch_minimap_ref,
-            true,
-            "bai",
-            "",
-            ""
-        )
+        if (gpu) {
+            MINIMAP2_ALIGN_GPU (
+                fastq,
+                ch_minimap_ref,
+                true,
+                "bai",
+                "",
+                ""
+            )
+            ch_versions = ch_versions.mix(MINIMAP2_ALIGN_GPU.out.versions)
 
-        ch_versions = ch_versions.mix(MINIMAP2_ALIGN.out.versions)
+        } else {
+            MINIMAP2_ALIGN (
+                fastq,
+                ch_minimap_ref,
+                true,
+                "bai",
+                "",
+                ""
+            )
+            ch_versions = ch_versions.mix(MINIMAP2_ALIGN.out.versions)
+        }
 
         //
         // SUBWORKFLOW: BAM_SORT_STATS_SAMTOOLS
