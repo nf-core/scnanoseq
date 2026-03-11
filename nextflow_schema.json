@@ -245,7 +245,6 @@
                     "pattern": "^(oarfish|isoquant)(,(oarfish|isoquant))*$"
                 }
             },
-            "required": ["quantifier"],
             "description": "Options related to post-mapping analysis"
         },
         "process_skipping_options": {

@@ -45,7 +45,7 @@ TRANSCRIPT_QUANT_OPTS = [ 'oarfish' ]
 
 genome_quants = []
 transcript_quants = []
-for (quantifier in params.quantifier.split(',')) {
+for (quantifier in (params.quantifier ? params.quantifier.split(',') : [])) {
     if (quantifier in GENOME_QUANT_OPTS) {
         genome_quants.add(quantifier)
     }

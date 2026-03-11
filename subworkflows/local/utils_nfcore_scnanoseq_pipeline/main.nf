@@ -152,12 +152,20 @@ workflow PIPELINE_COMPLETION {
 def validateInputParameters() {
     genomeExistsError()
 
-    if ((params.quantifier.equals('isoquant') || params.quantifier.equals('both')) && !params.genome_fasta) {
+    // Only require a quantifier when cDNA input is present.
+    def has_cdna_input = samplesheetToList(params.input, "${projectDir}/assets/schema_input.json")
+        .any { row -> row[3].toString().equalsIgnoreCase('cdna') }
+
+    if (has_cdna_input && !params.quantifier) {
+        error("Input contains cDNA reads but --quantifier was not provided. Please set --quantifier to one or more of: isoquant,oarfish")
+    }
+
+    if (params.quantifier && (params.quantifier.equals('isoquant') || params.quantifier.equals('both')) && !params.genome_fasta) {
         def error_string = "In order to quantify with isoquant, a genome fasta must be provided"
         error(error_string)
     }
 
-    if ((params.quantifier.equals('oarfish') || params.quantifier.equals('both')) && !params.transcript_fasta) {
+    if (params.quantifier && (params.quantifier.equals('oarfish') || params.quantifier.equals('both')) && !params.transcript_fasta) {
         def error_string = "In order to quantify with oarfish, a transcript fasta must be provided"
         error(error_string)
     }
