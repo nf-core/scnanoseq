@@ -1,14 +1,11 @@
-bump_version: null
 lint:
   files_unchanged:
-    - .github/workflows/linting.yml
     - lib/NfcoreTemplate.groovy
     - docs/images/nf-core-scnanoseq_logo_dark.png
     - docs/images/nf-core-scnanoseq_logo_light.png
     - .gitignore
   template_strings: false
-nf_core_version: 3.0.2
-org_path: null
+nf_core_version: 3.2.1
 repository_type: pipeline
 template:
   author: Austyn Trull, Lara Ianov
@@ -18,6 +15,4 @@ template:
   name: scnanoseq
   org: nf-core
   outdir: .
-  skip_features: null
   version: 1.0.0
-update: null

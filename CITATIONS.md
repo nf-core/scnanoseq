@@ -2,11 +2,13 @@
 
 ## [nf-core](https://pubmed.ncbi.nlm.nih.gov/32055031/)
 
-## [nf-core/scnanoseq](https://doi.org/10.1101/2025.04.08.647887)
-
-> Trull A, nf-core community, Worthey EA, Ianov L. scnanoseq: an nf-core pipeline for Oxford Nanopore single-cell RNA-sequencing. bioRxiv 2025.04.08.647887; doi: https://doi.org/10.1101/2025.04.08.647887
-
 > Ewels PA, Peltzer A, Fillinger S, Patel H, Alneberg J, Wilm A, Garcia MU, Di Tommaso P, Nahnsen S. The nf-core framework for community-curated bioinformatics pipelines. Nat Biotechnol. 2020 Mar;38(3):276-278. doi: 10.1038/s41587-020-0439-x. PubMed PMID: 32055031.
+
+> Langer BE, Amaral A, Baudement MO, Bonath F, Charles M, Chitneedi PK, Clark EL, Di Tommaso P, Djebali S, Ewels PA, Eynard S, Fellows Yates JA, Fischer D, Floden EW, Foissac S, Gabernet G, Garcia MU, Gillard G, Gundappa MK, Guyomar C, Hakkaart C, Hanssen F, Harrison PW, Hörtenhuber M, Kurylo C, Kühn C, Lagarrigue S, Lallias D, Macqueen DJ, Miller E, Mir-Pedrol J, Moreira GCM, Nahnsen S, Patel H, Peltzer A, Pitel F, Ramayo-Caldas Y, Ribeiro-Dantas MDC, Rocha D, Salavati M, Sokolov A, Espinosa-Carrasco J, Notredame C, Community TN. Empowering bioinformatics communities with Nextflow and nf-core. Genome Biol. 2025 Jul 29;26(1):228. doi: 10.1186/s13059-025-03673-9. PMID: 40731283; PMCID: PMC12309086.
+
+## [nf-core/scnanoseq](https://doi.org/10.1093/bioinformatics/btaf487)
+
+> Trull A, Worthey EA, Ianov L. scnanoseq: an nf-core pipeline for Oxford Nanopore single-cell RNA-sequencing. Bioinformatics. 2025 Sep 1;41(9):btaf487. doi: 10.1093/bioinformatics/btaf487. PMID: 40905625; PMCID: PMC12449243.
 
 ## [Nextflow](https://pubmed.ncbi.nlm.nih.gov/28398311/)
 
@@ -48,7 +50,7 @@
 
 - [oarfish](https://github.com/COMBINE-lab/oarfish)
 
-  > Jousheghani ZZ, Patro R. Oarfish: Enhanced probabilistic modeling leads to improved accuracy in long read transcriptome quantification. bioRxiv [Preprint]. 2024 Mar 1:2024.02.28.582591. doi: 10.1101/2024.02.28.582591. PMID: 38464200; PMCID: PMC10925290.
+  > Jousheghani ZZ, Singh NP, Patro R. Oarfish: Enhanced probabilistic modeling leads to improved accuracy in long read transcriptome quantification. Bioinformatics. 2025 Jul 1;41(Supplement_1):i304-i313. doi: 10.1093/bioinformatics/btaf240. PMID: 40662837; PMCID: PMC12261437.
 
 - [pigz](https://zlib.net/pigz/)
 
