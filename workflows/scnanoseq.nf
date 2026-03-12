@@ -325,7 +325,7 @@ workflow SCNANOSEQ {
     ch_split_bc_fastqs = ch_trimmed_reads_combined
     ch_split_bc = ch_putative_bc
     if (params.split_amount > 0) {
-        SPLIT_SEQ_BC_FASTQ( ch_trimmed_reads_combined, '.fastq.gz', params.split_amount )
+        SPLIT_SEQ_BC_FASTQ( ch_trimmed_reads_combined, '.fastq.gz', params.split_amount / 4 )
 
         SPLIT_SEQ_BC_FASTQ.out.split_files
             .transpose()
@@ -338,7 +338,6 @@ workflow SCNANOSEQ {
             .transpose()
             .set { ch_split_bc }
     }
-
 
     //
     // MODULE: Extract barcodes
