@@ -1,0 +1,24 @@
+Changes in component 'nf-core/seqkit/split2'
+'modules/nf-core/seqkit/split2/meta.yml' is unchanged
+Changes in 'seqkit/split2/main.nf':
+--- modules/nf-core/seqkit/split2/main.nf
++++ modules/nf-core/seqkit/split2/main.nf
+@@ -11,8 +11,8 @@
+     tuple val(meta), path(reads)
+ 
+     output:
+-    tuple val(meta), path("**/*.gz"), emit: reads
+-    path "versions.yml"             , emit: versions
++    tuple val(meta), path("**/*.{fastq,fq}{,.gz}")  , emit: reads
++    path "versions.yml"                             , emit: versions
+ 
+     when:
+     task.ext.when == null || task.ext.when
+
+'modules/nf-core/seqkit/split2/environment.yml' is unchanged
+'modules/nf-core/seqkit/split2/tests/length.config' is unchanged
+'modules/nf-core/seqkit/split2/tests/main.nf.test' is unchanged
+'modules/nf-core/seqkit/split2/tests/part.config' is unchanged
+'modules/nf-core/seqkit/split2/tests/main.nf.test.snap' is unchanged
+'modules/nf-core/seqkit/split2/tests/size.config' is unchanged
+************************************************************

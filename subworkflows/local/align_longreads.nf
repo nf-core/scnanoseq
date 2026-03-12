@@ -10,9 +10,8 @@ include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_FILTERED } from '..
 include { MINIMAP2_INDEX                          } from '../../modules/nf-core/minimap2/index'
 include { MINIMAP2_ALIGN                          } from '../../modules/nf-core/minimap2/align'
 include { SAMTOOLS_VIEW as SAMTOOLS_FILTER_MAPPED } from '../../modules/nf-core/samtools/view'
-
-include { RSEQC_READDISTRIBUTION } from '../../modules/nf-core/rseqc/readdistribution/main'
-include { NANOCOMP               } from '../../modules/nf-core/nanocomp/main'
+include { RSEQC_READDISTRIBUTION                  } from '../../modules/nf-core/rseqc/readdistribution/main'
+include { NANOCOMP                                } from '../../modules/nf-core/nanocomp/main'
 
 
 workflow ALIGN_LONGREADS {
@@ -59,6 +58,8 @@ workflow ALIGN_LONGREADS {
         //
         // SUBWORKFLOW: BAM_SORT_STATS_SAMTOOLS
         // The subworkflow is called in both the minimap2 bams and filtered (mapped only) version
+        // TODO: No reason that this is again sorting and indexing.
+        // Change to STATS_SAMTOOLS
         BAM_SORT_STATS_SAMTOOLS ( MINIMAP2_ALIGN.out.bam, fasta )
         ch_versions = ch_versions.mix(BAM_SORT_STATS_SAMTOOLS.out.versions)
 
