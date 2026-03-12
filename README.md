@@ -27,14 +27,12 @@ On release, automated continuous integration tests run the pipeline on a full-si
 
 ## test
 
-
 ```bash
 nextflow run main.nf \
    -profile test,apptainer \
    --input tmp/samples.csv \
    --outdir tmp/outdir
 ```
-
 
 ## Pipeline summary
 
