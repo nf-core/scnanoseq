@@ -2,14 +2,14 @@
     "align_longreads - default params": {
         "content": [
             "1bc714ef98439d5cc71765b647c5cf64",
-            "wacky.bam.bai",
+            "my_test.bam.bai",
             [
                 [
                     {
                         "id": "test_fastq",
                         "single_end": true
                     },
-                    "test_fastq.stats:md5,6223a2d2ff1c37daf21f849ffd7c49f3"
+                    "test_fastq.stats:md5,e5906a3e88cfb0c04ba31055643240ef"
                 ]
             ],
             [
@@ -44,6 +44,53 @@
             "nf-test": "0.9.3",
             "nextflow": "25.10.4"
         },
-        "timestamp": "2026-03-12T10:52:19.819991098"
+        "timestamp": "2026-03-12T12:55:16.764044041"
+    },
+    "align_longreads - gpu params": {
+        "content": [
+            "d41d8cd98f00b204e9800998ecf8427e",
+            "my_test.bam.bai",
+            [
+                [
+                    {
+                        "id": "test_fastq",
+                        "single_end": true
+                    },
+                    "test_fastq.stats:md5,99111faf8889928367b888173f86a277"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test_fastq",
+                        "single_end": true
+                    },
+                    "test_fastq.flagstat:md5,ba966c6410eccf2375c3bcc081ef4787"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test_fastq",
+                        "single_end": true
+                    },
+                    "test_fastq.idxstats:md5,7c8e67206e2a55b23091c47122a64218"
+                ]
+            ],
+            [
+                
+            ],
+            [
+                
+            ],
+            [
+                
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.4"
+        },
+        "timestamp": "2026-03-12T13:31:47.369919678"
     }
 }
