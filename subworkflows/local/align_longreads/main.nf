@@ -9,7 +9,7 @@ include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_FILTERED } from '..
 // MODULES
 include { MINIMAP2_INDEX                            } from '../../../modules/nf-core/minimap2/index'
 include { MINIMAP2_ALIGN                            } from '../../../modules/nf-core/minimap2/align'
-include { PARABRICKS_MINIMAP2 as MINIMAP2_ALIGN_GPU } from '../../../modules/nf-core/parabricks/minimap2/main'
+include { PARABRICKS_MINIMAP2 as MINIMAP2_ALIGN_GPU } from '../../../modules/nf-core/parabricks/minimap2'
 include { SAMTOOLS_VIEW as SAMTOOLS_FILTER_MAPPED   } from '../../../modules/nf-core/samtools/view'
 include { RSEQC_READDISTRIBUTION                    } from '../../../modules/nf-core/rseqc/readdistribution/main'
 include { NANOCOMP                                  } from '../../../modules/nf-core/nanocomp/main'
@@ -45,15 +45,18 @@ workflow ALIGN_LONGREADS {
         // MINIMAP2_ALIGN: Supports GPU and CPU
         //
 
+        ch_bam = channel.empty()
+
         if (gpu_align) {
             MINIMAP2_ALIGN_GPU (
                 fastq,
                 fasta,
-                [],
-                [],
-                [],
+                [ [], [] ], // index
+                [ [], [] ], // interval
+                [ [], [] ], // known_sites
                 "bam"
             )
+            ch_bam = MINIMAP2_ALIGN_GPU.out.bam
             ch_versions = ch_versions.mix(MINIMAP2_ALIGN_GPU.out.compatible_versions)
 
         } else {
@@ -65,13 +68,14 @@ workflow ALIGN_LONGREADS {
                 "",
                 ""
             )
+            ch_bam = MINIMAP2_ALIGN.out.bam
             ch_versions = ch_versions.mix(MINIMAP2_ALIGN.out.versions)
         }
 
         //
         // SUBWORKFLOW: BAM_SORT_STATS_SAMTOOLS
         // The subworkflow is called in both the minimap2 bams and filtered (mapped only) version
-        BAM_SORT_STATS_SAMTOOLS ( MINIMAP2_ALIGN.out.bam, fasta )
+        BAM_SORT_STATS_SAMTOOLS ( ch_bam, fasta )
         ch_versions = ch_versions.mix(BAM_SORT_STATS_SAMTOOLS.out.versions)
 
         // acquire only mapped reads from bam for downstream processing
