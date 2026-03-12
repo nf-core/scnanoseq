@@ -35,8 +35,6 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
         )
         ch_versions = ch_versions.mix(ISOQUANT.out.versions)
 
-        ISOQUANT.out.grouped_gene_mtx_features.view()
-    
         if (!params.skip_qc && !params.skip_seurat){
             QC_SCRNA_GENE (
                 ISOQUANT.out.grouped_gene_mtx_features
