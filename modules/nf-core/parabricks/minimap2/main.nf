@@ -22,7 +22,7 @@ process PARABRICKS_MINIMAP2 {
     tuple val(meta), path("*_qc_metrics"),            emit: qc_metrics,          optional: true
     tuple val(meta), path("*.duplicate-metrics.txt"), emit: duplicate_metrics,   optional: true
     path "compatible_versions.yml",                   emit: compatible_versions, optional: true
-    tuple val("${task.process}"), val('parabricks'), eval("pbrun version | grep -m1 '^pbrun:' | sed 's/^pbrun:[[:space:]]*//'"), topic: versions, emit: versions
+    tuple val("${task.process}"), val('parabricks'), eval("pbrun version | grep -m1 '^pbrun:' | sed 's/^pbrun:[[:space:]]*//'"), topic: versions, emit: versions_parabricks
 
     when:
     task.ext.when == null || task.ext.when
@@ -66,7 +66,7 @@ process PARABRICKS_MINIMAP2 {
         ${intervals_command} \\
         ${num_gpus} \\
         ${args}
-    
+
     # Capture the full version output once and store it in a variable
     pbrun_version_output=\$(pbrun minimap2 --version 2>&1)
 
