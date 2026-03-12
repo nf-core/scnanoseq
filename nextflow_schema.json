@@ -269,7 +269,8 @@
                 "skip_bam_nanocomp": {
                     "type": "boolean",
                     "fa_icon": "fas fa-forward",
-                    "description": "Skip NanoComp from BAM file(s)."
+                    "description": "Skip NanoComp from BAM file(s).",
+                    "default": true
                 },
                 "skip_rseqc": {
                     "type": "boolean",

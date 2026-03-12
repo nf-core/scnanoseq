@@ -363,6 +363,8 @@ The FastQC plots displayed in the MultiQC report shows _untrimmed_ reads. They m
 
 [NanoComp](https://github.com/wdecoster/nanocomp) compares multiple runs of long read sequencing data and alignments. It creates violin plots or box plots of length, quality and percent identity and creates dynamic, overlaying read length histograms and a cumulative yield plot
 
+**Note**: Please note that `NanoComp` is enabled by default for FASTQ files but **disabled** for BAM files due to its high-memory usage. Users who are interesting in executing `NanoComp` for BAMs should set `skip_bam_nanocomp` to `false`.
+
 ### NanoPlot
 
 <details markdown="1">
