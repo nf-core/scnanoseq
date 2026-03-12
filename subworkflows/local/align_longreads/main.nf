@@ -3,18 +3,16 @@
 //
 
 // SUBWORKFLOWS
-include { BAM_SORT_STATS_SAMTOOLS                                     } from '../../subworkflows/nf-core/bam_sort_stats_samtools/main'
-include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_FILTERED } from '../../subworkflows/nf-core/bam_sort_stats_samtools/main'
+include { BAM_SORT_STATS_SAMTOOLS                                     } from '../../../subworkflows/nf-core/bam_sort_stats_samtools/main'
+include { BAM_SORT_STATS_SAMTOOLS as BAM_SORT_STATS_SAMTOOLS_FILTERED } from '../../../subworkflows/nf-core/bam_sort_stats_samtools/main'
 
 // MODULES
-include { MINIMAP2_INDEX                            } from '../../modules/nf-core/minimap2/index'
-include { MINIMAP2_ALIGN                            } from '../../modules/nf-core/minimap2/align'
-include { PARABRICKS_MINIMAP2 as MINIMAP2_ALIGN_GPU } from '../../modules/nf-core/parabricks/minimap2/main'
-include { SAMTOOLS_VIEW as SAMTOOLS_FILTER_MAPPED   } from '../../modules/nf-core/samtools/view'
-
-include { RSEQC_READDISTRIBUTION } from '../../modules/nf-core/rseqc/readdistribution/main'
-include { NANOCOMP               } from '../../modules/nf-core/nanocomp/main'
-
+include { MINIMAP2_INDEX                            } from '../../../modules/nf-core/minimap2/index'
+include { MINIMAP2_ALIGN                            } from '../../../modules/nf-core/minimap2/align'
+include { PARABRICKS_MINIMAP2 as MINIMAP2_ALIGN_GPU } from '../../../modules/nf-core/parabricks/minimap2/main'
+include { SAMTOOLS_VIEW as SAMTOOLS_FILTER_MAPPED   } from '../../../modules/nf-core/samtools/view'
+include { RSEQC_READDISTRIBUTION                    } from '../../../modules/nf-core/rseqc/readdistribution/main'
+include { NANOCOMP                                  } from '../../../modules/nf-core/nanocomp/main'
 
 workflow ALIGN_LONGREADS {
     take:
@@ -51,7 +49,7 @@ workflow ALIGN_LONGREADS {
             MINIMAP2_ALIGN_GPU (
                 fastq,
                 fasta,
-                ch_minimap_ref,
+                [],
                 [],
                 [],
                 "bam"

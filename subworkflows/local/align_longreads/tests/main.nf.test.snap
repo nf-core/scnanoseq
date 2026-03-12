@@ -1,0 +1,49 @@
+{
+    "align_longreads - default params": {
+        "content": [
+            "1bc714ef98439d5cc71765b647c5cf64",
+            "wacky.bam.bai",
+            [
+                [
+                    {
+                        "id": "test_fastq",
+                        "single_end": true
+                    },
+                    "test_fastq.stats:md5,6223a2d2ff1c37daf21f849ffd7c49f3"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test_fastq",
+                        "single_end": true
+                    },
+                    "test_fastq.flagstat:md5,e9ce9093133116bc54fd335cfe698372"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test_fastq",
+                        "single_end": true
+                    },
+                    "test_fastq.idxstats:md5,e16eb632f7f462514b0873c7ac8ac905"
+                ]
+            ],
+            [
+                
+            ],
+            [
+                
+            ],
+            [
+                
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.4"
+        },
+        "timestamp": "2026-03-12T10:52:19.819991098"
+    }
+}

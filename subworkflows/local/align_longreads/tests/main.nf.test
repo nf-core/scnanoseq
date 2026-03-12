@@ -1,0 +1,118 @@
+nextflow_workflow {
+
+    name "Test Subworkflow ALIGN_LONGREADS"
+    script "../main.nf"
+    workflow "ALIGN_LONGREADS"
+    config "./nextflow.config"
+
+    setup {
+        run("SAMTOOLS_FAIDX") {
+            script "../../../../modules/nf-core/samtools/faidx/main.nf"
+            process {
+                """
+                input[0] = Channel.of([
+                    [ id:'test_fasta' ],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/genome.fasta', checkIfExists: true)
+                ])
+                input[1] = [[],[]]
+                """
+            }
+        }
+    }
+
+    test("align_longreads - default params") {
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [ id:'test_fasta' ],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/genome.fasta', checkIfExists: true)
+                ])
+                input[1] = SAMTOOLS_FAIDX.out.fai
+                input[2] = Channel.of([
+                    [ id:'test_gtf' ],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/genome.gtf', checkIfExists: true)
+                ])
+                input[3] = Channel.of([
+                    [ id:'test_fastq', single_end:true ], // meta map
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fastq/test_1.fastq.gz', checkIfExists: true)
+                ])
+                input[4] = Channel.of([
+                    [ id:'test_bed' ],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/bed/test.bed12', checkIfExists: true)
+                ])
+                input[5] = false  // gpu_align
+                input[6] = true   // skip_save_minimap2_index
+                input[7] = true   // skip_qc
+                input[8] = true   // skip_rseqc
+                input[9] = true   // skip_bam_nanocomp
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success},
+                { assert snapshot(
+                    bam(workflow.out.sorted_bam[0][1]).getReadsMD5(),
+                    file(workflow.out.sorted_bai[0][1]).name,
+                    workflow.out.stats,
+                    workflow.out.flagstat,
+                    workflow.out.idxstats,
+                    workflow.out.rseqc_read_dist,
+                    workflow.out.nanocomp_bam_html,
+                    workflow.out.nanocomp_bam_txt).match()}
+            )
+        }
+    }
+
+    test("align_longreads - default params - stub") {
+
+        options "-stub"
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [ id:'test_fasta' ],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/genome.fasta', checkIfExists: true)
+                ])
+                input[1] = SAMTOOLS_FAIDX.fai
+                input[2] = Channel.of([
+                    [ id:'test_gtf' ],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/genome.gtf', checkIfExists: true)
+                ])
+                input[3] = Channel.of([
+                    [ id:'test_fastq', single_end:true ], // meta map
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fastq/test_1.fastq.gz', checkIfExists: true)
+                ])
+                input[4] = Channel.of([
+                    [ id:'test_bed' ],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/bed/test.bed12', checkIfExists: true)
+                ])
+                input[5] = false  // gpu_align
+                input[6] = true   // skip_save_minimap2_index
+                input[7] = true   // skip_qc
+                input[8] = true   // skip_rseqc
+                input[9] = true   // skip_bam_nanocomp
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success},
+                { assert snapshot(
+                    workflow.out.sorted_bam,
+                    workflow.out.sorted_bai,
+                    workflow.out.stats,
+                    workflow.out.flagstat,
+                    workflow.out.idxstats,
+                    workflow.out.rseqc_read_dist,
+                    workflow.out.nanocomp_bam_html,
+                    workflow.out.nanocomp_bam_txt).match()}
+            )
+        }
+    }
+}

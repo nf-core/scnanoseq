@@ -3,7 +3,7 @@
 //
 
 // SUBWORKFLOWS
-include { ALIGN_LONGREADS         } from '../../subworkflows/local/align_longreads'
+include { ALIGN_LONGREADS         } from '../../subworkflows/local/align_longreads/align_longreads'
 include { QUANTIFY_SCRNA_ISOQUANT } from '../../subworkflows/local/quantify_scrna_isoquant'
 include { QUANTIFY_SCRNA_OARFISH  } from '../../subworkflows/local/quantify_scrna_oarfish'
 include { DEDUP_UMIS              } from '../../subworkflows/local/dedup_umis'
