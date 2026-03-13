@@ -28,11 +28,11 @@ workflow QCFASTQ_NANOPLOT_FASTQC {
     /*
      * FastQ QC using NanoPlot
      */
-    nanoplot_png     = Channel.empty()
-    nanoplot_html    = Channel.empty()
-    nanoplot_txt     = Channel.empty()
-    nanoplot_log     = Channel.empty()
-    nanoplot_version = Channel.empty()
+    nanoplot_png     = channel.empty()
+    nanoplot_html    = channel.empty()
+    nanoplot_txt     = channel.empty()
+    nanoplot_log     = channel.empty()
+    nanoplot_version = channel.empty()
     if (!skip_nanoplot){
         NANOPLOT ( ch_fastq )
         nanoplot_png     = NANOPLOT.out.png
@@ -44,11 +44,11 @@ workflow QCFASTQ_NANOPLOT_FASTQC {
     /*
      * FastQ QC using ToulligQC
      */
-    toulligqc_report_data   = Channel.empty()
-    toulligqc_report_html   = Channel.empty()
-    toulligqc_plots_html    = Channel.empty()
-    toulligqc_plotly_js     = Channel.empty()
-    toulligqc_version       = Channel.empty()
+    toulligqc_report_data   = channel.empty()
+    toulligqc_report_html   = channel.empty()
+    toulligqc_plots_html    = channel.empty()
+    toulligqc_plotly_js     = channel.empty()
+    toulligqc_version       = channel.empty()
     if (!skip_toulligqc){
         TOULLIGQC ( ch_fastq )
         toulligqc_report_data  = TOULLIGQC.out.report_data
@@ -61,10 +61,10 @@ workflow QCFASTQ_NANOPLOT_FASTQC {
     /*
      * FastQ QC using FASTQC
      */
-    fastqc_zip     = Channel.empty()
-    fastqc_html    = Channel.empty()
-    fastqc_multiqc = Channel.empty()
-    fastqc_version = Channel.empty()
+    fastqc_zip     = channel.empty()
+    fastqc_html    = channel.empty()
+    fastqc_multiqc = channel.empty()
+    fastqc_version = channel.empty()
     if (!skip_fastqc){
         FASTQC ( ch_fastq )
         fastqc_zip     = FASTQC.out.zip

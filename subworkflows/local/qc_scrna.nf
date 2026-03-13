@@ -12,7 +12,7 @@ workflow QC_SCRNA {
         mtx_format
 
     main:
-        ch_versions = Channel.empty()
+        ch_versions = channel.empty()
 
         //
         // MODULE: Seurat
@@ -23,7 +23,7 @@ workflow QC_SCRNA {
         //
         // MODULE: Combine Seurat Stats
         //
-        COMBINE_SEURAT_STATS ( SEURAT.out.seurat_stats.collect{it[1]} )
+        COMBINE_SEURAT_STATS ( SEURAT.out.seurat_stats.collect{ v -> v[1] } )
         ch_versions = ch_versions.mix(COMBINE_SEURAT_STATS.out.versions)
 
     emit:

@@ -9,7 +9,7 @@ process GROUP_TRANSCRIPTS {
 
     input:
     tuple val(meta), path(fasta)
-    tuple val(meta), path(gtf)
+    tuple val(meta2), path(gtf)
     val delimiter
 
     output:
@@ -20,7 +20,6 @@ process GROUP_TRANSCRIPTS {
     task.ext.when == null || task.ext.when
 
     script:
-    def args      = task.ext.args ?: ''
     def delim_arg = delimiter ? "-d '${delimiter}'" : ''
 
     """

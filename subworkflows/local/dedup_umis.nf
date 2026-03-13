@@ -11,8 +11,8 @@ include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_DEDUP  } from '../../modules/nf-core/
 include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_MERGED } from '../../modules/nf-core/samtools/index/main'
 include { SAMTOOLS_MERGE                          } from '../../modules/nf-core/samtools/merge/main'
 include { SPLIT_BAM                               } from '../../modules/local/split_bam'
-
-include { GROUP_TRANSCRIPTS } from '../../modules/local/group_transcripts'
+include { GROUP_TRANSCRIPTS                       } from '../../modules/local/group_transcripts'
+include { PICARD_MARKDUPLICATES                   } from '../../modules/nf-core/picard/markduplicates/main'
 
 //
 // SUBWORKFLOWS
@@ -33,13 +33,13 @@ workflow DEDUP_UMIS {
         fasta_delimiter // str: Delimiter character used in the sequence id in fasta
 
     main:
-        ch_versions = Channel.empty()
+        ch_versions = channel.empty()
 
-        ch_undedup_bam = Channel.empty()
-        ch_undedup_bai = Channel.empty()
+        ch_undedup_bam = channel.empty()
+        ch_undedup_bai = channel.empty()
 
         if (split_bam) {
-            ch_split_bam = Channel.empty()
+            ch_split_bam = channel.empty()
 
             if (genome_aligned) {
                 //
@@ -49,7 +49,7 @@ workflow DEDUP_UMIS {
                 ch_versions = ch_versions.mix(BAMTOOLS_SPLIT.out.versions.first())
                 ch_split_bam = BAMTOOLS_SPLIT.out.bam
                     .map{
-                        meta, bam ->
+                        _meta, bam ->
                             [bam]
                     }
                     .flatten()
@@ -109,8 +109,8 @@ workflow DEDUP_UMIS {
             ch_undedup_bai = in_bai
         }
 
-        ch_dedup_bam = Channel.empty()
-        ch_dedup_bai = Channel.empty()
+        ch_dedup_bam = channel.empty()
+        ch_dedup_bai = channel.empty()
 
         if (dedup_tool == 'umitools'){
             //
@@ -148,7 +148,7 @@ workflow DEDUP_UMIS {
             SAMTOOLS_MERGE (
                     ch_dedup_bam
                     .map{
-                        meta, bam ->
+                        _meta, bam ->
                             def bam_basename = bam.toString().split('/')[-1]
                             def split_bam_basename = bam_basename.split(/\./)
                             def new_meta = [ 'id': split_bam_basename[0] ]

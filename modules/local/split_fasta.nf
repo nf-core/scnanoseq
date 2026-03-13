@@ -17,8 +17,6 @@ process SPLIT_FASTA {
     task.ext.when == null || task.ext.when
 
     script:
-    def args = task.ext.args ?: ''
-
     """
     awk '/^>/{chrom=(split(substr(\$0,2), a, " ")); filename=( a[1] ".split.fa"); print > filename; next}{print >> filename}' $fasta
 

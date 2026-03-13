@@ -16,16 +16,16 @@ include { SPLIT_FASTA                            } from '../../modules/local/spl
 workflow QUANTIFY_SCRNA_ISOQUANT {
     take:
         in_bam
-        in_bai
+        _in_bai
         in_flagstat
         in_fasta
-        in_fai
+        _in_fai
         in_gtf
-        skip_qc
-        skip_seurat
+        _skip_qc
+        _skip_seurat
 
     main:
-        ch_versions = Channel.empty()
+        ch_versions = channel.empty()
 
         //
         // MODULE: Split the FASTA
@@ -67,7 +67,7 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
 
         ch_split_bam = BAMTOOLS_SPLIT.out.bam
             .map {
-                meta, bam ->
+                _meta, bam ->
                     return [ bam ]
             }
             .flatten()
@@ -101,7 +101,7 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
             .combine(ch_split_fasta, by: [0])
             .combine(ch_split_fai, by: [0])
             .combine(ch_split_gtf, by: [0])
-            .map { chrom, meta, bam, bai, fasta, fai, gtf ->
+            .map { _chrom, meta, bam, bai, fasta, fai, gtf ->
                 [ meta, bam, bai, fasta, fai, gtf ]
             }
 
@@ -145,8 +145,8 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
         ch_merged_transcript_mtx = MERGE_MTX_TRANSCRIPT.out.merged_mtx
         ch_versions = ch_versions.mix(MERGE_MTX_TRANSCRIPT.out.versions)
 
-        ch_gene_qc_stats = Channel.empty()
-        ch_transcript_qc_stats = Channel.empty()
+        ch_gene_qc_stats = channel.empty()
+        ch_transcript_qc_stats = channel.empty()
 
         if (!params.skip_qc && !params.skip_seurat){
             QC_SCRNA_GENE (

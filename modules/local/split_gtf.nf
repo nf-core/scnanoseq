@@ -17,8 +17,6 @@ process SPLIT_GTF {
     task.ext.when == null || task.ext.when
 
     script:
-    def args = task.ext.args ?: ''
-
     """
     grep -v '^#' $gtf | awk -F \$'\\t' '{print > \$1".split.gtf"}'
 

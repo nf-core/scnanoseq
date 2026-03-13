@@ -9,14 +9,14 @@ include { QC_SCRNA      } from '../../subworkflows/local/qc_scrna'
 workflow QUANTIFY_SCRNA_OARFISH {
     take:
         in_bam
-        in_bai
+        _in_bai
         in_flagstat
         in_fasta
-        skip_qc
-        skip_seurat
+        _skip_qc
+        _skip_seurat
 
     main:
-        ch_versions = Channel.empty()
+        ch_versions = channel.empty()
 
         //
         // MODULE: Samtools Sort
@@ -30,7 +30,7 @@ workflow QUANTIFY_SCRNA_OARFISH {
         OARFISH ( SAMTOOLS_SORT.out.bam )
         ch_versions = ch_versions.mix(OARFISH.out.versions)
 
-        ch_transcript_qc_stats = Channel.empty()
+        ch_transcript_qc_stats = channel.empty()
         if (!params.skip_qc && !params.skip_seurat) {
             QC_SCRNA(
                 OARFISH.out.features
@@ -38,7 +38,7 @@ workflow QUANTIFY_SCRNA_OARFISH {
                     .join(OARFISH.out.mtx, by: [0])
                     .map{
                         meta,features,barcodes,mtx ->
-                            new_meta = [ 'id' : meta.id ]
+                            def new_meta = [ 'id' : meta.id ]
                             [ new_meta, [ features, barcodes, mtx ]]
                     },
                 in_flagstat,

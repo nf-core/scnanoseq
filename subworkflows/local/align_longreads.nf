@@ -18,8 +18,8 @@ include { NANOCOMP               } from '../../modules/nf-core/nanocomp/main'
 workflow ALIGN_LONGREADS {
     take:
         fasta       // channel: [ val(meta), path(fasta) ]
-        fai         // channel: [ val(meta), path(fai) ]
-        gtf         // channel: [ val(meta), path(gtf) ]
+        _fai        // channel: [ val(meta), path(fai) ]
+        _gtf        // channel: [ val(meta), path(gtf) ]
         fastq       // channel: [ val(meta), path(fastq) ]
         rseqc_bed   // channel: [ val(meta), path(rseqc_bed) ]
 
@@ -29,7 +29,7 @@ workflow ALIGN_LONGREADS {
         skip_bam_nanocomp        // bool: Skip Nanocomp
 
     main:
-        ch_versions = Channel.empty()
+        ch_versions = channel.empty()
         //
         // MINIMAP2_INDEX
         //
@@ -69,6 +69,7 @@ workflow ALIGN_LONGREADS {
                 .join( BAM_SORT_STATS_SAMTOOLS.out.bai, by: 0 )
                 .combine(["$projectDir/assets/dummy_file.txt"]),
             [[],[]],
+            [],
             []
         )
 
@@ -80,14 +81,14 @@ workflow ALIGN_LONGREADS {
             fasta
         )
 
-        ch_minimap_filtered_sorted_bam = BAM_SORT_STATS_SAMTOOLS_FILTERED.out.bam
-        ch_minimap_filtered_sorted_bai = BAM_SORT_STATS_SAMTOOLS_FILTERED.out.bai
+        _ch_minimap_filtered_sorted_bam = BAM_SORT_STATS_SAMTOOLS_FILTERED.out.bam
+        _ch_minimap_filtered_sorted_bai = BAM_SORT_STATS_SAMTOOLS_FILTERED.out.bai
         ch_versions = ch_versions.mix(BAM_SORT_STATS_SAMTOOLS_FILTERED.out.versions)
 
         //
         // MODULE: RSeQC read distribution for BAM files (unfiltered for QC purposes)
         //
-        ch_rseqc_read_dist = Channel.empty()
+        ch_rseqc_read_dist = channel.empty()
         if (!skip_qc && !skip_rseqc) {
             RSEQC_READDISTRIBUTION ( BAM_SORT_STATS_SAMTOOLS.out.bam, rseqc_bed )
             ch_rseqc_read_dist = RSEQC_READDISTRIBUTION.out.txt
@@ -97,16 +98,16 @@ workflow ALIGN_LONGREADS {
         //
         // MODULE: NanoComp for BAM files (unfiltered for QC purposes)
         //
-        ch_nanocomp_bam_html = Channel.empty()
-        ch_nanocomp_bam_txt = Channel.empty()
+        ch_nanocomp_bam_html = channel.empty()
+        ch_nanocomp_bam_txt = channel.empty()
 
         if (!skip_qc && !skip_bam_nanocomp) {
 
             NANOCOMP (
                 BAM_SORT_STATS_SAMTOOLS.out.bam
-                    .collect{it[1]}
-                    .map{
-                        [ [ 'id': 'nanocomp_bam.' ] , it ]
+                    .collect{ v -> v[1] }
+                    .map{ bams ->
+                        [ [ 'id': 'nanocomp_bam.' ] , bams ]
                     }
             )
 
