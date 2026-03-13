@@ -18,7 +18,8 @@
                     "cat/fastq": {
                         "branch": "master",
                         "git_sha": "0997b47c93c06b49aa7b3fefda87e728312cf2ca",
-                        "installed_by": ["modules"]
+                        "installed_by": ["modules"],
+                        "patch": "modules/nf-core/cat/fastq/cat-fastq.diff"
                     },
                     "custom/dumpsoftwareversions": {
                         "branch": "master",

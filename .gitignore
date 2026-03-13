@@ -12,4 +12,5 @@ params.yml
 samplesheet.csv
 *.swp
 input*
-.nf-test*
+null/
+tmp/

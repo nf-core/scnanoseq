@@ -60,6 +60,9 @@ process ISOQUANT {
         ${gtf_flag} \\
         ${group_flag}
 
+    sed -i "1s/#//" */*/${prefix}.gene_grouped_counts.tsv
+    sed -i "1s/#//" */*/${prefix}.transcript_grouped_counts.tsv
+
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         isoquant: \$(isoquant.py -v | sed 's#IsoQuant ##')

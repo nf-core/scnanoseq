@@ -22,6 +22,7 @@ process SPLIT_FILE {
     script:
     def args   = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
+
     """
     split -a10 -l ${split_amount} -d --additional-suffix ${file_ext} ${unsplit_file} ${prefix}.
 
