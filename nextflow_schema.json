@@ -163,10 +163,18 @@
                     "enum": ["10X_3v3", "10X_3v4", "10X_5v2", "10X_5v3"],
                     "fa_icon": "fas fa-barcode"
                 },
+                "no_blaze_demux": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-barcode",
+                    "description": "Do not perform the demultiplexing step in BLAZE (conserves time and disk space).",
+                    "default": true
+                },
                 "dedup_tool": {
                     "type": "string",
                     "description": "Specify which tool to be used for deduplication (Options: picard, umitools)",
-                    "enum": ["umitools", "picard"]
+                    "enum": ["umitools", "picard"],
+                    "default": "umitools",
+                    "fa_icon": "fas fa-align-justify"
                 }
             },
             "fa_icon": "fas fa-microscope",
@@ -192,7 +200,8 @@
                 },
                 "save_genome_secondary_alignment": {
                     "type": "boolean",
-                    "description": "Save the secondary alignments when aligning to the genome"
+                    "description": "Save the secondary alignments when aligning to the genome",
+                    "fa_icon": "far fa-save"
                 },
                 "save_transcript_secondary_alignment": {
                     "type": "boolean",
@@ -222,7 +231,8 @@
                 "quantifier": {
                     "type": "string",
                     "description": "Provide a comma-delimited options of quantifiers for the pipeline to use. Available tools: isoquant, oarfish",
-                    "pattern": "^(oarfish|isoquant)(,(oarfish|isoquant))*$"
+                    "pattern": "^(oarfish|isoquant)(,(oarfish|isoquant))*$",
+                    "fa_icon": "fas fa-chart-area"
                 }
             },
             "required": ["quantifier"],
@@ -263,7 +273,8 @@
                 "skip_bam_nanocomp": {
                     "type": "boolean",
                     "fa_icon": "fas fa-forward",
-                    "description": "Skip NanoComp from BAM file(s)."
+                    "description": "Skip NanoComp from BAM file(s).",
+                    "default": true
                 },
                 "skip_rseqc": {
                     "type": "boolean",
