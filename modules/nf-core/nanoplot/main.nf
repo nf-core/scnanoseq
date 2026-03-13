@@ -1,6 +1,6 @@
 process NANOPLOT {
     tag "$meta.id"
-    label 'process_low'
+    label 'process_high'
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -21,13 +21,22 @@ process NANOPLOT {
 
     script:
     def args = task.ext.args ?: ''
-    def input_file = ("$ontfile".endsWith(".fastq.gz") || "$ontfile".endsWith(".fq.gz")) ? "--fastq ${ontfile}" :
+    def input_file = [ ".fastq.gz", ".fastq", ".fq", ".fq.gz" ].any { ext -> "$ontfile".endsWith(ext) } ? "--fastq ${ontfile}" :
         ("$ontfile".endsWith(".txt")) ? "--summary ${ontfile}" : ''
+    def prefix = task.ext.prefix ?: "${meta.id}"
     """
     NanoPlot \\
         $args \\
         -t $task.cpus \\
         $input_file
+
+    for nanoplot_file in *.html *.png *.txt *.log
+    do
+        if [[ -s \$nanoplot_file ]]
+        then
+            mv \$nanoplot_file ${prefix}_\$nanoplot_file
+        fi
+    done
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

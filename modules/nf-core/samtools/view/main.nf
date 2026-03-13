@@ -8,7 +8,7 @@ process SAMTOOLS_VIEW {
         'biocontainers/samtools:1.22.1--h96c455f_0' }"
 
     input:
-    tuple val(meta), path(input), path(index)
+    tuple val(meta), path(input), path(index), path(regions)
     tuple val(meta2), path(fasta), path(fai)
     path qname
     val index_format
@@ -40,6 +40,7 @@ process SAMTOOLS_VIEW {
     output_file = index_format ? "${prefix}.${file_type}##idx##${prefix}.${file_type}.${index_format} --write-index" : "${prefix}.${file_type}"
     // Can't choose index type of unselected file
     readnames = qname ? "--qname-file ${qname} --output-unselected ${prefix}.unselected.${file_type}": ""
+    def region_names = regions ? "`cat ${regions}`" : ""
 
     if ("$input" == "${prefix}.${file_type}") error "Input and output names are the same, use \"task.ext.prefix\" to disambiguate!"
     if (index_format) {
@@ -59,7 +60,8 @@ process SAMTOOLS_VIEW {
         $args \\
         -o ${output_file} \\
         $input \\
-        $args2
+        $args2 \\
+        $region_names
     """
 
     stub:
