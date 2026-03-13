@@ -1,0 +1,17 @@
+Changes in module 'nf-core/nanocomp'
+'modules/nf-core/nanocomp/environment.yml' is unchanged
+'modules/nf-core/nanocomp/meta.yml' is unchanged
+Changes in 'nanocomp/main.nf':
+--- modules/nf-core/nanocomp/main.nf
++++ modules/nf-core/nanocomp/main.nf
+@@ -1,5 +1,6 @@
+ process NANOCOMP {
+     label 'process_medium'
++    label 'process_high_memory'
+ 
+     conda "${moduleDir}/environment.yml"
+     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+
+'modules/nf-core/nanocomp/tests/main.nf.test.snap' is unchanged
+'modules/nf-core/nanocomp/tests/main.nf.test' is unchanged
+************************************************************
