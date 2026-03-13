@@ -2,8 +2,8 @@
 // Performs feature quantification for long read single-cell rna data
 //
 
-include { SEURAT               } from '../../modules/local/seurat'
-include { COMBINE_SEURAT_STATS } from '../../modules/local/combine_seurat_stats'
+include { SEURAT               } from '../../../modules/local/seurat'
+include { COMBINE_SEURAT_STATS } from '../../../modules/local/combine_seurat_stats'
 
 workflow QC_SCRNA {
     take:

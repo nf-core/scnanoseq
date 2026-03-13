@@ -2,16 +2,16 @@
 // Performs feature quantification for long read single-cell rna data
 //
 
-include { BAMTOOLS_SPLIT                         } from '../../modules/nf-core/bamtools/split/main'
-include { ISOQUANT                               } from '../../modules/local/isoquant'
-include { MERGE_MTX as MERGE_MTX_GENE            } from '../../modules/local/merge_mtx'
-include { MERGE_MTX as MERGE_MTX_TRANSCRIPT      } from '../../modules/local/merge_mtx'
-include { QC_SCRNA as QC_SCRNA_GENE              } from '../../subworkflows/local/qc_scrna'
-include { QC_SCRNA as QC_SCRNA_TRANSCRIPT        } from '../../subworkflows/local/qc_scrna'
-include { SAMTOOLS_FAIDX as SAMTOOLS_FAIDX_SPLIT } from '../../modules/nf-core/samtools/faidx/main'
-include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_SPLIT } from '../../modules/nf-core/samtools/index/main'
-include { SPLIT_GTF                              } from '../../modules/local/split_gtf'
-include { SPLIT_FASTA                            } from '../../modules/local/split_fasta'
+include { BAMTOOLS_SPLIT                         } from '../../../modules/nf-core/bamtools/split/main'
+include { ISOQUANT                               } from '../../../modules/local/isoquant'
+include { MERGE_MTX as MERGE_MTX_GENE            } from '../../../modules/local/merge_mtx'
+include { MERGE_MTX as MERGE_MTX_TRANSCRIPT      } from '../../../modules/local/merge_mtx'
+include { QC_SCRNA as QC_SCRNA_GENE              } from '../../../subworkflows/local/qc_scrna'
+include { QC_SCRNA as QC_SCRNA_TRANSCRIPT        } from '../../../subworkflows/local/qc_scrna'
+include { SAMTOOLS_FAIDX as SAMTOOLS_FAIDX_SPLIT } from '../../../modules/nf-core/samtools/faidx/main'
+include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_SPLIT } from '../../../modules/nf-core/samtools/index/main'
+include { SPLIT_GTF                              } from '../../../modules/local/split_gtf'
+include { SPLIT_FASTA                            } from '../../../modules/local/split_fasta'
 
 workflow QUANTIFY_SCRNA_ISOQUANT {
     take:
