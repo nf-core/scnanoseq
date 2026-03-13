@@ -1,0 +1,760 @@
+{
+    "homo_sapiens - fastq - cram": {
+        "content": [
+            "da777b5d079e09dfc076b1c89f93ef3e",
+            "test.cram.crai",
+            {
+                "versions_parabricks": [
+                    [
+                        "PARABRICKS_MINIMAP2",
+                        "parabricks",
+                        "4.6.0-1"
+                    ]
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.2"
+        },
+        "timestamp": "2026-01-21T13:34:01.676029384"
+    },
+    "homo_sapiens - fastq - bam - knownsites": {
+        "content": [
+            "da777b5d079e09dfc076b1c89f93ef3e",
+            "test.bam.bai",
+            {
+                "versions_parabricks": [
+                    [
+                        "PARABRICKS_MINIMAP2",
+                        "parabricks",
+                        "4.6.0-1"
+                    ]
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.2"
+        },
+        "timestamp": "2026-01-21T13:31:59.111593307"
+    },
+    "homo_sapiens - fastq - cram - stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.cram:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "1": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.cram.crai:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "2": [
+                    
+                ],
+                "3": [
+                    
+                ],
+                "4": [
+                    
+                ],
+                "5": [
+                    "compatible_versions.yml:md5,9752526376a71449ae2f33c4b8b6b19e"
+                ],
+                "6": [
+                    [
+                        "PARABRICKS_MINIMAP2",
+                        "parabricks",
+                        "4.6.0-1"
+                    ]
+                ],
+                "bam": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.cram:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "bqsr_table": [
+                    
+                ],
+                "compatible_versions": [
+                    "compatible_versions.yml:md5,9752526376a71449ae2f33c4b8b6b19e"
+                ],
+                "duplicate_metrics": [
+                    
+                ],
+                "index": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.cram.crai:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "qc_metrics": [
+                    
+                ],
+                "versions_parabricks": [
+                    [
+                        "PARABRICKS_MINIMAP2",
+                        "parabricks",
+                        "4.6.0-1"
+                    ]
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.4"
+        },
+        "timestamp": "2026-03-12T08:49:26.763200957"
+    },
+    "homo_sapiens - bam - cram": {
+        "content": [
+            "7de0e6c365b969e0b0ce277e4796ea45",
+            "test.cram.crai",
+            {
+                "versions_parabricks": [
+                    [
+                        "PARABRICKS_MINIMAP2",
+                        "parabricks",
+                        "4.6.0-1"
+                    ]
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.2"
+        },
+        "timestamp": "2026-01-21T13:34:42.614345374"
+    },
+    "homo_sapiens - fastq - bam - interval_file - knownsites - stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.bam:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "1": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.bam.bai:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "2": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.table:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "3": [
+                    
+                ],
+                "4": [
+                    
+                ],
+                "5": [
+                    "compatible_versions.yml:md5,9752526376a71449ae2f33c4b8b6b19e"
+                ],
+                "6": [
+                    [
+                        "PARABRICKS_MINIMAP2",
+                        "parabricks",
+                        "4.6.0-1"
+                    ]
+                ],
+                "bam": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.bam:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "bqsr_table": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.table:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "compatible_versions": [
+                    "compatible_versions.yml:md5,9752526376a71449ae2f33c4b8b6b19e"
+                ],
+                "duplicate_metrics": [
+                    
+                ],
+                "index": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.bam.bai:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "qc_metrics": [
+                    
+                ],
+                "versions_parabricks": [
+                    [
+                        "PARABRICKS_MINIMAP2",
+                        "parabricks",
+                        "4.6.0-1"
+                    ]
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.4"
+        },
+        "timestamp": "2026-03-12T08:48:19.89523659"
+    },
+    "homo_sapiens - bam - bam": {
+        "content": [
+            "7de0e6c365b969e0b0ce277e4796ea45",
+            "test.bam.bai",
+            {
+                "versions_parabricks": [
+                    [
+                        "PARABRICKS_MINIMAP2",
+                        "parabricks",
+                        "4.6.0-1"
+                    ]
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.2"
+        },
+        "timestamp": "2026-01-21T13:33:20.518685108"
+    },
+    "homo_sapiens - fastq - bam - knownsites - stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.bam:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "1": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.bam.bai:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "2": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.table:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "3": [
+                    
+                ],
+                "4": [
+                    
+                ],
+                "5": [
+                    "compatible_versions.yml:md5,9752526376a71449ae2f33c4b8b6b19e"
+                ],
+                "6": [
+                    [
+                        "PARABRICKS_MINIMAP2",
+                        "parabricks",
+                        "4.6.0-1"
+                    ]
+                ],
+                "bam": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.bam:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "bqsr_table": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.table:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "compatible_versions": [
+                    "compatible_versions.yml:md5,9752526376a71449ae2f33c4b8b6b19e"
+                ],
+                "duplicate_metrics": [
+                    
+                ],
+                "index": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.bam.bai:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "qc_metrics": [
+                    
+                ],
+                "versions_parabricks": [
+                    [
+                        "PARABRICKS_MINIMAP2",
+                        "parabricks",
+                        "4.6.0-1"
+                    ]
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.4"
+        },
+        "timestamp": "2026-03-12T08:47:44.770248707"
+    },
+    "homo_sapiens - fastq - bam - interval_file": {
+        "content": [
+            "da777b5d079e09dfc076b1c89f93ef3e",
+            "test.bam.bai"
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.2"
+        },
+        "timestamp": "2026-01-21T13:31:19.122567375"
+    },
+    "homo_sapiens - fastq - bam": {
+        "content": [
+            "da777b5d079e09dfc076b1c89f93ef3e",
+            "test.bam.bai",
+            {
+                "versions_parabricks": [
+                    [
+                        "PARABRICKS_MINIMAP2",
+                        "parabricks",
+                        "4.6.0-1"
+                    ]
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.2"
+        },
+        "timestamp": "2026-01-21T13:30:39.451852003"
+    },
+    "homo_sapiens - fastq - bam - interval_file - knownsites": {
+        "content": [
+            "da777b5d079e09dfc076b1c89f93ef3e",
+            "test.bam.bai",
+            {
+                "versions_parabricks": [
+                    [
+                        "PARABRICKS_MINIMAP2",
+                        "parabricks",
+                        "4.6.0-1"
+                    ]
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.2"
+        },
+        "timestamp": "2026-01-21T13:32:38.630274922"
+    },
+    "homo_sapiens - bam - bam - stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.bam:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "1": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.bam.bai:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "2": [
+                    
+                ],
+                "3": [
+                    
+                ],
+                "4": [
+                    
+                ],
+                "5": [
+                    "compatible_versions.yml:md5,9752526376a71449ae2f33c4b8b6b19e"
+                ],
+                "6": [
+                    [
+                        "PARABRICKS_MINIMAP2",
+                        "parabricks",
+                        "4.6.0-1"
+                    ]
+                ],
+                "bam": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.bam:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "bqsr_table": [
+                    
+                ],
+                "compatible_versions": [
+                    "compatible_versions.yml:md5,9752526376a71449ae2f33c4b8b6b19e"
+                ],
+                "duplicate_metrics": [
+                    
+                ],
+                "index": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.bam.bai:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "qc_metrics": [
+                    
+                ],
+                "versions_parabricks": [
+                    [
+                        "PARABRICKS_MINIMAP2",
+                        "parabricks",
+                        "4.6.0-1"
+                    ]
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.4"
+        },
+        "timestamp": "2026-03-12T08:48:54.523688109"
+    },
+    "homo_sapiens - fastq - bam - stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.bam:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "1": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.bam.bai:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "2": [
+                    
+                ],
+                "3": [
+                    
+                ],
+                "4": [
+                    
+                ],
+                "5": [
+                    "compatible_versions.yml:md5,9752526376a71449ae2f33c4b8b6b19e"
+                ],
+                "6": [
+                    [
+                        "PARABRICKS_MINIMAP2",
+                        "parabricks",
+                        "4.6.0-1"
+                    ]
+                ],
+                "bam": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.bam:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "bqsr_table": [
+                    
+                ],
+                "compatible_versions": [
+                    "compatible_versions.yml:md5,9752526376a71449ae2f33c4b8b6b19e"
+                ],
+                "duplicate_metrics": [
+                    
+                ],
+                "index": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.bam.bai:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "qc_metrics": [
+                    
+                ],
+                "versions_parabricks": [
+                    [
+                        "PARABRICKS_MINIMAP2",
+                        "parabricks",
+                        "4.6.0-1"
+                    ]
+                ]
+            },
+            {
+                "PARABRICKS_MINIMAP2": {
+                    "pbrun_version": "4.6.0-1",
+                    "compatible_with": {
+                        "minimap2": 2.24
+                    }
+                }
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.4"
+        },
+        "timestamp": "2026-03-12T08:45:33.262157843"
+    },
+    "homo_sapiens - bam - cram - stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.cram:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "1": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.cram.crai:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "2": [
+                    
+                ],
+                "3": [
+                    
+                ],
+                "4": [
+                    
+                ],
+                "5": [
+                    "compatible_versions.yml:md5,9752526376a71449ae2f33c4b8b6b19e"
+                ],
+                "6": [
+                    [
+                        "PARABRICKS_MINIMAP2",
+                        "parabricks",
+                        "4.6.0-1"
+                    ]
+                ],
+                "bam": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.cram:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "bqsr_table": [
+                    
+                ],
+                "compatible_versions": [
+                    "compatible_versions.yml:md5,9752526376a71449ae2f33c4b8b6b19e"
+                ],
+                "duplicate_metrics": [
+                    
+                ],
+                "index": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.cram.crai:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "qc_metrics": [
+                    
+                ],
+                "versions_parabricks": [
+                    [
+                        "PARABRICKS_MINIMAP2",
+                        "parabricks",
+                        "4.6.0-1"
+                    ]
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.4"
+        },
+        "timestamp": "2026-03-12T08:49:59.693487969"
+    },
+    "homo_sapiens - fastq - bam - interval_file - stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.bam:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "1": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.bam.bai:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "2": [
+                    
+                ],
+                "3": [
+                    
+                ],
+                "4": [
+                    
+                ],
+                "5": [
+                    "compatible_versions.yml:md5,9752526376a71449ae2f33c4b8b6b19e"
+                ],
+                "6": [
+                    [
+                        "PARABRICKS_MINIMAP2",
+                        "parabricks",
+                        "4.6.0-1"
+                    ]
+                ],
+                "bam": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.bam:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "bqsr_table": [
+                    
+                ],
+                "compatible_versions": [
+                    "compatible_versions.yml:md5,9752526376a71449ae2f33c4b8b6b19e"
+                ],
+                "duplicate_metrics": [
+                    
+                ],
+                "index": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.bam.bai:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "qc_metrics": [
+                    
+                ],
+                "versions_parabricks": [
+                    [
+                        "PARABRICKS_MINIMAP2",
+                        "parabricks",
+                        "4.6.0-1"
+                    ]
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.4"
+        },
+        "timestamp": "2026-03-12T08:47:09.61266936"
+    }
+}

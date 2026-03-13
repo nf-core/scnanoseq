@@ -1,0 +1,96 @@
+{
+    "align_longreads - default params": {
+        "content": [
+            "1bc714ef98439d5cc71765b647c5cf64",
+            "my_test.bam.bai",
+            [
+                [
+                    {
+                        "id": "test_fastq",
+                        "single_end": true
+                    },
+                    "test_fastq.stats:md5,e5906a3e88cfb0c04ba31055643240ef"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test_fastq",
+                        "single_end": true
+                    },
+                    "test_fastq.flagstat:md5,e9ce9093133116bc54fd335cfe698372"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test_fastq",
+                        "single_end": true
+                    },
+                    "test_fastq.idxstats:md5,e16eb632f7f462514b0873c7ac8ac905"
+                ]
+            ],
+            [
+                
+            ],
+            [
+                
+            ],
+            [
+                
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.4"
+        },
+        "timestamp": "2026-03-12T12:55:16.764044041"
+    },
+    "align_longreads - gpu params": {
+        "content": [
+            "d41d8cd98f00b204e9800998ecf8427e",
+            "my_test.bam.bai",
+            [
+                [
+                    {
+                        "id": "test_fastq",
+                        "single_end": true
+                    },
+                    "test_fastq.stats:md5,99111faf8889928367b888173f86a277"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test_fastq",
+                        "single_end": true
+                    },
+                    "test_fastq.flagstat:md5,ba966c6410eccf2375c3bcc081ef4787"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test_fastq",
+                        "single_end": true
+                    },
+                    "test_fastq.idxstats:md5,7c8e67206e2a55b23091c47122a64218"
+                ]
+            ],
+            [
+                
+            ],
+            [
+                
+            ],
+            [
+                
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.4"
+        },
+        "timestamp": "2026-03-12T13:31:47.369919678"
+    }
+}

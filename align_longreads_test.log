@@ -1,0 +1,625 @@
+
+🚀[1m nf-test 0.9.3[0m
+https://www.nf-test.com
+(c) 2021 - 2024 Lukas Forer and Sebastian Schoenherr
+
+Load .nf-test/plugins/nft-bam/0.4.0/nft-bam-0.4.0.jar
+Load .nf-test/plugins/nft-utils/0.0.5/nft-utils-0.0.5.jar
+Warning: every snapshot that fails during this test run is re-recorded.
+
+[1mTest Subworkflow ALIGN_LONGREADS[0m
+
+  [1mTest[0m [d7ceeceb] 'align_longreads - gpu params' 
+    > N E X T F L O W  ~  version 25.10.4
+    > Launching `/home/gburnett/scnanoseq/.nf-test-d7ceecebe6e1d32045c871b5bf3679c6.nf` [gigantic_cori] DSL2 - revision: 917437512c
+    > WARN: There's no process matching config selector: CUSTOM_DUMPSOFTWAREVERSIONS
+    > WARN: There's no process matching config selector: .*:FASTQC_NANOPLOT_PRE_TRIM:FASTQC
+    > WARN: There's no process matching config selector: .*:FASTQC_NANOPLOT_POST_TRIM:FASTQC
+    > WARN: There's no process matching config selector: .*:FASTQC_NANOPLOT_POST_EXTRACT:FASTQC
+    > WARN: There's no process matching config selector: .*:FASTQC_NANOPLOT_PRE_TRIM:NANOPLOT
+    > WARN: There's no process matching config selector: .*:FASTQC_NANOPLOT_POST_TRIM:NANOPLOT
+    > WARN: There's no process matching config selector: .*:FASTQC_NANOPLOT_POST_EXTRACT:NANOPLOT
+    > WARN: There's no process matching config selector: .*:NANOCOMP_FASTQ
+    > WARN: There's no process matching config selector: .*:FASTQC_NANOPLOT_PRE_TRIM:TOULLIGQC
+    > WARN: There's no process matching config selector: .*:FASTQC_NANOPLOT_POST_TRIM:TOULLIGQC
+    > WARN: There's no process matching config selector: .*:FASTQC_NANOPLOT_POST_EXTRACT:TOULLIGQC
+    > WARN: There's no process matching config selector: .*:BAM_SORT_STATS_SAMTOOLS_CORRECTED:BAM_STATS_SAMTOOLS:.*
+    > WARN: There's no process matching config selector: .*:READ_COUNTS
+    > WARN: There's no process matching config selector: .*:PREPARE_REFERENCE_FILES:.*
+    > WARN: There's no process matching config selector: .*:UCSC_GTFTOGENEPRED
+    > WARN: There's no process matching config selector: .*:UCSC_GENEPREDTOBED
+    > WARN: There's no process matching config selector: .*:GUNZIP_WHITELIST.*
+    > WARN: There's no process matching config selector: .*:CAT_FASTQ
+    > WARN: There's no process matching config selector: .*:PIGZ_UNCOMPRESS.*
+    > WARN: There's no process matching config selector: .*:GUNZIP_FASTQ.*
+    > WARN: There's no process matching config selector: .*:NANOFILT
+    > WARN: There's no process matching config selector: .*:BLAZE
+    > WARN: There's no process matching config selector: .*:PREEXTRACT_FASTQ
+    > WARN: There's no process matching config selector: .*:CORRECT_BARCODES
+    > WARN: There's no process matching config selector: .*PROCESS_LONGREAD_SCRNA_GENOME.*:TAG_BARCODES
+    > WARN: There's no process matching config selector: .*PROCESS_LONGREAD_SCRNA_TRANSCRIPT.*:TAG_BARCODES
+    > WARN: There's no process matching config selector: .*PROCESS_LONGREAD_SCRNA_GENOME.*:SAMTOOLS_INDEX_TAGGED
+    > WARN: There's no process matching config selector: .*PROCESS_LONGREAD_SCRNA_TRANSCRIPT.*:SAMTOOLS_INDEX_TAGGED
+    > WARN: There's no process matching config selector: .*PROCESS_LONGREAD_SCRNA_GENOME.*:SAMTOOLS_FLAGSTAT_TAGGED
+    > WARN: There's no process matching config selector: .*PROCESS_LONGREAD_SCRNA_TRANSCRIPT.*:SAMTOOLS_FLAGSTAT_TAGGED
+    > WARN: There's no process matching config selector: .*PROCESS_LONGREAD_SCRNA_GENOME.*:MINIMAP2_INDEX
+    > WARN: There's no process matching config selector: .*PROCESS_LONGREAD_SCRNA_TRANSCRIPT.*:MINIMAP2_INDEX
+    > WARN: There's no process matching config selector: .*PROCESS_LONGREAD_SCRNA_GENOME.*:MINIMAP2_ALIGN
+    > WARN: There's no process matching config selector: .*PROCESS_LONGREAD_SCRNA_TRANSCRIPT.*:MINIMAP2_ALIGN
+    > WARN: There's no process matching config selector: .*:SAMTOOLS_FILTER_DEDUP
+    > WARN: There's no process matching config selector: .*PROCESS_LONGREAD_SCRNA_GENOME.*:ALIGN_LONGREADS:BAM_SORT_STATS_SAMTOOLS:SAMTOOLS_SORT
+    > WARN: There's no process matching config selector: .*PROCESS_LONGREAD_SCRNA_TRANSCRIPT.*:ALIGN_LONGREADS:BAM_SORT_STATS_SAMTOOLS:SAMTOOLS_SORT
+    > WARN: There's no process matching config selector: .*PROCESS_LONGREAD_SCRNA_GENOME.*:BAM_SORT_STATS_SAMTOOLS_FILTERED:SAMTOOLS_SORT
+    > WARN: There's no process matching config selector: .*PROCESS_LONGREAD_SCRNA_TRANSCRIPT.*:BAM_SORT_STATS_SAMTOOLS_FILTERED:SAMTOOLS_SORT
+    > WARN: There's no process matching config selector: .*PROCESS_LONGREAD_SCRNA_GENOME.*:ALIGN_LONGREADS:BAM_SORT_STATS_SAMTOOLS:SAMTOOLS_INDEX
+    > WARN: There's no process matching config selector: .*PROCESS_LONGREAD_SCRNA_TRANSCRIPT.*:ALIGN_LONGREADS:BAM_SORT_STATS_SAMTOOLS:SAMTOOLS_INDEX
+    > WARN: There's no process matching config selector: .*PROCESS_LONGREAD_SCRNA_GENOME.*:ALIGN_LONGREADS:BAM_SORT_STATS_SAMTOOLS_FILTERED:SAMTOOLS_INDEX
+    > WARN: There's no process matching config selector: .*PROCESS_LONGREAD_SCRNA_TRANSCRIPT.*:ALIGN_LONGREADS:BAM_SORT_STATS_SAMTOOLS_FILTERED:SAMTOOLS_INDEX
+    > WARN: There's no process matching config selector: .*PROCESS_LONGREAD_SCRNA_GENOME.*:ALIGN_LONGREADS:BAM_SORT_STATS_SAMTOOLS:BAM_STATS_SAMTOOLS:.*
+    > WARN: There's no process matching config selector: .*PROCESS_LONGREAD_SCRNA_TRANSCRIPT.*:ALIGN_LONGREADS:BAM_SORT_STATS_SAMTOOLS:BAM_STATS_SAMTOOLS:.*
+    > WARN: There's no process matching config selector: .*PROCESS_LONGREAD_SCRNA_GENOME.*:ALIGN_LONGREADS:BAM_SORT_STATS_SAMTOOLS_FILTERED:BAM_STATS_SAMTOOLS:.*
+    > WARN: There's no process matching config selector: .*PROCESS_LONGREAD_SCRNA_TRANSCRIPT.*:ALIGN_LONGREADS:BAM_SORT_STATS_SAMTOOLS_FILTERED:BAM_STATS_SAMTOOLS:.*
+    > WARN: There's no process matching config selector: .*PROCESS_LONGREAD_SCRNA_GENOME.*:RSEQC_READDISTRIBUTION
+    > WARN: There's no process matching config selector: .*PROCESS_LONGREAD_SCRNA_TRANSCRIPT.*:RSEQC_READDISTRIBUTION
+    > WARN: There's no process matching config selector: .*PROCESS_LONGREAD_SCRNA_GENOME.*:ALIGN_LONGREADS:NANOCOMP
+    > WARN: There's no process matching config selector: .*PROCESS_LONGREAD_SCRNA_TRANSCRIPT.*:ALIGN_LONGREADS:NANOCOMP
+    > WARN: There's no process matching config selector: .*:BAM_SORT_STATS_SAMTOOLS_CORRECTED:SAMTOOLS_SORT
+    > WARN: There's no process matching config selector: .*:BAM_SORT_STATS_SAMTOOLS_MERGED:SAMTOOLS_SORT
+    > WARN: There's no process matching config selector: .*:BAM_SORT_STATS_SAMTOOLS_CORRECTED:SAMTOOLS_INDEX
+    > WARN: There's no process matching config selector: .*:GROUP_TRANSCRIPTS
+    > WARN: There's no process matching config selector: .*:SAMTOOLS_VIEW_SPLIT
+    > WARN: There's no process matching config selector: .*:SPLIT_BAM
+    > WARN: There's no process matching config selector: .*:DEDUP_UMIS:BAM_SORT_STATS_SAMTOOLS.*
+    > WARN: There's no process matching config selector: .*PROCESS_LONGREAD_SCRNA_TRANSCRIPT.*:UMITOOLS_DEDUP
+    > WARN: There's no process matching config selector: .*PROCESS_LONGREAD_SCRNA_TRANSCRIPT.*:PICARD_MARKDUPLICATES
+    > WARN: There's no process matching config selector: .*:PROCESS_LONGREAD_SCRNA_TRANSCRIPT:DEDUP_UMIS:BAM_SORT_STATS_SAMTOOLS:SAMTOOLS_SORT
+    > WARN: There's no process matching config selector: .*PROCESS_LONGREAD_SCRNA_TRANSCRIPT.*:SAMTOOLS_INDEX_DEDUP
+    > WARN: There's no process matching config selector: .*PROCESS_LONGREAD_SCRNA_TRANSCRIPT.*DEDUP_UMIS:SAMTOOLS_MERGE
+    > WARN: There's no process matching config selector: .*PROCESS_LONGREAD_SCRNA_TRANSCRIPT.*DEDUP_UMIS:SAMTOOLS_INDEX_MERGED
+    > WARN: There's no process matching config selector: .*PROCESS_LONGREAD_SCRNA_TRANSCRIPT.*DEDUP_UMIS:BAM_STATS_SAMTOOLS.*
+    > WARN: There's no process matching config selector: .*PROCESS_LONGREAD_SCRNA_GENOME.*:UMITOOLS_DEDUP
+    > WARN: There's no process matching config selector: .*PROCESS_LONGREAD_SCRNA_GENOME.*:PICARD_MARKDUPLICATES
+    > WARN: There's no process matching config selector: .*PROCESS_LONGREAD_SCRNA_GENOME.*:SAMTOOLS_INDEX_DEDUP
+    > WARN: There's no process matching config selector: .*:PROCESS_LONGREAD_SCRNA_GENOME:DEDUP_UMIS:BAM_SORT_STATS_SAMTOOLS:SAMTOOLS_SORT
+    > WARN: There's no process matching config selector: .*PROCESS_LONGREAD_SCRNA_GENOME.*DEDUP_UMIS:SAMTOOLS_MERGE
+    > WARN: There's no process matching config selector: .*PROCESS_LONGREAD_SCRNA_GENOME.*DEDUP_UMIS:SAMTOOLS_INDEX_MERGED
+    > WARN: There's no process matching config selector: .*PROCESS_LONGREAD_SCRNA_GENOME.*DEDUP_UMIS:BAM_STATS_SAMTOOLS.*
+    > WARN: There's no process matching config selector: .*:QUANTIFY_SCRNA_ISOQUANT:SPLIT_FASTA
+    > WARN: There's no process matching config selector: .*:QUANTIFY_SCRNA_ISOQUANT:SAMTOOLS_FAIDX_SPLIT
+    > WARN: There's no process matching config selector: .*:QUANTIFY_SCRNA_ISOQUANT:SPLIT_GTF
+    > WARN: There's no process matching config selector: .*:BAMTOOLS_SPLIT
+    > WARN: There's no process matching config selector: .*:SAMTOOLS_INDEX_SPLIT
+    > WARN: There's no process matching config selector: .*:ISOQUANT
+    > WARN: There's no process matching config selector: .*:MERGE_MTX_GENE
+    > WARN: There's no process matching config selector: .*:MERGE_MTX_TRANSCRIPT
+    > WARN: There's no process matching config selector: .*QUANTIFY_SCRNA_ISOQUANT:QC_SCRNA_GENE:SEURAT
+    > WARN: There's no process matching config selector: .*QUANTIFY_SCRNA_ISOQUANT:QC_SCRNA_TRANSCRIPT:SEURAT
+    > WARN: There's no process matching config selector: .*:QUANTIFY_SCRNA_ISOQUANT:QC_SCRNA_GENE:COMBINE_SEURAT_STATS
+    > WARN: There's no process matching config selector: .*:QUANTIFY_SCRNA_ISOQUANT:QC_SCRNA_TRANSCRIPT:COMBINE_SEURAT_STATS
+    > WARN: There's no process matching config selector: .*:QUANTIFY_SCRNA_OARFISH:SAMTOOLS_SORT
+    > WARN: There's no process matching config selector: .*:OARFISH
+    > WARN: There's no process matching config selector: .*QUANTIFY_SCRNA_OARFISH:QC_SCRNA:SEURAT
+    > WARN: There's no process matching config selector: .*:QUANTIFY_SCRNA_OARFISH:QC_SCRNA:COMBINE_SEURAT_STATS
+    > WARN: There's no process matching config selector: .*:MULTIQC_FINALQC
+    > WARN: There's no process matching config selector: .*:MULTIQC_RAWQC
+    > WARN: There's no process matching config selector: .*:PARABRICKS_MINIMAP2 -- Did you mean: PARABRICKS_MINIMAP2?
+    > [ALIGN_LONGREADS:MINIMAP2_INDEX (1)] cache hash: 889acaa25ccfaf1620b4c5befa83551b; mode: STANDARD; entries: 
+    >   8d2de3e0a04a9336fa6a3d8ba2acaef7 [java.util.UUID] 11f98bcd-4d85-4bc3-a118-80199faaebca 
+    >   0c14d7c17dfa8b220990f0a5c2476c6d [java.lang.String] ALIGN_LONGREADS:MINIMAP2_INDEX 
+    >   86e3905eb02cd6389193a0c77375bacc [java.lang.String]     def args = task.ext.args ?: ''
+    >     """
+    >     minimap2 \\
+    >         -t $task.cpus \\
+    >         -d ${fasta.baseName}.mmi \\
+    >         $args \\
+    >         $fasta
+    > 
+    >     cat <<-END_VERSIONS > versions.yml
+    >     "${task.process}":
+    >         minimap2: \$(minimap2 --version 2>&1)
+    >     END_VERSIONS
+    >     """
+    >  
+    >   d41a03883af0572e320680dc8c580b68 [java.lang.String] quay.io/biocontainers/minimap2:2.28--he4a0461_0 
+    >   22a9e5e0e97f0475e310f04c56b1393a [java.lang.String] meta 
+    >   09ab564bac19fbb0a2fb7502b3e9d8e5 [java.util.LinkedHashMap] [id:test_fasta] 
+    >   73a5ce311a22d83f9cdf7b743bde6695 [java.lang.String] fasta 
+    >   d2a7e7979504cd1f2ef6025970089b25 [nextflow.util.ArrayBag] [FileHolder(sourceObj:/ngi-igenomes/testdata/nf-core/modules/genomics/sarscov2/genome/genome.fasta, storePath:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/stage-11f98bcd-4d85-4bc3-a118-80199faaebca/82/c553328c5daacb7bd8340b0cc41f98/genome.fasta, stageName:genome.fasta, sourcePath:/ngi-igenomes/testdata/nf-core/modules/genomics/sarscov2/genome/genome.fasta)] 
+    >   4f9d4b0d22865056c37fb6d9c2a04a67 [java.lang.String] $ 
+    >   16fe7483905cce7a85670e43e4678877 [java.lang.Boolean] true 
+    >   eab359affdb9334848cc02803d7db724 [java.util.HashMap$EntrySet] [task.ext.args=null] 
+    > 
+    > [1b/3cd35f] Submitted process > ALIGN_LONGREADS:MINIMAP2_INDEX (1)
+    > [SAMTOOLS_FAIDX (1)] cache hash: 271a68143527d8aa780e232aeb432d81; mode: STANDARD; entries: 
+    >   8d2de3e0a04a9336fa6a3d8ba2acaef7 [java.util.UUID] 11f98bcd-4d85-4bc3-a118-80199faaebca 
+    >   67936df68d1f1d713a071f5e5bb51c0a [java.lang.String] SAMTOOLS_FAIDX 
+    >   5a5f32387a9840d2a43752aa5fe956c0 [java.lang.String]     def args = task.ext.args ?: ''
+    >     """
+    >     samtools \\
+    >         faidx \\
+    >         $fasta \\
+    >         $args
+    > 
+    >     cat <<-END_VERSIONS > versions.yml
+    >     "${task.process}":
+    >         samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
+    >     END_VERSIONS
+    >     """
+    >  
+    >   fcf3d564d2128101066dfe3bd9f560a1 [java.lang.String] quay.io/biocontainers/samtools:1.19.2--h50ea8bc_0 
+    >   22a9e5e0e97f0475e310f04c56b1393a [java.lang.String] meta 
+    >   09ab564bac19fbb0a2fb7502b3e9d8e5 [java.util.LinkedHashMap] [id:test_fasta] 
+    >   73a5ce311a22d83f9cdf7b743bde6695 [java.lang.String] fasta 
+    >   d2a7e7979504cd1f2ef6025970089b25 [nextflow.util.ArrayBag] [FileHolder(sourceObj:/ngi-igenomes/testdata/nf-core/modules/genomics/sarscov2/genome/genome.fasta, storePath:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/stage-11f98bcd-4d85-4bc3-a118-80199faaebca/82/c553328c5daacb7bd8340b0cc41f98/genome.fasta, stageName:genome.fasta, sourcePath:/ngi-igenomes/testdata/nf-core/modules/genomics/sarscov2/genome/genome.fasta)] 
+    >   409b6322c96c5aed2e508e57cc521d5d [java.lang.String] meta2 
+    >   00000000000000000000000000000000 [java.util.ArrayList] [] 
+    >   5d4b4312c0f9bce3dde0445bff2b3280 [java.lang.String] fai 
+    >   d618a97df21bbd4bb61c79cdeca965b4 [nextflow.util.ArrayBag] [] 
+    >   4f9d4b0d22865056c37fb6d9c2a04a67 [java.lang.String] $ 
+    >   16fe7483905cce7a85670e43e4678877 [java.lang.Boolean] true 
+    >   eab359affdb9334848cc02803d7db724 [java.util.HashMap$EntrySet] [task.ext.args=null] 
+    > 
+    > [ALIGN_LONGREADS:MINIMAP2_ALIGN_GPU (1)] cache hash: bd5d4cdb9cfdf1c19b2f8af0734edaa7; mode: STANDARD; entries: 
+    >   8d2de3e0a04a9336fa6a3d8ba2acaef7 [java.util.UUID] 11f98bcd-4d85-4bc3-a118-80199faaebca 
+    >   f64071fe4ce6d7b009f53015feae8ade [java.lang.String] ALIGN_LONGREADS:MINIMAP2_ALIGN_GPU 
+    >   5e82acb8ba6455137cdf2cd2a81eeb09 [java.lang.String]     if (workflow.profile.tokenize(',').intersect(['conda', 'mamba']).size() >= 1) {
+    >         error("Parabricks module does not support Conda. Please use Docker / Singularity / Podman instead.")
+    >     }
+    >     def args   = task.ext.args ?: ''
+    >     def prefix = task.ext.prefix ?: "${meta.id}"
+    >     def in_command = ""
+    >     if (reads.name.matches(".*\\.(fastq|fq)(\\.gz)?\$")) {
+    >         in_command = "--in-fq ${reads}"
+    >     }
+    >     else if (reads.name.endsWith('.bam')) {
+    >         in_command = "--in-bam ${reads}"
+    >     }
+    >     else {
+    >         error("Unsupported input file format: ${reads.name}. Supported formats: fastq, fastq.gz, fq, fq.gz, bam")
+    >     }
+    >     def extension = "${output_fmt}"
+    >     def index_command = index ? "--index ${index}" : ""
+    >     def known_sites_command    = known_sites ? (known_sites instanceof List ? known_sites.collect { knownSite -> "--knownSites ${knownSite}" }.join(' ') : "--knownSites ${known_sites}") : ""
+    >     def known_sites_output_cmd = known_sites ? "--out-recal-file ${prefix}.table" : ""
+    >     def intervals_command  = intervals     ? (intervals instanceof List ? intervals.collect { interval -> "--interval-file ${interval}" }.join(' ') : "--interval-file ${intervals}") : ""
+    >     def num_gpus = task.accelerator ? "--num-gpus ${task.accelerator.request}" : ''
+    >     """
+    >     pbrun \\
+    >         minimap2 \\
+    >         --ref ${fasta} \\
+    >         ${in_command} \\
+    >         --out-bam ${prefix}.${extension} \\
+    >         ${index_command} \\
+    >         ${known_sites_command} \\
+    >         ${known_sites_output_cmd} \\
+    >         ${intervals_command} \\
+    >         ${num_gpus} \\
+    >         ${args}
+    >     """
+    >  
+    >   e894683567debc1eff42d8cf38fab72d [java.lang.String] nvcr.io/nvidia/clara/clara-parabricks:4.6.0-1 
+    >   22a9e5e0e97f0475e310f04c56b1393a [java.lang.String] meta 
+    >   cd3fa9a0f0ea989151a8d5ce002fb14f [java.util.LinkedHashMap] [id:test_fastq, single_end:true] 
+    >   553096c532e666fb42214fdf0520fe4a [java.lang.String] reads 
+    >   fcd1c71adb77600bd10a213700e2a51f [nextflow.util.ArrayBag] [FileHolder(sourceObj:/ngi-igenomes/testdata/nf-core/modules/genomics/sarscov2/illumina/fastq/test_1.fastq.gz, storePath:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/stage-11f98bcd-4d85-4bc3-a118-80199faaebca/13/e36d33d48e06d8a3a2401cd41e3bb5/test_1.fastq.gz, stageName:test_1.fastq.gz, sourcePath:/ngi-igenomes/testdata/nf-core/modules/genomics/sarscov2/illumina/fastq/test_1.fastq.gz)] 
+    >   409b6322c96c5aed2e508e57cc521d5d [java.lang.String] meta2 
+    >   09ab564bac19fbb0a2fb7502b3e9d8e5 [java.util.LinkedHashMap] [id:test_fasta] 
+    >   73a5ce311a22d83f9cdf7b743bde6695 [java.lang.String] fasta 
+    >   d2a7e7979504cd1f2ef6025970089b25 [nextflow.util.ArrayBag] [FileHolder(sourceObj:/ngi-igenomes/testdata/nf-core/modules/genomics/sarscov2/genome/genome.fasta, storePath:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/stage-11f98bcd-4d85-4bc3-a118-80199faaebca/82/c553328c5daacb7bd8340b0cc41f98/genome.fasta, stageName:genome.fasta, sourcePath:/ngi-igenomes/testdata/nf-core/modules/genomics/sarscov2/genome/genome.fasta)] 
+    >   1948639f984981cfc51dfe462c11ba82 [java.lang.String] meta3 
+    >   00000000000000000000000000000000 [java.util.ArrayList] [] 
+    >   105e03d70ef5c389e573ff1c323ba2e5 [java.lang.String] index 
+    >   d618a97df21bbd4bb61c79cdeca965b4 [nextflow.util.ArrayBag] [] 
+    >   fe45664e287ff11395639b6bed60763b [java.lang.String] meta4 
+    >   00000000000000000000000000000000 [java.util.ArrayList] [] 
+    >   1a6635f29e37273daf74863ce927530d [java.lang.String] intervals 
+    >   d618a97df21bbd4bb61c79cdeca965b4 [nextflow.util.ArrayBag] [] 
+    >   f17d60c6ede00934953ddcb3ee555229 [java.lang.String] meta5 
+    >   00000000000000000000000000000000 [java.util.ArrayList] [] 
+    >   e095e71d71e5d85a31770592551e350e [java.lang.String] known_sites 
+    >   d618a97df21bbd4bb61c79cdeca965b4 [nextflow.util.ArrayBag] [] 
+    >   ec337161d6146744dd108b53d48dcd7f [java.lang.String] output_fmt 
+    >   05a6e9bc5229dd6139c2abea6473b29f [java.lang.String] bam 
+    >   4f9d4b0d22865056c37fb6d9c2a04a67 [java.lang.String] $ 
+    >   16fe7483905cce7a85670e43e4678877 [java.lang.Boolean] true 
+    >   6793eb8c58cdc73e27a8de7b307a8529 [java.lang.String] eval_outputs 
+    >   fd3c712c2ecbed4d91e9efa976531c21 [java.lang.String] nxf_out_eval_1=pbrun version | grep -m1 '^pbrun:' | sed 's/^pbrun:[[:space:]]*//' 
+    >   88824907a8692af42da51ef0c7d790e2 [java.util.HashMap$EntrySet] [task.ext.args=null, workflow.profile=debug,test,docker,gpu, task.ext.prefix=null] 
+    > 
+    > [8c/7a204d] Submitted process > SAMTOOLS_FAIDX (genome.fasta)
+    > [f3/9ab16e] Submitted process > ALIGN_LONGREADS:MINIMAP2_ALIGN_GPU (test_fastq)
+    > [ALIGN_LONGREADS:BAM_SORT_STATS_SAMTOOLS:SAMTOOLS_SORT (1)] cache hash: 91022220d2daeeffec3d5841b8768f14; mode: STANDARD; entries: 
+    >   8d2de3e0a04a9336fa6a3d8ba2acaef7 [java.util.UUID] 11f98bcd-4d85-4bc3-a118-80199faaebca 
+    >   19597c784cc32a26ec7276b94c681d03 [java.lang.String] ALIGN_LONGREADS:BAM_SORT_STATS_SAMTOOLS:SAMTOOLS_SORT 
+    >   8a12e0d8fd605821210f2df15089a5d8 [java.lang.String]     def args = task.ext.args ?: ''
+    >     def prefix = task.ext.prefix ?: "${meta.id}"
+    >     def extension = args.contains("--output-fmt sam") ? "sam" :
+    >                     args.contains("--output-fmt cram") ? "cram" :
+    >                     "bam"
+    >     def reference = fasta ? "--reference ${fasta}" : ""
+    >     if ("$bam" == "${prefix}.bam") error "Input and output names are the same, use \"task.ext.prefix\" to disambiguate!"
+    >     """
+    >     samtools cat \\
+    >         --threads $task.cpus \\
+    >         ${bam} \\
+    >     | \\
+    >     samtools sort \\
+    >         $args \\
+    >         -T ${prefix} \\
+    >         --threads $task.cpus \\
+    >         ${reference} \\
+    >         -o ${prefix}.${extension} \\
+    >         -
+    > 
+    >     cat <<-END_VERSIONS > versions.yml
+    >     "${task.process}":
+    >         samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
+    >     END_VERSIONS
+    >     """
+    >  
+    >   fcf3d564d2128101066dfe3bd9f560a1 [java.lang.String] quay.io/biocontainers/samtools:1.19.2--h50ea8bc_0 
+    >   22a9e5e0e97f0475e310f04c56b1393a [java.lang.String] meta 
+    >   cd3fa9a0f0ea989151a8d5ce002fb14f [java.util.LinkedHashMap] [id:test_fastq, single_end:true] 
+    >   05a6e9bc5229dd6139c2abea6473b29f [java.lang.String] bam 
+    >   bf458c01943d5def2741784f6bf73a15 [nextflow.util.ArrayBag] [FileHolder(sourceObj:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/f3/9ab16e06895a09ca180a9343c54fe2/test_fastq.bam, storePath:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/f3/9ab16e06895a09ca180a9343c54fe2/test_fastq.bam, stageName:test_fastq.bam, sourcePath:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/f3/9ab16e06895a09ca180a9343c54fe2/test_fastq.bam)] 
+    >   409b6322c96c5aed2e508e57cc521d5d [java.lang.String] meta2 
+    >   09ab564bac19fbb0a2fb7502b3e9d8e5 [java.util.LinkedHashMap] [id:test_fasta] 
+    >   73a5ce311a22d83f9cdf7b743bde6695 [java.lang.String] fasta 
+    >   d2a7e7979504cd1f2ef6025970089b25 [nextflow.util.ArrayBag] [FileHolder(sourceObj:/ngi-igenomes/testdata/nf-core/modules/genomics/sarscov2/genome/genome.fasta, storePath:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/stage-11f98bcd-4d85-4bc3-a118-80199faaebca/82/c553328c5daacb7bd8340b0cc41f98/genome.fasta, stageName:genome.fasta, sourcePath:/ngi-igenomes/testdata/nf-core/modules/genomics/sarscov2/genome/genome.fasta)] 
+    >   4f9d4b0d22865056c37fb6d9c2a04a67 [java.lang.String] $ 
+    >   16fe7483905cce7a85670e43e4678877 [java.lang.Boolean] true 
+    >   b1a48bec4a3065e9143298f4e3bfe215 [java.util.HashMap$EntrySet] [task.ext.args=null, task.ext.prefix=my_test] 
+    > 
+    > [b7/a2ad5d] Submitted process > ALIGN_LONGREADS:BAM_SORT_STATS_SAMTOOLS:SAMTOOLS_SORT (test_fastq)
+    > [ALIGN_LONGREADS:BAM_SORT_STATS_SAMTOOLS:SAMTOOLS_INDEX (1)] cache hash: 8d92d5804da1dd284d38480c1859e845; mode: STANDARD; entries: 
+    >   8d2de3e0a04a9336fa6a3d8ba2acaef7 [java.util.UUID] 11f98bcd-4d85-4bc3-a118-80199faaebca 
+    >   1dbe8482c60cf28c6f1fff9bddad7be9 [java.lang.String] ALIGN_LONGREADS:BAM_SORT_STATS_SAMTOOLS:SAMTOOLS_INDEX 
+    >   5b95d9cf4a85564d79fcd6e37614402a [java.lang.String]     def args = task.ext.args ?: ''
+    >     """
+    >     samtools \\
+    >         index \\
+    >         -@ ${task.cpus-1} \\
+    >         $args \\
+    >         $input
+    > 
+    >     cat <<-END_VERSIONS > versions.yml
+    >     "${task.process}":
+    >         samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
+    >     END_VERSIONS
+    >     """
+    >  
+    >   fcf3d564d2128101066dfe3bd9f560a1 [java.lang.String] quay.io/biocontainers/samtools:1.19.2--h50ea8bc_0 
+    >   22a9e5e0e97f0475e310f04c56b1393a [java.lang.String] meta 
+    >   cd3fa9a0f0ea989151a8d5ce002fb14f [java.util.LinkedHashMap] [id:test_fastq, single_end:true] 
+    >   118323febdfe82be70d7ac6c1592e35d [java.lang.String] input 
+    >   31f3aff34037d02954104117980da62e [nextflow.util.ArrayBag] [FileHolder(sourceObj:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/b7/a2ad5d13df27d60c5fd349cbd68374/my_test.bam, storePath:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/b7/a2ad5d13df27d60c5fd349cbd68374/my_test.bam, stageName:my_test.bam, sourcePath:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/b7/a2ad5d13df27d60c5fd349cbd68374/my_test.bam)] 
+    >   4f9d4b0d22865056c37fb6d9c2a04a67 [java.lang.String] $ 
+    >   16fe7483905cce7a85670e43e4678877 [java.lang.Boolean] true 
+    >   eab359affdb9334848cc02803d7db724 [java.util.HashMap$EntrySet] [task.ext.args=null] 
+    > 
+    > [05/0a2e3e] Submitted process > ALIGN_LONGREADS:BAM_SORT_STATS_SAMTOOLS:SAMTOOLS_INDEX (test_fastq)
+    > [ALIGN_LONGREADS:BAM_SORT_STATS_SAMTOOLS:BAM_STATS_SAMTOOLS:SAMTOOLS_IDXSTATS (1)] cache hash: 8c9769acd00b7c61ae26730fb97367a0; mode: STANDARD; entries: 
+    >   8d2de3e0a04a9336fa6a3d8ba2acaef7 [java.util.UUID] 11f98bcd-4d85-4bc3-a118-80199faaebca 
+    >   19c70dc0acb85da0849ad9e9b359324c [java.lang.String] ALIGN_LONGREADS:BAM_SORT_STATS_SAMTOOLS:BAM_STATS_SAMTOOLS:SAMTOOLS_IDXSTATS 
+    >   7fd9f9a46edf86abe81cb84b1dac8efe [java.lang.String]     def args = task.ext.args ?: ''
+    >     def prefix = task.ext.prefix ?: "${meta.id}"
+    >     """
+    >     samtools \\
+    >         idxstats \\
+    >         --threads ${task.cpus-1} \\
+    >         $bam \\
+    >         > ${prefix}.idxstats
+    > 
+    >     cat <<-END_VERSIONS > versions.yml
+    >     "${task.process}":
+    >         samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
+    >     END_VERSIONS
+    >     """
+    >  
+    >   fcf3d564d2128101066dfe3bd9f560a1 [java.lang.String] quay.io/biocontainers/samtools:1.19.2--h50ea8bc_0 
+    >   22a9e5e0e97f0475e310f04c56b1393a [java.lang.String] meta 
+    >   cd3fa9a0f0ea989151a8d5ce002fb14f [java.util.LinkedHashMap] [id:test_fastq, single_end:true] 
+    >   05a6e9bc5229dd6139c2abea6473b29f [java.lang.String] bam 
+    >   31f3aff34037d02954104117980da62e [nextflow.util.ArrayBag] [FileHolder(sourceObj:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/b7/a2ad5d13df27d60c5fd349cbd68374/my_test.bam, storePath:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/b7/a2ad5d13df27d60c5fd349cbd68374/my_test.bam, stageName:my_test.bam, sourcePath:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/b7/a2ad5d13df27d60c5fd349cbd68374/my_test.bam)] 
+    >   797d0098c78c00370bc4beb28e15f7e4 [java.lang.String] bai 
+    >   6f14ea451e513d8f7064a4d4cc7dc42d [nextflow.util.ArrayBag] [FileHolder(sourceObj:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/05/0a2e3ed6eb97a15da5f94da7c4a443/my_test.bam.bai, storePath:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/05/0a2e3ed6eb97a15da5f94da7c4a443/my_test.bam.bai, stageName:my_test.bam.bai, sourcePath:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/05/0a2e3ed6eb97a15da5f94da7c4a443/my_test.bam.bai)] 
+    >   4f9d4b0d22865056c37fb6d9c2a04a67 [java.lang.String] $ 
+    >   16fe7483905cce7a85670e43e4678877 [java.lang.Boolean] true 
+    >   f38e981944e372f17682bf00a33a53cc [java.util.HashMap$EntrySet] [task.ext.args=null, task.ext.prefix=null] 
+    > 
+    > [ALIGN_LONGREADS:SAMTOOLS_FILTER_MAPPED (1)] cache hash: 1da8397566b97826630b1efe6006fab7; mode: STANDARD; entries: 
+    >   8d2de3e0a04a9336fa6a3d8ba2acaef7 [java.util.UUID] 11f98bcd-4d85-4bc3-a118-80199faaebca 
+    >   8d5689acd6ac69486a8a5111828e8d76 [java.lang.String] ALIGN_LONGREADS:SAMTOOLS_FILTER_MAPPED 
+    >   9fec9060a5e33920153548a33177c01a [java.lang.String]     def args = task.ext.args ?: ''
+    >     def args2 = task.ext.args2 ?: ''
+    >     def prefix = task.ext.prefix ?: "${meta.id}"
+    >     def reference = fasta ? "--reference ${fasta}" : ""
+    >     def readnames = qname ? "--qname-file ${qname}": ""
+    >     def file_type = args.contains("--output-fmt sam") ? "sam" :
+    >                     args.contains("--output-fmt bam") ? "bam" :
+    >                     args.contains("--output-fmt cram") ? "cram" :
+    >                     input.getExtension()
+    >     def region_names = regions ? "`cat ${regions}`" : ""
+    >     if ("$input" == "${prefix}.${file_type}") error "Input and output names are the same, use \"task.ext.prefix\" to disambiguate!"
+    >     """
+    >     samtools \\
+    >         view \\
+    >         --threads ${task.cpus-1} \\
+    >         ${reference} \\
+    >         ${readnames} \\
+    >         $args \\
+    >         -o ${prefix}.${file_type} \\
+    >         $input \\
+    >         $args2 \\
+    >         $region_names
+    > 
+    >     cat <<-END_VERSIONS > versions.yml
+    >     "${task.process}":
+    >         samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
+    >     END_VERSIONS
+    >     """
+    >  
+    >   fcf3d564d2128101066dfe3bd9f560a1 [java.lang.String] quay.io/biocontainers/samtools:1.19.2--h50ea8bc_0 
+    >   22a9e5e0e97f0475e310f04c56b1393a [java.lang.String] meta 
+    >   cd3fa9a0f0ea989151a8d5ce002fb14f [java.util.LinkedHashMap] [id:test_fastq, single_end:true] 
+    >   118323febdfe82be70d7ac6c1592e35d [java.lang.String] input 
+    >   31f3aff34037d02954104117980da62e [nextflow.util.ArrayBag] [FileHolder(sourceObj:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/b7/a2ad5d13df27d60c5fd349cbd68374/my_test.bam, storePath:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/b7/a2ad5d13df27d60c5fd349cbd68374/my_test.bam, stageName:my_test.bam, sourcePath:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/b7/a2ad5d13df27d60c5fd349cbd68374/my_test.bam)] 
+    >   105e03d70ef5c389e573ff1c323ba2e5 [java.lang.String] index 
+    >   6f14ea451e513d8f7064a4d4cc7dc42d [nextflow.util.ArrayBag] [FileHolder(sourceObj:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/05/0a2e3ed6eb97a15da5f94da7c4a443/my_test.bam.bai, storePath:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/05/0a2e3ed6eb97a15da5f94da7c4a443/my_test.bam.bai, stageName:my_test.bam.bai, sourcePath:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/05/0a2e3ed6eb97a15da5f94da7c4a443/my_test.bam.bai)] 
+    >   c187e49e2c9ca85c0cb9ee223c78ba6b [java.lang.String] regions 
+    >   3ff3e3f046770a9decf4860d590e6a5a [nextflow.util.ArrayBag] [FileHolder(sourceObj:/home/gburnett/scnanoseq/assets/dummy_file.txt, storePath:/home/gburnett/scnanoseq/assets/dummy_file.txt, stageName:dummy_file.txt, sourcePath:/home/gburnett/scnanoseq/assets/dummy_file.txt)] 
+    >   409b6322c96c5aed2e508e57cc521d5d [java.lang.String] meta2 
+    >   00000000000000000000000000000000 [java.util.ArrayList] [] 
+    >   73a5ce311a22d83f9cdf7b743bde6695 [java.lang.String] fasta 
+    >   d618a97df21bbd4bb61c79cdeca965b4 [nextflow.util.ArrayBag] [] 
+    >   adee635784e2c152e01dba59a781d8c8 [java.lang.String] qname 
+    >   d618a97df21bbd4bb61c79cdeca965b4 [nextflow.util.ArrayBag] [] 
+    >   4f9d4b0d22865056c37fb6d9c2a04a67 [java.lang.String] $ 
+    >   16fe7483905cce7a85670e43e4678877 [java.lang.Boolean] true 
+    >   2d55a1346381340a801aeecc91d4cf47 [java.util.HashMap$EntrySet] [task.ext.args=-b -F 4, task.ext.args2=null, task.ext.prefix=test_fastq.mapped_only] 
+    > 
+    > [ALIGN_LONGREADS:BAM_SORT_STATS_SAMTOOLS:BAM_STATS_SAMTOOLS:SAMTOOLS_FLAGSTAT (1)] cache hash: 56df128e367cd561574cec678f76caf5; mode: STANDARD; entries: 
+    >   8d2de3e0a04a9336fa6a3d8ba2acaef7 [java.util.UUID] 11f98bcd-4d85-4bc3-a118-80199faaebca 
+    >   a8b78c9b89b8369ff378e1391d48acd3 [java.lang.String] ALIGN_LONGREADS:BAM_SORT_STATS_SAMTOOLS:BAM_STATS_SAMTOOLS:SAMTOOLS_FLAGSTAT 
+    >   76101650d02d30ac0954a2fe23117838 [java.lang.String]     def args = task.ext.args ?: ''
+    >     def prefix = task.ext.prefix ?: "${meta.id}"
+    >     """
+    >     samtools \\
+    >         flagstat \\
+    >         --threads ${task.cpus} \\
+    >         $bam \\
+    >         > ${prefix}.flagstat
+    > 
+    >     cat <<-END_VERSIONS > versions.yml
+    >     "${task.process}":
+    >         samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
+    >     END_VERSIONS
+    >     """
+    >  
+    >   fcf3d564d2128101066dfe3bd9f560a1 [java.lang.String] quay.io/biocontainers/samtools:1.19.2--h50ea8bc_0 
+    >   22a9e5e0e97f0475e310f04c56b1393a [java.lang.String] meta 
+    >   cd3fa9a0f0ea989151a8d5ce002fb14f [java.util.LinkedHashMap] [id:test_fastq, single_end:true] 
+    >   05a6e9bc5229dd6139c2abea6473b29f [java.lang.String] bam 
+    >   31f3aff34037d02954104117980da62e [nextflow.util.ArrayBag] [FileHolder(sourceObj:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/b7/a2ad5d13df27d60c5fd349cbd68374/my_test.bam, storePath:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/b7/a2ad5d13df27d60c5fd349cbd68374/my_test.bam, stageName:my_test.bam, sourcePath:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/b7/a2ad5d13df27d60c5fd349cbd68374/my_test.bam)] 
+    >   797d0098c78c00370bc4beb28e15f7e4 [java.lang.String] bai 
+    >   6f14ea451e513d8f7064a4d4cc7dc42d [nextflow.util.ArrayBag] [FileHolder(sourceObj:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/05/0a2e3ed6eb97a15da5f94da7c4a443/my_test.bam.bai, storePath:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/05/0a2e3ed6eb97a15da5f94da7c4a443/my_test.bam.bai, stageName:my_test.bam.bai, sourcePath:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/05/0a2e3ed6eb97a15da5f94da7c4a443/my_test.bam.bai)] 
+    >   4f9d4b0d22865056c37fb6d9c2a04a67 [java.lang.String] $ 
+    >   16fe7483905cce7a85670e43e4678877 [java.lang.Boolean] true 
+    >   f38e981944e372f17682bf00a33a53cc [java.util.HashMap$EntrySet] [task.ext.args=null, task.ext.prefix=null] 
+    > 
+    > [2d/85d668] Submitted process > ALIGN_LONGREADS:BAM_SORT_STATS_SAMTOOLS:BAM_STATS_SAMTOOLS:SAMTOOLS_FLAGSTAT (test_fastq)
+    > [2c/54be95] Submitted process > ALIGN_LONGREADS:SAMTOOLS_FILTER_MAPPED (test_fastq)
+    > [47/4923c3] Submitted process > ALIGN_LONGREADS:BAM_SORT_STATS_SAMTOOLS:BAM_STATS_SAMTOOLS:SAMTOOLS_IDXSTATS (test_fastq)
+    > [ALIGN_LONGREADS:BAM_SORT_STATS_SAMTOOLS:BAM_STATS_SAMTOOLS:SAMTOOLS_STATS (1)] cache hash: 849b0688df68f2c9b9f6d6449ab4aa4f; mode: STANDARD; entries: 
+    >   8d2de3e0a04a9336fa6a3d8ba2acaef7 [java.util.UUID] 11f98bcd-4d85-4bc3-a118-80199faaebca 
+    >   f9d654fd115b60d466dabc9b2d9abe24 [java.lang.String] ALIGN_LONGREADS:BAM_SORT_STATS_SAMTOOLS:BAM_STATS_SAMTOOLS:SAMTOOLS_STATS 
+    >   07db10f64f92ff5b77c8bf2cb0d8f4d3 [java.lang.String]     def args = task.ext.args ?: ''
+    >     def prefix = task.ext.prefix ?: "${meta.id}"
+    >     def reference = fasta ? "--reference ${fasta}" : ""
+    >     """
+    >     samtools \\
+    >         stats \\
+    >         --threads ${task.cpus} \\
+    >         ${reference} \\
+    >         ${input} \\
+    >         > ${prefix}.stats
+    > 
+    >     cat <<-END_VERSIONS > versions.yml
+    >     "${task.process}":
+    >         samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
+    >     END_VERSIONS
+    >     """
+    >  
+    >   fcf3d564d2128101066dfe3bd9f560a1 [java.lang.String] quay.io/biocontainers/samtools:1.19.2--h50ea8bc_0 
+    >   22a9e5e0e97f0475e310f04c56b1393a [java.lang.String] meta 
+    >   cd3fa9a0f0ea989151a8d5ce002fb14f [java.util.LinkedHashMap] [id:test_fastq, single_end:true] 
+    >   118323febdfe82be70d7ac6c1592e35d [java.lang.String] input 
+    >   31f3aff34037d02954104117980da62e [nextflow.util.ArrayBag] [FileHolder(sourceObj:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/b7/a2ad5d13df27d60c5fd349cbd68374/my_test.bam, storePath:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/b7/a2ad5d13df27d60c5fd349cbd68374/my_test.bam, stageName:my_test.bam, sourcePath:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/b7/a2ad5d13df27d60c5fd349cbd68374/my_test.bam)] 
+    >   f792a6941a7c8fee95aa4475972a289a [java.lang.String] input_index 
+    >   6f14ea451e513d8f7064a4d4cc7dc42d [nextflow.util.ArrayBag] [FileHolder(sourceObj:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/05/0a2e3ed6eb97a15da5f94da7c4a443/my_test.bam.bai, storePath:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/05/0a2e3ed6eb97a15da5f94da7c4a443/my_test.bam.bai, stageName:my_test.bam.bai, sourcePath:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/05/0a2e3ed6eb97a15da5f94da7c4a443/my_test.bam.bai)] 
+    >   409b6322c96c5aed2e508e57cc521d5d [java.lang.String] meta2 
+    >   09ab564bac19fbb0a2fb7502b3e9d8e5 [java.util.LinkedHashMap] [id:test_fasta] 
+    >   73a5ce311a22d83f9cdf7b743bde6695 [java.lang.String] fasta 
+    >   d2a7e7979504cd1f2ef6025970089b25 [nextflow.util.ArrayBag] [FileHolder(sourceObj:/ngi-igenomes/testdata/nf-core/modules/genomics/sarscov2/genome/genome.fasta, storePath:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/stage-11f98bcd-4d85-4bc3-a118-80199faaebca/82/c553328c5daacb7bd8340b0cc41f98/genome.fasta, stageName:genome.fasta, sourcePath:/ngi-igenomes/testdata/nf-core/modules/genomics/sarscov2/genome/genome.fasta)] 
+    >   4f9d4b0d22865056c37fb6d9c2a04a67 [java.lang.String] $ 
+    >   16fe7483905cce7a85670e43e4678877 [java.lang.Boolean] true 
+    >   f38e981944e372f17682bf00a33a53cc [java.util.HashMap$EntrySet] [task.ext.args=null, task.ext.prefix=null] 
+    > 
+    > [ef/c80427] Submitted process > ALIGN_LONGREADS:BAM_SORT_STATS_SAMTOOLS:BAM_STATS_SAMTOOLS:SAMTOOLS_STATS (test_fastq)
+    > [ALIGN_LONGREADS:BAM_SORT_STATS_SAMTOOLS_FILTERED:SAMTOOLS_SORT (1)] cache hash: 2f1957715055484ef705cb8647549057; mode: STANDARD; entries: 
+    >   8d2de3e0a04a9336fa6a3d8ba2acaef7 [java.util.UUID] 11f98bcd-4d85-4bc3-a118-80199faaebca 
+    >   9cd3f28b6559f14af3b7ef3cb63f560b [java.lang.String] ALIGN_LONGREADS:BAM_SORT_STATS_SAMTOOLS_FILTERED:SAMTOOLS_SORT 
+    >   8a12e0d8fd605821210f2df15089a5d8 [java.lang.String]     def args = task.ext.args ?: ''
+    >     def prefix = task.ext.prefix ?: "${meta.id}"
+    >     def extension = args.contains("--output-fmt sam") ? "sam" :
+    >                     args.contains("--output-fmt cram") ? "cram" :
+    >                     "bam"
+    >     def reference = fasta ? "--reference ${fasta}" : ""
+    >     if ("$bam" == "${prefix}.bam") error "Input and output names are the same, use \"task.ext.prefix\" to disambiguate!"
+    >     """
+    >     samtools cat \\
+    >         --threads $task.cpus \\
+    >         ${bam} \\
+    >     | \\
+    >     samtools sort \\
+    >         $args \\
+    >         -T ${prefix} \\
+    >         --threads $task.cpus \\
+    >         ${reference} \\
+    >         -o ${prefix}.${extension} \\
+    >         -
+    > 
+    >     cat <<-END_VERSIONS > versions.yml
+    >     "${task.process}":
+    >         samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
+    >     END_VERSIONS
+    >     """
+    >  
+    >   fcf3d564d2128101066dfe3bd9f560a1 [java.lang.String] quay.io/biocontainers/samtools:1.19.2--h50ea8bc_0 
+    >   22a9e5e0e97f0475e310f04c56b1393a [java.lang.String] meta 
+    >   cd3fa9a0f0ea989151a8d5ce002fb14f [java.util.LinkedHashMap] [id:test_fastq, single_end:true] 
+    >   05a6e9bc5229dd6139c2abea6473b29f [java.lang.String] bam 
+    >   7171f9f265bac46386f720c4f0c96c1c [nextflow.util.ArrayBag] [FileHolder(sourceObj:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/2c/54be95d6f0b8583e1d409d1e56caac/test_fastq.mapped_only.bam, storePath:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/2c/54be95d6f0b8583e1d409d1e56caac/test_fastq.mapped_only.bam, stageName:test_fastq.mapped_only.bam, sourcePath:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/2c/54be95d6f0b8583e1d409d1e56caac/test_fastq.mapped_only.bam)] 
+    >   409b6322c96c5aed2e508e57cc521d5d [java.lang.String] meta2 
+    >   09ab564bac19fbb0a2fb7502b3e9d8e5 [java.util.LinkedHashMap] [id:test_fasta] 
+    >   73a5ce311a22d83f9cdf7b743bde6695 [java.lang.String] fasta 
+    >   d2a7e7979504cd1f2ef6025970089b25 [nextflow.util.ArrayBag] [FileHolder(sourceObj:/ngi-igenomes/testdata/nf-core/modules/genomics/sarscov2/genome/genome.fasta, storePath:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/stage-11f98bcd-4d85-4bc3-a118-80199faaebca/82/c553328c5daacb7bd8340b0cc41f98/genome.fasta, stageName:genome.fasta, sourcePath:/ngi-igenomes/testdata/nf-core/modules/genomics/sarscov2/genome/genome.fasta)] 
+    >   4f9d4b0d22865056c37fb6d9c2a04a67 [java.lang.String] $ 
+    >   16fe7483905cce7a85670e43e4678877 [java.lang.Boolean] true 
+    >   b1a48bec4a3065e9143298f4e3bfe215 [java.util.HashMap$EntrySet] [task.ext.args=null, task.ext.prefix=my_test] 
+    > 
+    > [8a/376c65] Submitted process > ALIGN_LONGREADS:BAM_SORT_STATS_SAMTOOLS_FILTERED:SAMTOOLS_SORT (test_fastq)
+    > [ALIGN_LONGREADS:BAM_SORT_STATS_SAMTOOLS_FILTERED:SAMTOOLS_INDEX (1)] cache hash: b7d7f8b08eb68e148ee1e514506f8d95; mode: STANDARD; entries: 
+    >   8d2de3e0a04a9336fa6a3d8ba2acaef7 [java.util.UUID] 11f98bcd-4d85-4bc3-a118-80199faaebca 
+    >   c2141a6b0bbb3d6a91c365c4e35915f9 [java.lang.String] ALIGN_LONGREADS:BAM_SORT_STATS_SAMTOOLS_FILTERED:SAMTOOLS_INDEX 
+    >   5b95d9cf4a85564d79fcd6e37614402a [java.lang.String]     def args = task.ext.args ?: ''
+    >     """
+    >     samtools \\
+    >         index \\
+    >         -@ ${task.cpus-1} \\
+    >         $args \\
+    >         $input
+    > 
+    >     cat <<-END_VERSIONS > versions.yml
+    >     "${task.process}":
+    >         samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
+    >     END_VERSIONS
+    >     """
+    >  
+    >   fcf3d564d2128101066dfe3bd9f560a1 [java.lang.String] quay.io/biocontainers/samtools:1.19.2--h50ea8bc_0 
+    >   22a9e5e0e97f0475e310f04c56b1393a [java.lang.String] meta 
+    >   cd3fa9a0f0ea989151a8d5ce002fb14f [java.util.LinkedHashMap] [id:test_fastq, single_end:true] 
+    >   118323febdfe82be70d7ac6c1592e35d [java.lang.String] input 
+    >   40fd1b5076a809bdb97ee9864b67ac1b [nextflow.util.ArrayBag] [FileHolder(sourceObj:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/8a/376c651482ec3cb29d45d5aeb2bbaa/my_test.bam, storePath:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/8a/376c651482ec3cb29d45d5aeb2bbaa/my_test.bam, stageName:my_test.bam, sourcePath:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/8a/376c651482ec3cb29d45d5aeb2bbaa/my_test.bam)] 
+    >   4f9d4b0d22865056c37fb6d9c2a04a67 [java.lang.String] $ 
+    >   16fe7483905cce7a85670e43e4678877 [java.lang.Boolean] true 
+    >   eab359affdb9334848cc02803d7db724 [java.util.HashMap$EntrySet] [task.ext.args=null] 
+    > 
+    > [1e/c773dd] Submitted process > ALIGN_LONGREADS:BAM_SORT_STATS_SAMTOOLS_FILTERED:SAMTOOLS_INDEX (test_fastq)
+    > [ALIGN_LONGREADS:BAM_SORT_STATS_SAMTOOLS_FILTERED:BAM_STATS_SAMTOOLS:SAMTOOLS_IDXSTATS (1)] cache hash: cf97454db849986d7e4efd75077ee8f7; mode: STANDARD; entries: 
+    >   8d2de3e0a04a9336fa6a3d8ba2acaef7 [java.util.UUID] 11f98bcd-4d85-4bc3-a118-80199faaebca 
+    >   7a314d556faf59f8cfe741e410e44c94 [java.lang.String] ALIGN_LONGREADS:BAM_SORT_STATS_SAMTOOLS_FILTERED:BAM_STATS_SAMTOOLS:SAMTOOLS_IDXSTATS 
+    >   7fd9f9a46edf86abe81cb84b1dac8efe [java.lang.String]     def args = task.ext.args ?: ''
+    >     def prefix = task.ext.prefix ?: "${meta.id}"
+    >     """
+    >     samtools \\
+    >         idxstats \\
+    >         --threads ${task.cpus-1} \\
+    >         $bam \\
+    >         > ${prefix}.idxstats
+    > 
+    >     cat <<-END_VERSIONS > versions.yml
+    >     "${task.process}":
+    >         samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
+    >     END_VERSIONS
+    >     """
+    >  
+    >   fcf3d564d2128101066dfe3bd9f560a1 [java.lang.String] quay.io/biocontainers/samtools:1.19.2--h50ea8bc_0 
+    >   22a9e5e0e97f0475e310f04c56b1393a [java.lang.String] meta 
+    >   cd3fa9a0f0ea989151a8d5ce002fb14f [java.util.LinkedHashMap] [id:test_fastq, single_end:true] 
+    >   05a6e9bc5229dd6139c2abea6473b29f [java.lang.String] bam 
+    >   40fd1b5076a809bdb97ee9864b67ac1b [nextflow.util.ArrayBag] [FileHolder(sourceObj:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/8a/376c651482ec3cb29d45d5aeb2bbaa/my_test.bam, storePath:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/8a/376c651482ec3cb29d45d5aeb2bbaa/my_test.bam, stageName:my_test.bam, sourcePath:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/8a/376c651482ec3cb29d45d5aeb2bbaa/my_test.bam)] 
+    >   797d0098c78c00370bc4beb28e15f7e4 [java.lang.String] bai 
+    >   e5004d2964c9e88db0a41d07827ab0dd [nextflow.util.ArrayBag] [FileHolder(sourceObj:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/1e/c773dda0b42500399bc6d2b98557c7/my_test.bam.bai, storePath:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/1e/c773dda0b42500399bc6d2b98557c7/my_test.bam.bai, stageName:my_test.bam.bai, sourcePath:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/1e/c773dda0b42500399bc6d2b98557c7/my_test.bam.bai)] 
+    >   4f9d4b0d22865056c37fb6d9c2a04a67 [java.lang.String] $ 
+    >   16fe7483905cce7a85670e43e4678877 [java.lang.Boolean] true 
+    >   f38e981944e372f17682bf00a33a53cc [java.util.HashMap$EntrySet] [task.ext.args=null, task.ext.prefix=null] 
+    > 
+    > [ALIGN_LONGREADS:BAM_SORT_STATS_SAMTOOLS_FILTERED:BAM_STATS_SAMTOOLS:SAMTOOLS_FLAGSTAT (1)] cache hash: e0d2697a4966792d8cacb3e4fe5165be; mode: STANDARD; entries: 
+    >   8d2de3e0a04a9336fa6a3d8ba2acaef7 [java.util.UUID] 11f98bcd-4d85-4bc3-a118-80199faaebca 
+    >   ae1edbc966f96699047514860364f009 [java.lang.String] ALIGN_LONGREADS:BAM_SORT_STATS_SAMTOOLS_FILTERED:BAM_STATS_SAMTOOLS:SAMTOOLS_FLAGSTAT 
+    >   76101650d02d30ac0954a2fe23117838 [java.lang.String]     def args = task.ext.args ?: ''
+    >     def prefix = task.ext.prefix ?: "${meta.id}"
+    >     """
+    >     samtools \\
+    >         flagstat \\
+    >         --threads ${task.cpus} \\
+    >         $bam \\
+    >         > ${prefix}.flagstat
+    > 
+    >     cat <<-END_VERSIONS > versions.yml
+    >     "${task.process}":
+    >         samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
+    >     END_VERSIONS
+    >     """
+    >  
+    >   fcf3d564d2128101066dfe3bd9f560a1 [java.lang.String] quay.io/biocontainers/samtools:1.19.2--h50ea8bc_0 
+    >   22a9e5e0e97f0475e310f04c56b1393a [java.lang.String] meta 
+    >   cd3fa9a0f0ea989151a8d5ce002fb14f [java.util.LinkedHashMap] [id:test_fastq, single_end:true] 
+    >   05a6e9bc5229dd6139c2abea6473b29f [java.lang.String] bam 
+    >   40fd1b5076a809bdb97ee9864b67ac1b [nextflow.util.ArrayBag] [FileHolder(sourceObj:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/8a/376c651482ec3cb29d45d5aeb2bbaa/my_test.bam, storePath:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/8a/376c651482ec3cb29d45d5aeb2bbaa/my_test.bam, stageName:my_test.bam, sourcePath:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/8a/376c651482ec3cb29d45d5aeb2bbaa/my_test.bam)] 
+    >   797d0098c78c00370bc4beb28e15f7e4 [java.lang.String] bai 
+    >   e5004d2964c9e88db0a41d07827ab0dd [nextflow.util.ArrayBag] [FileHolder(sourceObj:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/1e/c773dda0b42500399bc6d2b98557c7/my_test.bam.bai, storePath:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/1e/c773dda0b42500399bc6d2b98557c7/my_test.bam.bai, stageName:my_test.bam.bai, sourcePath:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/1e/c773dda0b42500399bc6d2b98557c7/my_test.bam.bai)] 
+    >   4f9d4b0d22865056c37fb6d9c2a04a67 [java.lang.String] $ 
+    >   16fe7483905cce7a85670e43e4678877 [java.lang.Boolean] true 
+    >   f38e981944e372f17682bf00a33a53cc [java.util.HashMap$EntrySet] [task.ext.args=null, task.ext.prefix=null] 
+    > 
+    > [25/0c6d7d] Submitted process > ALIGN_LONGREADS:BAM_SORT_STATS_SAMTOOLS_FILTERED:BAM_STATS_SAMTOOLS:SAMTOOLS_IDXSTATS (test_fastq)
+    > [b0/c40bba] Submitted process > ALIGN_LONGREADS:BAM_SORT_STATS_SAMTOOLS_FILTERED:BAM_STATS_SAMTOOLS:SAMTOOLS_FLAGSTAT (test_fastq)
+    > [ALIGN_LONGREADS:BAM_SORT_STATS_SAMTOOLS_FILTERED:BAM_STATS_SAMTOOLS:SAMTOOLS_STATS (1)] cache hash: 3c2f8901ba4889d3243728339e6f97c4; mode: STANDARD; entries: 
+    >   8d2de3e0a04a9336fa6a3d8ba2acaef7 [java.util.UUID] 11f98bcd-4d85-4bc3-a118-80199faaebca 
+    >   4a3ec838ac78469de18ab9b0200dc189 [java.lang.String] ALIGN_LONGREADS:BAM_SORT_STATS_SAMTOOLS_FILTERED:BAM_STATS_SAMTOOLS:SAMTOOLS_STATS 
+    >   07db10f64f92ff5b77c8bf2cb0d8f4d3 [java.lang.String]     def args = task.ext.args ?: ''
+    >     def prefix = task.ext.prefix ?: "${meta.id}"
+    >     def reference = fasta ? "--reference ${fasta}" : ""
+    >     """
+    >     samtools \\
+    >         stats \\
+    >         --threads ${task.cpus} \\
+    >         ${reference} \\
+    >         ${input} \\
+    >         > ${prefix}.stats
+    > 
+    >     cat <<-END_VERSIONS > versions.yml
+    >     "${task.process}":
+    >         samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
+    >     END_VERSIONS
+    >     """
+    >  
+    >   fcf3d564d2128101066dfe3bd9f560a1 [java.lang.String] quay.io/biocontainers/samtools:1.19.2--h50ea8bc_0 
+    >   22a9e5e0e97f0475e310f04c56b1393a [java.lang.String] meta 
+    >   cd3fa9a0f0ea989151a8d5ce002fb14f [java.util.LinkedHashMap] [id:test_fastq, single_end:true] 
+    >   118323febdfe82be70d7ac6c1592e35d [java.lang.String] input 
+    >   40fd1b5076a809bdb97ee9864b67ac1b [nextflow.util.ArrayBag] [FileHolder(sourceObj:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/8a/376c651482ec3cb29d45d5aeb2bbaa/my_test.bam, storePath:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/8a/376c651482ec3cb29d45d5aeb2bbaa/my_test.bam, stageName:my_test.bam, sourcePath:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/8a/376c651482ec3cb29d45d5aeb2bbaa/my_test.bam)] 
+    >   f792a6941a7c8fee95aa4475972a289a [java.lang.String] input_index 
+    >   e5004d2964c9e88db0a41d07827ab0dd [nextflow.util.ArrayBag] [FileHolder(sourceObj:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/1e/c773dda0b42500399bc6d2b98557c7/my_test.bam.bai, storePath:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/1e/c773dda0b42500399bc6d2b98557c7/my_test.bam.bai, stageName:my_test.bam.bai, sourcePath:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/1e/c773dda0b42500399bc6d2b98557c7/my_test.bam.bai)] 
+    >   409b6322c96c5aed2e508e57cc521d5d [java.lang.String] meta2 
+    >   09ab564bac19fbb0a2fb7502b3e9d8e5 [java.util.LinkedHashMap] [id:test_fasta] 
+    >   73a5ce311a22d83f9cdf7b743bde6695 [java.lang.String] fasta 
+    >   d2a7e7979504cd1f2ef6025970089b25 [nextflow.util.ArrayBag] [FileHolder(sourceObj:/ngi-igenomes/testdata/nf-core/modules/genomics/sarscov2/genome/genome.fasta, storePath:/home/gburnett/scnanoseq/.nf-test/tests/d7ceecebe6e1d32045c871b5bf3679c6/work/stage-11f98bcd-4d85-4bc3-a118-80199faaebca/82/c553328c5daacb7bd8340b0cc41f98/genome.fasta, stageName:genome.fasta, sourcePath:/ngi-igenomes/testdata/nf-core/modules/genomics/sarscov2/genome/genome.fasta)] 
+    >   4f9d4b0d22865056c37fb6d9c2a04a67 [java.lang.String] $ 
+    >   16fe7483905cce7a85670e43e4678877 [java.lang.Boolean] true 
+    >   f38e981944e372f17682bf00a33a53cc [java.util.HashMap$EntrySet] [task.ext.args=null, task.ext.prefix=null] 
+    > 
+    > [a5/672965] Submitted process > ALIGN_LONGREADS:BAM_SORT_STATS_SAMTOOLS_FILTERED:BAM_STATS_SAMTOOLS:SAMTOOLS_STATS (test_fastq)
+    [32mPASSED[0m (46.393s)
+  Snapshots:
+    1 created [align_longreads - gpu params]
+    Obsolete snapshots can only be checked if all tests of a file are executed successful.
+
+
+Snapshot Summary:
+  1 created
+
+[1m[32mSUCCESS: [0m[0mExecuted 1 tests in 46.417s
+

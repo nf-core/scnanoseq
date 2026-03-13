@@ -3,7 +3,7 @@
 //
 
 // SUBWORKFLOWS
-include { ALIGN_LONGREADS         } from '../../subworkflows/local/align_longreads'
+include { ALIGN_LONGREADS         } from '../../subworkflows/local/align_longreads/main'
 include { QUANTIFY_SCRNA_ISOQUANT } from '../../subworkflows/local/quantify_scrna_isoquant'
 include { QUANTIFY_SCRNA_OARFISH  } from '../../subworkflows/local/quantify_scrna_oarfish'
 include { DEDUP_UMIS              } from '../../subworkflows/local/dedup_umis'
@@ -32,6 +32,7 @@ workflow PROCESS_LONGREAD_SCRNA {
         genome_aligned  // bool: Whether the bam is aligned to the genome or not
         fasta_delimiter // str: Delimiter character used in sequence id in fasta
 
+        gpu_align                // bool: Run GPU accelerated version of minimap2
         skip_save_minimap2_index // bool: Skip saving the minimap2 index
         skip_qc                  // bool: Skip qc steps
         skip_rseqc               // bool: Skip RSeQC
@@ -52,6 +53,7 @@ workflow PROCESS_LONGREAD_SCRNA {
             gtf,
             fastq,
             rseqc_bed,
+            gpu_align,
             skip_save_minimap2_index,
             skip_qc,
             skip_rseqc,

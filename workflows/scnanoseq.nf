@@ -443,6 +443,7 @@ workflow SCNANOSEQ {
             genome_quants,
             params.dedup_tool,
             true, // Used to indicate the bam is genome aligned
+            params.gpu_align,
             params.fasta_delimiter,
             params.skip_save_minimap2_index,
             params.skip_qc,
@@ -503,6 +504,7 @@ workflow SCNANOSEQ {
             params.dedup_tool,
             false, // Indicates this is NOT genome aligned
             params.fasta_delimiter,
+            params.gpu_align,
             params.skip_save_minimap2_index,
             params.skip_qc,
             true, // RSeQC does not work well with transcriptome alignments
