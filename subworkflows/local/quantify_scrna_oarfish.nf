@@ -22,13 +22,12 @@ workflow QUANTIFY_SCRNA_OARFISH {
         // MODULE: Samtools Sort
         //
         SAMTOOLS_SORT ( in_bam, in_fasta )
-        ch_versions = ch_versions.mix(SAMTOOLS_SORT.out.versions)
-
+    
         //
         // MODULE: Oarfish
         //
         OARFISH ( SAMTOOLS_SORT.out.bam )
-        ch_versions = ch_versions.mix(OARFISH.out.versions)
+        ch_versions = ch_versions.mix(OARFISH.out.versions_oarfish)
 
         ch_transcript_qc_stats = channel.empty()
         if (!params.skip_qc && !params.skip_seurat) {

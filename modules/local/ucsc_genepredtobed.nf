@@ -12,7 +12,7 @@ process UCSC_GENEPREDTOBED {
 
     output:
     path "*.bed"        , emit: bed
-    path "versions.yml" , emit: versions
+    path "versions.yml" , emit: versions_genepredtobed, topic: versions
 
     when:
     task.ext.when == null || task.ext.when

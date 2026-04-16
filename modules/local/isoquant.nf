@@ -35,7 +35,7 @@ process ISOQUANT {
     tuple val(meta), path("*/*/*.extended_annotation.gtf"),             emit: extended_gtf,                    optional: true
     tuple val(meta), path("*/*/*.transcript_model_grouped_counts.tsv"), emit: grouped_transcript_model_counts, optional: true
     tuple val(meta), path("*/*/*.transcript_model_grouped_tpm.tsv"),    emit: grouped_transcript_model_tpm,    optional: true
-    path "versions.yml",                                                emit: versions
+    path "versions.yml",                                                emit: versions_isoquant, topic: versions
 
     when:
     task.ext.when == null || task.ext.when

@@ -2,16 +2,20 @@
 // Performs feature quantification for long read single-cell rna data
 //
 
+// MODULES
 include { BAMTOOLS_SPLIT                         } from '../../modules/nf-core/bamtools/split/main'
+include { SAMTOOLS_FAIDX as SAMTOOLS_FAIDX_SPLIT } from '../../modules/nf-core/samtools/faidx/main'
+include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_SPLIT } from '../../modules/nf-core/samtools/index/main'
+
 include { ISOQUANT                               } from '../../modules/local/isoquant'
 include { MERGE_MTX as MERGE_MTX_GENE            } from '../../modules/local/merge_mtx'
 include { MERGE_MTX as MERGE_MTX_TRANSCRIPT      } from '../../modules/local/merge_mtx'
-include { QC_SCRNA as QC_SCRNA_GENE              } from '../../subworkflows/local/qc_scrna'
-include { QC_SCRNA as QC_SCRNA_TRANSCRIPT        } from '../../subworkflows/local/qc_scrna'
-include { SAMTOOLS_FAIDX as SAMTOOLS_FAIDX_SPLIT } from '../../modules/nf-core/samtools/faidx/main'
-include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_SPLIT } from '../../modules/nf-core/samtools/index/main'
 include { SPLIT_GTF                              } from '../../modules/local/split_gtf'
 include { SPLIT_FASTA                            } from '../../modules/local/split_fasta'
+
+// SUBWORKFLOWS
+include { QC_SCRNA as QC_SCRNA_GENE              } from '../../subworkflows/local/qc_scrna'
+include { QC_SCRNA as QC_SCRNA_TRANSCRIPT        } from '../../subworkflows/local/qc_scrna'
 
 workflow QUANTIFY_SCRNA_ISOQUANT {
     take:
@@ -31,7 +35,7 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
         // MODULE: Split the FASTA
         //
         SPLIT_FASTA( in_fasta )
-        ch_versions = ch_versions.mix(SPLIT_FASTA.out.versions)
+        ch_versions = ch_versions.mix(SPLIT_FASTA.out.versions_split_fasta)
         ch_split_fasta = SPLIT_FASTA.out.split_fasta
             .flatten()
             .map{
@@ -41,9 +45,15 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
                     [ new_meta, fasta ]
             }
 
-        SAMTOOLS_FAIDX_SPLIT( ch_split_fasta, [ [:], "$projectDir/assets/dummy_file.txt" ])
+        SAMTOOLS_FAIDX_SPLIT( 
+            ch_split_fasta
+                .map {
+                    meta, fasta ->
+                    [meta, fasta, "$projectDir/assets/dummy_file.txt"]
+                },
+            false
+        )
         ch_split_fai = SAMTOOLS_FAIDX_SPLIT.out.fai
-        ch_versions = ch_versions.mix(SAMTOOLS_FAIDX_SPLIT.out.versions)
 
         //
         // MODULE: Split the GTF
@@ -57,13 +67,12 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
                     def new_meta = ['chr': gtf_basename.split(/\./)[0]]
                     [ new_meta, gtf ]
             }
-        ch_versions = ch_versions.mix(SPLIT_GTF.out.versions)
+        ch_versions = ch_versions.mix(SPLIT_GTF.out.versions_split_gtf)
 
         //
         // MODULE: Bamtools split
         //
         BAMTOOLS_SPLIT ( in_bam )
-        ch_versions = ch_versions.mix(BAMTOOLS_SPLIT.out.versions.first())
 
         ch_split_bam = BAMTOOLS_SPLIT.out.bam
             .map {
@@ -88,7 +97,6 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
         //
         SAMTOOLS_INDEX_SPLIT( ch_split_bam )
         ch_split_bai = SAMTOOLS_INDEX_SPLIT.out.bai
-        ch_versions = ch_versions.mix(SAMTOOLS_INDEX_SPLIT.out.versions.first())
 
         // Prepare isoquant input channel
         // bam and bai files need to be joined with split fasta, fai and gtf files
@@ -112,7 +120,7 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
             isoquant_input,
             'tag:CB'
         )
-        ch_versions = ch_versions.mix(ISOQUANT.out.versions)
+        ch_versions = ch_versions.mix(ISOQUANT.out.versions_isoquant)
 
         //
         // MODULE: Merge Matrix
@@ -129,7 +137,7 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
             ch_split_gene_mtx
         )
         ch_merged_gene_mtx = MERGE_MTX_GENE.out.merged_mtx
-        ch_versions = ch_versions.mix(MERGE_MTX_GENE.out.versions)
+        ch_versions = ch_versions.mix(MERGE_MTX_GENE.out.versions_merge_mtx)
 
         ch_split_transcript_mtx = ISOQUANT.out.grouped_transcript_counts
             .map {
@@ -143,7 +151,7 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
             ch_split_transcript_mtx
         )
         ch_merged_transcript_mtx = MERGE_MTX_TRANSCRIPT.out.merged_mtx
-        ch_versions = ch_versions.mix(MERGE_MTX_TRANSCRIPT.out.versions)
+        ch_versions = ch_versions.mix(MERGE_MTX_TRANSCRIPT.out.versions_merge_mtx)
 
         ch_gene_qc_stats = channel.empty()
         ch_transcript_qc_stats = channel.empty()

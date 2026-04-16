@@ -57,7 +57,6 @@ workflow PROCESS_LONGREAD_SCRNA {
             skip_rseqc,
             skip_bam_nanocomp
         )
-        ch_versions = ch_versions.mix(ALIGN_LONGREADS.out.versions)
 
         //
         // MODULE: Tag Barcodes
@@ -68,13 +67,12 @@ workflow PROCESS_LONGREAD_SCRNA {
                 .join( ALIGN_LONGREADS.out.sorted_bai, by: 0 )
                 .join( read_bc_info, by: 0)
         )
-        ch_versions = ch_versions.mix(TAG_BARCODES.out.versions)
+        ch_versions = ch_versions.mix(TAG_BARCODES.out.versions_tag_barcodes)
 
         //
         // MODULE: Index Tagged Bam
         //
         SAMTOOLS_INDEX_TAGGED ( TAG_BARCODES.out.tagged_bam )
-        ch_versions = ch_versions.mix(SAMTOOLS_INDEX_TAGGED.out.versions)
 
         //
         // MODULE: Flagstat Tagged Bam
@@ -83,7 +81,6 @@ workflow PROCESS_LONGREAD_SCRNA {
             TAG_BARCODES.out.tagged_bam
                 .join( SAMTOOLS_INDEX_TAGGED.out.bai, by: [0])
         )
-        ch_versions = ch_versions.mix(SAMTOOLS_FLAGSTAT_TAGGED.out.versions)
 
         ch_bam = channel.empty()
         ch_bai = channel.empty()

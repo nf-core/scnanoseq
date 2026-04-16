@@ -29,14 +29,12 @@ workflow ALIGN_LONGREADS {
         skip_bam_nanocomp        // bool: Skip Nanocomp
 
     main:
-        ch_versions = channel.empty()
         //
         // MINIMAP2_INDEX
         //
         if (skip_save_minimap2_index) {
             MINIMAP2_INDEX ( fasta )
             ch_minimap_ref = MINIMAP2_INDEX.out.index
-            ch_versions = ch_versions.mix(MINIMAP2_INDEX.out.versions)
         } else {
             ch_minimap_ref = fasta
         }
@@ -44,7 +42,6 @@ workflow ALIGN_LONGREADS {
         //
         // MINIMAP2_ALIGN
         //
-
         MINIMAP2_ALIGN (
             fastq,
             ch_minimap_ref,
@@ -54,13 +51,10 @@ workflow ALIGN_LONGREADS {
             ""
         )
 
-        ch_versions = ch_versions.mix(MINIMAP2_ALIGN.out.versions)
-
         //
         // SUBWORKFLOW: BAM_SORT_STATS_SAMTOOLS
         // The subworkflow is called in both the minimap2 bams and filtered (mapped only) version
         BAM_SORT_STATS_SAMTOOLS ( MINIMAP2_ALIGN.out.bam, fasta )
-        ch_versions = ch_versions.mix(BAM_SORT_STATS_SAMTOOLS.out.versions)
 
         // acquire only mapped reads from bam for downstream processing
         // NOTE: some QCs steps are performed on the full BAM
@@ -68,13 +62,12 @@ workflow ALIGN_LONGREADS {
             BAM_SORT_STATS_SAMTOOLS.out.bam
                 .join( BAM_SORT_STATS_SAMTOOLS.out.bai, by: 0 )
                 .combine(["$projectDir/assets/dummy_file.txt"]),
-            [[],[]],
+            [[],[], []],
             [],
             []
         )
 
         ch_minimap_mapped_only_bam = SAMTOOLS_FILTER_MAPPED.out.bam
-        ch_versions = ch_versions.mix(SAMTOOLS_FILTER_MAPPED.out.versions)
 
         BAM_SORT_STATS_SAMTOOLS_FILTERED (
             ch_minimap_mapped_only_bam,
@@ -83,16 +76,17 @@ workflow ALIGN_LONGREADS {
 
         _ch_minimap_filtered_sorted_bam = BAM_SORT_STATS_SAMTOOLS_FILTERED.out.bam
         _ch_minimap_filtered_sorted_bai = BAM_SORT_STATS_SAMTOOLS_FILTERED.out.bai
-        ch_versions = ch_versions.mix(BAM_SORT_STATS_SAMTOOLS_FILTERED.out.versions)
 
         //
         // MODULE: RSeQC read distribution for BAM files (unfiltered for QC purposes)
         //
         ch_rseqc_read_dist = channel.empty()
         if (!skip_qc && !skip_rseqc) {
-            RSEQC_READDISTRIBUTION ( BAM_SORT_STATS_SAMTOOLS.out.bam, rseqc_bed )
+            RSEQC_READDISTRIBUTION ( 
+                BAM_SORT_STATS_SAMTOOLS.out.bam.join( BAM_SORT_STATS_SAMTOOLS.out.bai, by: 0 ),
+                rseqc_bed
+            )
             ch_rseqc_read_dist = RSEQC_READDISTRIBUTION.out.txt
-            ch_versions = ch_versions.mix(RSEQC_READDISTRIBUTION.out.versions)
         }
 
         //
@@ -113,12 +107,9 @@ workflow ALIGN_LONGREADS {
 
             ch_nanocomp_bam_html = NANOCOMP.out.report_html
             ch_nanocomp_bam_txt = NANOCOMP.out.stats_txt
-            ch_versions = ch_versions.mix( NANOCOMP.out.versions )
         }
 
     emit:
-        versions = ch_versions
-
         // Bam and Bai
         sorted_bam = BAM_SORT_STATS_SAMTOOLS_FILTERED.out.bam
         sorted_bai = BAM_SORT_STATS_SAMTOOLS_FILTERED.out.bai

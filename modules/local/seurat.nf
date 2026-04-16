@@ -15,7 +15,7 @@ process SEURAT {
     tuple val(meta), path("*.csv"), emit: seurat_stats
     tuple val(meta), path("*.png"), emit: seurat_qcs
     tuple val(meta), path("*.rds"), emit: seurat_rds
-    path "versions.yml"           , emit: versions
+    path "versions.yml"           , emit: versions_seurat, topic: versions
 
     when:
     task.ext.when == null || task.ext.when

@@ -14,7 +14,7 @@ process GROUP_TRANSCRIPTS {
 
     output:
     path "*.transcripts.txt", emit: grouped_transcripts
-    path "versions.yml"     , emit: versions
+    path "versions.yml"     , emit: versions_group_transcripts, topic: versions
 
     when:
     task.ext.when == null || task.ext.when

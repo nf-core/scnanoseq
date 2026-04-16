@@ -11,7 +11,7 @@ process COMBINE_SEURAT_STATS {
 
     output:
     path "*.tsv"        , emit: combined_stats
-    path "versions.yml" , emit: versions
+    path "versions.yml" , emit: versions_combine_seurat_stats, topic: versions
 
     when:
     task.ext.when == null || task.ext.when

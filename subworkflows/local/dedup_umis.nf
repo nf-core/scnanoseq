@@ -10,9 +10,10 @@ include { UMITOOLS_DEDUP                          } from '../../modules/nf-core/
 include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_DEDUP  } from '../../modules/nf-core/samtools/index/main'
 include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_MERGED } from '../../modules/nf-core/samtools/index/main'
 include { SAMTOOLS_MERGE                          } from '../../modules/nf-core/samtools/merge/main'
+include { PICARD_MARKDUPLICATES                   } from '../../modules/nf-core/picard/markduplicates/main'
+
 include { SPLIT_BAM                               } from '../../modules/local/split_bam'
 include { GROUP_TRANSCRIPTS                       } from '../../modules/local/group_transcripts'
-include { PICARD_MARKDUPLICATES                   } from '../../modules/nf-core/picard/markduplicates/main'
 
 //
 // SUBWORKFLOWS
@@ -46,7 +47,6 @@ workflow DEDUP_UMIS {
                 // MODULE: Bamtools split
                 //
                 BAMTOOLS_SPLIT ( in_bam )
-                ch_versions = ch_versions.mix(BAMTOOLS_SPLIT.out.versions.first())
                 ch_split_bam = BAMTOOLS_SPLIT.out.bam
                     .map{
                         _meta, bam ->
@@ -72,7 +72,7 @@ workflow DEDUP_UMIS {
                     gtf,
                     fasta_delimiter
                 )
-                ch_versions = ch_versions.mix(GROUP_TRANSCRIPTS.out.versions)
+                ch_versions = ch_versions.mix(GROUP_TRANSCRIPTS.out.versions_group_transcripts)
 
                 //
                 // MODULE: Samtools View
@@ -89,7 +89,7 @@ workflow DEDUP_UMIS {
                         }
                 )
                 ch_split_bam = SPLIT_BAM.out.split_bam
-                ch_versions = ch_versions.mix(SPLIT_BAM.out.versions)
+                ch_versions = ch_versions.mix(SPLIT_BAM.out.versions_split_bam)
             }
 
             //
@@ -101,7 +101,6 @@ workflow DEDUP_UMIS {
             )
             ch_undedup_bam = BAM_SORT_STATS_SAMTOOLS.out.bam
             ch_undedup_bai = BAM_SORT_STATS_SAMTOOLS.out.bai
-            ch_versions = ch_versions.mix(BAM_SORT_STATS_SAMTOOLS.out.versions)
 
         }
         else {
@@ -120,7 +119,6 @@ workflow DEDUP_UMIS {
                 ch_undedup_bam.join(ch_undedup_bai, by: [0]),
                 true )
             ch_dedup_bam = UMITOOLS_DEDUP.out.bam
-            ch_versions = ch_versions.mix(UMITOOLS_DEDUP.out.versions)
 
         } else {
             //
@@ -132,14 +130,12 @@ workflow DEDUP_UMIS {
                 fai
             )
             ch_dedup_bam = PICARD_MARKDUPLICATES.out.bam
-            ch_versions = ch_versions.mix(PICARD_MARKDUPLICATES.out.versions)
         }
 
         //
         // MODULE: Samtools Index
         //
         SAMTOOLS_INDEX_DEDUP( UMITOOLS_DEDUP.out.bam )
-        ch_versions = ch_versions.mix(SAMTOOLS_INDEX_DEDUP.out.versions)
 
         if (split_bam) {
             //
@@ -147,26 +143,37 @@ workflow DEDUP_UMIS {
             //
             SAMTOOLS_MERGE (
                     ch_dedup_bam
-                    .map{
-                        _meta, bam ->
-                            def bam_basename = bam.toString().split('/')[-1]
-                            def split_bam_basename = bam_basename.split(/\./)
-                            def new_meta = [ 'id': split_bam_basename[0] ]
-                        [ new_meta, bam ]
-                    }
-                    .groupTuple(),
-                fasta,
-                fai)
+                        .map{
+                            _meta, bam ->
+                                def bam_basename = bam.toString().split('/')[-1]
+                                def split_bam_basename = bam_basename.split(/\./)
+                                def new_meta = [ 'id': split_bam_basename[0] ]
+                            [ new_meta, bam ]
+                        }
+                        .groupTuple()
+                        .combine(
+                            ch_dedup_bai
+                                .map{
+                                    _meta, bai ->
+                                        def bai_basename = bam.toString().split('/')[-1]
+                                        def split_bai_basename = bai_basename.split(/\./)
+                                        def new_meta = [ 'id': split_bai_basename[0] ]
+                                    [ new_meta, bai ]
+                                }
+                        ),
+                fasta
+                    .join(fai)
+
+            )
             ch_dedup_bam = SAMTOOLS_MERGE.out.bam
-            ch_versions = ch_versions.mix(SAMTOOLS_MERGE.out.versions)
 
             //
             // MODULE: Samtools Index
             //
             SAMTOOLS_INDEX_MERGED( ch_dedup_bam )
             ch_dedup_bai = SAMTOOLS_INDEX_MERGED.out.bai
-            ch_versions = ch_versions.mix(SAMTOOLS_INDEX_MERGED.out.versions)
         }
+        ch_dedup_bam.view()
 
         //
         // SUBWORKFLOW: BAM_STATS_SAMTOOLS
@@ -175,7 +182,6 @@ workflow DEDUP_UMIS {
             ch_dedup_bam.join(ch_dedup_bai),
             fasta
         )
-        ch_versions = ch_versions.mix(BAM_STATS_SAMTOOLS.out.versions)
 
     emit:
         versions       = ch_versions

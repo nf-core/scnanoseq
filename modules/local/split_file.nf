@@ -14,7 +14,7 @@ process SPLIT_FILE {
 
     output:
     tuple val(meta), path("*$file_ext"), emit: split_files
-    path "versions.yml"                , emit: versions
+    path "versions.yml"                , emit: versions_split_file, topic: versions
 
     when:
     task.ext.when == null || task.ext.when

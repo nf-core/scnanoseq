@@ -12,7 +12,7 @@ process SPLIT_BAM {
 
     output:
     tuple val(meta), path("*.split.bam"), emit: split_bam
-    path "versions.yml"                 , emit: versions
+    path "versions.yml"                 , emit: versions_split_bam, topic: versions
 
     when:
     task.ext.when == null || task.ext.when
