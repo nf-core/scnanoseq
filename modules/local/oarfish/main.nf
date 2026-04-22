@@ -15,7 +15,7 @@ process OARFISH {
     tuple val(meta), path("*barcodes.tsv.gz") , emit: barcodes
     tuple val(meta), path("*matrix.mtx.gz")   , emit: mtx
     tuple val(meta), path("*meta_info.json")  , emit: meta_info
-    path "versions.yml"                       , emit: versions
+    path "versions.yml"                       , emit: versions_oarfish, topic: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -55,5 +55,10 @@ process OARFISH {
     touch ${prefix}.barcodes.tsv.gz
     touch ${prefix}.matrix.mtx.gz
     touch ${prefix}.meta_info.json
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        oarfish: \$(oarfish --version | sed 's#oarfish ##g')
+    END_VERSIONS
     """
 }

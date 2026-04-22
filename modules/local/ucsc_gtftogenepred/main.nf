@@ -12,7 +12,7 @@ process UCSC_GTFTOGENEPRED {
 
     output:
     path "*.genepred"    , emit: genepred
-    path "versions.yml"  , emit: versions
+    path "versions.yml"  , emit: versions_gtftogenepred, topic: versions
 
     when:
     task.ext.when == null || task.ext.when

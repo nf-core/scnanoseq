@@ -11,7 +11,7 @@ process SPLIT_FASTA {
 
     output:
     path "*.split.fa"   , emit: split_fasta
-    path "versions.yml" , emit: versions
+    path "versions.yml" , emit: versions_split_fasta, topic: versions
 
     when:
     task.ext.when == null || task.ext.when

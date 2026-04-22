@@ -11,7 +11,7 @@ process SPLIT_GTF {
 
     output:
     path "*.split.gtf"  , emit: split_gtf
-    path "versions.yml" , emit: versions
+    path "versions.yml" , emit: versions_split_gtf, topic: versions
 
     when:
     task.ext.when == null || task.ext.when

@@ -12,7 +12,7 @@ process MERGE_MTX {
 
     output:
     tuple val(meta), path("*.merged.tsv"), emit: merged_mtx
-    path "versions.yml"                  , emit: versions
+    path "versions.yml"                  , emit: versions_merge_mtx, topic: versions
 
     when:
     task.ext.when == null || task.ext.when

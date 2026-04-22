@@ -1,60 +1,5 @@
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    PARAMETER PRESETS
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
-
-// Whitelist
-if (params.whitelist) {
-    blaze_whitelist = params.whitelist
-}
-else {
-    if (params.barcode_format.equals("10X_3v3")) {
-        blaze_whitelist = file("$baseDir/assets/whitelist/3M-february-2018.zip")
-    }
-    else if (params.barcode_format.equals("10X_5v2")) {
-        blaze_whitelist = file("$baseDir/assets/whitelist/737K-august-2016.txt.zip")
-    }
-    else if (params.barcode_format.equals("10X_3v4")) {
-        blaze_whitelist = file("$baseDir/assets/whitelist/3M-3pgex-may-2023_TRU.txt.zip")
-    }
-    else if (params.barcode_format.equals("10X_5v3")) {
-        blaze_whitelist = file("$baseDir/assets/whitelist/3M-5pgex-jan-2023.txt.zip")
-    }
-}
-
-// Quantifiers
-
-// Associate the quantifiers with the kind of alignment needed
-GENOME_QUANT_OPTS = [ 'isoquant' ]
-TRANSCRIPT_QUANT_OPTS = [ 'oarfish' ]
-
-genome_quants = []
-transcript_quants = []
-for (quantifier in params.quantifier.split(',')) {
-    if (quantifier in GENOME_QUANT_OPTS) {
-        genome_quants.add(quantifier)
-    }
-
-    if (quantifier in TRANSCRIPT_QUANT_OPTS) {
-        transcript_quants.add(quantifier)
-    }
-}
-
-
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    CONFIG FILES
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
-
-ch_multiqc_config                       = Channel.fromPath("$projectDir/assets/multiqc_config.yml", checkIfExists: true)
-ch_multiqc_custom_config                = params.multiqc_config ? Channel.fromPath( params.multiqc_config, checkIfExists: true ) : Channel.empty()
-ch_multiqc_logo                         = params.multiqc_logo   ? Channel.fromPath( params.multiqc_logo, checkIfExists: true ) : Channel.empty()
-ch_multiqc_custom_methods_description   = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
-
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     IMPORT LOCAL MODULES/SUBWORKFLOWS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
@@ -94,7 +39,6 @@ include { PIGZ_COMPRESS                                 } from "../modules/nf-co
 include { NANOCOMP as NANOCOMP_FASTQ                    } from "../modules/nf-core/nanocomp/main"
 include { MULTIQC as MULTIQC_RAWQC                      } from "../modules/nf-core/multiqc/main"
 include { MULTIQC as MULTIQC_FINALQC                    } from "../modules/nf-core/multiqc/main"
-include { CUSTOM_DUMPSOFTWAREVERSIONS                   } from "../modules/nf-core/custom/dumpsoftwareversions/main"
 include { CAT_CAT                                       } from "../modules/nf-core/cat/cat/main"
 include { CAT_CAT as CAT_CAT_PREEXTRACT                 } from "../modules/nf-core/cat/cat/main"
 include { CAT_CAT as CAT_CAT_BARCODE                    } from "../modules/nf-core/cat/cat/main"
@@ -124,8 +68,54 @@ workflow SCNANOSEQ {
     ch_samplesheet // channel: samplesheet read in from --input
     main:
 
-    ch_versions = Channel.empty()
-    ch_multiqc_report = Channel.empty()
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        PARAMETER PRESETS
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    */
+
+    // Whitelist
+    def blaze_whitelist = null
+    if (params.whitelist) {
+        blaze_whitelist = params.whitelist
+    }
+    else {
+        if (params.barcode_format.equals("10X_3v3")) {
+            blaze_whitelist = file("$baseDir/assets/whitelist/3M-february-2018.zip")
+        }
+        else if (params.barcode_format.equals("10X_5v2")) {
+            blaze_whitelist = file("$baseDir/assets/whitelist/737K-august-2016.txt.zip")
+        }
+        else if (params.barcode_format.equals("10X_3v4")) {
+            blaze_whitelist = file("$baseDir/assets/whitelist/3M-3pgex-may-2023_TRU.txt.zip")
+        }
+        else if (params.barcode_format.equals("10X_5v3")) {
+            blaze_whitelist = file("$baseDir/assets/whitelist/3M-5pgex-jan-2023.txt.zip")
+        }
+    }
+
+    // Quantifiers
+    // Associate the quantifiers with the kind of alignment needed
+    def GENOME_QUANT_OPTS     = [ 'isoquant' ]
+    def TRANSCRIPT_QUANT_OPTS = [ 'oarfish' ]
+
+    def quantifier_list   = params.quantifier.split(',') as List
+    def genome_quants     = quantifier_list.findAll { q -> q in GENOME_QUANT_OPTS }
+    def transcript_quants = quantifier_list.findAll { q -> q in TRANSCRIPT_QUANT_OPTS }
+
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        CONFIG FILES
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    */
+
+    def ch_multiqc_config                     = channel.fromPath("$projectDir/assets/multiqc_config.yml", checkIfExists: true)
+    def ch_multiqc_custom_config              = params.multiqc_config ? channel.fromPath( params.multiqc_config, checkIfExists: true ) : channel.empty()
+    def ch_multiqc_logo                       = params.multiqc_logo   ? channel.fromPath( params.multiqc_logo, checkIfExists: true ) : channel.empty()
+    def ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
+
+    def ch_versions = channel.empty()
+    def ch_multiqc_report = channel.empty()
 
     //
     // SUBWORKFLOW: Read in samplesheet, validate and stage input files
@@ -149,20 +139,14 @@ workflow SCNANOSEQ {
         .mix ( ch_fastqs.single )
         .set { ch_cat_fastq }
 
-    ch_versions = ch_versions.mix (CAT_FASTQ.out.versions.first().ifEmpty(null))
-
     //
     // SUBWORKFLOW: Fastq QC with Nanoplot, ToulligQC and FastQC - pre-trim QC
     //
 
-    ch_fastqc_multiqc_pretrim = Channel.empty()
+    ch_fastqc_multiqc_pretrim = channel.empty()
     if (!params.skip_qc){
 
         FASTQC_NANOPLOT_PRE_TRIM ( ch_cat_fastq, params.skip_nanoplot, params.skip_toulligqc, params.skip_fastqc )
-
-        ch_versions = ch_versions.mix(FASTQC_NANOPLOT_PRE_TRIM.out.nanoplot_version.first().ifEmpty(null))
-        ch_versions = ch_versions.mix(FASTQC_NANOPLOT_PRE_TRIM.out.toulligqc_version.first().ifEmpty(null))
-        ch_versions = ch_versions.mix(FASTQC_NANOPLOT_PRE_TRIM.out.fastqc_version.first().ifEmpty(null))
 
         ch_fastqc_multiqc_pretrim = FASTQC_NANOPLOT_PRE_TRIM.out.fastqc_multiqc.ifEmpty([])
         ch_nanostat_pretrim = FASTQC_NANOPLOT_PRE_TRIM.out.nanoplot_txt.ifEmpty([])
@@ -172,22 +156,20 @@ workflow SCNANOSEQ {
     // MODULE: NanoComp for FastQ files
     //
 
-    ch_nanocomp_fastq_html = Channel.empty()
-    ch_nanocomp_fastq_txt = Channel.empty()
+    ch_nanocomp_fastq_html = channel.empty()
+    ch_nanocomp_fastq_txt = channel.empty()
     if (!params.skip_qc && !params.skip_fastq_nanocomp) {
 
         NANOCOMP_FASTQ (
             ch_cat_fastq
-                .collect{it[1]}
-                .map{
-                    [ [ 'id': 'nanocomp_fastq.' ] , it ]
+                .collect{it -> it[1]}
+                .map{ fastq_list ->
+                    [ [ 'id': 'nanocomp_fastq.' ] , fastq_list ]
                 }
         )
 
         ch_nanocomp_fastq_html = NANOCOMP_FASTQ.out.report_html
         ch_nanocomp_fastq_txt = NANOCOMP_FASTQ.out.stats_txt
-
-        ch_versions = ch_versions.mix( NANOCOMP_FASTQ.out.versions )
 
     }
 
@@ -207,30 +189,28 @@ workflow SCNANOSEQ {
     transcript_fai = PREPARE_REFERENCE_FILES.out.transcript_fai
     gtf = PREPARE_REFERENCE_FILES.out.prepped_gtf
 
-    ch_versions = ch_versions.mix( PREPARE_REFERENCE_FILES.out.versions )
-
     //
     // MODULE: Generate bed file from input gtf for rseqc
     //
 
     // come back to this once intron work is finished (likely input will be fine)
-    ch_pred = Channel.empty()
-    ch_rseqc_bed = Channel.empty()
+    ch_pred = channel.empty()
+    ch_rseqc_bed = channel.empty()
     if (!params.skip_qc && !params.skip_rseqc) {
         UCSC_GTFTOGENEPRED( gtf )
         ch_pred = UCSC_GTFTOGENEPRED.out.genepred
-        ch_versions = ch_versions.mix(UCSC_GTFTOGENEPRED.out.versions)
+        ch_versions = ch_versions.mix(UCSC_GTFTOGENEPRED.out.versions_gtftogenepred)
 
         UCSC_GENEPREDTOBED ( ch_pred )
         ch_rseqc_bed = UCSC_GENEPREDTOBED.out.bed
-        ch_versions = ch_versions.mix(UCSC_GENEPREDTOBED.out.versions)
+        ch_versions = ch_versions.mix(UCSC_GENEPREDTOBED.out.versions_genepredtobed)
     }
 
     //
     // MODULE: Trim and filter reads
     //
-    ch_fastqc_multiqc_postrim = Channel.empty()
-    ch_trimmed_reads_combined = Channel.empty()
+    ch_fastqc_multiqc_postrim = channel.empty()
+    ch_trimmed_reads_combined = channel.empty()
 
     if (!params.skip_trimming){
         //
@@ -246,12 +226,12 @@ workflow SCNANOSEQ {
                 .transpose()
                 .set { ch_fastqs }
 
-            ch_versions = ch_versions.mix(SPLIT_SEQ.out.versions)
+            ch_versions = ch_versions.mix(SPLIT_SEQ.out.versions_split_seq)
         } else {
             ch_fastqs = ch_cat_fastq
         }
 
-        ch_trimmed_reads = Channel.empty()
+        ch_trimmed_reads = channel.empty()
         if (params.skip_trimming){
             ch_trimmed_reads = ch_fastqs
         } else {
@@ -260,7 +240,7 @@ workflow SCNANOSEQ {
             //
             CHOPPER ( ch_fastqs )
             ch_trimmed_reads = CHOPPER.out.reads
-            ch_versions = ch_versions.mix(CHOPPER.out.versions)
+            ch_versions = ch_versions.mix(CHOPPER.out.versions_chopper)
         }
 
         // If the fastqs were split, combine them together
@@ -282,9 +262,6 @@ workflow SCNANOSEQ {
 
             ch_fastqc_multiqc_postrim = FASTQC_NANOPLOT_POST_TRIM.out.fastqc_multiqc.ifEmpty([])
             ch_nanostat_posttrim = FASTQC_NANOPLOT_POST_TRIM.out.nanoplot_txt.ifEmpty([])
-            ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_TRIM.out.nanoplot_version.first().ifEmpty(null))
-            ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_TRIM.out.toulligqc_version.first().ifEmpty(null))
-            ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_TRIM.out.fastqc_version.first().ifEmpty(null))
         }
     } else {
         ch_trimmed_reads_combined = ch_cat_fastq
@@ -304,11 +281,10 @@ workflow SCNANOSEQ {
         ch_blaze_whitelist =
             GUNZIP_WHITELIST.out.file
                 .map {
-                    meta, whitelist ->
+                    _meta, whitelist ->
                     [whitelist]
                 }
 
-        ch_versions = ch_versions.mix(GUNZIP_WHITELIST.out.versions)
     }
 
     //
@@ -320,7 +296,7 @@ workflow SCNANOSEQ {
     ch_putative_bc = BLAZE.out.putative_bc
     ch_gt_whitelist = BLAZE.out.whitelist
     ch_whitelist_bc_count = BLAZE.out.bc_count
-    ch_versions = ch_versions.mix(BLAZE.out.versions)
+    ch_versions = ch_versions.mix(BLAZE.out.versions_blaze)
 
     ch_split_bc_fastqs = ch_trimmed_reads_combined
     ch_split_bc = ch_putative_bc
@@ -331,7 +307,7 @@ workflow SCNANOSEQ {
             .transpose()
             .set { ch_split_bc_fastqs }
 
-        ch_versions = ch_versions.mix(SPLIT_SEQ_BC_FASTQ.out.versions)
+        ch_versions = ch_versions.mix(SPLIT_SEQ_BC_FASTQ.out.versions_split_seq)
 
         SPLIT_FILE_BC_CSV ( ch_putative_bc, '.csv', (params.split_amount / 4) )
         SPLIT_FILE_BC_CSV.out.split_files
@@ -357,7 +333,7 @@ workflow SCNANOSEQ {
             .combine ( ch_whitelist_bc_count, by: 0 )
     )
     ch_corrected_bc_file = CORRECT_BARCODES.out.corrected_bc_info
-    ch_versions = ch_versions.mix(CORRECT_BARCODES.out.versions)
+    ch_versions = ch_versions.mix(CORRECT_BARCODES.out.versions_correct_barcodes)
 
     ch_extracted_fastq = ch_preextract_fastq
     ch_corrected_bc_info = ch_corrected_bc_file
@@ -380,39 +356,35 @@ workflow SCNANOSEQ {
         //
         PIGZ_COMPRESS (ch_cat_preextract_fastq )
         ch_extracted_fastq = PIGZ_COMPRESS.out.archive
-        ch_versions = ch_versions.mix(PIGZ_COMPRESS.out.versions)
     }
 
     //
     // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - post-extract QC
     //
-    ch_fastqc_multiqc_postextract = Channel.empty()
-    ch_read_counts = Channel.empty()
+    ch_fastqc_multiqc_postextract = channel.empty()
+    ch_read_counts = channel.empty()
     if (!params.skip_qc){
         FASTQC_NANOPLOT_POST_EXTRACT ( ch_extracted_fastq, params.skip_nanoplot, params.skip_toulligqc, params.skip_fastqc )
 
         ch_fastqc_multiqc_postextract = FASTQC_NANOPLOT_POST_EXTRACT.out.fastqc_multiqc.ifEmpty([])
         ch_nanostat_postextract = FASTQC_NANOPLOT_POST_EXTRACT.out.nanoplot_txt.ifEmpty([])
-        ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_EXTRACT.out.nanoplot_version.first().ifEmpty(null))
-        ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_EXTRACT.out.toulligqc_version.first().ifEmpty(null))
-        ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_EXTRACT.out.fastqc_version.first().ifEmpty(null))
 
         //
         // MODULE: Generate read counts
         //
 
-        ch_pretrim_counts = Channel.empty()
-        ch_posttrim_counts = Channel.empty()
-        ch_postextract_counts = Channel.empty()
+        ch_pretrim_counts = channel.empty()
+        ch_posttrim_counts = channel.empty()
+        ch_postextract_counts = channel.empty()
         if (!params.skip_fastqc){
-            ch_pretrim_counts = ch_fastqc_multiqc_pretrim.collect{it[0]}
-            ch_posttrim_counts = ch_fastqc_multiqc_postrim.collect{it[0]}
-            ch_postextract_counts = ch_fastqc_multiqc_postextract.collect{it[0]}
+            ch_pretrim_counts = ch_fastqc_multiqc_pretrim.collect{it -> it[0]}
+            ch_posttrim_counts = ch_fastqc_multiqc_postrim.collect{it -> it[0]}
+            ch_postextract_counts = ch_fastqc_multiqc_postextract.collect{it -> it[0]}
 
         } else if (!params.skip_nanoplot){
-            ch_pretrim_counts = ch_nanostat_pretrim.collect{it[1]}
-            ch_posttrim_counts = ch_nanostat_posttrim.collect{it[1]}
-            ch_postextract_counts = ch_nanostat_postextract.collect{it[1]}
+            ch_pretrim_counts = ch_nanostat_pretrim.collect{it -> it[1]}
+            ch_posttrim_counts = ch_nanostat_posttrim.collect{it -> it[1]}
+            ch_postextract_counts = ch_nanostat_postextract.collect{it -> it[1]}
 
         }
 
@@ -420,17 +392,17 @@ workflow SCNANOSEQ {
             ch_pretrim_counts.ifEmpty([]),
             ch_posttrim_counts.ifEmpty([]),
             ch_postextract_counts.ifEmpty([]),
-            ch_corrected_bc_info.collect{it[1]})
+            ch_corrected_bc_info.collect{it -> it[1]})
 
         ch_read_counts = READ_COUNTS.out.read_counts
-        ch_versions = ch_versions.mix(READ_COUNTS.out.versions)
+        ch_versions = ch_versions.mix(READ_COUNTS.out.versions_read_counts)
     }
 
     //
     // SUBWORKFLOW: Align Long Read Data
     //
 
-    ch_multiqc_finalqc_files = Channel.empty()
+    ch_multiqc_finalqc_files = channel.empty()
 
     if (genome_quants){
         PROCESS_LONGREAD_SCRNA_GENOME(
@@ -454,28 +426,28 @@ workflow SCNANOSEQ {
         ch_versions = ch_versions.mix(PROCESS_LONGREAD_SCRNA_GENOME.out.versions)
 
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
-            PROCESS_LONGREAD_SCRNA_GENOME.out.minimap_flagstat.collect{it[1]}.ifEmpty([])
+            PROCESS_LONGREAD_SCRNA_GENOME.out.minimap_flagstat.collect{it -> it[1]}.ifEmpty([])
         )
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
-            PROCESS_LONGREAD_SCRNA_GENOME.out.minimap_idxstats.collect{it[1]}.ifEmpty([])
+            PROCESS_LONGREAD_SCRNA_GENOME.out.minimap_idxstats.collect{it -> it[1]}.ifEmpty([])
         )
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
-            PROCESS_LONGREAD_SCRNA_GENOME.out.minimap_rseqc_read_dist.collect{it[1]}.ifEmpty([])
+            PROCESS_LONGREAD_SCRNA_GENOME.out.minimap_rseqc_read_dist.collect{it -> it[1]}.ifEmpty([])
         )
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
-            PROCESS_LONGREAD_SCRNA_GENOME.out.minimap_nanocomp_bam_txt.collect{it[1]}.ifEmpty([])
+            PROCESS_LONGREAD_SCRNA_GENOME.out.minimap_nanocomp_bam_txt.collect{it -> it[1]}.ifEmpty([])
         )
 
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
-            PROCESS_LONGREAD_SCRNA_GENOME.out.bc_tagged_flagstat.collect{it[1]}.ifEmpty([])
+            PROCESS_LONGREAD_SCRNA_GENOME.out.bc_tagged_flagstat.collect{it -> it[1]}.ifEmpty([])
         )
 
         if (!params.skip_dedup) {
             ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
-                PROCESS_LONGREAD_SCRNA_GENOME.out.dedup_flagstat.collect{it[1]}.ifEmpty([])
+                PROCESS_LONGREAD_SCRNA_GENOME.out.dedup_flagstat.collect{it -> it[1]}.ifEmpty([])
             )
             ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
-                PROCESS_LONGREAD_SCRNA_GENOME.out.dedup_idxstats.collect{it[1]}.ifEmpty([])
+                PROCESS_LONGREAD_SCRNA_GENOME.out.dedup_idxstats.collect{it -> it[1]}.ifEmpty([])
             )
         }
 
@@ -514,22 +486,22 @@ workflow SCNANOSEQ {
         ch_versions = ch_versions.mix(PROCESS_LONGREAD_SCRNA_TRANSCRIPT.out.versions)
 
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
-            PROCESS_LONGREAD_SCRNA_TRANSCRIPT.out.minimap_flagstat.collect{it[1]}.ifEmpty([])
+            PROCESS_LONGREAD_SCRNA_TRANSCRIPT.out.minimap_flagstat.collect{it -> it[1]}.ifEmpty([])
         )
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
-            PROCESS_LONGREAD_SCRNA_TRANSCRIPT.out.minimap_rseqc_read_dist.collect{it[1]}.ifEmpty([])
+            PROCESS_LONGREAD_SCRNA_TRANSCRIPT.out.minimap_rseqc_read_dist.collect{it -> it[1]}.ifEmpty([])
         )
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
-            PROCESS_LONGREAD_SCRNA_TRANSCRIPT.out.minimap_nanocomp_bam_txt.collect{it[1]}.ifEmpty([])
+            PROCESS_LONGREAD_SCRNA_TRANSCRIPT.out.minimap_nanocomp_bam_txt.collect{it -> it[1]}.ifEmpty([])
         )
 
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
-            PROCESS_LONGREAD_SCRNA_TRANSCRIPT.out.bc_tagged_flagstat.collect{it[1]}.ifEmpty([])
+            PROCESS_LONGREAD_SCRNA_TRANSCRIPT.out.bc_tagged_flagstat.collect{it -> it[1]}.ifEmpty([])
         )
 
         if (!params.skip_dedup) {
             ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
-                PROCESS_LONGREAD_SCRNA_TRANSCRIPT.out.dedup_flagstat.collect{it[1]}.ifEmpty([])
+                PROCESS_LONGREAD_SCRNA_TRANSCRIPT.out.dedup_flagstat.collect{it -> it[1]}.ifEmpty([])
             )
         }
 
@@ -545,61 +517,71 @@ workflow SCNANOSEQ {
     // SOFTWARE_VERSIONS
     //
 
-    CUSTOM_DUMPSOFTWAREVERSIONS (
-        ch_versions.unique().collectFile(name: 'collated_versions.yml')
-    )
+    //
+    // Collate and save software versions using the modern softwareVersionsToYAML helper
+    // (replaces deprecated CUSTOM_DUMPSOFTWAREVERSIONS)
+    //
+    def ch_versions_yaml = softwareVersionsToYAML(ch_versions)
+        .collectFile(
+            storeDir: "${params.outdir}/pipeline_info",
+            name: 'nf_core_' + 'pipeline_software_' + 'mqc_' + 'versions.yml',
+            sort: true,
+            newLine: true
+        )
 
+    ch_multiqc_list = channel.empty()
     if (!params.skip_qc && !params.skip_multiqc){
 
         //
         // MODULE: MultiQC for raw data
         //
 
-        ch_multiqc_rawqc_files = Channel.empty()
-        ch_multiqc_rawqc_files = ch_multiqc_rawqc_files.mix(ch_multiqc_config)
+        ch_multiqc_rawqc_files = channel.empty()
         ch_multiqc_rawqc_files = ch_multiqc_rawqc_files.mix(ch_multiqc_custom_config.collect().ifEmpty([]))
-        ch_multiqc_rawqc_files = ch_multiqc_rawqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
+        ch_multiqc_rawqc_files = ch_multiqc_rawqc_files.mix(ch_versions_yaml.collect())
         ch_multiqc_rawqc_files = ch_multiqc_rawqc_files.mix(ch_fastqc_multiqc_pretrim.collect().ifEmpty([]))
-        ch_multiqc_rawqc_files = ch_multiqc_rawqc_files.mix(ch_nanocomp_fastq_txt.collect{it[1]}.ifEmpty([]))
-
         MULTIQC_RAWQC (
-            ch_multiqc_rawqc_files.collect(),
-            ch_multiqc_config,
-            ch_multiqc_custom_config.collect().ifEmpty([]),
-            ch_multiqc_logo.collect().ifEmpty([]),
-            [],
-            []
+            channel.value([ [ 'id': 'rawqc' ] ])
+                .combine(ch_multiqc_rawqc_files.collect().map { files -> [ files ] })
+                .combine(ch_multiqc_config.collect().map { cfg -> [ cfg ] })
+                .combine(ch_multiqc_logo.collect().ifEmpty([[]]).map { logo -> [ logo ] })
+                .combine(channel.value([ [] ]))
+                .combine(channel.value([ [] ]))
+                .map { meta, files, config, logo, replace, sample ->
+                    [ meta, files, config, logo.flatten(), replace, sample ]
+                }
         )
 
         //
         // MODULE: MultiQC for final pipeline outputs
         //
-        summary_params = paramsSummaryMap(workflow, parameters_schema: "nextflow_schema.json")
-        ch_workflow_summary    = Channel.value(paramsSummaryMultiqc(summary_params))
+        def summary_params      = paramsSummaryMap(workflow, parameters_schema: "nextflow_schema.json")
+        def ch_workflow_summary = channel.value(paramsSummaryMultiqc(summary_params))
 
-        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_multiqc_config)
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_multiqc_custom_config.collect().ifEmpty([]))
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
-        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
+        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_versions_yaml.collect())
 
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_fastqc_multiqc_postrim.collect().ifEmpty([]))
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_fastqc_multiqc_postextract.collect().ifEmpty([]))
 
-
         MULTIQC_FINALQC (
-            ch_multiqc_finalqc_files.collect(),
-            ch_multiqc_config,
-            ch_multiqc_custom_config.collect().ifEmpty([]),
-            ch_multiqc_logo.collect().ifEmpty([]),
-            [],
-            []
+            channel.value([ [ 'id': 'finalqc' ] ])
+                .combine(ch_multiqc_finalqc_files.collect().map { files -> [ files ] })
+                .combine(ch_multiqc_config.collect().map { cfg -> [ cfg ] })
+                .combine(ch_multiqc_logo.collect().ifEmpty([[]]).map { logo -> [ logo ] })
+                .combine(channel.value([ [] ]))
+                .combine(channel.value([ [] ]))
+                .map { meta, files, config, logo, replace, sample ->
+                    [ meta, files, config, logo.flatten(), replace, sample ]
+                }
         )
         ch_multiqc_report = MULTIQC_FINALQC.out.report
-        ch_versions    = ch_versions.mix(MULTIQC_FINALQC.out.versions)
+        ch_multiqc_list = ch_multiqc_report.toList()
     }
 
     emit:
-    multiqc_report = ch_multiqc_report.toList()
+    multiqc_report = ch_multiqc_list
     versions       = ch_versions
 }
 

@@ -14,7 +14,7 @@ process READ_COUNTS {
 
     output:
     path "read_counts.csv" , emit: read_counts
-    path "versions.yml"    , emit: versions
+    path "versions.yml"    , emit: versions_read_counts, topic: versions
 
     when:
     task.ext.when == null || task.ext.when
