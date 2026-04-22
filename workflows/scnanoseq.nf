@@ -537,23 +537,20 @@ workflow SCNANOSEQ {
         //
 
         ch_multiqc_rawqc_files = channel.empty()
-        ch_multiqc_rawqc_files = ch_multiqc_rawqc_files.mix(ch_multiqc_config)
         ch_multiqc_rawqc_files = ch_multiqc_rawqc_files.mix(ch_multiqc_custom_config.collect().ifEmpty([]))
         ch_multiqc_rawqc_files = ch_multiqc_rawqc_files.mix(ch_versions_yaml.collect())
         ch_multiqc_rawqc_files = ch_multiqc_rawqc_files.mix(ch_fastqc_multiqc_pretrim.collect().ifEmpty([]))
-        ch_multiqc_rawqc_files = ch_multiqc_rawqc_files.mix(ch_nanocomp_fastq_txt.collect{ v -> v[1] }.ifEmpty([]))
-
-        // MULTIQC_RAWQC (
-        //     channel.value([ [ 'id': 'rawqc' ] ])
-        //         .combine(ch_multiqc_rawqc_files.collect().map { files -> [ files ] })
-        //         .combine(ch_multiqc_config.collect().map { cfg -> [ cfg ] })
-        //         .combine(ch_multiqc_logo.collect().ifEmpty([[]]).map { logo -> [ logo ] })
-        //         .combine(channel.value([ [] ]))
-        //         .combine(channel.value([ [] ]))
-        //         .map { meta, files, config, logo, replace, sample ->
-        //             [ meta, files, config, logo, replace, sample ]
-        //         }
-        // )
+        MULTIQC_RAWQC (
+            channel.value([ [ 'id': 'rawqc' ] ])
+                .combine(ch_multiqc_rawqc_files.collect().map { files -> [ files ] })
+                .combine(ch_multiqc_config.collect().map { cfg -> [ cfg ] })
+                .combine(ch_multiqc_logo.collect().ifEmpty([[]]).map { logo -> [ logo ] })
+                .combine(channel.value([ [] ]))
+                .combine(channel.value([ [] ]))
+                .map { meta, files, config, logo, replace, sample ->
+                    [ meta, files, config, logo.flatten(), replace, sample ]
+                }
+        )
 
         //
         // MODULE: MultiQC for final pipeline outputs
@@ -561,7 +558,6 @@ workflow SCNANOSEQ {
         def summary_params      = paramsSummaryMap(workflow, parameters_schema: "nextflow_schema.json")
         def ch_workflow_summary = channel.value(paramsSummaryMultiqc(summary_params))
 
-        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_multiqc_config)
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_multiqc_custom_config.collect().ifEmpty([]))
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_versions_yaml.collect())
@@ -569,19 +565,18 @@ workflow SCNANOSEQ {
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_fastqc_multiqc_postrim.collect().ifEmpty([]))
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_fastqc_multiqc_postextract.collect().ifEmpty([]))
 
-        // MULTIQC_FINALQC (
-        //     channel.value([ [ 'id': 'finalqc' ] ])
-        //         .combine(ch_multiqc_finalqc_files.collect().map { files -> [ files ] })
-        //         .combine(ch_multiqc_config.collect().map { cfg -> [ cfg ] })
-        //         .combine(ch_multiqc_logo.collect().ifEmpty([[]]).map { logo -> [ logo ] })
-        //         .combine(channel.value([ [] ]))
-        //         .combine(channel.value([ [] ]))
-        //         .map { meta, files, config, logo, replace, sample ->
-        //             [ meta, files, config, logo, replace, sample ]
-        //         }
-        // )
-        //ch_multiqc_report = MULTIQC_FINALQC.out.report
-        // MULTIQC uses topic channel for versions - collected automatically
+        MULTIQC_FINALQC (
+            channel.value([ [ 'id': 'finalqc' ] ])
+                .combine(ch_multiqc_finalqc_files.collect().map { files -> [ files ] })
+                .combine(ch_multiqc_config.collect().map { cfg -> [ cfg ] })
+                .combine(ch_multiqc_logo.collect().ifEmpty([[]]).map { logo -> [ logo ] })
+                .combine(channel.value([ [] ]))
+                .combine(channel.value([ [] ]))
+                .map { meta, files, config, logo, replace, sample ->
+                    [ meta, files, config, logo.flatten(), replace, sample ]
+                }
+        )
+        ch_multiqc_report = MULTIQC_FINALQC.out.report
     }
 
     emit:
