@@ -2,9 +2,9 @@
 // Performs feature quantification for long read single-cell rna data
 //
 
-include { SAMTOOLS_SORT } from '../../modules/nf-core/samtools/sort/main'
-include { OARFISH       } from '../../modules/local/oarfish'
-include { QC_SCRNA      } from '../../subworkflows/local/qc_scrna'
+include { SAMTOOLS_SORT } from '../../../modules/nf-core/samtools/sort/main'
+include { OARFISH       } from '../../../modules/local/oarfish'
+include { QC_SCRNA      } from '../../../subworkflows/local/qc_scrna'
 
 workflow QUANTIFY_SCRNA_OARFISH {
     take:

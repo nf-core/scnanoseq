@@ -89,6 +89,11 @@
             "mainEntity": {
                 "@id": "main.nf"
             },
+            "mentions": [
+                {
+                    "@id": "#c6e7d046-fe7a-40a4-a42f-31f69378ca17"
+                }
+            ],
             "name": "nf-core/scnanoseq"
         },
         {
@@ -175,15 +180,38 @@
             "url": {
                 "@id": "https://www.nextflow.io/"
             },
-            "version": "!>=24.04.2"
+            "version": "!>=25.04.0"
         },
         {
-            "@id": "assets/scnanoseq_tube_map.png",
-            "@type": [
-                "File",
-                "ImageObject"
+            "@id": "#c6e7d046-fe7a-40a4-a42f-31f69378ca17",
+            "@type": "TestSuite",
+            "instance": [
+                {
+                    "@id": "#e19de99e-d7fc-4806-a8e6-cda2651010b1"
+                }
             ],
-            "name": "Workflow diagram"
+            "mainEntity": {
+                "@id": "main.nf"
+            },
+            "name": "Test suite for nf-core/scnanoseq"
+        },
+        {
+            "@id": "#e19de99e-d7fc-4806-a8e6-cda2651010b1",
+            "@type": "TestInstance",
+            "name": "GitHub Actions workflow for testing nf-core/scnanoseq",
+            "resource": "repos/nf-core/scnanoseq/actions/workflows/nf-test.yml",
+            "runsOn": {
+                "@id": "https://w3id.org/ro/terms/test#GithubService"
+            },
+            "url": "https://api.github.com"
+        },
+        {
+            "@id": "https://w3id.org/ro/terms/test#GithubService",
+            "@type": "TestService",
+            "name": "Github Actions",
+            "url": {
+                "@id": "https://github.com"
+            }
         },
         {
             "@id": "assets/",

@@ -2,15 +2,15 @@
 // Modifies the reference files for easier analysis
 //
 
-include { PIGZ_UNCOMPRESS as GUNZIP_GENOME_FASTA     } from '../../modules/nf-core/pigz/uncompress/main'
-include { PIGZ_UNCOMPRESS as GUNZIP_TRANSCRIPT_FASTA } from '../../modules/nf-core/pigz/uncompress/main'
-include { PIGZ_UNCOMPRESS as GUNZIP_GTF              } from '../../modules/nf-core/pigz/uncompress/main'
-include { UNZIPFILES as UNZIP_GENOME_FASTA           } from '../../modules/nf-core/unzipfiles/main'
-include { UNZIPFILES as UNZIP_TRANSCRIPT_FASTA       } from '../../modules/nf-core/unzipfiles/main'
-include { UNZIPFILES as UNZIP_GTF                    } from '../../modules/nf-core/unzipfiles/main'
+include { PIGZ_UNCOMPRESS as GUNZIP_GENOME_FASTA     } from '../../../modules/nf-core/pigz/uncompress/main'
+include { PIGZ_UNCOMPRESS as GUNZIP_TRANSCRIPT_FASTA } from '../../../modules/nf-core/pigz/uncompress/main'
+include { PIGZ_UNCOMPRESS as GUNZIP_GTF              } from '../../../modules/nf-core/pigz/uncompress/main'
+include { UNZIPFILES as UNZIP_GENOME_FASTA           } from '../../../modules/nf-core/unzipfiles/main'
+include { UNZIPFILES as UNZIP_TRANSCRIPT_FASTA       } from '../../../modules/nf-core/unzipfiles/main'
+include { UNZIPFILES as UNZIP_GTF                    } from '../../../modules/nf-core/unzipfiles/main'
 
-include { SAMTOOLS_FAIDX as GENOME_FAIDX            } from '../../modules/nf-core/samtools/faidx/main'
-include { SAMTOOLS_FAIDX as TRANSCRIPT_FAIDX        } from '../../modules/nf-core/samtools/faidx/main'
+include { SAMTOOLS_FAIDX as GENOME_FAIDX            } from '../../../modules/nf-core/samtools/faidx/main'
+include { SAMTOOLS_FAIDX as TRANSCRIPT_FAIDX        } from '../../../modules/nf-core/samtools/faidx/main'
 
 workflow PREPARE_REFERENCE_FILES {
     take:

@@ -136,6 +136,96 @@
                         "branch": "master",
                         "git_sha": "81880787133db07d9b4c1febd152c090eb8325dc",
                         "installed_by": ["modules"]
+                    },
+                    "nanocomp": {
+                        "branch": "master",
+                        "git_sha": "f0c766af7e897ecf52c13f5424426f06d221194b",
+                        "installed_by": ["modules"],
+                        "patch": "modules/nf-core/nanocomp/nanocomp.diff"
+                    },
+                    "nanoplot": {
+                        "branch": "master",
+                        "git_sha": "a31407dfaf0cb0d04768d5cb439fc6f4523a6981",
+                        "installed_by": ["modules"],
+                        "patch": "modules/nf-core/nanoplot/nanoplot.diff"
+                    },
+                    "picard/markduplicates": {
+                        "branch": "master",
+                        "git_sha": "49f4e50534fe4b64101e62ea41d5dc43b1324358",
+                        "installed_by": ["modules"]
+                    },
+                    "pigz/compress": {
+                        "branch": "master",
+                        "git_sha": "c00055a0b13d622b4f1f51a8e5be31deaf99ded7",
+                        "installed_by": ["modules"]
+                    },
+                    "pigz/uncompress": {
+                        "branch": "master",
+                        "git_sha": "c00055a0b13d622b4f1f51a8e5be31deaf99ded7",
+                        "installed_by": ["modules"],
+                        "patch": "modules/nf-core/pigz/uncompress/pigz-uncompress.diff"
+                    },
+                    "rseqc/readdistribution": {
+                        "branch": "master",
+                        "git_sha": "6c7d8f1d6247655e4bc4d97f37b68b2461f645f6",
+                        "installed_by": ["modules"]
+                    },
+                    "samtools/faidx": {
+                        "branch": "master",
+                        "git_sha": "aeb02a39d4c463598bfdcb2d964dbb7acbcf1298",
+                        "installed_by": ["modules"]
+                    },
+                    "samtools/flagstat": {
+                        "branch": "master",
+                        "git_sha": "f4596fe0bdc096cf53ec4497e83defdb3a94ff62",
+                        "installed_by": ["bam_stats_samtools"]
+                    },
+                    "samtools/idxstats": {
+                        "branch": "master",
+                        "git_sha": "f4596fe0bdc096cf53ec4497e83defdb3a94ff62",
+                        "installed_by": ["bam_stats_samtools"]
+                    },
+                    "samtools/index": {
+                        "branch": "master",
+                        "git_sha": "f4596fe0bdc096cf53ec4497e83defdb3a94ff62",
+                        "installed_by": ["bam_sort_stats_samtools"]
+                    },
+                    "samtools/merge": {
+                        "branch": "master",
+                        "git_sha": "f4596fe0bdc096cf53ec4497e83defdb3a94ff62",
+                        "installed_by": ["modules"]
+                    },
+                    "samtools/sort": {
+                        "branch": "master",
+                        "git_sha": "4352dbdb09ec40db71e9b172b97a01dcf5622c26",
+                        "installed_by": ["bam_sort_stats_samtools"]
+                    },
+                    "samtools/stats": {
+                        "branch": "master",
+                        "git_sha": "f4596fe0bdc096cf53ec4497e83defdb3a94ff62",
+                        "installed_by": ["bam_stats_samtools"]
+                    },
+                    "samtools/view": {
+                        "branch": "master",
+                        "git_sha": "0bd7d2333a88483aa0476acea172e9f5f6dd83bb",
+                        "installed_by": ["modules"],
+                        "patch": "modules/nf-core/samtools/view/samtools-view.diff"
+                    },
+                    "toulligqc": {
+                        "branch": "master",
+                        "git_sha": "061a322293b3487e53f044304710e54cbf657717",
+                        "installed_by": ["modules"],
+                        "patch": "modules/nf-core/toulligqc/toulligqc.diff"
+                    },
+                    "umitools/dedup": {
+                        "branch": "master",
+                        "git_sha": "81880787133db07d9b4c1febd152c090eb8325dc",
+                        "installed_by": ["modules"]
+                    },
+                    "unzipfiles": {
+                        "branch": "master",
+                        "git_sha": "81880787133db07d9b4c1febd152c090eb8325dc",
+                        "installed_by": ["modules"]
                     }
                 }
             },
@@ -153,7 +243,7 @@
                     },
                     "utils_nextflow_pipeline": {
                         "branch": "master",
-                        "git_sha": "c2b22d85f30a706a3073387f30380704fcae013b",
+                        "git_sha": "05954dab2ff481bcb999f24455da29a5828af08d",
                         "installed_by": ["subworkflows"]
                     },
                     "utils_nfcore_pipeline": {
@@ -163,7 +253,7 @@
                     },
                     "utils_nfschema_plugin": {
                         "branch": "master",
-                        "git_sha": "2fd2cd6d0e7b273747f32e465fdc6bcc3ae0814e",
+                        "git_sha": "4b406a74dc0449c0401ed87d5bfff4252fd277fd",
                         "installed_by": ["subworkflows"]
                     }
                 }
