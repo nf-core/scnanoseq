@@ -136,6 +136,7 @@ workflow DEDUP_UMIS {
         // MODULE: Samtools Index
         //
         SAMTOOLS_INDEX_DEDUP( UMITOOLS_DEDUP.out.bam )
+        ch_dedup_bai = SAMTOOLS_INDEX_DEDUP.out.bai
 
         if (split_bam) {
             //
@@ -151,18 +152,22 @@ workflow DEDUP_UMIS {
                             [ new_meta, bam ]
                         }
                         .groupTuple()
-                        .combine(
+                        .join(
                             ch_dedup_bai
                                 .map{
                                     _meta, bai ->
-                                        def bai_basename = bam.toString().split('/')[-1]
+                                        def bai_basename = bai.toString().split('/')[-1]
                                         def split_bai_basename = bai_basename.split(/\./)
                                         def new_meta = [ 'id': split_bai_basename[0] ]
                                     [ new_meta, bai ]
                                 }
+                                .groupTuple()
                         ),
                 fasta
                     .join(fai)
+                    .map { meta, fasta, fai ->
+                        [meta, fasta, fai, "$projectDir/assets/dummy_file.txt"]
+                    }
 
             )
             ch_dedup_bam = SAMTOOLS_MERGE.out.bam
@@ -173,7 +178,6 @@ workflow DEDUP_UMIS {
             SAMTOOLS_INDEX_MERGED( ch_dedup_bam )
             ch_dedup_bai = SAMTOOLS_INDEX_MERGED.out.bai
         }
-        ch_dedup_bam.view()
 
         //
         // SUBWORKFLOW: BAM_STATS_SAMTOOLS
