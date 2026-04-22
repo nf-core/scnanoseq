@@ -5,6 +5,7 @@
 include { paramsSummaryLog   } from 'plugin/nf-schema'
 include { validateParameters } from 'plugin/nf-schema'
 include { paramsHelp         } from 'plugin/nf-schema'
+include { paramsHelp         } from 'plugin/nf-schema'
 
 workflow UTILS_NFSCHEMA_PLUGIN {
 
@@ -16,6 +17,12 @@ workflow UTILS_NFSCHEMA_PLUGIN {
                         //           when this input is empty it will automatically use the configured schema or
                         //           "${projectDir}/nextflow_schema.json" as default. This input should not be empty
                         //           for meta pipelines
+    help                // boolean:  show help message
+    help_full           // boolean:  show full help message
+    show_hidden         // boolean:  show hidden parameters in help message
+    before_text         // string:   text to show before the help message and parameters summary
+    after_text          // string:   text to show after the help message and parameters summary
+    command             // string:   an example command of the pipeline
     help                // boolean:  show help message
     help_full           // boolean:  show full help message
     show_hidden         // boolean:  show hidden parameters in help message

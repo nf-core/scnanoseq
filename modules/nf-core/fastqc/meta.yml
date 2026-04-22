@@ -30,7 +30,10 @@ input:
           List of input FastQ files of size 1 and 2 for single-end and paired-end data,
           respectively.
         ontologies: []
+        ontologies: []
 output:
+  html:
+    - - meta:
   html:
     - - meta:
           type: map
@@ -41,6 +44,9 @@ output:
           type: file
           description: FastQC report
           pattern: "*_{fastqc.html}"
+          ontologies: []
+  zip:
+    - - meta:
           ontologies: []
   zip:
     - - meta:

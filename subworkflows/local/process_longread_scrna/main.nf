@@ -3,20 +3,20 @@
 //
 
 // SUBWORKFLOWS
-include { ALIGN_LONGREADS         } from '../../subworkflows/local/align_longreads'
-include { QUANTIFY_SCRNA_ISOQUANT } from '../../subworkflows/local/quantify_scrna_isoquant'
-include { QUANTIFY_SCRNA_OARFISH  } from '../../subworkflows/local/quantify_scrna_oarfish'
-include { DEDUP_UMIS              } from '../../subworkflows/local/dedup_umis'
+include { ALIGN_LONGREADS         } from '../../../subworkflows/local/align_longreads'
+include { QUANTIFY_SCRNA_ISOQUANT } from '../../../subworkflows/local/quantify_scrna_isoquant'
+include { QUANTIFY_SCRNA_OARFISH  } from '../../../subworkflows/local/quantify_scrna_oarfish'
+include { DEDUP_UMIS              } from '../../../subworkflows/local/dedup_umis'
 
 // MODULES
-include { PICARD_MARKDUPLICATES                         } from '../../modules/nf-core/picard/markduplicates'
-include { SAMTOOLS_FLAGSTAT as SAMTOOLS_FLAGSTAT_TAGGED } from '../../modules/nf-core/samtools/flagstat'
-include { SAMTOOLS_FLAGSTAT as SAMTOOLS_FLAGSTAT_DEDUP  } from '../../modules/nf-core/samtools/flagstat'
-include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_TAGGED       } from '../../modules/nf-core/samtools/index'
-include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_DEDUP        } from '../../modules/nf-core/samtools/index'
-include { SAMTOOLS_VIEW as SAMTOOLS_FILTER_DEDUP        } from '../../modules/nf-core/samtools/view'
+include { PICARD_MARKDUPLICATES                         } from '../../../modules/nf-core/picard/markduplicates'
+include { SAMTOOLS_FLAGSTAT as SAMTOOLS_FLAGSTAT_TAGGED } from '../../../modules/nf-core/samtools/flagstat'
+include { SAMTOOLS_FLAGSTAT as SAMTOOLS_FLAGSTAT_DEDUP  } from '../../../modules/nf-core/samtools/flagstat'
+include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_TAGGED       } from '../../../modules/nf-core/samtools/index'
+include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_DEDUP        } from '../../../modules/nf-core/samtools/index'
+include { SAMTOOLS_VIEW as SAMTOOLS_FILTER_DEDUP        } from '../../../modules/nf-core/samtools/view'
 
-include { TAG_BARCODES } from '../../modules/local/tag_barcodes'
+include { TAG_BARCODES } from '../../../modules/local/tag_barcodes'
 
 
 workflow PROCESS_LONGREAD_SCRNA {
