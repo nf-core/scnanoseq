@@ -21,7 +21,7 @@ workflow QUANTIFY_SCRNA_OARFISH {
         //
         // MODULE: Samtools Sort
         //
-        SAMTOOLS_SORT ( in_bam, in_fasta )
+        SAMTOOLS_SORT ( in_bam, in_fasta, "bai" )
     
         //
         // MODULE: Oarfish
