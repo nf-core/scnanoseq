@@ -4,33 +4,29 @@ Changes in module 'nf-core/samtools/view'
 Changes in 'samtools/view/main.nf':
 --- modules/nf-core/samtools/view/main.nf
 +++ modules/nf-core/samtools/view/main.nf
-@@ -8,7 +8,7 @@
-         'biocontainers/samtools:1.19.2--h50ea8bc_0' }"
+@@ -11,7 +11,7 @@
  
      input:
 -    tuple val(meta), path(input), path(index)
 +    tuple val(meta), path(input), path(index), path(regions)
-     tuple val(meta2), path(fasta)
+     tuple val(meta2), path(fasta), path(fai)
      path qname
- 
-@@ -34,6 +34,7 @@
-                     args.contains("--output-fmt bam") ? "bam" :
-                     args.contains("--output-fmt cram") ? "cram" :
-                     input.getExtension()
+     val index_format
+@@ -36,6 +36,7 @@
+     output_file = index_format ? "${prefix}.${file_type}##idx##${prefix}.${file_type}.${index_format} --write-index" : "${prefix}.${file_type}"
+     // Can't choose index type of unselected file
+     readnames = qname ? "--qname-file ${qname} --output-unselected ${prefix}.unselected.${file_type}": ""
 +    def region_names = regions ? "`cat ${regions}`" : ""
+ 
      if ("$input" == "${prefix}.${file_type}") error "Input and output names are the same, use \"task.ext.prefix\" to disambiguate!"
-     """
-     samtools \\
-@@ -44,7 +45,8 @@
+@@ -49,7 +50,8 @@
          $args \\
-         -o ${prefix}.${file_type} \\
+         -o ${output_file} \\
          $input \\
 -        $args2
 +        $args2 \\
 +        $region_names
- 
-     cat <<-END_VERSIONS > versions.yml
-     "${task.process}":
+     """
 
 'modules/nf-core/samtools/view/tests/bam.config' is unchanged
 'modules/nf-core/samtools/view/tests/tags.yml' is unchanged

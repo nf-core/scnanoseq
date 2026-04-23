@@ -40,7 +40,7 @@ workflow PROCESS_LONGREAD_SCRNA {
         skip_dedup               // bool: Skip deduplication
 
     main:
-        ch_versions = Channel.empty()
+        ch_versions = channel.empty()
 
         //
         // SUBWORKFLOW: Align long Read Data
@@ -57,7 +57,6 @@ workflow PROCESS_LONGREAD_SCRNA {
             skip_rseqc,
             skip_bam_nanocomp
         )
-        ch_versions = ch_versions.mix(ALIGN_LONGREADS.out.versions)
 
         //
         // MODULE: Tag Barcodes
@@ -68,13 +67,12 @@ workflow PROCESS_LONGREAD_SCRNA {
                 .join( ALIGN_LONGREADS.out.sorted_bai, by: 0 )
                 .join( read_bc_info, by: 0)
         )
-        ch_versions = ch_versions.mix(TAG_BARCODES.out.versions)
+        ch_versions = ch_versions.mix(TAG_BARCODES.out.versions_tag_barcodes)
 
         //
         // MODULE: Index Tagged Bam
         //
         SAMTOOLS_INDEX_TAGGED ( TAG_BARCODES.out.tagged_bam )
-        ch_versions = ch_versions.mix(SAMTOOLS_INDEX_TAGGED.out.versions)
 
         //
         // MODULE: Flagstat Tagged Bam
@@ -83,12 +81,11 @@ workflow PROCESS_LONGREAD_SCRNA {
             TAG_BARCODES.out.tagged_bam
                 .join( SAMTOOLS_INDEX_TAGGED.out.bai, by: [0])
         )
-        ch_versions = ch_versions.mix(SAMTOOLS_FLAGSTAT_TAGGED.out.versions)
 
-        ch_bam = Channel.empty()
-        ch_bai = Channel.empty()
-        ch_flagstat = Channel.empty()
-        ch_idxstats = Channel.empty()
+        ch_bam = channel.empty()
+        ch_bai = channel.empty()
+        ch_flagstat = channel.empty()
+        ch_idxstats = channel.empty()
 
         if (!skip_dedup) {
             DEDUP_UMIS (
@@ -114,7 +111,7 @@ workflow PROCESS_LONGREAD_SCRNA {
             ch_flagstat = SAMTOOLS_FLAGSTAT_TAGGED.out.flagstat
                 .map{
                     meta, flagstat ->
-                        id = ['id': meta.id]
+                        def id = ['id': meta.id]
                     [id, flagstat]
                 }
 
@@ -123,8 +120,8 @@ workflow PROCESS_LONGREAD_SCRNA {
         // SUBWORKFLOW: Quantify Features
         //
 
-        ch_gene_qc_stats = Channel.empty()
-        ch_transcript_qc_stats = Channel.empty()
+        ch_gene_qc_stats = channel.empty()
+        ch_transcript_qc_stats = channel.empty()
 
         if (quant_list.contains("oarfish")) {
             QUANTIFY_SCRNA_OARFISH (

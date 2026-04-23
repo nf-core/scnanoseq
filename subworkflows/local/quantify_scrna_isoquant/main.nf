@@ -16,22 +16,22 @@ include { SPLIT_FASTA                            } from '../../../modules/local/
 workflow QUANTIFY_SCRNA_ISOQUANT {
     take:
         in_bam
-        in_bai
+        _in_bai
         in_flagstat
         in_fasta
-        in_fai
+        _in_fai
         in_gtf
-        skip_qc
-        skip_seurat
+        _skip_qc
+        _skip_seurat
 
     main:
-        ch_versions = Channel.empty()
+        ch_versions = channel.empty()
 
         //
         // MODULE: Split the FASTA
         //
         SPLIT_FASTA( in_fasta )
-        ch_versions = ch_versions.mix(SPLIT_FASTA.out.versions)
+        ch_versions = ch_versions.mix(SPLIT_FASTA.out.versions_split_fasta)
         ch_split_fasta = SPLIT_FASTA.out.split_fasta
             .flatten()
             .map{
@@ -41,9 +41,15 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
                     [ new_meta, fasta ]
             }
 
-        SAMTOOLS_FAIDX_SPLIT( ch_split_fasta, [ [:], "$projectDir/assets/dummy_file.txt" ])
+        SAMTOOLS_FAIDX_SPLIT( 
+            ch_split_fasta
+                .map {
+                    meta, fasta ->
+                    [meta, fasta, "$projectDir/assets/dummy_file.txt"]
+                },
+            false
+        )
         ch_split_fai = SAMTOOLS_FAIDX_SPLIT.out.fai
-        ch_versions = ch_versions.mix(SAMTOOLS_FAIDX_SPLIT.out.versions)
 
         //
         // MODULE: Split the GTF
@@ -57,17 +63,16 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
                     def new_meta = ['chr': gtf_basename.split(/\./)[0]]
                     [ new_meta, gtf ]
             }
-        ch_versions = ch_versions.mix(SPLIT_GTF.out.versions)
+        ch_versions = ch_versions.mix(SPLIT_GTF.out.versions_split_gtf)
 
         //
         // MODULE: Bamtools split
         //
         BAMTOOLS_SPLIT ( in_bam )
-        ch_versions = ch_versions.mix(BAMTOOLS_SPLIT.out.versions.first())
 
         ch_split_bam = BAMTOOLS_SPLIT.out.bam
             .map {
-                meta, bam ->
+                _meta, bam ->
                     return [ bam ]
             }
             .flatten()
@@ -88,7 +93,6 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
         //
         SAMTOOLS_INDEX_SPLIT( ch_split_bam )
         ch_split_bai = SAMTOOLS_INDEX_SPLIT.out.bai
-        ch_versions = ch_versions.mix(SAMTOOLS_INDEX_SPLIT.out.versions.first())
 
         // Prepare isoquant input channel
         // bam and bai files need to be joined with split fasta, fai and gtf files
@@ -101,7 +105,7 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
             .combine(ch_split_fasta, by: [0])
             .combine(ch_split_fai, by: [0])
             .combine(ch_split_gtf, by: [0])
-            .map { chrom, meta, bam, bai, fasta, fai, gtf ->
+            .map { _chrom, meta, bam, bai, fasta, fai, gtf ->
                 [ meta, bam, bai, fasta, fai, gtf ]
             }
 
@@ -112,7 +116,7 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
             isoquant_input,
             'tag:CB'
         )
-        ch_versions = ch_versions.mix(ISOQUANT.out.versions)
+        ch_versions = ch_versions.mix(ISOQUANT.out.versions_isoquant)
 
         //
         // MODULE: Merge Matrix
@@ -129,7 +133,7 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
             ch_split_gene_mtx
         )
         ch_merged_gene_mtx = MERGE_MTX_GENE.out.merged_mtx
-        ch_versions = ch_versions.mix(MERGE_MTX_GENE.out.versions)
+        ch_versions = ch_versions.mix(MERGE_MTX_GENE.out.versions_merge_mtx)
 
         ch_split_transcript_mtx = ISOQUANT.out.grouped_transcript_counts
             .map {
@@ -143,10 +147,10 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
             ch_split_transcript_mtx
         )
         ch_merged_transcript_mtx = MERGE_MTX_TRANSCRIPT.out.merged_mtx
-        ch_versions = ch_versions.mix(MERGE_MTX_TRANSCRIPT.out.versions)
+        ch_versions = ch_versions.mix(MERGE_MTX_TRANSCRIPT.out.versions_merge_mtx)
 
-        ch_gene_qc_stats = Channel.empty()
-        ch_transcript_qc_stats = Channel.empty()
+        ch_gene_qc_stats = channel.empty()
+        ch_transcript_qc_stats = channel.empty()
 
         if (!params.skip_qc && !params.skip_seurat){
             QC_SCRNA_GENE (

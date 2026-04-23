@@ -28,43 +28,38 @@ workflow QCFASTQ_NANOPLOT_FASTQC {
     /*
      * FastQ QC using NanoPlot
      */
-    nanoplot_png     = Channel.empty()
-    nanoplot_html    = Channel.empty()
-    nanoplot_txt     = Channel.empty()
-    nanoplot_log     = Channel.empty()
-    nanoplot_version = Channel.empty()
+    nanoplot_png     = channel.empty()
+    nanoplot_html    = channel.empty()
+    nanoplot_txt     = channel.empty()
+    nanoplot_log     = channel.empty()
     if (!skip_nanoplot){
         NANOPLOT ( ch_fastq )
         nanoplot_png     = NANOPLOT.out.png
         nanoplot_html    = NANOPLOT.out.html
         nanoplot_txt     = NANOPLOT.out.txt
         nanoplot_log     = NANOPLOT.out.log
-        nanoplot_version = NANOPLOT.out.versions
     }
     /*
      * FastQ QC using ToulligQC
      */
-    toulligqc_report_data   = Channel.empty()
-    toulligqc_report_html   = Channel.empty()
-    toulligqc_plots_html    = Channel.empty()
-    toulligqc_plotly_js     = Channel.empty()
-    toulligqc_version       = Channel.empty()
+    toulligqc_report_data   = channel.empty()
+    toulligqc_report_html   = channel.empty()
+    toulligqc_plots_html    = channel.empty()
+    toulligqc_plotly_js     = channel.empty()
     if (!skip_toulligqc){
         TOULLIGQC ( ch_fastq )
         toulligqc_report_data  = TOULLIGQC.out.report_data
         toulligqc_report_html  = TOULLIGQC.out.report_html
         toulligqc_plots_html   = TOULLIGQC.out.plots_html
         toulligqc_plotly_js    = TOULLIGQC.out.plotly_js
-        toulligqc_version      = TOULLIGQC.out.versions
     }
 
     /*
      * FastQ QC using FASTQC
      */
-    fastqc_zip     = Channel.empty()
-    fastqc_html    = Channel.empty()
-    fastqc_multiqc = Channel.empty()
-    fastqc_version = Channel.empty()
+    fastqc_zip     = channel.empty()
+    fastqc_html    = channel.empty()
+    fastqc_multiqc = channel.empty()
     if (!skip_fastqc){
         FASTQC ( ch_fastq )
         fastqc_zip     = FASTQC.out.zip
@@ -76,7 +71,6 @@ workflow QCFASTQ_NANOPLOT_FASTQC {
             .map { it -> [ it[1] ] }
             .set { fastqc_html_only }
         fastqc_multiqc = fastqc_multiqc.mix( fastqc_zip_only, fastqc_html_only )
-        fastqc_version = FASTQC.out.versions
     }
 
     emit:
@@ -84,16 +78,13 @@ workflow QCFASTQ_NANOPLOT_FASTQC {
     nanoplot_html
     nanoplot_txt
     nanoplot_log
-    nanoplot_version
 
     toulligqc_report_data
     toulligqc_report_html
     toulligqc_plots_html
     toulligqc_plotly_js
-    toulligqc_version
 
     fastqc_zip
     fastqc_html
-    fastqc_version
     fastqc_multiqc
 }

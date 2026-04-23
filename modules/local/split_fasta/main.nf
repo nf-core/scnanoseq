@@ -11,14 +11,12 @@ process SPLIT_FASTA {
 
     output:
     path "*.split.fa"   , emit: split_fasta
-    path "versions.yml" , emit: versions
+    path "versions.yml" , emit: versions_split_fasta, topic: versions
 
     when:
     task.ext.when == null || task.ext.when
 
     script:
-    def args = task.ext.args ?: ''
-
     """
     awk '/^>/{chrom=(split(substr(\$0,2), a, " ")); filename=( a[1] ".split.fa"); print > filename; next}{print >> filename}' $fasta
 
