@@ -5,20 +5,20 @@
 //
 // MODULES
 //
-include { BAMTOOLS_SPLIT                          } from '../../modules/nf-core/bamtools/split/main'
-include { UMITOOLS_DEDUP                          } from '../../modules/nf-core/umitools/dedup/main'
-include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_DEDUP  } from '../../modules/nf-core/samtools/index/main'
-include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_MERGED } from '../../modules/nf-core/samtools/index/main'
-include { SAMTOOLS_MERGE                          } from '../../modules/nf-core/samtools/merge/main'
-include { SPLIT_BAM                               } from '../../modules/local/split_bam'
+include { BAMTOOLS_SPLIT                          } from '../../../modules/nf-core/bamtools/split/main'
+include { UMITOOLS_DEDUP                          } from '../../../modules/nf-core/umitools/dedup/main'
+include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_DEDUP  } from '../../../modules/nf-core/samtools/index/main'
+include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_MERGED } from '../../../modules/nf-core/samtools/index/main'
+include { SAMTOOLS_MERGE                          } from '../../../modules/nf-core/samtools/merge/main'
+include { SPLIT_BAM                               } from '../../../modules/local/split_bam'
 
-include { GROUP_TRANSCRIPTS } from '../../modules/local/group_transcripts'
+include { GROUP_TRANSCRIPTS } from '../../../modules/local/group_transcripts'
 
 //
 // SUBWORKFLOWS
 //
-include { BAM_STATS_SAMTOOLS      } from '../../subworkflows/nf-core/bam_stats_samtools/main'
-include { BAM_SORT_STATS_SAMTOOLS } from '../../subworkflows/nf-core/bam_sort_stats_samtools/main'
+include { BAM_STATS_SAMTOOLS      } from '../../../subworkflows/nf-core/bam_stats_samtools/main'
+include { BAM_SORT_STATS_SAMTOOLS } from '../../../subworkflows/nf-core/bam_sort_stats_samtools/main'
 
 workflow DEDUP_UMIS {
     take:

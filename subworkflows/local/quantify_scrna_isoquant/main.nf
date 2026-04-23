@@ -2,9 +2,9 @@
 // Performs feature quantification for long read single-cell rna data
 //
 
-include { ISOQUANT                               } from '../../modules/local/isoquant'
-include { QC_SCRNA as QC_SCRNA_GENE              } from '../../subworkflows/local/qc_scrna'
-include { QC_SCRNA as QC_SCRNA_TRANSCRIPT        } from '../../subworkflows/local/qc_scrna'
+include { ISOQUANT                               } from '../../../modules/local/isoquant'
+include { QC_SCRNA as QC_SCRNA_GENE              } from '../../../subworkflows/local/qc_scrna'
+include { QC_SCRNA as QC_SCRNA_TRANSCRIPT        } from '../../../subworkflows/local/qc_scrna'
 
 workflow QUANTIFY_SCRNA_ISOQUANT {
     take:
@@ -22,9 +22,9 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
 
         isoquant_input = in_bam
             .join(in_bai, by: [0])
-            .combine(in_fasta.map {meta, fasta -> [fasta]})
-            .combine(in_fai.map {meta, fai -> [fai]})
-            .combine(in_gtf.map {meta, gtf -> [gtf]})
+            .combine(in_fasta.map {_meta, fasta -> [fasta]})
+            .combine(in_fai.map {_meta, fai -> [fai]})
+            .combine(in_gtf.map {_meta, gtf -> [gtf]})
 
         //
         // MODULE: Isoquant
@@ -35,6 +35,8 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
         )
         ch_versions = ch_versions.mix(ISOQUANT.out.versions)
 
+        ch_gene_qc_stats = channel.empty()
+        ch_transcript_qc_stats = channel.empty()
         if (!params.skip_qc && !params.skip_seurat){
             QC_SCRNA_GENE (
                 ISOQUANT.out.grouped_gene_mtx_features
@@ -42,7 +44,7 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
                     .join(ISOQUANT.out.grouped_gene_mtx, by: [0])
                     .map{
                         meta,features,barcodes,mtx ->
-                            new_meta = [ 'id' : meta.id ]
+                            def new_meta = [ 'id' : meta.id ]
                             [ new_meta, [ features, barcodes, mtx ]]
                     },
                 in_flagstat,
@@ -57,7 +59,7 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
                     .join(ISOQUANT.out.grouped_transcript_mtx, by: [0])
                     .map{
                         meta,features,barcodes,mtx ->
-                            new_meta = [ 'id' : meta.id ]
+                            def new_meta = [ 'id' : meta.id ]
                             [ new_meta, [ features, barcodes, mtx ]]
                     },
                 in_flagstat,
@@ -73,8 +75,8 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
         gene_barcodes_file       = ISOQUANT.out.grouped_gene_mtx_barcodes
         gene_mtx_file            = ISOQUANT.out.grouped_gene_mtx
         transcript_features_file = ISOQUANT.out.grouped_transcript_mtx_features
-        transctipt_barcodes_file = ISOQUANT.out.grouped_transcript_mtx_barcodes
-        transctipt_mtx_file      = ISOQUANT.out.grouped_transcript_mtx
-        gene_qc_stats            = QC_SCRNA_GENE.out.seurat_stats
-        transcript_qc_stats      = QC_SCRNA_TRANSCRIPT.out.seurat_stats
+        transcript_barcodes_file = ISOQUANT.out.grouped_transcript_mtx_barcodes
+        transcript_mtx_file      = ISOQUANT.out.grouped_transcript_mtx
+        gene_qc_stats            = ch_gene_qc_stats
+        transcript_qc_stats      = ch_transcript_qc_stats
 }
