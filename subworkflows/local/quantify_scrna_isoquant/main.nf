@@ -9,16 +9,16 @@ include { QC_SCRNA as QC_SCRNA_TRANSCRIPT        } from '../../../subworkflows/l
 workflow QUANTIFY_SCRNA_ISOQUANT {
     take:
         in_bam
-        in_bai
+        _in_bai
         in_flagstat
         in_fasta
-        in_fai
+        _in_fai
         in_gtf
-        skip_qc
-        skip_seurat
+        _skip_qc
+        _skip_seurat
 
     main:
-        ch_versions = Channel.empty()
+        ch_versions = channel.empty()
 
         isoquant_input = in_bam
             .join(in_bai, by: [0])
@@ -33,7 +33,7 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
             isoquant_input,
             'tag:CB'
         )
-        ch_versions = ch_versions.mix(ISOQUANT.out.versions)
+        ch_versions = ch_versions.mix(ISOQUANT.out.versions_isoquant)
 
         ch_gene_qc_stats = channel.empty()
         ch_transcript_qc_stats = channel.empty()

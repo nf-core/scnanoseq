@@ -1,4 +1,4 @@
-Changes in module 'nf-core/nanocomp'
+Changes in component 'nf-core/nanocomp'
 'modules/nf-core/nanocomp/environment.yml' is unchanged
 'modules/nf-core/nanocomp/meta.yml' is unchanged
 Changes in 'nanocomp/main.nf':

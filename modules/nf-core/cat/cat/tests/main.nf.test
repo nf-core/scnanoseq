@@ -3,16 +3,14 @@ nextflow_process {
     name "Test Process CAT_CAT"
     script "../main.nf"
     process "CAT_CAT"
+
     tag "modules"
     tag "modules_nfcore"
     tag "cat"
     tag "cat/cat"
 
-    test("test_cat_name_conflict") {
+    test("sarscov2 - genome - error: name conflict") {
         when {
-            params {
-                outdir   = "${outputDir}"
-            }
             process {
                 """
                 input[0] =
@@ -29,16 +27,14 @@ nextflow_process {
         then {
             assertAll(
                 { assert !process.success },
-                { assert process.stdout.toString().contains("The name of the input file can't be the same as for the output prefix") }
+                { assert process.stdout.toString().contains("The name of the input file can't be the same as for the output prefix") },
+                { assert snapshot(process.out).match() }
             )
         }
     }
 
-    test("test_cat_unzipped_unzipped") {
+    test("sarscov2 - [ fasta, sizes ] - unzipped") {
         when {
-            params {
-                outdir   = "${outputDir}"
-            }
             process {
                 """
                 input[0] =
@@ -61,11 +57,8 @@ nextflow_process {
     }
 
 
-    test("test_cat_zipped_zipped") {
+    test("sarscov2 - [ gff3_gz, maf_gz ] - zipped") {
         when {
-            params {
-                outdir   = "${outputDir}"
-            }
             process {
                 """
                 input[0] =
@@ -80,21 +73,20 @@ nextflow_process {
             }
         }
         then {
-            def lines = path(process.out.file_out.get(0).get(1)).linesGzip
             assertAll(
                 { assert process.success },
-                { assert snapshot(lines[0..5]).match("test_cat_zipped_zipped_lines") },
-                { assert snapshot(lines.size()).match("test_cat_zipped_zipped_size")}
+                { assert snapshot(process.out).match()
+                }
             )
         }
     }
 
-    test("test_cat_zipped_unzipped") {
-        config './nextflow_zipped_unzipped.config'
+    test("sarscov2 - [ gff3_gz, maf_gz ] - unzipped") {
+        config './nextflow.config'
 
         when {
             params {
-                outdir   = "${outputDir}"
+                cat_prefix = "cat.txt"
             }
             process {
                 """
@@ -119,11 +111,12 @@ nextflow_process {
 
     }
 
-    test("test_cat_unzipped_zipped") {
-        config './nextflow_unzipped_zipped.config'
+    test("sarscov2 - [ fasta, sizes ] - zipped") {
+        config './nextflow.config'
+
         when {
             params {
-                outdir   = "${outputDir}"
+                cat_prefix = "cat.txt.gz"
             }
             process {
                 """
@@ -139,20 +132,19 @@ nextflow_process {
             }
         }
         then {
-            def lines = path(process.out.file_out.get(0).get(1)).linesGzip
             assertAll(
                 { assert process.success },
-                { assert snapshot(lines[0..5]).match("test_cat_unzipped_zipped_lines") },
-                { assert snapshot(lines.size()).match("test_cat_unzipped_zipped_size")}
+                { assert snapshot(process.out).match() }
             )
         }
     }
 
-    test("test_cat_one_file_unzipped_zipped") {
-        config './nextflow_unzipped_zipped.config'
+    test("sarscov2 - fasta - zipped") {
+        config './nextflow.config'
+
         when {
             params {
-                outdir   = "${outputDir}"
+                cat_prefix = "cat.txt.gz"
             }
             process {
                 """
@@ -167,11 +159,33 @@ nextflow_process {
             }
         }
         then {
-            def lines = path(process.out.file_out.get(0).get(1)).linesGzip
             assertAll(
                 { assert process.success },
-                { assert snapshot(lines[0..5]).match("test_cat_one_file_unzipped_zipped_lines") },
-                { assert snapshot(lines.size()).match("test_cat_one_file_unzipped_zipped_size")}
+                { assert snapshot(process.out).match() }
+            )
+        }
+    }
+
+    test("sarscov2 - fasta - unzipped - stub") {
+        options "-stub"
+
+        when {
+            process {
+                """
+                input[0] =
+                    [
+                        [ id:'test', single_end:true ],
+                        [
+                            file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/genome.fasta', checkIfExists: true)
+                        ]
+                    ]
+                """
+            }
+        }
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out).match() }
             )
         }
     }

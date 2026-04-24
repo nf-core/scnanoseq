@@ -18,7 +18,7 @@ process ISOQUANT {
     tuple val(meta), path("*/*/*.transcript_grouped*counts.matrix.mtx"), emit: grouped_transcript_mtx
     tuple val(meta), path("*/*/*.transcript_grouped*counts.barcodes.tsv"),      emit: grouped_transcript_mtx_barcodes
     tuple val(meta), path("*/*/*.transcript_grouped*counts.features.tsv"),      emit: grouped_transcript_mtx_features
-    path "versions.yml",                                                emit: versions
+    path "versions.yml",                                                emit: versions_isoquant, topic: versions
 
     when:
     task.ext.when == null || task.ext.when
