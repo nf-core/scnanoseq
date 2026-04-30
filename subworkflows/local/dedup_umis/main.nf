@@ -96,8 +96,9 @@ workflow DEDUP_UMIS {
             //
             BAM_SORT_STATS_SAMTOOLS(
                 ch_split_bam,
-                fasta
+                fasta.first()
             )
+
             ch_undedup_bam = BAM_SORT_STATS_SAMTOOLS.out.bam
             ch_undedup_bai = BAM_SORT_STATS_SAMTOOLS.out.bai
 
@@ -125,8 +126,8 @@ workflow DEDUP_UMIS {
             //
             PICARD_MARKDUPLICATES (
                 ch_undedup_bam,
-                fasta,
-                fai
+                fasta.first(),
+                fai.first()
             )
             ch_dedup_bam = PICARD_MARKDUPLICATES.out.bam
         }
@@ -167,6 +168,7 @@ workflow DEDUP_UMIS {
                     .map { meta, fasta_file, fai_file ->
                         [meta, fasta_file, fai_file, "$projectDir/assets/dummy_file.txt"]
                     }
+                    .first()
 
             )
             ch_dedup_bam = SAMTOOLS_MERGE.out.bam

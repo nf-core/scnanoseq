@@ -87,6 +87,25 @@ if (is.null(opt$flagstat)) {
 # cell or nuclei matrix (calling it cell for simplicity)
 
 if (!is.null(opt$input_dir)) {
+
+    barcode_file <- list.files(opt$input_dir, pattern = "*barcodes.tsv", full.names = TRUE)
+    if (!endsWith(barcode_file, ".gz")) {
+        barcode_file_in <- read.csv(barcode_file, header = FALSE, sep = "\t")
+        write.table(barcode_file_in, file = gzfile(paste0(opt$input_dir, "/barcodes.tsv.gz")), quote = FALSE, row.names = FALSE, sep = "\t", col.names = FALSE)
+    }
+
+    features_file <- list.files(opt$input_dir, pattern = "*features.tsv", full.names = TRUE)
+    if (!endsWith(features_file, ".gz")) {
+        features_file_in <- read.csv(features_file, header = FALSE, sep = "\t")
+        write.table(features_file_in, file = gzfile(paste0(opt$input_dir, "/features.tsv.gz")), quote = FALSE, row.names = FALSE, sep = "\t", col.names = FALSE)
+    }
+
+    matrix_file <- list.files(opt$input_dir, pattern = "*matrix.mtx", full.names = TRUE)
+    if (!endsWith(matrix_file, ".gz")) {
+        matrix_file_in <- read.csv(matrix_file, header = FALSE, sep = " ")
+        write.table(matrix_file_in, file = gzfile(paste0(opt$input_dir, "/matrix.mtx.gz")), quote = FALSE, row.names = FALSE, sep = " ", col.names = FALSE)
+    }
+
     cell_bc_matrix <- Read10X(data.dir = opt$input_dir,
                                 gene.column = 1,
                                 cell.column = 2)
