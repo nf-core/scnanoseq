@@ -532,25 +532,28 @@ workflow SCNANOSEQ {
     ch_multiqc_list = channel.empty()
     if (!params.skip_qc && !params.skip_multiqc){
 
-        //
-        // MODULE: MultiQC for raw data
-        //
-
-        ch_multiqc_rawqc_files = channel.empty()
-        ch_multiqc_rawqc_files = ch_multiqc_rawqc_files.mix(ch_multiqc_custom_config.collect().ifEmpty([]))
-        ch_multiqc_rawqc_files = ch_multiqc_rawqc_files.mix(ch_versions_yaml.collect())
-        ch_multiqc_rawqc_files = ch_multiqc_rawqc_files.mix(ch_fastqc_multiqc_pretrim.collect().ifEmpty([]))
-        MULTIQC_RAWQC (
-            channel.value([ [ 'id': 'rawqc' ] ])
-                .combine(ch_multiqc_rawqc_files.collect().map { files -> [ files ] })
-                .combine(ch_multiqc_config.collect().map { cfg -> [ cfg ] })
-                .combine(ch_multiqc_logo.collect().ifEmpty([[]]).map { logo -> [ logo ] })
-                .combine(channel.value([ [] ]))
-                .combine(channel.value([ [] ]))
-                .map { meta, files, config, logo, replace, sample ->
-                    [ meta, files, config, logo.flatten(), replace, sample ]
-                }
-        )
+        if (!params.skip_fastqc && !params.skip_fastq_nanocomp && !params.skip_nanoplot) {
+            //
+            // MODULE: MultiQC for raw data
+            //
+            ch_multiqc_rawqc_files = ch_fastqc_multiqc_pretrim.collect().ifEmpty([])
+            ch_multiqc_rawqc_files = ch_multiqc_rawqc_files.mix(ch_nanostat_pretrim.collect().ifEmpty([]))
+            ch_multiqc_rawqc_files = ch_multiqc_rawqc_files.mix(ch_nanocomp_fastq_txt.collect().ifEmpty([]))
+            ch_multiqc_rawqc_files = ch_multiqc_rawqc_files.mix(ch_multiqc_custom_config.collect().ifEmpty([]))
+            ch_multiqc_rawqc_files = ch_multiqc_rawqc_files.mix(ch_versions_yaml.collect())
+            ch_multiqc_rawqc_files = ch_multiqc_rawqc_files.mix(ch_fastqc_multiqc_pretrim.collect().ifEmpty([]))
+            MULTIQC_RAWQC (
+                channel.value([ [ 'id': 'rawqc' ] ])
+                    .combine(ch_multiqc_rawqc_files.collect().map { files -> [ files ] })
+                    .combine(ch_multiqc_config.collect().map { cfg -> [ cfg ] })
+                    .combine(ch_multiqc_logo.collect().ifEmpty([[]]).map { logo -> [ logo ] })
+                    .combine(channel.value([ [] ]))
+                    .combine(channel.value([ [] ]))
+                    .map { meta, files, config, logo, replace, sample ->
+                        [ meta, files, config, logo.flatten(), replace, sample ]
+                    }
+            )
+        }
 
         //
         // MODULE: MultiQC for final pipeline outputs

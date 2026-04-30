@@ -9,10 +9,10 @@ include { QC_SCRNA as QC_SCRNA_TRANSCRIPT        } from '../../../subworkflows/l
 workflow QUANTIFY_SCRNA_ISOQUANT {
     take:
         in_bam
-        _in_bai
+        in_bai
         in_flagstat
         in_fasta
-        _in_fai
+        in_fai
         in_gtf
         _skip_qc
         _skip_seurat
