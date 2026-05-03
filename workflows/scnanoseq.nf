@@ -112,7 +112,7 @@ workflow SCNANOSEQ {
     def ch_multiqc_config                     = channel.fromPath("$projectDir/assets/multiqc_config.yml", checkIfExists: true)
     def ch_multiqc_custom_config              = params.multiqc_config ? channel.fromPath( params.multiqc_config, checkIfExists: true ) : channel.empty()
     def ch_multiqc_logo                       = params.multiqc_logo   ? channel.fromPath( params.multiqc_logo, checkIfExists: true ) : channel.empty()
-    def ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
+    def ch_multiqc_custom_methods_description = params.multiqc_methods_description ? channel.fromPath(params.multiqc_methods_description, checkIfExists: true) : channel.fromPath("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
 
     def ch_versions = channel.empty()
     def ch_multiqc_report = channel.empty()
@@ -542,6 +542,7 @@ workflow SCNANOSEQ {
             ch_multiqc_rawqc_files = ch_multiqc_rawqc_files.mix(ch_multiqc_custom_config.collect().ifEmpty([]))
             ch_multiqc_rawqc_files = ch_multiqc_rawqc_files.mix(ch_versions_yaml.collect())
             ch_multiqc_rawqc_files = ch_multiqc_rawqc_files.mix(ch_fastqc_multiqc_pretrim.collect().ifEmpty([]))
+
             MULTIQC_RAWQC (
                 channel.value([ [ 'id': 'rawqc' ] ])
                     .combine(ch_multiqc_rawqc_files.collect().map { files -> [ files ] })
@@ -564,6 +565,7 @@ workflow SCNANOSEQ {
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_multiqc_custom_config.collect().ifEmpty([]))
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_versions_yaml.collect())
+        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_multiqc_custom_methods_description.collect())
 
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_fastqc_multiqc_postrim.collect().ifEmpty([]))
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_fastqc_multiqc_postextract.collect().ifEmpty([]))
