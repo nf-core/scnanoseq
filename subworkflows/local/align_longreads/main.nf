@@ -82,7 +82,7 @@ workflow ALIGN_LONGREADS {
         //
         ch_rseqc_read_dist = channel.empty()
         if (!skip_qc && !skip_rseqc) {
-            RSEQC_READDISTRIBUTION ( 
+            RSEQC_READDISTRIBUTION (
                 BAM_SORT_STATS_SAMTOOLS.out.bam.join( BAM_SORT_STATS_SAMTOOLS.out.bai, by: 0 ),
                 rseqc_bed
             )

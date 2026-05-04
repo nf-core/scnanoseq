@@ -46,10 +46,10 @@ workflow PREPARE_REFERENCE_FILES {
             //
             // MODULE: Index the genome fasta
             //
-            GENOME_FAIDX( 
+            GENOME_FAIDX(
                 ch_genome_fasta
-                    .map { 
-                        meta, fasta -> 
+                    .map {
+                        meta, fasta ->
                         [meta, fasta, "$projectDir/assets/dummy_file.txt"]
                     },
                 false
