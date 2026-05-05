@@ -4,8 +4,8 @@ process ISOQUANT {
 
     conda "bioconda::isoquant=3.11.1"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/isoquant:3.11.1--hdfd78af_0' :
-        'biocontainers/isoquant:3.11.1--hdfd78af_0' }"
+        'https://depot.galaxyproject.org/singularity/isoquant:3.13.0--pyh106432d_0' :
+        'biocontainers/isoquant:3.13.0--pyh106432d_0' }"
 
     input:
     tuple val(meta), path(bam), path(bai), path(fasta), path(fai), path(gtf)
@@ -34,7 +34,7 @@ process ISOQUANT {
     """
     export HOME=\$(pwd)
 
-    isoquant.py ${args} \\
+    isoquant ${args} \\
         --threads $task.cpus \\
         --prefix $prefix \\
         --bam ${bam} \\
@@ -45,7 +45,7 @@ process ISOQUANT {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        isoquant: \$(isoquant.py -v | sed 's#IsoQuant ##')
+        isoquant: \$(isoquant -v | sed 's#IsoQuant ##')
     END_VERSIONS
     """
 
