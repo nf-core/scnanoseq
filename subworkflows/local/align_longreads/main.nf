@@ -44,7 +44,7 @@ workflow ALIGN_LONGREADS {
         //
         MINIMAP2_ALIGN (
             fastq,
-            ch_minimap_ref,
+            ch_minimap_ref.first(),
             true,
             "bai",
             "",
@@ -54,7 +54,7 @@ workflow ALIGN_LONGREADS {
         //
         // SUBWORKFLOW: BAM_SORT_STATS_SAMTOOLS
         // The subworkflow is called in both the minimap2 bams and filtered (mapped only) version
-        BAM_SORT_STATS_SAMTOOLS ( MINIMAP2_ALIGN.out.bam, fasta )
+        BAM_SORT_STATS_SAMTOOLS ( MINIMAP2_ALIGN.out.bam, fasta.first() )
 
         // acquire only mapped reads from bam for downstream processing
         // NOTE: some QCs steps are performed on the full BAM
@@ -71,7 +71,7 @@ workflow ALIGN_LONGREADS {
 
         BAM_SORT_STATS_SAMTOOLS_FILTERED (
             ch_minimap_mapped_only_bam,
-            fasta
+            fasta.first()
         )
 
         _ch_minimap_filtered_sorted_bam = BAM_SORT_STATS_SAMTOOLS_FILTERED.out.bam

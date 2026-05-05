@@ -185,7 +185,7 @@ workflow DEDUP_UMIS {
         //
         BAM_STATS_SAMTOOLS (
             ch_dedup_bam.join(ch_dedup_bai),
-            fasta
+            fasta.first()
         )
 
     emit:
