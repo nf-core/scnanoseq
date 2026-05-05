@@ -1,8 +1,8 @@
 process ISOQUANT {
     tag "$meta.id"
-    label 'process_medium'
+    label 'process_high'
 
-    conda "bioconda::isoquant=3.11.1"
+    conda "bioconda::isoquant=3.13.0"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/isoquant:3.13.0--pyh106432d_0' :
         'biocontainers/isoquant:3.13.0--pyh106432d_0' }"
