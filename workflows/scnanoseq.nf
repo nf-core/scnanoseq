@@ -518,13 +518,30 @@ workflow SCNANOSEQ {
     //
 
     //
-    // Collate and save software versions using the modern softwareVersionsToYAML helper
-    // (replaces deprecated CUSTOM_DUMPSOFTWAREVERSIONS)
+    // Collate and save software versions
     //
-    def ch_versions_yaml = softwareVersionsToYAML(ch_versions)
+    def topic_versions = channel.topic("versions")
+        .distinct()
+        .branch { entry ->
+            versions_file: entry instanceof Path
+            versions_tuple: true
+        }
+
+    def topic_versions_string = topic_versions.versions_tuple
+        .map { process, tool, version ->
+            [ process[process.lastIndexOf(':')+1..-1], "  ${tool}: ${version}" ]
+        }
+        .groupTuple(by:0)
+        .map { process, tool_versions ->
+            tool_versions.unique().sort()
+            "${process}:\n${tool_versions.join('\n')}"
+        }
+
+    def ch_collated_versions = softwareVersionsToYAML(ch_versions.mix(topic_versions.versions_file))
+        .mix(topic_versions_string)
         .collectFile(
             storeDir: "${params.outdir}/pipeline_info",
-            name: 'nf_core_' + 'pipeline_software_' + 'mqc_' + 'versions.yml',
+            name: 'nf_core_scnanoseq_software_mqc_versions.yml',
             sort: true,
             newLine: true
         )
@@ -564,7 +581,7 @@ workflow SCNANOSEQ {
 
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_multiqc_custom_config.collect().ifEmpty([]))
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
-        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_versions_yaml.collect())
+        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_collated_versions)
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_multiqc_custom_methods_description.collect())
 
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(ch_fastqc_multiqc_postrim.collect().ifEmpty([]))
