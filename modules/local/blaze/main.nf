@@ -14,11 +14,11 @@ process BLAZE {
     path in_whitelist
 
     output:
-    tuple val(meta), path("*.putative_bc.no_header.csv") , emit: putative_bc
-    tuple val(meta), path("*.whitelist.csv")             , emit: whitelist
-    tuple val(meta), path("*.bc_count.txt")              , emit: bc_count
-    tuple val(meta), path("*.knee_plot.png")             , emit: knee_plot
-    path "versions.yml"                                  , emit: versions
+    tuple val(meta), path("*.putative_bc.no_header.csv"), emit: putative_bc
+    tuple val(meta), path("*.whitelist.csv")            , emit: whitelist
+    tuple val(meta), path("*.bc_count.txt")             , emit: bc_count
+    tuple val(meta), path("*.knee_plot.png")            , emit: knee_plot
+    path "versions.yml"                                  , emit: versions_blaze, topic: versions
 
     when:
     task.ext.when == null || task.ext.when

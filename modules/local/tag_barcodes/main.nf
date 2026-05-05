@@ -12,13 +12,12 @@ process TAG_BARCODES {
 
     output:
     tuple val(meta), path("*.tagged.bam"), emit: tagged_bam
-    path "versions.yml"                  , emit: versions
+    path "versions.yml"                  , emit: versions_tag_barcodes, topic: versions
 
     when:
     task.ext.when == null || task.ext.when
 
     script:
-    def args   = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
 
     """

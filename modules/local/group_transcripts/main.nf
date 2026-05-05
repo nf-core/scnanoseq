@@ -9,18 +9,17 @@ process GROUP_TRANSCRIPTS {
 
     input:
     tuple val(meta), path(fasta)
-    tuple val(meta), path(gtf)
+    tuple val(meta2), path(gtf)
     val delimiter
 
     output:
     path "*.transcripts.txt", emit: grouped_transcripts
-    path "versions.yml"     , emit: versions
+    path "versions.yml"     , emit: versions_group_transcripts, topic: versions
 
     when:
     task.ext.when == null || task.ext.when
 
     script:
-    def args      = task.ext.args ?: ''
     def delim_arg = delimiter ? "-d '${delimiter}'" : ''
 
     """

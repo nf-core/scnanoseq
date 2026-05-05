@@ -12,7 +12,7 @@ process CHOPPER {
 
     output:
     tuple val(meta), path("*.filtered.fastq.gz"), emit: reads
-    path "versions.yml"                         , emit: versions
+    path "versions.yml"                         , emit: versions_chopper, topic: versions
 
     when:
     task.ext.when == null || task.ext.when

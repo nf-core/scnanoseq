@@ -12,7 +12,7 @@ process CORRECT_BARCODES {
 
     output:
     tuple val(meta), path("*.corrected_bc_umi.tsv"), emit: corrected_bc_info
-    path "versions.yml"                            , emit: versions
+    path "versions.yml"                            , emit: versions_correct_barcodes, topic: versions
 
     when:
     task.ext.when == null || task.ext.when
