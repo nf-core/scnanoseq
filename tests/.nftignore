@@ -18,3 +18,4 @@ batch_qcs/multiqc/final_qc/multiqc_data/llms-full.txt
 */genome/bam/original/*.genome.sorted.bam.bai
 */genome/bam/barcode_tagged/*.tagged.bam
 */genome/bam/barcode_tagged/*.tagged.bam.bai
+
