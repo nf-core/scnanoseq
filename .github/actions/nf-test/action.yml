@@ -56,24 +56,6 @@ runs:
         channel-priority: strict
         conda-remove-defaults: true
 
-    - name: Pre-test cleanup
-      shell: bash
-      run: |
-        echo "Initial disk space:"
-        df -h
-        
-        # Clean up any existing Docker resources
-        docker system prune -af --volumes || true
-        
-        # Remove common space-consuming directories
-        sudo rm -rf /usr/share/dotnet || true
-        sudo rm -rf /opt/ghc || true
-        sudo rm -rf /usr/local/share/boost || true
-        sudo rm -rf "$AGENT_TOOLSDIRECTORY" || true
-        
-        echo "Disk space after cleanup:"
-        df -h
-
     - name: Run nf-test
       shell: bash
       env:
@@ -90,16 +72,6 @@ runs:
 
           # Save the absolute path of the test.tap file to the output
           echo "tap_file_path=$(realpath test.tap)" >> $GITHUB_OUTPUT
-
-    - name: Intermediate cleanup
-      if: always()
-      shell: bash
-      run: |
-        # Clean up Docker containers and images created during tests
-        docker container prune -f || true
-        docker image prune -f || true
-        echo "Disk space after test cleanup:"
-        df -h
 
     - name: Generate test summary
       if: always()
@@ -136,18 +108,4 @@ runs:
       if: always()
       shell: bash
       run: |
-        # Docker cleanup
-        echo "Cleaning up Docker resources..."
-        docker system prune -af --volumes || true
-        docker image prune -af || true
-        docker container prune -f || true
-        docker volume prune -f || true
-        
-        # File system cleanup
-        echo "Cleaning up file system..."
-        sudo rm -rf /home/ubuntu/tests/ || true
-        sudo rm -rf ${NFT_WORKDIR:-/tmp/nf-test*} || true
-        
-        # Show remaining disk space
-        echo "Final disk space:"
-        df -h
+        sudo rm -rf /home/ubuntu/tests/

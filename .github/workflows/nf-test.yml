@@ -65,6 +65,7 @@ jobs:
     runs-on: # use self-hosted runners
       - runs-on=${{ github.run_id }}-nf-test
       - runner=4cpu-linux-x64
+      - volume=100gb
     strategy:
       fail-fast: false
       matrix:
@@ -123,6 +124,7 @@ jobs:
     runs-on: # use self-hosted runners
       - runs-on=${{ github.run_id }}-confirm-pass
       - runner=2cpu-linux-x64
+      - volume=100gb
     steps:
       - name: One or more tests failed (excluding latest-everything)
         if: ${{ contains(needs.*.result, 'failure') }}
