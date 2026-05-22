@@ -30,7 +30,6 @@ jobs:
     runs-on: # use self-hosted runners
       - runs-on=${{ github.run_id }}-nf-test-changes
       - runner=4cpu-linux-x64
-      - volume=100gb
     outputs:
       shard: ${{ steps.set-shards.outputs.shard }}
       total_shards: ${{ steps.set-shards.outputs.total_shards }}
@@ -124,7 +123,6 @@ jobs:
     runs-on: # use self-hosted runners
       - runs-on=${{ github.run_id }}-confirm-pass
       - runner=2cpu-linux-x64
-      - volume=100gb
     steps:
       - name: One or more tests failed (excluding latest-everything)
         if: ${{ contains(needs.*.result, 'failure') }}
