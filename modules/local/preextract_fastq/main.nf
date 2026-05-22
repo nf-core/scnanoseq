@@ -13,9 +13,9 @@ process PREEXTRACT_FASTQ {
     val bc_format
 
     output:
-    tuple val(meta), path("*.putative_bc_umi.tsv")  , emit: barcode_info
-    tuple val(meta), path("*.extracted.fastq")      , emit: extracted_fastq
-    path "versions.yml"                             , emit: versions_preextract_fastq, topic: versions
+    tuple val(meta), path("*.putative_bc_umi.tsv"), emit: barcode_info
+    tuple val(meta), path("*.extracted.fastq.gz") , emit: extracted_fastq
+    path "versions.yml"                           , emit: versions_preextract_fastq, topic: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -32,6 +32,11 @@ process PREEXTRACT_FASTQ {
         -f ${bc_format} \\
         -t ${task.cpus} \\
         ${args}
+
+    for out_file in ${prefix}.extracted*fastq*
+    do
+        gzip \$out_file
+    done
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
