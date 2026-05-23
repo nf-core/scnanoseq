@@ -343,7 +343,7 @@ workflow SCNANOSEQ {
         // MODULE: Cat Preextract
         //
         CAT_CAT_PREEXTRACT(ch_preextract_fastq.groupTuple())
-        ch_cat_preextract_fastq = CAT_CAT_PREEXTRACT.out.file_out
+        ch_extracted_fastq = CAT_CAT_PREEXTRACT.out.file_out
 
         //
         // MODULE: Cat barcode file
@@ -351,11 +351,6 @@ workflow SCNANOSEQ {
         CAT_CAT_BARCODE (ch_corrected_bc_file.groupTuple())
         ch_corrected_bc_info = CAT_CAT_BARCODE.out.file_out
 
-        //
-        // MODULE: Zip the reads
-        //
-        PIGZ_COMPRESS (ch_cat_preextract_fastq )
-        ch_extracted_fastq = PIGZ_COMPRESS.out.archive
     }
 
     //
