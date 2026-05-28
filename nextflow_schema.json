@@ -163,7 +163,7 @@
                     "enum": ["10X_3v3", "10X_3v4", "10X_5v2", "10X_5v3"],
                     "fa_icon": "fas fa-barcode"
                 },
-                "no_blaze_demux": {
+                "skip_blaze_demux": {
                     "type": "boolean",
                     "fa_icon": "fas fa-barcode",
                     "description": "Do not perform the demultiplexing step in BLAZE (conserves time and disk space).",

@@ -552,7 +552,7 @@ workflow SCNANOSEQ {
             ch_multiqc_rawqc_files = ch_multiqc_rawqc_files.mix(ch_nanostat_pretrim.collect().ifEmpty([]))
             ch_multiqc_rawqc_files = ch_multiqc_rawqc_files.mix(ch_nanocomp_fastq_txt.collect().ifEmpty([]))
             ch_multiqc_rawqc_files = ch_multiqc_rawqc_files.mix(ch_multiqc_custom_config.collect().ifEmpty([]))
-            ch_multiqc_rawqc_files = ch_multiqc_rawqc_files.mix(ch_versions_yaml.collect())
+            ch_multiqc_rawqc_files = ch_multiqc_rawqc_files.mix(ch_collated_versions.collect())
             ch_multiqc_rawqc_files = ch_multiqc_rawqc_files.mix(ch_fastqc_multiqc_pretrim.collect().ifEmpty([]))
 
             MULTIQC_RAWQC (
