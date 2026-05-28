@@ -1,3 +1,6 @@
+#!/usr/bin/env bash
+
+# Written by Austyn Trull and Lara Ianov and released under the MIT license.
 
 get_fastqc_counts()
 {

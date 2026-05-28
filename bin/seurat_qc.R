@@ -1,5 +1,7 @@
 #!/usr/bin/env Rscript
 
+# Written by Austyn Trull and Lara Ianov and released under the MIT license.
+
 ######################
 ### LOAD LIBRARIES ###
 ######################

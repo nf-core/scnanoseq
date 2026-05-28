@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# Written by Austyn Trull and released under the MIT license.
+
 import argparse
 import pysam
 

@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# Written by Austyn Trull and released under the MIT license.
+
 """ Given a fastq file and a blaze output file, this will extract the barcode
     and umi and place them in the header of the fastq, as well as stripping
     them from teh read.
