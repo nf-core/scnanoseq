@@ -12,9 +12,9 @@ Special thanks to a new contributor to scnanoseq:
 
 ### Enhancements
 
-- Strict syntax conversion: converted entire workflow to strict syntax and reorganized into `<name>/main.nf` directory structure
-- [#93](https://github.com/nf-core/scnanoseq/issues/93) Upgraded IsoQuant from v3.6.1 to v3.13.0 and removed chromosome-splitting logic in the IsoQuant subworkflow due to improvements in IsoQuant; IsoQuant now processes all chromosomes in a single invocation
-- [#65](https://github.com/nf-core/scnanoseq/pull/65) Replaced NanoFilt with Chopper for read filtering, with gzip compression of intermediate split FASTQ files to reduce disk usage
+- [#94](https://github.com/nf-core/scnanoseq/issues/94) Strict syntax conversion: converted entire workflow to strict syntax and reorganized into `<name>/main.nf` directory structure
+- [#93](https://github.com/nf-core/scnanoseq/issues/93) and [#55](https://github.com/nf-core/scnanoseq/issues/55) Upgraded IsoQuant from v3.6.1 to v3.13.0 and removed chromosome-splitting logic in the IsoQuant subworkflow due to improvements in IsoQuant; IsoQuant now processes all chromosomes in a single invocation
+- [#65](https://github.com/nf-core/scnanoseq/pull/65) and [#61](https://github.com/nf-core/scnanoseq/issues/61) Replaced NanoFilt with Chopper for read filtering, with gzip compression of intermediate split FASTQ files to reduce disk usage
 - [#87](https://github.com/nf-core/scnanoseq/issues/87) Added `--skip_blaze_demux` parameter to allow skipping BLAZE demultiplexing
 - Added `SPLIT_SEQ` module using seqkit for splitting FASTQ files, replacing the previous split approach
 - Updated `CAT_FASTQ` to the nf-core module which now supports compressed inputs
