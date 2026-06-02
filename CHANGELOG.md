@@ -3,6 +3,44 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v1.3.0 [TBA]
+
+### Credits
+Special thanks to a new contributor to scnanoseq:
+
+* [Nick Youngblut](https://github.com/nick-youngblut)
+
+### Enhancements
+
+- [#94](https://github.com/nf-core/scnanoseq/issues/94) Strict syntax conversion: converted entire workflow to strict syntax and reorganized into `<name>/main.nf` directory structure
+- [#93](https://github.com/nf-core/scnanoseq/issues/93) and [#55](https://github.com/nf-core/scnanoseq/issues/55) Upgraded IsoQuant from v3.6.1 to v3.13.0 and removed chromosome-splitting logic in the IsoQuant subworkflow due to improvements in IsoQuant; IsoQuant now processes all chromosomes in a single invocation
+- [#65](https://github.com/nf-core/scnanoseq/pull/65) and [#61](https://github.com/nf-core/scnanoseq/issues/61) Replaced NanoFilt with Chopper for read filtering, with gzip compression of intermediate split FASTQ files to reduce disk usage
+- [#87](https://github.com/nf-core/scnanoseq/issues/87) Added `--skip_blaze_demux` parameter to allow skipping BLAZE demultiplexing
+- Added `SPLIT_SEQ` module using seqkit for splitting FASTQ files, replacing the previous split approach
+- Updated `CAT_FASTQ` to the nf-core module which now supports compressed inputs
+- Moved gzip compression to pre-extraction step to minimize uncompressed FASTQ footprint in work directories
+- Upgraded nf-core template from 3.2.1 to 3.5.1
+
+### Parameter changes
+
+- `--skip_fastqc` default changed from `false` to `true` (disabled by default due to runtime issues with long-read data)
+- `--skip_fastq_nanocomp` default changed from `false` to `true`
+- `--skip_bam_nanocomp` default changed from `false` to `true`
+- [#99](https://github.com/nf-core/scnanoseq/issues/99) `--skip_toulligqc` default changed from `false` to `true`
+- `--skip_blaze_demux` added (default: `true`)
+
+### Fixes
+
+- [#83](https://github.com/nf-core/scnanoseq/issues/83) Isoquant count matrix headers are now compatible with Seurat (removed leading `#` from header line). Note that lastest version of IsoQuant also resolves this issue.
+
+### Software dependencies
+
+| Dependency  | Old version | New version |
+| ----------- | ----------- | ----------- |
+| `IsoQuant`  | 3.6.1       | 3.13.0      |
+| `Chopper`   | -           | 0.10.0      |
+| `NanoFilt`  | 2.8.0       | removed     |
+
 ## v1.2.2 [2026-03-09]
 
 ### Fixes

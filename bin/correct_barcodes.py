@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# Written by Austyn Trull and released under the MIT license.
+
 """ This will take in a bam and will check barcodes that have been added by
     umi_tools and will check them against a whitelist barcode and correct
     those barcodes that are not on the list

@@ -12,7 +12,7 @@ process FLEXIPLEX_DISCOVERY {
 
     output:
     tuple val(meta), path("*barcodes_counts.txt")  , emit: barcode_counts
-    path "versions.yml"                                     , emit: versions
+    path "versions.yml"                                     , emit: versions_flexiplex_discovery, topic: versions
 
     when:
     task.ext.when == null || task.ext.when

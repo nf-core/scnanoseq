@@ -13,8 +13,6 @@ TODO: Go over entire output section and remove/add flexiplex etc where needed.
 
 The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes data using the following steps:
 
-- [Preprocessing](#preprocessing)
-  - [Chopper](#chopper) - Read Quality Filtering and Trimming
 - [Barcode Calling](#barcode-calling)
   - [Flexiplex](#flexiplex) - Barcode caller
   - [BLAZE](#blaze) - Barcode caller
@@ -45,19 +43,6 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 \* Indicates RNA only output
 
 \*\* Indicates DNA only output
-
-## Preprocessing
-
-### Chopper
-
-<details markdown="1">
-<summary>Output files</summary>
-
-`*_trimmed.fastq.gz`: The post-trimmed fastq. By default this will be mostly quality trimmed.
-
-</details>
-
-[Nanofilt](https://github.com/wdecoster/nanofilt) is a tool used for filtering and trimming of long read sequencing data.
 
 ## Barcode Calling
 
@@ -408,6 +393,8 @@ The FastQC plots displayed in the MultiQC report shows _untrimmed_ reads. They m
 ![Nanocomp](images/nanocomp_2.png)
 
 [NanoComp](https://github.com/wdecoster/nanocomp) compares multiple runs of long read sequencing data and alignments. It creates violin plots or box plots of length, quality and percent identity and creates dynamic, overlaying read length histograms and a cumulative yield plot
+
+**Note**: Please note that `NanoComp` is enabled by default for FASTQ files but **disabled** for BAM files due to its high-memory usage. Users who are interesting in executing `NanoComp` for BAMs should set `skip_bam_nanocomp` to `false`.
 
 ### NanoPlot
 

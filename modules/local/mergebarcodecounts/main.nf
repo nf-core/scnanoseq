@@ -11,7 +11,7 @@ process MERGEBARCODECOUNTS {
 
     output:
     tuple val(meta), path("*_barcode_counts.txt"), emit: barcode_counts
-    path "versions.yml"                          , emit: versions
+    path "versions.yml"                          , emit: versions_mergebarcodecounts, topic: versions
 
     when:
     task.ext.when == null || task.ext.when

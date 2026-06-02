@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# Written by Austyn Trull and released under the MIT license.
+
 """ This script will iterate over a bam and tag the reads with the barcode,
     barcode quality, umi, umi quality that are obtained from the read1 fastq
 """

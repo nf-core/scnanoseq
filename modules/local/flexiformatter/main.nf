@@ -15,7 +15,7 @@ process FLEXIFORMATTER {
     tuple val(meta), path("*_tagged.bam")       , emit: bam
     tuple val(meta), path("*_tagged.bam.bai")   , optional: true, emit: bai
     tuple val(meta), path("*_tagged.bam.csi")   , optional: true, emit: csi
-    path "versions.yml"                         , emit: versions
+    path "versions.yml"                         , emit: versions_flexiformatter, topic: versions
 
     when:
     task.ext.when == null || task.ext.when

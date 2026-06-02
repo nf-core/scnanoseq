@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# Written by Austyn Trull and released under the MIT license.
+
 import argparse
 import pysam
 
@@ -77,4 +79,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

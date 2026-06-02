@@ -13,7 +13,7 @@ process FLEXIPLEX_FILTER {
 
     output:
     tuple val(meta), path("*known_barcodes.txt")        , emit: barcodes
-    path "versions.yml"                                 , emit: versions
+    path "versions.yml"                                 , emit: versions_flexiplex_filter, topic: versions
 
     when:
     task.ext.when == null || task.ext.when

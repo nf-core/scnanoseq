@@ -12,7 +12,7 @@ process FLEXIPLEX_ASSIGN {
 
     output:
     tuple val(meta), path("*flexiplex.fastq.gz")            , emit: reads
-    path "versions.yml"                                     , emit: versions
+    path "versions.yml"                                     , emit: versions_flexiplex_assign, topic: versions
 
     when:
     task.ext.when == null || task.ext.when
