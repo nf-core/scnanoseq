@@ -43,7 +43,7 @@ process FLEXIPLEX_DISCOVERY {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        flexiplex: \$(flexiplex --help |& sed '1!d ; s/FLEXIPLEX //')
+        flexiplex: \$(flexiplex --help 2>/dev/null | sed '1!d ; s/FLEXIPLEX //')
     END_VERSIONS
     """
 }
