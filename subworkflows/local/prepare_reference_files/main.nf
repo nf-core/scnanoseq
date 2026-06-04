@@ -95,19 +95,21 @@ workflow PREPARE_REFERENCE_FILES {
         //
         // MODULE: Unzip GTF
         //
+        ch_gtf = [ ['id': 'gtf'], gtf]
         ch_prepared_gtf = channel.empty()
+
         if (gtf.endsWith('.gz')){
-            GUNZIP_GTF( [ [:], gtf ])
+            GUNZIP_GTF( ch_gtf )
 
             ch_prepared_gtf = GUNZIP_GTF.out.file
 
         } else if (gtf.endsWith('.zip')) {
-            UNZIP_GTF( [ [:], gtf ])
+            UNZIP_GTF( ch_gtf )
 
             ch_prepared_gtf = UNZIP_GTF.out.files
 
         } else {
-            ch_prepared_gtf = [ [:], gtf]
+            ch_prepared_gtf = ch_gtf
         }
 
     emit:

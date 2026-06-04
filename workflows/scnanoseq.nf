@@ -16,7 +16,6 @@ include { BLAZE                             } from "../modules/local/blaze"
 include { PREEXTRACT_FASTQ                  } from "../modules/local/preextract_fastq"
 include { READ_COUNTS                       } from "../modules/local/read_counts"
 include { CORRECT_BARCODES                  } from "../modules/local/correct_barcodes"
-include { UCSC_GTFTOGENEPRED                } from "../modules/local/ucsc_gtftogenepred"
 include { UCSC_GENEPREDTOBED                } from "../modules/local/ucsc_genepredtobed"
 
 //
@@ -43,6 +42,7 @@ include { CAT_CAT                                       } from "../modules/nf-co
 include { CAT_CAT as CAT_CAT_PREEXTRACT                 } from "../modules/nf-core/cat/cat/main"
 include { CAT_CAT as CAT_CAT_BARCODE                    } from "../modules/nf-core/cat/cat/main"
 include { CAT_FASTQ                                     } from "../modules/nf-core/cat/fastq/main"
+include { UCSC_GTFTOGENEPRED                            } from "../modules/nf-core/ucsc/gtftogenepred/main"
 include { paramsSummaryMap                              } from "plugin/nf-schema"
 
 /*
@@ -196,12 +196,12 @@ workflow SCNANOSEQ {
     // come back to this once intron work is finished (likely input will be fine)
     ch_pred = channel.empty()
     ch_rseqc_bed = channel.empty()
+
     if (!params.skip_qc && !params.skip_rseqc) {
         UCSC_GTFTOGENEPRED( gtf )
         ch_pred = UCSC_GTFTOGENEPRED.out.genepred
-        ch_versions = ch_versions.mix(UCSC_GTFTOGENEPRED.out.versions_gtftogenepred)
 
-        UCSC_GENEPREDTOBED ( ch_pred )
+        UCSC_GENEPREDTOBED ( ch_pred.map{meta, genepred -> [genepred]} )
         ch_rseqc_bed = UCSC_GENEPREDTOBED.out.bed
         ch_versions = ch_versions.mix(UCSC_GENEPREDTOBED.out.versions_genepredtobed)
     }
