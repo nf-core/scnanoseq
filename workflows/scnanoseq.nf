@@ -9,8 +9,6 @@
 //
 
 include { CHOPPER                           } from "../modules/local/chopper"
-include { SPLIT_SEQ                         } from "../modules/local/split_seq"
-include { SPLIT_SEQ as SPLIT_SEQ_BC_FASTQ   } from "../modules/local/split_seq"
 include { SPLIT_FILE as SPLIT_FILE_BC_CSV   } from "../modules/local/split_file"
 include { BLAZE                             } from "../modules/local/blaze"
 include { PREEXTRACT_FASTQ                  } from "../modules/local/preextract_fastq"
@@ -36,6 +34,8 @@ include { PROCESS_LONGREAD_SCRNA as PROCESS_LONGREAD_SCRNA_TRANSCRIPT } from "..
 include { PIGZ_UNCOMPRESS as GUNZIP_WHITELIST           } from "../modules/nf-core/pigz/uncompress/main"
 include { PIGZ_COMPRESS                                 } from "../modules/nf-core/pigz/compress/main"
 include { NANOCOMP as NANOCOMP_FASTQ                    } from "../modules/nf-core/nanocomp/main"
+include { SEQKIT_SPLIT2                                 } from "../modules/nf-core/seqkit/split2"
+include { SEQKIT_SPLIT2 as SPLIT_SEQ_BC_FASTQ           } from "../modules/nf-core/seqkit/split2"
 include { MULTIQC as MULTIQC_RAWQC                      } from "../modules/nf-core/multiqc/main"
 include { MULTIQC as MULTIQC_FINALQC                    } from "../modules/nf-core/multiqc/main"
 include { CAT_CAT                                       } from "../modules/nf-core/cat/cat/main"
@@ -218,15 +218,14 @@ workflow SCNANOSEQ {
         //
 
         if (params.split_amount > 0) {
-            SPLIT_SEQ( ch_cat_fastq, '.fastq.gz', params.split_amount )
+            SEQKIT_SPLIT2( ch_cat_fastq )
 
             // Temporarily change the meta object so that the id is present on the
             // fastq to prevent duplicated names
-            SPLIT_SEQ.out.split_files
+            SEQKIT_SPLIT2.out.reads
                 .transpose()
                 .set { ch_fastqs }
 
-            ch_versions = ch_versions.mix(SPLIT_SEQ.out.versions_split_seq)
         } else {
             ch_fastqs = ch_cat_fastq
         }
@@ -301,15 +300,13 @@ workflow SCNANOSEQ {
     ch_split_bc_fastqs = ch_trimmed_reads_combined
     ch_split_bc = ch_putative_bc
     if (params.split_amount > 0) {
-        SPLIT_SEQ_BC_FASTQ( ch_trimmed_reads_combined, '.fastq.gz', params.split_amount / 4 )
+        SPLIT_SEQ_BC_FASTQ( ch_trimmed_reads_combined)
 
-        SPLIT_SEQ_BC_FASTQ.out.split_files
+        SPLIT_SEQ_BC_FASTQ.out.reads
             .transpose()
             .set { ch_split_bc_fastqs }
 
-        ch_versions = ch_versions.mix(SPLIT_SEQ_BC_FASTQ.out.versions_split_seq)
-
-        SPLIT_FILE_BC_CSV ( ch_putative_bc, '.csv', (params.split_amount / 4) )
+        SPLIT_FILE_BC_CSV ( ch_putative_bc, '.csv', params.split_amount )
         SPLIT_FILE_BC_CSV.out.split_files
             .transpose()
             .set { ch_split_bc }

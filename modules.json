@@ -164,6 +164,13 @@
                         ],
                         "patch": "modules/nf-core/samtools/view/samtools-view.diff"
                     },
+                    "seqkit/split2": {
+                        "branch": "master",
+                        "git_sha": "f03a30b46ebe59ba12b79115f05ab545d5ca2e5e",
+                        "installed_by": [
+                            "modules"
+                        ]
+                    },
                     "toulligqc": {
                         "branch": "master",
                         "git_sha": "d9137377f4dd6246242829772eb1949b96de1ef0",
