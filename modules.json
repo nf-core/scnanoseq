@@ -26,6 +26,13 @@
                             "modules"
                         ]
                     },
+                    "chopper": {
+                        "branch": "master",
+                        "git_sha": "6d46786420b4d7bc88eba026eb389c0c5535d120",
+                        "installed_by": [
+                            "modules"
+                        ]
+                    },
                     "custom/dumpsoftwareversions": {
                         "branch": "master",
                         "git_sha": "ad65d06c959cff1da9e94c4a972deaf7430931fa",
