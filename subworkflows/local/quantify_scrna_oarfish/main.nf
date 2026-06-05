@@ -8,12 +8,12 @@ include { QC_SCRNA      } from '../../../subworkflows/local/qc_scrna'
 
 workflow QUANTIFY_SCRNA_OARFISH {
     take:
-        in_bam
-        _in_bai
-        in_flagstat
-        in_fasta
-        skip_qc
-        skip_seurat
+        ch_bam      // channel: [ val(meta), path(bam) ]
+        ch_flagstat // channel: [ val(meta), path(flagstat) ]
+        ch_fasta    // channel: [ val(meta), path(fasta) ]
+
+        val_skip_qc     // bool: Skip qc steps
+        val_skip_seurat // bool: Skip seurat qc steps
 
     main:
         ch_versions = channel.empty()
@@ -21,7 +21,7 @@ workflow QUANTIFY_SCRNA_OARFISH {
         //
         // MODULE: Samtools Sort
         //
-        SAMTOOLS_SORT ( in_bam, in_fasta.first(), "bai" )
+        SAMTOOLS_SORT ( ch_bam, ch_fasta.first(), "bai" )
 
         //
         // MODULE: Oarfish
@@ -30,7 +30,7 @@ workflow QUANTIFY_SCRNA_OARFISH {
         ch_versions = ch_versions.mix(OARFISH.out.versions_oarfish)
 
         ch_transcript_qc_stats = channel.empty()
-        if (!skip_qc && !skip_seurat) {
+        if (!val_skip_qc && !val_skip_seurat) {
             QC_SCRNA(
                 OARFISH.out.features
                     .join(OARFISH.out.barcodes, by: [0])
@@ -40,7 +40,7 @@ workflow QUANTIFY_SCRNA_OARFISH {
                             def new_meta = [ 'id' : meta.id ]
                             [ new_meta, [ features, barcodes, mtx ]]
                     },
-                in_flagstat,
+                ch_flagstat,
                 "MEX"
             )
             ch_transcript_qc_stats = QC_SCRNA.out.seurat_stats
@@ -48,6 +48,6 @@ workflow QUANTIFY_SCRNA_OARFISH {
         }
 
     emit:
-        versions            = ch_versions
-        transcript_qc_stats = ch_transcript_qc_stats
+        versions            = ch_versions            // channel: [ val(meta), path(versions) ]
+        transcript_qc_stats = ch_transcript_qc_stats // channel: [ val(meta), path(transcript_qc_stats) ]
 }

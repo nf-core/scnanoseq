@@ -7,9 +7,9 @@ include { COMBINE_SEURAT_STATS } from '../../../modules/local/combine_seurat_sta
 
 workflow QC_SCRNA {
     take:
-        in_mtx
-        in_flagstat
-        mtx_format
+        ch_mtx         // channel: [ val(meta), path(cell_bc_matrix) ]
+        ch_flagstat    // channel: [ val(meta), path(flagstat) ]
+        val_mtx_format // str: Format of the cell barcode matrix (e.g. "MEX", "MTX")
 
     main:
         ch_versions = channel.empty()
@@ -17,7 +17,7 @@ workflow QC_SCRNA {
         //
         // MODULE: Seurat
         //
-        SEURAT ( in_mtx.join(in_flagstat, by: [0]), mtx_format )
+        SEURAT ( ch_mtx.join(ch_flagstat, by: [0]), val_mtx_format )
         ch_versions = ch_versions.mix(SEURAT.out.versions_seurat)
 
         //
@@ -27,6 +27,6 @@ workflow QC_SCRNA {
         ch_versions = ch_versions.mix(COMBINE_SEURAT_STATS.out.versions_combine_seurat_stats)
 
     emit:
-        seurat_stats = COMBINE_SEURAT_STATS.out.combined_stats
-        versions = ch_versions
+        seurat_stats = COMBINE_SEURAT_STATS.out.combined_stats // channel: [ val(meta), path(seurat_stats) ]
+        versions = ch_versions                                 // channel: [ val(meta), path(versions) ]
 }

@@ -8,23 +8,24 @@ include { QC_SCRNA as QC_SCRNA_TRANSCRIPT        } from '../../../subworkflows/l
 
 workflow QUANTIFY_SCRNA_ISOQUANT {
     take:
-        in_bam
-        in_bai
-        in_flagstat
-        in_fasta
-        in_fai
-        in_gtf
-        _skip_qc
-        _skip_seurat
+        ch_bam      // channel: [ val(meta), path(bam) ]
+        ch_bai      // channel: [ val(meta), path(bai) ]
+        ch_flagstat // channel: [ val(meta), path(flagstat) ]
+        ch_fasta    // channel: [ val(meta), path(fasta) ]
+        ch_fai      // channel: [ val(meta), path(fai) ]
+        ch_gtf      // channel: [ val(meta), path(gtf) ]
+
+        val_skip_qc     // bool: Skip qc steps
+        val_skip_seurat // bool: Skip seurat qc steps
 
     main:
         ch_versions = channel.empty()
 
-        isoquant_input = in_bam
-            .join(in_bai, by: [0])
-            .combine(in_fasta.map {_meta, fasta -> [fasta]})
-            .combine(in_fai.map {_meta, fai -> [fai]})
-            .combine(in_gtf.map {_meta, gtf -> [gtf]})
+        isoquant_input = ch_bam
+            .join(ch_bai, by: [0])
+            .combine(ch_fasta.map {_meta, fasta -> [fasta]})
+            .combine(ch_fai.map {_meta, fai -> [fai]})
+            .combine(ch_gtf.map {_meta, gtf -> [gtf]})
 
         //
         // MODULE: Isoquant
@@ -37,7 +38,7 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
 
         ch_gene_qc_stats = channel.empty()
         ch_transcript_qc_stats = channel.empty()
-        if (!params.skip_qc && !params.skip_seurat){
+        if (!val_skip_qc && !val_skip_seurat){
             QC_SCRNA_GENE (
                 ISOQUANT.out.grouped_gene_mtx_features
                     .join(ISOQUANT.out.grouped_gene_mtx_barcodes, by: [0])
@@ -47,7 +48,7 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
                             def new_meta = [ 'id' : meta.id ]
                             [ new_meta, [ features, barcodes, mtx ]]
                     },
-                in_flagstat,
+                ch_flagstat,
                 "MEX"
             )
             ch_gene_qc_stats = QC_SCRNA_GENE.out.seurat_stats
@@ -62,7 +63,7 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
                             def new_meta = [ 'id' : meta.id ]
                             [ new_meta, [ features, barcodes, mtx ]]
                     },
-                in_flagstat,
+                ch_flagstat,
                 "MEX"
             )
             ch_transcript_qc_stats = QC_SCRNA_TRANSCRIPT.out.seurat_stats
@@ -70,13 +71,13 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
         }
 
     emit:
-        versions                 = ch_versions
-        gene_features_file       = ISOQUANT.out.grouped_gene_mtx_features
-        gene_barcodes_file       = ISOQUANT.out.grouped_gene_mtx_barcodes
-        gene_mtx_file            = ISOQUANT.out.grouped_gene_mtx
-        transcript_features_file = ISOQUANT.out.grouped_transcript_mtx_features
-        transcript_barcodes_file = ISOQUANT.out.grouped_transcript_mtx_barcodes
-        transcript_mtx_file      = ISOQUANT.out.grouped_transcript_mtx
-        gene_qc_stats            = ch_gene_qc_stats
-        transcript_qc_stats      = ch_transcript_qc_stats
+        versions                 = ch_versions                                  // channel: [ val(meta), path(versions) ]
+        gene_features_file       = ISOQUANT.out.grouped_gene_mtx_features       // channel: [ val(meta), path(gene_features) ]
+        gene_barcodes_file       = ISOQUANT.out.grouped_gene_mtx_barcodes       // channel: [ val(meta), path(gene_barcodes) ]
+        gene_mtx_file            = ISOQUANT.out.grouped_gene_mtx                // channel: [ val(meta), path(gene_mtx) ]
+        transcript_features_file = ISOQUANT.out.grouped_transcript_mtx_features // channel: [ val(meta), path(transcript_features) ]
+        transcript_barcodes_file = ISOQUANT.out.grouped_transcript_mtx_barcodes // channel: [ val(meta), path(transcript_barcodes) ]
+        transcript_mtx_file      = ISOQUANT.out.grouped_transcript_mtx          // channel: [ val(meta), path(transcript_mtx) ]
+        gene_qc_stats            = ch_gene_qc_stats                             // channel: [ val(meta), path(gene_qc_stats) ]
+        transcript_qc_stats      = ch_transcript_qc_stats                       // channel: [ val(meta), path(transcript_qc_stats) ]
 }

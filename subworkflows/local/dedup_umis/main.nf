@@ -22,15 +22,16 @@ include { BAM_SORT_STATS_SAMTOOLS } from '../../../subworkflows/nf-core/bam_sort
 
 workflow DEDUP_UMIS {
     take:
-        fasta           // channel: [ val(meta), path(fasta) ]
-        fai             // channel: [ val(meta), path(fai) ]
-        gtf             // channel: [ val(meta), path(gtf) ]
-        in_bam          // channel: [ val(meta), path(bam) ]
-        in_bai          // channel: [ val(meta), path(bai) ]
-        split_bam       // bool: Split the bam
-        genome_aligned  // bool: If the bam is aligned to the genome or not
-        dedup_tool      // str: Name of deduplication tool to use
-        fasta_delimiter // str: Delimiter character used in the sequence id in fasta
+        ch_fasta // channel: [ val(meta), path(fasta) ]
+        ch_fai   // channel: [ val(meta), path(fai) ]
+        ch_gtf   // channel: [ val(meta), path(gtf) ]
+        ch_bam   // channel: [ val(meta), path(bam) ]
+        ch_bai   // channel: [ val(meta), path(bai) ]
+
+        val_split_bam       // bool: Split the bam
+        val_genome_aligned  // bool: If the bam is aligned to the genome or not
+        val_dedup_tool      // str: Name of deduplication tool to use
+        val_fasta_delimiter // str: Delimiter character used in the sequence id in fasta
 
     main:
         ch_versions = channel.empty()
@@ -38,14 +39,14 @@ workflow DEDUP_UMIS {
         ch_undedup_bam = channel.empty()
         ch_undedup_bai = channel.empty()
 
-        if (split_bam) {
+        if (val_split_bam) {
             ch_split_bam = channel.empty()
 
-            if (genome_aligned) {
+            if (val_genome_aligned) {
                 //
                 // MODULE: Bamtools split
                 //
-                BAMTOOLS_SPLIT ( in_bam )
+                BAMTOOLS_SPLIT ( ch_bam )
                 ch_split_bam = BAMTOOLS_SPLIT.out.bam
                     .map{
                         _meta, bam ->
@@ -67,9 +68,9 @@ workflow DEDUP_UMIS {
                 // MODULE: Group Transcripts
                 //
                 GROUP_TRANSCRIPTS (
-                    fasta,
-                    gtf,
-                    fasta_delimiter
+                    ch_fasta,
+                    ch_gtf,
+                    val_fasta_delimiter
                 )
                 ch_versions = ch_versions.mix(GROUP_TRANSCRIPTS.out.versions_group_transcripts)
 
@@ -77,8 +78,8 @@ workflow DEDUP_UMIS {
                 // MODULE: Samtools View
                 //
                 SPLIT_BAM(
-                    in_bam
-                        .join(in_bai)
+                    ch_bam
+                        .join(ch_bai)
                         .combine(GROUP_TRANSCRIPTS.out.grouped_transcripts.flatten())
                         .map{
                             meta, bam, bai, region ->
@@ -96,7 +97,7 @@ workflow DEDUP_UMIS {
             //
             BAM_SORT_STATS_SAMTOOLS(
                 ch_split_bam,
-                fasta.first()
+                ch_fasta.first()
             )
 
             ch_undedup_bam = BAM_SORT_STATS_SAMTOOLS.out.bam
@@ -111,7 +112,7 @@ workflow DEDUP_UMIS {
         ch_dedup_bam = channel.empty()
         ch_dedup_bai = channel.empty()
 
-        if (dedup_tool == 'umitools'){
+        if (val_dedup_tool == 'umitools'){
             //
             // MODULE: Umitools Dedup
             //
@@ -126,8 +127,8 @@ workflow DEDUP_UMIS {
             //
             PICARD_MARKDUPLICATES (
                 ch_undedup_bam,
-                fasta.first(),
-                fai.first()
+                ch_fasta.first(),
+                ch_fai.first()
             )
             ch_dedup_bam = PICARD_MARKDUPLICATES.out.bam
         }
@@ -138,7 +139,7 @@ workflow DEDUP_UMIS {
         SAMTOOLS_INDEX_DEDUP( UMITOOLS_DEDUP.out.bam )
         ch_dedup_bai = SAMTOOLS_INDEX_DEDUP.out.bai
 
-        if (split_bam) {
+        if (val_split_bam) {
             //
             // MODULE: Samtools Merge
             //
@@ -163,8 +164,8 @@ workflow DEDUP_UMIS {
                                 }
                                 .groupTuple()
                         ),
-                fasta
-                    .join(fai)
+                ch_fasta
+                    .join(ch_fai)
                     .map { meta, fasta_file, fai_file ->
                         [meta, fasta_file, fai_file, "$projectDir/assets/dummy_file.txt"]
                     }
@@ -185,16 +186,12 @@ workflow DEDUP_UMIS {
         //
         BAM_STATS_SAMTOOLS (
             ch_dedup_bam.join(ch_dedup_bai),
-            fasta.first()
+            ch_fasta.first()
         )
 
     emit:
-        versions       = ch_versions
-        dedup_bam      = ch_dedup_bam
-        dedup_bai      = ch_dedup_bai
-        dedup_flagstat = BAM_STATS_SAMTOOLS.out.flagstat
-
-        // TODO: Do we need these?
-        dedup_stats    = BAM_STATS_SAMTOOLS.out.stats
-        dedup_idxstats = BAM_STATS_SAMTOOLS.out.idxstats
+        versions       = ch_versions                     // channel: [ val(meta), path(versions) ]
+        dedup_bam      = ch_dedup_bam                    // channel: [ val(meta), path(bam) ]
+        dedup_bai      = ch_dedup_bai                    // channel: [ val(meta), path(bai) ]
+        dedup_flagstat = BAM_STATS_SAMTOOLS.out.flagstat // channel: [ val(meta), path(flagstat) ]
 }
