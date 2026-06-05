@@ -52,37 +52,18 @@ process ISOQUANT {
     stub:
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    dir_prefix=\$(isoquant_output/${prefix})
-    mkdir -p \$dir_prefix
+    mkdir -p isoquant_out/tmp
 
-
-    touch \$dir_prefix/${prefix}.read_assignments.tsv.gz
-    touch \$dir_prefix/${prefix}.corrected_reads.bed.gz
-    touch \$dir_prefix/${prefix}.transcript_tpm.tsv
-    touch \$dir_prefix/${prefix}.transcript_counts.tsv
-    touch \$dir_prefix/${prefix}.gene_tpm.tsv
-    touch \$dir_prefix/${prefix}.gene_counts.tsv
-    touch \$dir_prefix/isoquant.log
-    touch \$dir_prefix/${prefix}.exon_counts.tsv
-    touch \$dir_prefix/${prefix}.intron_counts.tsv
-    touch \$dir_prefix/${prefix}.novel_vs_known.SQANTI-like.tsv
-    touch \$dir_prefix/${prefix}.gene_grouped_tpm.tsv
-    touch \$dir_prefix/${prefix}.gene_grouped_counts.tsv
-    touch \$dir_prefix/${prefix}.transcript_grouped_tpm.tsv
-    touch \$dir_prefix/${prefix}.transcript_grouped_counts.tsv
-    touch \$dir_prefix/${prefix}.exon_grouped_counts.tsv
-    touch \$dir_prefix/${prefix}.intron_grouped_counts.tsv
-    touch \$dir_prefix/${prefix}.transcript_models.gtf
-    touch \$dir_prefix/${prefix}.transcript_model_reads.tsv.gz
-    touch \$dir_prefix/${prefix}.transcript_model_tpm.tsv
-    touch \$dir_prefix/${prefix}.transcript_model_counts.tsv
-    touch \$dir_prefix/${prefix}.extended_annotation.gtf
-    touch \$dir_prefix/${prefix}.transcript_model_grouped_counts.tsv
-    touch \$dir_prefix/${prefix}.transcript_model_grouped_tpm.tsv
+    touch isoquant_out/tmp/${prefix}.gene_grouped.counts.matrix.mtx
+    touch isoquant_out/tmp/${prefix}.gene_grouped.counts.barcodes.tsv
+    touch isoquant_out/tmp/${prefix}.gene_grouped.counts.features.tsv
+    touch isoquant_out/tmp/${prefix}.transcript_grouped.counts.matrix.mtx
+    touch isoquant_out/tmp/${prefix}.transcript_grouped.counts.barcodes.tsv
+    touch isoquant_out/tmp/${prefix}.transcript_grouped.counts.features.tsv
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        isoquant: \$(isoquant.py -v | sed 's#IsoQuant ##')
+        isoquant: \$(isoquant -v | sed 's#IsoQuant ##')
     END_VERSIONS
     """
 }

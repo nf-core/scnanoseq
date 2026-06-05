@@ -48,7 +48,7 @@ process PREEXTRACT_FASTQ {
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
     touch ${prefix}.putative_bc_umi.tsv
-    touch ${prefix}.extracted.fastq
+    touch ${prefix}.extracted.fastq.gz
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

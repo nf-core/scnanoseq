@@ -66,6 +66,7 @@ process SEURAT {
     """
     touch ${prefix}.stats.csv
     touch ${prefix}.png
+    touch ${prefix}.rds
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
