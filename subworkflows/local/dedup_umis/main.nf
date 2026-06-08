@@ -47,19 +47,14 @@ workflow DEDUP_UMIS {
                 //
                 BAMTOOLS_SPLIT ( in_bam )
                 ch_split_bam = BAMTOOLS_SPLIT.out.bam
-                    .map{
-                        _meta, bam ->
-                            [bam]
-                    }
-                    .flatten()
-                    .map{
-                        bam ->
-                            def bam_basename = bam.toString().split('/')[-1]
-                            def split_bam_basename = bam_basename.split(/\./)
-                            def new_meta = [
-                                'id': split_bam_basename.take(split_bam_basename.size()-1).join("."),
-                            ]
-                            [ new_meta, bam ]
+                    .flatMap{
+                        meta, bam ->
+                            def bamList = bam instanceof List ? bam : [bam]
+                            bamList.collect { b ->
+                                def bam_basename = b.toString().split('/')[-1]
+                                def split_bam_basename = bam_basename.split(/\./)
+                                [ meta + [ 'id': split_bam_basename.take(split_bam_basename.size()-1).join(".") ], b ]
+                            }
                     }
 
             } else {
@@ -145,20 +140,20 @@ workflow DEDUP_UMIS {
             SAMTOOLS_MERGE (
                     ch_dedup_bam
                         .map{
-                            _meta, bam ->
+                            meta, bam ->
                                 def bam_basename = bam.toString().split('/')[-1]
                                 def split_bam_basename = bam_basename.split(/\./)
-                                def new_meta = [ 'id': split_bam_basename[0] ]
+                                def new_meta = meta + [ 'id': split_bam_basename[0] ]
                             [ new_meta, bam ]
                         }
                         .groupTuple()
                         .join(
                             ch_dedup_bai
                                 .map{
-                                    _meta, bai ->
+                                    meta, bai ->
                                         def bai_basename = bai.toString().split('/')[-1]
                                         def split_bai_basename = bai_basename.split(/\./)
-                                        def new_meta = [ 'id': split_bai_basename[0] ]
+                                        def new_meta = meta + [ 'id': split_bai_basename[0] ]
                                     [ new_meta, bai ]
                                 }
                                 .groupTuple()

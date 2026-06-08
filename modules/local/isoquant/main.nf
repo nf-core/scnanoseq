@@ -52,9 +52,8 @@ process ISOQUANT {
     stub:
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    dir_prefix=\$(isoquant_output/${prefix})
+    dir_prefix="isoquant_output/${prefix}"
     mkdir -p \$dir_prefix
-
 
     touch \$dir_prefix/${prefix}.read_assignments.tsv.gz
     touch \$dir_prefix/${prefix}.corrected_reads.bed.gz
@@ -66,10 +65,14 @@ process ISOQUANT {
     touch \$dir_prefix/${prefix}.exon_counts.tsv
     touch \$dir_prefix/${prefix}.intron_counts.tsv
     touch \$dir_prefix/${prefix}.novel_vs_known.SQANTI-like.tsv
+    touch \$dir_prefix/${prefix}.gene_grouped_counts.matrix.mtx
+    touch \$dir_prefix/${prefix}.gene_grouped_counts.barcodes.tsv
+    touch \$dir_prefix/${prefix}.gene_grouped_counts.features.tsv
     touch \$dir_prefix/${prefix}.gene_grouped_tpm.tsv
-    touch \$dir_prefix/${prefix}.gene_grouped_counts.tsv
+    touch \$dir_prefix/${prefix}.transcript_grouped_counts.matrix.mtx
+    touch \$dir_prefix/${prefix}.transcript_grouped_counts.barcodes.tsv
+    touch \$dir_prefix/${prefix}.transcript_grouped_counts.features.tsv
     touch \$dir_prefix/${prefix}.transcript_grouped_tpm.tsv
-    touch \$dir_prefix/${prefix}.transcript_grouped_counts.tsv
     touch \$dir_prefix/${prefix}.exon_grouped_counts.tsv
     touch \$dir_prefix/${prefix}.intron_grouped_counts.tsv
     touch \$dir_prefix/${prefix}.transcript_models.gtf
@@ -82,7 +85,7 @@ process ISOQUANT {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        isoquant: \$(isoquant.py -v | sed 's#IsoQuant ##')
+        isoquant: \$(isoquant -v | sed 's#IsoQuant ##')
     END_VERSIONS
     """
 }

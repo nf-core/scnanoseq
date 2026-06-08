@@ -16,7 +16,8 @@ include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_TAGGED       } from '../../../modules
 include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_DEDUP        } from '../../../modules/nf-core/samtools/index'
 include { SAMTOOLS_VIEW as SAMTOOLS_FILTER_DEDUP        } from '../../../modules/nf-core/samtools/view'
 
-include { TAG_BARCODES } from '../../../modules/local/tag_barcodes'
+include { TAG_BARCODES   } from '../../../modules/local/tag_barcodes'
+include { FLEXIFORMATTER } from '../../../modules/local/flexiformatter'
 
 
 workflow PROCESS_LONGREAD_SCRNA {
@@ -61,25 +62,42 @@ workflow PROCESS_LONGREAD_SCRNA {
         //
         // MODULE: Tag Barcodes
         //
+        ch_tagged_bam = Channel.empty()
+        ch_tagged_bai = Channel.empty()
 
-        TAG_BARCODES (
-            ALIGN_LONGREADS.out.sorted_bam
-                .join( ALIGN_LONGREADS.out.sorted_bai, by: 0 )
-                .join( read_bc_info, by: 0)
-        )
-        ch_versions = ch_versions.mix(TAG_BARCODES.out.versions_tag_barcodes)
+        if (params.demux_tool_cdna == "flexiplex") {
+            FLEXIFORMATTER (
+                ALIGN_LONGREADS.out.sorted_bam,
+                "bai"
+            )
 
-        //
-        // MODULE: Index Tagged Bam
-        //
-        SAMTOOLS_INDEX_TAGGED ( TAG_BARCODES.out.tagged_bam )
+            ch_versions = ch_versions.mix(FLEXIFORMATTER.out.versions_flexiformatter)
+            ch_tagged_bam = FLEXIFORMATTER.out.bam
+            ch_tagged_bai = FLEXIFORMATTER.out.bai
+
+
+        } else if (params.demux_tool_cdna == "blaze") {
+            TAG_BARCODES (
+                ALIGN_LONGREADS.out.sorted_bam
+                    .join( ALIGN_LONGREADS.out.sorted_bai, by: 0 )
+                    .join( read_bc_info, by: 0)
+            )
+            ch_versions = ch_versions.mix(TAG_BARCODES.out.versions_tag_barcodes)
+
+            //
+            // MODULE: Index Tagged Bam
+            //
+            SAMTOOLS_INDEX_TAGGED ( TAG_BARCODES.out.tagged_bam )
+
+            ch_tagged_bam = TAG_BARCODES.out.tagged_bam
+            ch_tagged_bai = SAMTOOLS_INDEX_TAGGED.out.bai
+        }
 
         //
         // MODULE: Flagstat Tagged Bam
         //
         SAMTOOLS_FLAGSTAT_TAGGED (
-            TAG_BARCODES.out.tagged_bam
-                .join( SAMTOOLS_INDEX_TAGGED.out.bai, by: [0])
+            ch_tagged_bam.join(ch_tagged_bai)
         )
 
         ch_bam = channel.empty()
@@ -92,8 +110,8 @@ workflow PROCESS_LONGREAD_SCRNA {
                 fasta,
                 fai,
                 gtf,
-                TAG_BARCODES.out.tagged_bam,
-                SAMTOOLS_INDEX_TAGGED.out.bai,
+                ch_tagged_bam,
+                ch_tagged_bai,
                 true, // Used to split the bam
                 genome_aligned,
                 dedup_tool,
@@ -106,12 +124,12 @@ workflow PROCESS_LONGREAD_SCRNA {
             ch_versions = DEDUP_UMIS.out.versions
         } else {
 
-            ch_bam = TAG_BARCODES.out.tagged_bam
-            ch_bai = SAMTOOLS_INDEX_TAGGED.out.bai
+            ch_bam = ch_tagged_bam
+            ch_bai = ch_tagged_bai
             ch_flagstat = SAMTOOLS_FLAGSTAT_TAGGED.out.flagstat
                 .map{
                     meta, flagstat ->
-                        def id = ['id': meta.id]
+                        def id = meta
                     [id, flagstat]
                 }
 
@@ -167,8 +185,8 @@ workflow PROCESS_LONGREAD_SCRNA {
         minimap_nanocomp_bam_txt = ALIGN_LONGREADS.out.nanocomp_bam_txt
 
         // Barcode tagging results + qc's
-        bc_tagged_bam            = TAG_BARCODES.out.tagged_bam
-        bc_tagged_bai            = SAMTOOLS_INDEX_TAGGED.out.bai
+        bc_tagged_bam            = ch_tagged_bam
+        bc_tagged_bai            = ch_tagged_bai
         bc_tagged_flagstat       = SAMTOOLS_FLAGSTAT_TAGGED.out.flagstat
 
         // Deduplication results

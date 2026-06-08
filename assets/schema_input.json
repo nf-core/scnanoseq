@@ -23,6 +23,12 @@
             },
             "cell_count": {
                 "type": "integer"
+            },
+            "type": {
+                "type": "string",
+                "enum": ["dna", "cdna"],
+                "default": "cdna",
+                "errorMessage": "Type must be either 'dna' or 'cdna'. Default is 'cdna'."
             }
         },
         "required": ["sample", "fastq", "cell_count"]

@@ -1,0 +1,5 @@
+name: flexiplex
+channels:
+  - bioconda
+dependencies:
+  - bioconda::flexiplex=1.02.5

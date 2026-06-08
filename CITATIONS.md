@@ -16,6 +16,14 @@
 
 ## Pipeline tools
 
+- [Flexiplex](https://pubmed.ncbi.nlm.nih.gov/38379414/)
+
+  > Cheng O, Ling MH, Wang C, Wu S, Ritchie ME, Göke J, Amin N, Davidson NM. Flexiplex: a versatile demultiplexer and search tool for omics data. Bioinformatics. 2024 Mar 4;40(3):btae102. doi: 10.1093/bioinformatics/btae102. PMID: 38379414; PMCID: PMC10914444.
+
+- [Flexiformatter](https://github.com/ljwharbers/flexiformatter)
+
+  > Luuk Harbers. (2025). ljwharbers/flexiformatter: 1.0.6 (1.0.6). Zenodo. https://doi.org/10.5281/zenodo.18098066
+
 - [BLAZE](https://pubmed.ncbi.nlm.nih.gov/37024980/)
 
   > You Y, Prawer YDJ, De Paoli-Iseppi R, Hunt CPJ, Parish CL, Shim H, Clark MB. Identification of cell barcodes from long-read single-cell RNA-seq with BLAZE. Genome Biol. 2023 Apr 6;24(1):66. doi: 10.1186/s13059-023-02907-y. PMID: 37024980; PMCID: PMC10077662.

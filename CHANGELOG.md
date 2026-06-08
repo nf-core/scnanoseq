@@ -6,9 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## v1.3.0 [TBA]
 
 ### Credits
+
 Special thanks to a new contributor to scnanoseq:
 
-* [Nick Youngblut](https://github.com/nick-youngblut)
+- [Nick Youngblut](https://github.com/nick-youngblut)
 
 ### Enhancements
 
@@ -35,11 +36,11 @@ Special thanks to a new contributor to scnanoseq:
 
 ### Software dependencies
 
-| Dependency  | Old version | New version |
-| ----------- | ----------- | ----------- |
-| `IsoQuant`  | 3.6.1       | 3.13.0      |
-| `Chopper`   | -           | 0.10.0      |
-| `NanoFilt`  | 2.8.0       | removed     |
+| Dependency | Old version | New version |
+| ---------- | ----------- | ----------- |
+| `IsoQuant` | 3.6.1       | 3.13.0      |
+| `Chopper`  | -           | 0.10.0      |
+| `NanoFilt` | 2.8.0       | removed     |
 
 ## v1.2.2 [2026-03-09]
 
