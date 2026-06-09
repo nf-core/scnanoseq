@@ -7,6 +7,8 @@
 //
 // MODULE: Loaded from modules/local/
 //
+
+include { CHOPPER                           } from "../modules/local/chopper"
 include { SPLIT_FILE as SPLIT_FILE_BC_CSV   } from "../modules/local/split_file"
 include { BLAZE                             } from "../modules/local/blaze"
 include { PREEXTRACT_FASTQ                  } from "../modules/local/preextract_fastq"
@@ -32,7 +34,6 @@ include { PROCESS_LONGREAD_SCRNA as PROCESS_LONGREAD_SCRNA_TRANSCRIPT } from "..
 include { PIGZ_UNCOMPRESS as GUNZIP_WHITELIST           } from "../modules/nf-core/pigz/uncompress/main"
 include { PIGZ_COMPRESS                                 } from "../modules/nf-core/pigz/compress/main"
 include { NANOCOMP as NANOCOMP_FASTQ                    } from "../modules/nf-core/nanocomp/main"
-include { CHOPPER                                       } from "../modules/nf-core/chopper"
 include { SEQKIT_SPLIT2                                 } from "../modules/nf-core/seqkit/split2"
 include { SEQKIT_SPLIT2 as SPLIT_SEQ_BC_FASTQ           } from "../modules/nf-core/seqkit/split2"
 include { MULTIQC as MULTIQC_RAWQC                      } from "../modules/nf-core/multiqc/main"
@@ -209,14 +210,45 @@ workflow SCNANOSEQ {
     // MODULE: Trim and filter reads
     //
     ch_fastqc_multiqc_postrim = channel.empty()
-    ch_trimmed_reads = channel.empty()
+    ch_trimmed_reads_combined = channel.empty()
 
     if (!params.skip_trimming){
         //
-        // MODULE: Filter and Trim fastq
+        // MODULE: Split fastq
         //
-        CHOPPER ( ch_cat_fastq, [] )
-        ch_trimmed_reads = CHOPPER.out.fastq
+
+        if (params.split_amount > 0) {
+            SEQKIT_SPLIT2( ch_cat_fastq )
+
+            // Temporarily change the meta object so that the id is present on the
+            // fastq to prevent duplicated names
+            SEQKIT_SPLIT2.out.reads
+                .transpose()
+                .set { ch_fastqs }
+
+        } else {
+            ch_fastqs = ch_cat_fastq
+        }
+
+        ch_trimmed_reads = channel.empty()
+        if (params.skip_trimming){
+            ch_trimmed_reads = ch_fastqs
+        } else {
+            //
+            // MODULE: Filter and Trim fastq
+            //
+            CHOPPER ( ch_fastqs )
+            ch_trimmed_reads = CHOPPER.out.reads
+            ch_versions = ch_versions.mix(CHOPPER.out.versions_chopper)
+        }
+
+        // If the fastqs were split, combine them together
+        if (params.split_amount > 0){
+            CAT_CAT(ch_trimmed_reads.groupTuple())
+            ch_trimmed_reads_combined = CAT_CAT.out.file_out
+        } else {
+            ch_trimmed_reads_combined = ch_trimmed_reads
+        }
 
         //
         // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - post-trim QC
@@ -225,13 +257,13 @@ workflow SCNANOSEQ {
             //
             // MODULE: Run qc on the post trimmed reads
             //
-            FASTQC_NANOPLOT_POST_TRIM ( ch_trimmed_reads, params.skip_nanoplot, params.skip_toulligqc, params.skip_fastqc )
+            FASTQC_NANOPLOT_POST_TRIM ( ch_trimmed_reads_combined, params.skip_nanoplot, params.skip_toulligqc, params.skip_fastqc )
 
             ch_fastqc_multiqc_postrim = FASTQC_NANOPLOT_POST_TRIM.out.fastqc_multiqc.ifEmpty([])
             ch_nanostat_posttrim = FASTQC_NANOPLOT_POST_TRIM.out.nanoplot_txt.ifEmpty([])
         }
     } else {
-        ch_trimmed_reads = ch_cat_fastq
+        ch_trimmed_reads_combined = ch_cat_fastq
     }
 
     //
@@ -258,17 +290,17 @@ workflow SCNANOSEQ {
     // MODULE: Generate whitelist
     //
 
-    BLAZE ( ch_trimmed_reads, ch_blaze_whitelist )
+    BLAZE ( ch_trimmed_reads_combined, ch_blaze_whitelist )
 
     ch_putative_bc = BLAZE.out.putative_bc
     ch_gt_whitelist = BLAZE.out.whitelist
     ch_whitelist_bc_count = BLAZE.out.bc_count
     ch_versions = ch_versions.mix(BLAZE.out.versions_blaze)
 
-    ch_split_bc_fastqs = ch_trimmed_reads
+    ch_split_bc_fastqs = ch_trimmed_reads_combined
     ch_split_bc = ch_putative_bc
     if (params.split_amount > 0) {
-        SPLIT_SEQ_BC_FASTQ( ch_trimmed_reads)
+        SPLIT_SEQ_BC_FASTQ( ch_trimmed_reads_combined)
 
         SPLIT_SEQ_BC_FASTQ.out.reads
             .transpose()
