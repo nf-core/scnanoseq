@@ -9,7 +9,7 @@
                     "blaze": "2.5.1"
                 },
                 "CHOPPER": {
-                    "chopper": "0.10.0"
+                    "chopper": "0.12.0"
                 },
                 "COMBINE_SEURAT_STATS": {
                     "cat": 8.3
@@ -79,7 +79,7 @@
                     "ucsc": 447
                 },
                 "UCSC_GTFTOGENEPRED": {
-                    "ucsc": 447
+                    "ucsc": 482
                 },
                 "UMITOOLS_DEDUP": {
                     "umitools": "1.1.6"
@@ -333,14 +333,10 @@
             [
                 "ERR9958133.bc_count.txt:md5,13b9564bb3fd628ce924ce906c0fda39",
                 "ERR9958133.knee_plot.png:md5,8f2a117877cae258c5b7e0b5571795cf",
-                "ERR9958133.genome.dedup.bam:md5,8547416140b6e7a6b72cb8877fb5657c",
-                "ERR9958133.genome.dedup.bam.bai:md5,855327b37febe38dcbea79965c2b78d2",
                 "ERR9958133.gene_grouped_tag_CB_counts.barcodes.tsv:md5,567fd1015fd997d5260cb24477af0981",
                 "ERR9958133.gene_grouped_tag_CB_counts.features.tsv:md5,1dc3c4284c1e2e95b60aca58faedb476",
-                "ERR9958133.gene_grouped_tag_CB_counts.matrix.mtx:md5,118f06af649bca5ff555b8f6e60b8861",
                 "ERR9958133.transcript_grouped_tag_CB_counts.barcodes.tsv:md5,026dd9e1388f1102bc79f0fe240cc43a",
                 "ERR9958133.transcript_grouped_tag_CB_counts.features.tsv:md5,63fb73d79ad235254124fba665477871",
-                "ERR9958133.transcript_grouped_tag_CB_counts.matrix.mtx:md5,e2c13274b0c2ccef6aaa03e3d5a25046",
                 "ERR9958133.read_distribution.txt:md5,30e5b8971499e484d795a71398d96930",
                 "ERR9958133.genome.umitools_dedup.flagstat:md5,d2d3141cd2f70da18a29615baf6f598a",
                 "ERR9958133.genome.umitools_dedup.idxstats:md5,6bc7e89c90e5c0e328567fd59aa410d5",
@@ -362,14 +358,10 @@
                 "ERR9958133.raw_NanoStats.txt:md5,27e01d4465515b66f3a18cc1e585000d",
                 "ERR9958134.bc_count.txt:md5,19a8e1043f9427c4bfa4c0bb4ad16e22",
                 "ERR9958134.knee_plot.png:md5,1044d9725f5a8ffed36e1418839945d8",
-                "ERR9958134.genome.dedup.bam:md5,3e2ffe84a72131562b242b70d79d230e",
-                "ERR9958134.genome.dedup.bam.bai:md5,dcd0470c53b4aebe1bcdc2c7d073c721",
                 "ERR9958134.gene_grouped_tag_CB_counts.barcodes.tsv:md5,0415c6488a6ad87180da82068546a17b",
                 "ERR9958134.gene_grouped_tag_CB_counts.features.tsv:md5,fd336e0ca73e167cc362130317e58990",
-                "ERR9958134.gene_grouped_tag_CB_counts.matrix.mtx:md5,531ce0207078ce02f8a0536b58ce3f84",
                 "ERR9958134.transcript_grouped_tag_CB_counts.barcodes.tsv:md5,a0b3531c88a5cfcd883cff8d53740a59",
                 "ERR9958134.transcript_grouped_tag_CB_counts.features.tsv:md5,f1df429556aed59af6e6d8e3eb37de37",
-                "ERR9958134.transcript_grouped_tag_CB_counts.matrix.mtx:md5,25fb6a47caebb2f699fc2299dc860628",
                 "ERR9958134.read_distribution.txt:md5,8e1f7c76d68a772fa5b743ea3e90cd99",
                 "ERR9958134.genome.umitools_dedup.flagstat:md5,b4a71382f5466e7f30f9214b7311ee15",
                 "ERR9958134.genome.umitools_dedup.idxstats:md5,23504eeddcf0662b824656e215b6b61c",
@@ -406,7 +398,7 @@
                 "read_counts.csv:md5,03dd3e8f8e2ba7a727f1ae25f5b9e596"
             ]
         ],
-        "timestamp": "2026-05-15T09:23:33.426280867",
+        "timestamp": "2026-06-09T15:21:00.45834178",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "25.10.4"
