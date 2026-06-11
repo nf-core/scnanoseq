@@ -105,8 +105,8 @@ workflow DEDUP_UMIS {
 
         }
         else {
-            ch_undedup_bam = in_bam
-            ch_undedup_bai = in_bai
+            ch_undedup_bam = ch_bam
+            ch_undedup_bai = ch_bai
         }
 
         ch_dedup_bam = channel.empty()

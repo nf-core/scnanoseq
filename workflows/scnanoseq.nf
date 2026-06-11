@@ -201,7 +201,7 @@ workflow SCNANOSEQ {
         UCSC_GTFTOGENEPRED( gtf )
         ch_pred = UCSC_GTFTOGENEPRED.out.genepred
 
-        UCSC_GENEPREDTOBED ( ch_pred.map{meta, genepred -> [genepred]} )
+        UCSC_GENEPREDTOBED ( ch_pred.map{ _meta, genepred -> [genepred]} )
         ch_rseqc_bed = UCSC_GENEPREDTOBED.out.bed
         ch_versions = ch_versions.mix(UCSC_GENEPREDTOBED.out.versions_genepredtobed)
     }
@@ -448,13 +448,13 @@ workflow SCNANOSEQ {
         )
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
             PROCESS_LONGREAD_SCRNA_GENOME.out.gene_qc_stats
-                .map{ meta, stats -> [stats]}
+                .map{ _meta, stats -> [stats]}
                 .collect()
                 .ifEmpty([])
         )
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
             PROCESS_LONGREAD_SCRNA_GENOME.out.transcript_qc_stats
-                .map{ meta, stats -> [stats]}
+                .map{ _meta, stats -> [stats]}
                 .collect()
                 .ifEmpty([])
         )
@@ -508,7 +508,7 @@ workflow SCNANOSEQ {
         )
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
             PROCESS_LONGREAD_SCRNA_TRANSCRIPT.out.transcript_qc_stats
-                .map{ meta, stats -> [stats]}
+                .map{ _meta, stats -> [stats]}
                 .collect()
                 .ifEmpty([])
         )
