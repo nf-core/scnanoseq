@@ -26,6 +26,13 @@
                             "modules"
                         ]
                     },
+                    "csvtk/concat": {
+                        "branch": "master",
+                        "git_sha": "2f74af306499775ab48db1ed4077d2fa5aecf9c4",
+                        "installed_by": [
+                            "modules"
+                        ]
+                    },
                     "custom/dumpsoftwareversions": {
                         "branch": "master",
                         "git_sha": "ad65d06c959cff1da9e94c4a972deaf7430931fa",

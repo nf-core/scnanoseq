@@ -447,10 +447,16 @@ workflow SCNANOSEQ {
             ch_read_counts.collect().ifEmpty([])
         )
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
-            PROCESS_LONGREAD_SCRNA_GENOME.out.gene_qc_stats.collect().ifEmpty([])
+            PROCESS_LONGREAD_SCRNA_GENOME.out.gene_qc_stats
+                .map{ meta, stats -> [stats]}
+                .collect()
+                .ifEmpty([])
         )
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
-            PROCESS_LONGREAD_SCRNA_GENOME.out.transcript_qc_stats.collect().ifEmpty([])
+            PROCESS_LONGREAD_SCRNA_GENOME.out.transcript_qc_stats
+                .map{ meta, stats -> [stats]}
+                .collect()
+                .ifEmpty([])
         )
     }
 
@@ -501,7 +507,10 @@ workflow SCNANOSEQ {
             ch_read_counts.collect().ifEmpty([])
         )
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
-            PROCESS_LONGREAD_SCRNA_TRANSCRIPT.out.transcript_qc_stats.collect().ifEmpty([])
+            PROCESS_LONGREAD_SCRNA_TRANSCRIPT.out.transcript_qc_stats
+                .map{ meta, stats -> [stats]}
+                .collect()
+                .ifEmpty([])
         )
     }
 

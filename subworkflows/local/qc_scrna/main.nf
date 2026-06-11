@@ -3,7 +3,7 @@
 //
 
 include { SEURAT               } from '../../../modules/local/seurat'
-include { COMBINE_SEURAT_STATS } from '../../../modules/local/combine_seurat_stats'
+include { CSVTK_CONCAT } from '../../../modules/nf-core/csvtk/concat'
 
 workflow QC_SCRNA {
     take:
@@ -23,10 +23,18 @@ workflow QC_SCRNA {
         //
         // MODULE: Combine Seurat Stats
         //
-        COMBINE_SEURAT_STATS ( SEURAT.out.seurat_stats.collect{ v -> v[1] } )
-        ch_versions = ch_versions.mix(COMBINE_SEURAT_STATS.out.versions_combine_seurat_stats)
+        CSVTK_CONCAT (
+            SEURAT.out.seurat_stats
+                .collect{ v -> v[1] }
+                .map {
+                    file_list ->
+                    [['id': 'seurat_combined'], file_list]
+                },
+            "csv",
+            "tsv"
+        )
 
     emit:
-        seurat_stats = COMBINE_SEURAT_STATS.out.combined_stats // channel: [ val(meta), path(seurat_stats) ]
-        versions = ch_versions                                 // channel: [ val(meta), path(versions) ]
+        seurat_stats = CSVTK_CONCAT.out.csv // channel: [ val(meta), path(seurat_stats) ]
+        versions = ch_versions              // channel: [ val(meta), path(versions) ]
 }
