@@ -20,3 +20,4 @@ batch_qcs/multiqc/final_qc/multiqc_data/llms-full.txt
 */genome/bam/barcode_tagged/*.tagged.bam.bai
 */genome/bam/dedup/*.genome.dedup.bam
 */genome/bam/dedup/*.genome.dedup.bam.bai
+*/genome/isoquant/*.mtx

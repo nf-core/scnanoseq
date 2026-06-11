@@ -20,6 +20,11 @@
                         "git_sha": "6d46786420b4d7bc88eba026eb389c0c5535d120",
                         "installed_by": ["modules"]
                     },
+                    "csvtk/concat": {
+                        "branch": "master",
+                        "git_sha": "2f74af306499775ab48db1ed4077d2fa5aecf9c4",
+                        "installed_by": ["modules"]
+                    },
                     "custom/dumpsoftwareversions": {
                         "branch": "master",
                         "git_sha": "ad65d06c959cff1da9e94c4a972deaf7430931fa",
@@ -120,11 +125,21 @@
                         "installed_by": ["modules"],
                         "patch": "modules/nf-core/samtools/view/samtools-view.diff"
                     },
+                    "seqkit/split2": {
+                        "branch": "master",
+                        "git_sha": "f03a30b46ebe59ba12b79115f05ab545d5ca2e5e",
+                        "installed_by": ["modules"]
+                    },
                     "toulligqc": {
                         "branch": "master",
                         "git_sha": "d9137377f4dd6246242829772eb1949b96de1ef0",
                         "installed_by": ["modules"],
                         "patch": "modules/nf-core/toulligqc/toulligqc.diff"
+                    },
+                    "ucsc/gtftogenepred": {
+                        "branch": "master",
+                        "git_sha": "6d46786420b4d7bc88eba026eb389c0c5535d120",
+                        "installed_by": ["modules"]
                     },
                     "umitools/dedup": {
                         "branch": "master",

@@ -21,23 +21,24 @@ include { TAG_BARCODES } from '../../../modules/local/tag_barcodes'
 
 workflow PROCESS_LONGREAD_SCRNA {
     take:
-        fasta           // channel: [ val(meta), path(fasta) ]
-        fai             // channel: [ val(meta), path(fai) ]
-        gtf             // channel: [ val(meta), path(gtf) ]
-        fastq           // channel: [ val(meta), path(fastq) ]
-        rseqc_bed       // channel: [ val(meta), path(rseqc_bed) ]
-        read_bc_info    // channel: [ val(meta), path(read_barcode_info) ]
-        quant_list      // list: List of quantifiers to use
-        dedup_tool      // str: Name of deduplication tool to use
-        genome_aligned  // bool: Whether the bam is aligned to the genome or not
-        fasta_delimiter // str: Delimiter character used in sequence id in fasta
+        ch_fasta           // channel: [ val(meta), path(fasta) ]
+        ch_fai             // channel: [ val(meta), path(fai) ]
+        ch_gtf             // channel: [ val(meta), path(gtf) ]
+        ch_fastq           // channel: [ val(meta), path(fastq) ]
+        ch_rseqc_bed       // channel: [ val(meta), path(rseqc_bed) ]
+        ch_read_bc_info    // channel: [ val(meta), path(read_barcode_info) ]
 
-        skip_save_minimap2_index // bool: Skip saving the minimap2 index
-        skip_qc                  // bool: Skip qc steps
-        skip_rseqc               // bool: Skip RSeQC
-        skip_bam_nanocomp        // bool: Skip Nanocomp
-        skip_seurat              // bool: Skip seurat qc steps
-        skip_dedup               // bool: Skip deduplication
+        val_quant_list      // list: List of quantifiers to use
+        val_dedup_tool      // str: Name of deduplication tool to use
+        val_genome_aligned  // bool: Whether the bam is aligned to the genome or not
+        val_fasta_delimiter // str: Delimiter character used in sequence id in fasta
+
+        val_skip_save_minimap2_index // bool: Skip saving the minimap2 index
+        val_skip_qc                  // bool: Skip qc steps
+        val_skip_rseqc               // bool: Skip RSeQC
+        val_skip_bam_nanocomp        // bool: Skip Nanocomp
+        val_skip_seurat              // bool: Skip seurat qc steps
+        val_skip_dedup               // bool: Skip deduplication
 
     main:
         ch_versions = channel.empty()
@@ -47,15 +48,13 @@ workflow PROCESS_LONGREAD_SCRNA {
         //
 
         ALIGN_LONGREADS(
-            fasta,
-            fai,
-            gtf,
-            fastq,
-            rseqc_bed,
-            skip_save_minimap2_index,
-            skip_qc,
-            skip_rseqc,
-            skip_bam_nanocomp
+            ch_fasta,
+            ch_fastq,
+            ch_rseqc_bed,
+            val_skip_save_minimap2_index,
+            val_skip_qc,
+            val_skip_rseqc,
+            val_skip_bam_nanocomp
         )
 
         //
@@ -65,7 +64,7 @@ workflow PROCESS_LONGREAD_SCRNA {
         TAG_BARCODES (
             ALIGN_LONGREADS.out.sorted_bam
                 .join( ALIGN_LONGREADS.out.sorted_bai, by: 0 )
-                .join( read_bc_info, by: 0)
+                .join( ch_read_bc_info, by: 0)
         )
         ch_versions = ch_versions.mix(TAG_BARCODES.out.versions_tag_barcodes)
 
@@ -87,17 +86,17 @@ workflow PROCESS_LONGREAD_SCRNA {
         ch_flagstat = channel.empty()
         ch_idxstats = channel.empty()
 
-        if (!skip_dedup) {
+        if (!val_skip_dedup) {
             DEDUP_UMIS (
-                fasta,
-                fai,
-                gtf,
+                ch_fasta,
+                ch_fai,
+                ch_gtf,
                 TAG_BARCODES.out.tagged_bam,
                 SAMTOOLS_INDEX_TAGGED.out.bai,
                 true, // Used to split the bam
-                genome_aligned,
-                dedup_tool,
-                fasta_delimiter
+                val_genome_aligned,
+                val_dedup_tool,
+                val_fasta_delimiter
             )
 
             ch_bam = DEDUP_UMIS.out.dedup_bam
@@ -123,29 +122,28 @@ workflow PROCESS_LONGREAD_SCRNA {
         ch_gene_qc_stats = channel.empty()
         ch_transcript_qc_stats = channel.empty()
 
-        if (quant_list.contains("oarfish")) {
+        if (val_quant_list.contains("oarfish")) {
             QUANTIFY_SCRNA_OARFISH (
                 ch_bam,
-                ch_bai,
                 ch_flagstat,
-                fasta,
-                skip_qc,
-                skip_seurat
+                ch_fasta,
+                val_skip_qc,
+                val_skip_seurat
             )
             ch_versions = ch_versions.mix(QUANTIFY_SCRNA_OARFISH.out.versions)
             ch_transcript_qc_stats = QUANTIFY_SCRNA_OARFISH.out.transcript_qc_stats
         }
 
-        if (quant_list.contains("isoquant")) {
+        if (val_quant_list.contains("isoquant")) {
             QUANTIFY_SCRNA_ISOQUANT (
                 ch_bam,
                 ch_bai,
                 ch_flagstat,
-                fasta,
-                fai,
-                gtf,
-                skip_qc,
-                skip_seurat
+                ch_fasta,
+                ch_fai,
+                ch_gtf,
+                val_skip_qc,
+                val_skip_seurat
             )
 
             ch_versions = ch_versions.mix(QUANTIFY_SCRNA_ISOQUANT.out.versions)
@@ -155,29 +153,29 @@ workflow PROCESS_LONGREAD_SCRNA {
 
     emit:
         // Versions
-        versions                 = ch_versions
+        versions                 = ch_versions // channel: [ val(meta), path(versions) ]
 
         // Minimap results + qc's
-        minimap_bam              = ALIGN_LONGREADS.out.sorted_bam
-        minimap_bai              = ALIGN_LONGREADS.out.sorted_bai
-        minimap_stats            = ALIGN_LONGREADS.out.stats
-        minimap_flagstat         = ALIGN_LONGREADS.out.flagstat
-        minimap_idxstats         = ALIGN_LONGREADS.out.idxstats
-        minimap_rseqc_read_dist  = ALIGN_LONGREADS.out.rseqc_read_dist
-        minimap_nanocomp_bam_txt = ALIGN_LONGREADS.out.nanocomp_bam_txt
+        minimap_bam              = ALIGN_LONGREADS.out.sorted_bam       // channel: [ val(meta), path(bam) ]
+        minimap_bai              = ALIGN_LONGREADS.out.sorted_bai       // channel: [ val(meta), path(bai) ]
+        minimap_stats            = ALIGN_LONGREADS.out.stats            // channel: [ val(meta), path(stats) ]
+        minimap_flagstat         = ALIGN_LONGREADS.out.flagstat         // channel: [ val(meta), path(flagstat) ]
+        minimap_idxstats         = ALIGN_LONGREADS.out.idxstats         // channel: [ val(meta), path(idxstats) ]
+        minimap_rseqc_read_dist  = ALIGN_LONGREADS.out.rseqc_read_dist  // channel: [ val(meta), path(rseqc_read_dist) ]
+        minimap_nanocomp_bam_txt = ALIGN_LONGREADS.out.nanocomp_bam_txt // channel: [ val(meta), path(nanocomp_bam_txt) ]
 
         // Barcode tagging results + qc's
-        bc_tagged_bam            = TAG_BARCODES.out.tagged_bam
-        bc_tagged_bai            = SAMTOOLS_INDEX_TAGGED.out.bai
-        bc_tagged_flagstat       = SAMTOOLS_FLAGSTAT_TAGGED.out.flagstat
+        bc_tagged_bam            = TAG_BARCODES.out.tagged_bam           // channel: [ val(meta), path(bam) ]
+        bc_tagged_bai            = SAMTOOLS_INDEX_TAGGED.out.bai         // channel: [ val(meta), path(bai) ]
+        bc_tagged_flagstat       = SAMTOOLS_FLAGSTAT_TAGGED.out.flagstat // channel: [ val(meta), path(flagstat) ]
 
         // Deduplication results
-        dedup_bam                = ch_bam
-        dedup_bai                = ch_bai
-        dedup_flagstat           = ch_flagstat
-        dedup_idxstats           = ch_idxstats
+        dedup_bam                = ch_bam      // channel: [ val(meta), path(bam) ]
+        dedup_bai                = ch_bai      // channel: [ val(meta), path(bai) ]
+        dedup_flagstat           = ch_flagstat // channel: [ val(meta), path(flagstat) ]
+        dedup_idxstats           = ch_idxstats // channel: [ val(meta), path(idxstats) ]
 
         // Seurat QC Stats
-        gene_qc_stats            = ch_gene_qc_stats
-        transcript_qc_stats      = ch_transcript_qc_stats
+        gene_qc_stats            = ch_gene_qc_stats       // channel: [ val(meta), path(gene_qc_stats) ]
+        transcript_qc_stats      = ch_transcript_qc_stats // channel: [ val(meta), path(transcript_qc_stats) ]
 }

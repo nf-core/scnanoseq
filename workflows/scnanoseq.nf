@@ -9,14 +9,11 @@
 //
 
 include { CHOPPER                           } from "../modules/local/chopper"
-include { SPLIT_SEQ                         } from "../modules/local/split_seq"
-include { SPLIT_SEQ as SPLIT_SEQ_BC_FASTQ   } from "../modules/local/split_seq"
 include { SPLIT_FILE as SPLIT_FILE_BC_CSV   } from "../modules/local/split_file"
 include { BLAZE                             } from "../modules/local/blaze"
 include { PREEXTRACT_FASTQ                  } from "../modules/local/preextract_fastq"
 include { READ_COUNTS                       } from "../modules/local/read_counts"
 include { CORRECT_BARCODES                  } from "../modules/local/correct_barcodes"
-include { UCSC_GTFTOGENEPRED                } from "../modules/local/ucsc_gtftogenepred"
 include { UCSC_GENEPREDTOBED                } from "../modules/local/ucsc_genepredtobed"
 
 //
@@ -37,12 +34,15 @@ include { PROCESS_LONGREAD_SCRNA as PROCESS_LONGREAD_SCRNA_TRANSCRIPT } from "..
 include { PIGZ_UNCOMPRESS as GUNZIP_WHITELIST           } from "../modules/nf-core/pigz/uncompress/main"
 include { PIGZ_COMPRESS                                 } from "../modules/nf-core/pigz/compress/main"
 include { NANOCOMP as NANOCOMP_FASTQ                    } from "../modules/nf-core/nanocomp/main"
+include { SEQKIT_SPLIT2                                 } from "../modules/nf-core/seqkit/split2"
+include { SEQKIT_SPLIT2 as SPLIT_SEQ_BC_FASTQ           } from "../modules/nf-core/seqkit/split2"
 include { MULTIQC as MULTIQC_RAWQC                      } from "../modules/nf-core/multiqc/main"
 include { MULTIQC as MULTIQC_FINALQC                    } from "../modules/nf-core/multiqc/main"
 include { CAT_CAT                                       } from "../modules/nf-core/cat/cat/main"
 include { CAT_CAT as CAT_CAT_PREEXTRACT                 } from "../modules/nf-core/cat/cat/main"
 include { CAT_CAT as CAT_CAT_BARCODE                    } from "../modules/nf-core/cat/cat/main"
 include { CAT_FASTQ                                     } from "../modules/nf-core/cat/fastq/main"
+include { UCSC_GTFTOGENEPRED                            } from "../modules/nf-core/ucsc/gtftogenepred/main"
 include { paramsSummaryMap                              } from "plugin/nf-schema"
 
 /*
@@ -196,12 +196,12 @@ workflow SCNANOSEQ {
     // come back to this once intron work is finished (likely input will be fine)
     ch_pred = channel.empty()
     ch_rseqc_bed = channel.empty()
+
     if (!params.skip_qc && !params.skip_rseqc) {
         UCSC_GTFTOGENEPRED( gtf )
         ch_pred = UCSC_GTFTOGENEPRED.out.genepred
-        ch_versions = ch_versions.mix(UCSC_GTFTOGENEPRED.out.versions_gtftogenepred)
 
-        UCSC_GENEPREDTOBED ( ch_pred )
+        UCSC_GENEPREDTOBED ( ch_pred.map{meta, genepred -> [genepred]} )
         ch_rseqc_bed = UCSC_GENEPREDTOBED.out.bed
         ch_versions = ch_versions.mix(UCSC_GENEPREDTOBED.out.versions_genepredtobed)
     }
@@ -218,15 +218,14 @@ workflow SCNANOSEQ {
         //
 
         if (params.split_amount > 0) {
-            SPLIT_SEQ( ch_cat_fastq, '.fastq.gz', params.split_amount )
+            SEQKIT_SPLIT2( ch_cat_fastq )
 
             // Temporarily change the meta object so that the id is present on the
             // fastq to prevent duplicated names
-            SPLIT_SEQ.out.split_files
+            SEQKIT_SPLIT2.out.reads
                 .transpose()
                 .set { ch_fastqs }
 
-            ch_versions = ch_versions.mix(SPLIT_SEQ.out.versions_split_seq)
         } else {
             ch_fastqs = ch_cat_fastq
         }
@@ -301,15 +300,13 @@ workflow SCNANOSEQ {
     ch_split_bc_fastqs = ch_trimmed_reads_combined
     ch_split_bc = ch_putative_bc
     if (params.split_amount > 0) {
-        SPLIT_SEQ_BC_FASTQ( ch_trimmed_reads_combined, '.fastq.gz', params.split_amount / 4 )
+        SPLIT_SEQ_BC_FASTQ( ch_trimmed_reads_combined)
 
-        SPLIT_SEQ_BC_FASTQ.out.split_files
+        SPLIT_SEQ_BC_FASTQ.out.reads
             .transpose()
             .set { ch_split_bc_fastqs }
 
-        ch_versions = ch_versions.mix(SPLIT_SEQ_BC_FASTQ.out.versions_split_seq)
-
-        SPLIT_FILE_BC_CSV ( ch_putative_bc, '.csv', (params.split_amount / 4) )
+        SPLIT_FILE_BC_CSV ( ch_putative_bc, '.csv', params.split_amount )
         SPLIT_FILE_BC_CSV.out.split_files
             .transpose()
             .set { ch_split_bc }
@@ -450,10 +447,16 @@ workflow SCNANOSEQ {
             ch_read_counts.collect().ifEmpty([])
         )
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
-            PROCESS_LONGREAD_SCRNA_GENOME.out.gene_qc_stats.collect().ifEmpty([])
+            PROCESS_LONGREAD_SCRNA_GENOME.out.gene_qc_stats
+                .map{ meta, stats -> [stats]}
+                .collect()
+                .ifEmpty([])
         )
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
-            PROCESS_LONGREAD_SCRNA_GENOME.out.transcript_qc_stats.collect().ifEmpty([])
+            PROCESS_LONGREAD_SCRNA_GENOME.out.transcript_qc_stats
+                .map{ meta, stats -> [stats]}
+                .collect()
+                .ifEmpty([])
         )
     }
 
@@ -504,7 +507,10 @@ workflow SCNANOSEQ {
             ch_read_counts.collect().ifEmpty([])
         )
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
-            PROCESS_LONGREAD_SCRNA_TRANSCRIPT.out.transcript_qc_stats.collect().ifEmpty([])
+            PROCESS_LONGREAD_SCRNA_TRANSCRIPT.out.transcript_qc_stats
+                .map{ meta, stats -> [stats]}
+                .collect()
+                .ifEmpty([])
         )
     }
 
