@@ -9,13 +9,13 @@
                     "blaze": "2.5.1"
                 },
                 "CHOPPER": {
-                    "chopper": "0.12.0"
-                },
-                "COMBINE_SEURAT_STATS": {
-                    "cat": 8.3
+                    "chopper": "0.10.0"
                 },
                 "CORRECT_BARCODES": {
                     "python": "3.10.8"
+                },
+                "CSVTK_CONCAT": {
+                    "csvtk": "0.37.0"
                 },
                 "GENOME_FAIDX": {
                     "samtools": "1.22.1"
@@ -347,10 +347,10 @@
                 "ERR9958133.genome.minimap.flagstat:md5,f919dac81c2fc73a8adea9117ad58183",
                 "ERR9958133.genome.minimap.idxstats:md5,1084d0d4fe282790bbda437cfd4b0430",
                 "ERR9958133.genome.minimap.stats:md5,1cc8d926e8b70ec3c080ff518c06f5cb",
-                "ERR9958133.csv:md5,bec73cdc530fc5f24890a780de85abfa",
+                "ERR9958133.csv:md5,a1edf8f0c322fc90a78738d845ffb541",
                 "ERR9958133.png:md5,538b25d9182228cf8d8435a2cc5682dc",
                 "ERR9958133_seurat.rds:md5,d6a804b3938cd2eacfadab8ca8836d4a",
-                "ERR9958133.csv:md5,a76bb6afd95210988b6c592b5b1f5744",
+                "ERR9958133.csv:md5,1a5367521c84f60ac5ffd8ec36894922",
                 "ERR9958133.png:md5,f5eda13fe24e210b254da338a32c7762",
                 "ERR9958133_seurat.rds:md5,93b71da613a349f3283cbe538ab7b701",
                 "ERR9958133.extracted_NanoStats.txt:md5,d7610188b3245d635b33a20021a8caed",
@@ -372,10 +372,10 @@
                 "ERR9958134.genome.minimap.flagstat:md5,430d824018483c4518219b3010a29eab",
                 "ERR9958134.genome.minimap.idxstats:md5,c444cc27cc377f1ed117037c949fcf2a",
                 "ERR9958134.genome.minimap.stats:md5,1be6785c39199382910d9dd3d966c4af",
-                "ERR9958134.csv:md5,65c42212e6c3ba700926bfc6963d77c3",
+                "ERR9958134.csv:md5,fbf7c46d5cb8cdfd316f55969c196128",
                 "ERR9958134.png:md5,57f95dcd0c25b630030487de2e818755",
                 "ERR9958134_seurat.rds:md5,5761e25589b77eea8fcd42cbb3b872b8",
-                "ERR9958134.csv:md5,027f884223f1671772fb0c475fbf484e",
+                "ERR9958134.csv:md5,197c2430e181b4cd3d1e31c088bf973d",
                 "ERR9958134.png:md5,f3c3bd6208d3580b03be47c339084802",
                 "ERR9958134_seurat.rds:md5,1bbf2a1695e65e00e575f68f078e3319",
                 "ERR9958134.extracted_NanoStats.txt:md5,df412252fda5240e62bf0cc083cc43b7",
@@ -383,8 +383,8 @@
                 "ERR9958134.raw_NanoStats.txt:md5,df1ce9b8bcee5e6f87a14266f7c773e8",
                 "multiqc_citations.txt:md5,0cbf715762a381270e777a24df0d0c75",
                 "multiqc_general_stats.txt:md5,83fbf5d55ebba8bd8e7a95a6991e4ac9",
-                "multiqc_isoquant_gene_seurat_stats_module.txt:md5,d17b5686a4444d3dc5e9f81d7a418a74",
-                "multiqc_isoquant_transcript_seurat_stats_module.txt:md5,32a8cd7596f7aaf6fe1ce785460d18d7",
+                "multiqc_isoquant_gene_seurat_stats_module.txt:md5,86fa64d325c46ee8a238881effd6cd58",
+                "multiqc_isoquant_transcript_seurat_stats_module.txt:md5,277b7fb107859ebfb58be655f6336d31",
                 "multiqc_read_counts_module.txt:md5,8a8e9d8899aad357c7041f7ef72ec861",
                 "multiqc_rseqc_read_distribution.txt:md5,fdc904f49f525977f58d32d7ccb298d2",
                 "multiqc_samtools_flagstat.txt:md5,438fdf19905c514d39e038578e14ff64",
@@ -398,7 +398,7 @@
                 "read_counts.csv:md5,03dd3e8f8e2ba7a727f1ae25f5b9e596"
             ]
         ],
-        "timestamp": "2026-06-09T15:21:00.45834178",
+        "timestamp": "2026-06-11T15:56:06.112936336",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "25.10.4"
