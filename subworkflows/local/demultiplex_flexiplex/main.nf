@@ -53,7 +53,7 @@ workflow DEMULTIPLEX_FLEXIPLEX {
             // Transpose channel and add part to metadata
             flexiplex_input = SEQKIT_SPLIT2.out.reads
                 .map { meta, rds ->
-                    def newmeta = [splitcount: rds.size()]
+                    def newmeta = [splitcount: rds.size() as Integer]
                     [meta + newmeta, rds] }
                 .transpose()
                 .map { meta , rds ->
