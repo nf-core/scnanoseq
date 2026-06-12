@@ -23,6 +23,7 @@ workflow DEMULTIPLEX_BLAZE {
         ch_versions = channel.empty()
         ch_extracted_fastq = channel.empty()
         ch_corrected_bc_info = channel.empty()
+        split_amount = params.split_amount as Integer
 
         //
         // MODULE: Uncompress fastq.gz
@@ -67,8 +68,8 @@ workflow DEMULTIPLEX_BLAZE {
 
         ch_split_bc_fastqs = ch_trimmed_reads_combined_fastq
         ch_split_bc = ch_putative_bc
-        if (params.split_amount > 0) {
-                SPLIT_FILE_BC_FASTQ( ch_trimmed_reads_combined_fastq, '.fastq', params.split_amount * 4 )
+        if (split_amount > 0) {
+                SPLIT_FILE_BC_FASTQ( ch_trimmed_reads_combined_fastq, '.fastq', split_amount * 4 )
 
                 SPLIT_FILE_BC_FASTQ.out.split_files
                         .transpose()
@@ -76,7 +77,7 @@ workflow DEMULTIPLEX_BLAZE {
 
                 ch_versions = ch_versions.mix(SPLIT_FILE_BC_FASTQ.out.versions_split_file)
 
-                SPLIT_FILE_BC_CSV ( ch_putative_bc, '.csv', (params.split_amount ) )
+                SPLIT_FILE_BC_CSV ( ch_putative_bc, '.csv', (split_amount ) )
                 SPLIT_FILE_BC_CSV.out.split_files
                         .transpose()
                         .set { ch_split_bc }
@@ -105,7 +106,7 @@ workflow DEMULTIPLEX_BLAZE {
         ch_extracted_fastq = ch_preextract_fastq
         ch_corrected_bc_info = ch_corrected_bc_file
 
-        if (params.split_amount > 0){
+        if (split_amount > 0){
                 //
                 // MODULE: Cat Preextract
                 //

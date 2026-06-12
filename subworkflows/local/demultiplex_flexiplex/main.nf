@@ -19,6 +19,7 @@ workflow DEMULTIPLEX_FLEXIPLEX {
         ch_versions = channel.empty()
         ch_flexiplex_fastq = channel.empty()
         ch_flexiplex_barcodes = channel.empty()
+        split_amount = params.split_amount as Integer
 
         // Unzip the whitelist if needed
         if (whitelist.extension == "gz"){
@@ -39,7 +40,7 @@ workflow DEMULTIPLEX_FLEXIPLEX {
 
 
         flexiplex_input = reads
-        if (params.split_amount > 0) {
+        if (split_amount > 0) {
             //
             // MODULE: Split reads into parts
             //
@@ -76,7 +77,7 @@ workflow DEMULTIPLEX_FLEXIPLEX {
         // Merge barcode counts if split
         //
         ch_barcodes = FLEXIPLEX_DISCOVERY.out.barcode_counts
-        if (params.split_amount > 0 ) {
+        if (split_amount > 0 ) {
 
             ch_flexiplex_barcodes = FLEXIPLEX_DISCOVERY.out.barcode_counts
                 .map { meta, barcode_counts ->
@@ -122,7 +123,7 @@ workflow DEMULTIPLEX_FLEXIPLEX {
         ch_versions = ch_versions.mix(FLEXIPLEX_ASSIGN.out.versions_flexiplex_assign)
 
         ch_flexiplex_fastq = FLEXIPLEX_ASSIGN.out.reads
-        if (params.split_amount > 0) {
+        if (split_amount > 0) {
             //
             // MODULE: cat fastq
             //
