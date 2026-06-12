@@ -3,7 +3,7 @@
 //
 
 include { PIGZ_UNCOMPRESS                           } from '../../../modules/nf-core/pigz/uncompress/main'
-include { SPLIT_SEQ                                 } from '../../../modules/local/split_seq'
+include { SEQKIT_SPLIT2                             } from '../../../modules/nf-core/seqkit/split2/main'
 include { FLEXIPLEX_DISCOVERY                       } from '../../../modules/local/flexiplex/discovery/main'
 include { FLEXIPLEX_FILTER                          } from '../../../modules/local/flexiplex/filter/main'
 include { FLEXIPLEX_ASSIGN                          } from '../../../modules/local/flexiplex/assign/main'
@@ -43,16 +43,14 @@ workflow DEMULTIPLEX_FLEXIPLEX {
             //
             // MODULE: Split reads into parts
             //
-            SPLIT_SEQ (
-                reads,
-                '.fastq.gz',
-                params.split_amount
+            SEQKIT_SPLIT2 (
+                reads
             )
 
-            ch_versions = ch_versions.mix(SPLIT_SEQ.out.versions_split_seq)
+            ch_versions = ch_versions.mix(SEQKIT_SPLIT2.out.versions)
 
             // Transpose channel and add part to metadata
-            flexiplex_input = SPLIT_SEQ.out.split_files
+            flexiplex_input = SEQKIT_SPLIT2.out.reads
                 .map { meta, rds ->
                     def newmeta = [splitcount: rds.size()]
                     [meta + newmeta, rds] }
