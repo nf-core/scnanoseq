@@ -237,7 +237,7 @@ workflow SCNANOSEQ {
             //
             // MODULE: Filter and Trim fastq
             //
-            CHOPPER ( ch_fastqs )
+            CHOPPER ( ch_fastqs, params.split_amount )
             ch_trimmed_reads = CHOPPER.out.reads
             ch_versions = ch_versions.mix(CHOPPER.out.versions_chopper)
         }
