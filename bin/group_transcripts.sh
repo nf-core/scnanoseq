@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# Written by Austyn Trull released under the MIT license.
+
 set -e
 
 ########################

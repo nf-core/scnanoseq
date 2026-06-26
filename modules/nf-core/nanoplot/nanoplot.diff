@@ -16,8 +16,8 @@ Changes in 'nanoplot/main.nf':
  
      script:
      def args = task.ext.args ?: ''
--    def input_file = ("$ontfile".endsWith(".fastq.gz")) ? "--fastq ${ontfile}" :
-+    def input_file = [ ".fastq.gz", ".fastq", ".fq", ".fq.gz" ].any { "$ontfile".endsWith(it) } ? "--fastq ${ontfile}" :
+-    def input_file = ("$ontfile".endsWith(".fastq.gz") || "$ontfile".endsWith(".fq.gz")) ? "--fastq ${ontfile}" :
++    def input_file = [ ".fastq.gz", ".fastq", ".fq", ".fq.gz" ].any { ext -> "$ontfile".endsWith(ext) } ? "--fastq ${ontfile}" :
          ("$ontfile".endsWith(".txt")) ? "--summary ${ontfile}" : ''
 +    def prefix = task.ext.prefix ?: "${meta.id}"
      """
