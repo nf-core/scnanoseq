@@ -2,7 +2,7 @@ process TAG_BARCODES {
     tag "$meta.id"
     label 'process_high'
 
-    conda "bioconda::pysam=0.19.1"
+    conda "bioconda::pysam=0.19.1 conda-forge::python=3.10.6"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/pysam:0.19.1--py310hff46b53_1' :
         'biocontainers/pysam:0.19.1--py310hff46b53_1' }"

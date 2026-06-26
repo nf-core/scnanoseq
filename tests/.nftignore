@@ -12,6 +12,7 @@ batch_qcs/multiqc/final_qc/multiqc_data/multiqc_software_versions.txt
 batch_qcs/multiqc/final_qc/multiqc_data/llms-full.txt
 */qc/nanoplot/*/*.html
 */blaze/*.csv
+*/blaze/*.png
 */genome/bam/mapped_only/*.genome_mapped_only.sorted.bam
 */genome/bam/mapped_only/*.genome_mapped_only.sorted.bam.bai
 */genome/bam/original/*.genome.sorted.bam
@@ -21,3 +22,5 @@ batch_qcs/multiqc/final_qc/multiqc_data/llms-full.txt
 */genome/bam/dedup/*.genome.dedup.bam
 */genome/bam/dedup/*.genome.dedup.bam.bai
 */genome/isoquant/*.mtx
+*/*/qc/seurat_isoquant/*/*.png
+*/*/qc/seurat_isoquant/*/*.rds
