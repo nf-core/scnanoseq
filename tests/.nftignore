@@ -11,6 +11,7 @@ batch_qcs/multiqc/final_qc/multiqc_data/multiqc_sources.txt
 batch_qcs/multiqc/final_qc/multiqc_data/multiqc_software_versions.txt
 batch_qcs/multiqc/final_qc/multiqc_data/llms-full.txt
 */qc/nanoplot/*/*.html
+*/qc/nanoplot/*/*.png
 */blaze/*.csv
 */blaze/*.png
 */genome/bam/mapped_only/*.genome_mapped_only.sorted.bam
