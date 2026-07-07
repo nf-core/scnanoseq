@@ -81,9 +81,9 @@ workflow DEMULTIPLEX_FLEXIPLEX {
 
             ch_flexiplex_barcodes = FLEXIPLEX_DISCOVERY.out.barcode_counts
                 .map { meta, barcode_counts ->
-                    def key = groupKey(meta.subMap('id', 'single_end', 'cell_counts', 'type'), meta.splitcount)
+                    def key = groupKey(meta.subMap('id', 'single_end', 'cell_count', 'type'), meta.splitcount)
                     [key, barcode_counts] }
-                .groupTuple()
+                .groupTuple(sort: { it.name })
 
             MERGE_BARCODES (
                 ch_flexiplex_barcodes
@@ -130,9 +130,9 @@ workflow DEMULTIPLEX_FLEXIPLEX {
 
             ch_grouped_flexiplex_fastq = FLEXIPLEX_ASSIGN.out.reads
             .map { meta, rds ->
-                def key = groupKey(meta.subMap('id', 'single_end', 'cell_counts', 'type'), meta.splitcount)
+                def key = groupKey(meta.subMap('id', 'single_end', 'cell_count', 'type'), meta.splitcount)
                 [key, rds] }
-            .groupTuple()
+            .groupTuple(sort: { it.name })
 
             CAT_FASTQ (
                 ch_grouped_flexiplex_fastq
