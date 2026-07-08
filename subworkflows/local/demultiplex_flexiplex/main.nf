@@ -108,9 +108,9 @@ workflow DEMULTIPLEX_FLEXIPLEX {
         // Merge the reads and barcodes channels
         flexiplex_input_barcodes = flexiplex_input
             .combine(ch_corrected_bc_info)
-            .map { meta, rds, meta2, barcodes -> {
+            .map { meta, rds, meta2, barcodes ->
                 meta.id == meta2.id ? [meta, rds, barcodes] : null }
-            }
+            .filter { it != null }
 
         //
         // MODULE: Assign flexiplex
