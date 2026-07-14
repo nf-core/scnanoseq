@@ -57,7 +57,7 @@ workflow ALIGN_DEDUPLICATE_DNA {
 
         MINIMAP2_ALIGN (
             fastq,
-            ch_minimap_ref,
+            ch_minimap_ref.first(),
             true,
             "bai",
             "",
@@ -87,8 +87,8 @@ workflow ALIGN_DEDUPLICATE_DNA {
             //
             PICARD_MARKDUPLICATES (
                 MINIMAP2_ALIGN.out.bam,
-                fasta,
-                fai
+                fasta.first(),
+                fai.first()
             )
             final_bam = PICARD_MARKDUPLICATES.out.bam
         }
@@ -99,7 +99,7 @@ workflow ALIGN_DEDUPLICATE_DNA {
         // The subworkflow is called in both the minimap2 bams and filtered (mapped only) version
         // TODO: No reason that this is again sorting and indexing.
         // Change to STATS_SAMTOOLS
-        BAM_SORT_STATS_SAMTOOLS ( final_bam, fasta )
+        BAM_SORT_STATS_SAMTOOLS ( final_bam, fasta.first() )
 
         //
         // MODULE: NanoComp for BAM files (unfiltered for QC purposes)
