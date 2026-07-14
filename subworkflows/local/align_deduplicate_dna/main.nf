@@ -86,7 +86,7 @@ workflow ALIGN_DEDUPLICATE_DNA {
             // MODULE: Picard Mark Duplicates
             //
             PICARD_MARKDUPLICATES (
-                MINIMAP2_ALIGN.out.bam,
+                ch_tagged_bam,
                 fasta.first(),
                 fai.first()
             )
