@@ -28,11 +28,11 @@
      inkscape:deskcolor="#aaaaaa"
      inkscape:document-units="mm"
      showgrid="false"
-     inkscape:zoom="1.1575153"
-     inkscape:cx="649.66742"
-     inkscape:cy="220.29946"
+     inkscape:zoom="0.81848692"
+     inkscape:cx="725.72938"
+     inkscape:cy="411.12447"
      inkscape:window-width="1792"
-     inkscape:window-height="982"
+     inkscape:window-height="987"
      inkscape:window-x="0"
      inkscape:window-y="25"
      inkscape:window-maximized="1"
@@ -1157,7 +1157,7 @@
          style="fill:#008000;stroke:#008000;stroke-width:0.264583"
          x="62.874416"
          y="88.912682"
-         id="tspan39664">NanoFilt</tspan><tspan
+         id="tspan39664">chopper</tspan><tspan
          sodipodi:role="line"
          style="fill:#008000;stroke:#008000;stroke-width:0.264583"
          x="62.874416"
@@ -2839,7 +2839,7 @@
          style="fill:#008000;stroke:#008000;stroke-width:0.264583"
          x="124.97856"
          y="174.23405"
-         id="tspan30407-3">Seurat</tspan></text><path
+         id="tspan30407-3">csvtk</tspan></text><path
        style="fill:#000000;stroke:#000000;stroke-width:1.86568;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        d="m 95.946172,153.8921 0.0831,10.32928"
        id="path2500-5-22-5-4-4-2-8-4-0-8-6-4-9-0-6-0"

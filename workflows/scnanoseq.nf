@@ -10,7 +10,6 @@
 
 include { CHOPPER                           } from "../modules/local/chopper"
 include { READ_COUNTS                       } from "../modules/local/read_counts"
-include { UCSC_GTFTOGENEPRED                } from "../modules/local/ucsc_gtftogenepred"
 include { UCSC_GENEPREDTOBED                } from "../modules/local/ucsc_genepredtobed"
 
 //
@@ -34,9 +33,12 @@ include { ALIGN_DEDUPLICATE_DNA                                       } from "..
 //
 include { NANOCOMP as NANOCOMP_FASTQ_CDNA               } from "../modules/nf-core/nanocomp/main"
 include { NANOCOMP as NANOCOMP_FASTQ_DNA                } from "../modules/nf-core/nanocomp/main"
+include { SEQKIT_SPLIT2                                 } from "../modules/nf-core/seqkit/split2"
 include { MULTIQC as MULTIQC_RAWQC                      } from "../modules/nf-core/multiqc/main"
 include { MULTIQC as MULTIQC_FINALQC                    } from "../modules/nf-core/multiqc/main"
 include { CAT_FASTQ                                     } from "../modules/nf-core/cat/fastq/main"
+include { CAT_CAT                                       } from "../modules/nf-core/cat/cat/main"
+include { UCSC_GTFTOGENEPRED                            } from "../modules/nf-core/ucsc/gtftogenepred/main"
 include { paramsSummaryMap                              } from "plugin/nf-schema"
 
 /*
@@ -220,12 +222,12 @@ workflow SCNANOSEQ {
     // come back to this once intron work is finished (likely input will be fine)
     ch_pred = channel.empty()
     ch_rseqc_bed = channel.empty()
+
     if (!params.skip_qc && !params.skip_rseqc) {
         UCSC_GTFTOGENEPRED( gtf )
         ch_pred = UCSC_GTFTOGENEPRED.out.genepred
-        ch_versions = ch_versions.mix(UCSC_GTFTOGENEPRED.out.versions_gtftogenepred)
 
-        UCSC_GENEPREDTOBED ( ch_pred )
+        UCSC_GENEPREDTOBED ( ch_pred.map{ _meta, genepred -> [genepred]} )
         ch_rseqc_bed = UCSC_GENEPREDTOBED.out.bed
         ch_versions = ch_versions.mix(UCSC_GENEPREDTOBED.out.versions_genepredtobed)
     }
@@ -242,10 +244,30 @@ workflow SCNANOSEQ {
         // MODULE: Chopper
         //
 
-        CHOPPER ( ch_cat_fastq )
+        if (params.split_amount > 0) {
+            SEQKIT_SPLIT2( ch_cat_fastq )
 
+            // Temporarily change the meta object so that the id is present on the
+            // fastq to prevent duplicated names
+            SEQKIT_SPLIT2.out.reads
+                .transpose()
+                .set { ch_fastqs }
+
+        } else {
+            ch_fastqs = ch_cat_fastq
+        }
+
+        CHOPPER ( ch_fastqs, params.split_amount )
+        ch_trimmed_reads = CHOPPER.out.reads
         ch_versions = ch_versions.mix(CHOPPER.out.versions_chopper)
-        ch_trimmed_reads_combined = CHOPPER.out.reads
+
+        // If the fastqs were split, combine them together
+        if (params.split_amount > 0){
+            CAT_CAT(ch_trimmed_reads.groupTuple())
+            ch_trimmed_reads_combined = CAT_CAT.out.file_out
+        } else {
+            ch_trimmed_reads_combined = ch_trimmed_reads
+        }
 
         //
         // SUBWORKFLOW: Fastq QC with Nanoplot and FastQC - post-trim QC
@@ -429,10 +451,16 @@ workflow SCNANOSEQ {
             ch_read_counts.collect().ifEmpty([])
         )
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
-            PROCESS_LONGREAD_SCRNA_GENOME.out.gene_qc_stats.collect().ifEmpty([])
+            PROCESS_LONGREAD_SCRNA_GENOME.out.gene_qc_stats
+                .map{ _meta, stats -> [stats]}
+                .collect()
+                .ifEmpty([])
         )
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
-            PROCESS_LONGREAD_SCRNA_GENOME.out.transcript_qc_stats.collect().ifEmpty([])
+            PROCESS_LONGREAD_SCRNA_GENOME.out.transcript_qc_stats
+                .map{ _meta, stats -> [stats]}
+                .collect()
+                .ifEmpty([])
         )
     }
 
@@ -483,7 +511,10 @@ workflow SCNANOSEQ {
             ch_read_counts.collect().ifEmpty([])
         )
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
-            PROCESS_LONGREAD_SCRNA_TRANSCRIPT.out.transcript_qc_stats.collect().ifEmpty([])
+            PROCESS_LONGREAD_SCRNA_TRANSCRIPT.out.transcript_qc_stats
+                .map{ _meta, stats -> [stats]}
+                .collect()
+                .ifEmpty([])
         )
     }
 

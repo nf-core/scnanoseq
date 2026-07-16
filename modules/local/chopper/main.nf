@@ -9,6 +9,7 @@ process CHOPPER {
 
     input:
     tuple val(meta), path(reads)
+    val split_amount
 
     output:
     tuple val(meta), path("*.filtered.fastq.gz"), emit: reads
@@ -23,7 +24,7 @@ process CHOPPER {
 
     """
     FILE_PREFIX=${prefix}
-    if [ ${params.split_amount} -gt 0 ]; then
+    if [ ${split_amount} -gt 0 ]; then
         IDX=\$(basename ${reads} | cut -f2 -d'.')
         FILE_PREFIX=\${FILE_PREFIX}.\${IDX}
     fi

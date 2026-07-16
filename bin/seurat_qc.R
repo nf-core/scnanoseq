@@ -62,6 +62,7 @@ params_list <- list(
     make_option(c("-j", "--input_dir"     ), type="character", default=NULL       , metavar="path"   , help="Directory containing matrix.mtx, features.tsv, and barcodes.tsv."    ),
     make_option(c("-s", "--flagstat"      ), type="character", default=NULL       , metavar="path"   , help="Flagstat file from samtools QC."                                     ),
     make_option(c("-d", "--id"            ), type="character", default="scnanoseq", metavar="string" , help="Project name for Seurat object."                                     ),
+    make_option(c("-f", "--feature_type"  ), type="character", default="./"       , metavar="string" , help="The feature type"                                                    ),
     make_option(c("-o", "--outdir"        ), type="character", default="./"       , metavar="path"   , help="Output directory."                                                   ),
     make_option(c("-r", "--outprefix"     ), type="character", default="seurat_qc", metavar="string" , help="Output prefix."                                                      )
 )
@@ -198,10 +199,24 @@ total_number_features <- nrow(seurat_obj@assays$RNA@counts)
 ####################
 
 # Acquire all stats
-output_table <- data.frame(est_cell_number, mean_reads_per_cell, median_features_per_cell, total_number_features)
+output_table <- data.frame(
+    opt$id,
+    opt$feature_type,
+    est_cell_number,
+    mean_reads_per_cell,
+    median_features_per_cell,
+    total_number_features
+)
 
 # Set the colnames for the output table
-colnames(output_table) <- c("Estimated Cell Number", "Mean Reads Per Cell", "Median Feautures Per Cell", "Total Number of Features")
+colnames(output_table) <- c(
+    "Sample",
+    "Feature_Type",
+    "Estimated Cell Number",
+    "Mean Reads Per Cell",
+    "Median Features Per Cell",
+    "Total Number of Features"
+)
 
 # Write out the data frame
 out_stats <- paste0(opt$outprefix,".csv")

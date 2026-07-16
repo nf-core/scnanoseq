@@ -73,7 +73,7 @@
                     "ucsc": 447
                 },
                 "UCSC_GTFTOGENEPRED": {
-                    "ucsc": 447
+                    "ucsc": 482
                 },
                 "UMITOOLS_DEDUP": {
                     "umitools": "1.1.6"
@@ -352,10 +352,10 @@
                 "read_counts.csv:md5,8aa2fa12b6656ebfd8de50c593a4a275"
             ]
         ],
-        "timestamp": "2026-06-05T09:20:54.600890905",
+        "timestamp": "2026-07-16T18:52:17.38762756",
         "meta": {
             "nf-test": "0.9.4",
-            "nextflow": "25.10.0"
+            "nextflow": "26.04.3"
         }
     }
 }

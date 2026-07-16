@@ -3,7 +3,7 @@ process BLAZE {
     label 'process_medium'
     label 'process_long'
 
-    conda "biconda::blaze2=2.5.1"
+    conda "bioconda::blaze2=2.5.1"
 
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/blaze2:2.5.1--pyhdfd78af_0' :

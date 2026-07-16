@@ -37,7 +37,7 @@ process SPLIT_BAM {
     stub:
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    touch ${prefix}.corrected_bc_umi.tsv
+    touch ${prefix}.split.bam
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

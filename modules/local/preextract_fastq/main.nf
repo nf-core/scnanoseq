@@ -3,7 +3,7 @@ process PREEXTRACT_FASTQ {
     label 'process_low'
     //stageInMode 'copy'
 
-    conda "conda-forge::regex=2022.1.18 conda-forge::biopython=1.79"
+    conda "conda-forge::regex=2022.1.18 conda-forge::biopython=1.79 conda-forge::python=3.10.8"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/mulled-v2-497e12343495a3e0f3b3459542cc8ad37575d9fa:483e027ac6835fcb80b9cfef4de8c89b67343941-0' :
         'biocontainers/mulled-v2-497e12343495a3e0f3b3459542cc8ad37575d9fa:483e027ac6835fcb80b9cfef4de8c89b67343941-0' }"
@@ -46,7 +46,7 @@ process PREEXTRACT_FASTQ {
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
     touch ${prefix}.putative_bc_umi.tsv
-    touch ${prefix}.extracted.fastq
+    touch ${prefix}.extracted.fastq.gz
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

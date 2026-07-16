@@ -3,7 +3,28 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## v1.3.0 [TBA]
+## Unreleased
+
+### Enhancements
+
+- Added support for processing single-cell/nuclei DNA samples alongside cDNA samples in the same pipeline run, via a new optional `type` column (`dna`/`cdna`) in the input samplesheet
+- Added `flexiplex/discovery`, `flexiplex/filter` and `flexiplex/assign` modules and a `flexiformatter` module for barcode extraction, filtering, assignment and BAM-tag conversion
+- Added `demultiplex_flexiplex` and `demultiplex_blaze` subworkflows, replacing the previous inline demultiplexing steps in the main workflow
+- Added `align_deduplicate_dna` subworkflow (`minimap2` alignment, `picard MarkDuplicates`, `BAM_SORT_STATS_SAMTOOLS`) for DNA sample processing
+- Added `demux_tool_cdna`/`demux_tool_dna` parameters to select `flexiplex` or `blaze` for cDNA demultiplexing (DNA currently supports `flexiplex` only)
+- Bumped IsoQuant to v3.13.1
+
+### Parameter changes
+
+- `--whitelist` replaced by `--whitelist_dna` and `--whitelist_cdna`
+- Bundled whitelists in `assets/` changed from `.zip` to `.gz`
+- Added `--split_amount` parameter to control FASTQ/barcode splitting for parallelization
+
+### Fixes
+
+- Fixed `split_amount` parameter type coercion so it is read as an integer under the Nextflow v2 strict syntax parser
+
+## v1.3.0 [2026-06-26]
 
 ### Credits
 
