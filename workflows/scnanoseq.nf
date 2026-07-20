@@ -244,7 +244,7 @@ workflow SCNANOSEQ {
         // MODULE: Chopper
         //
 
-        if (params.split_amount > 0) {
+        if ((params.split_amount as Integer) > 0) {
             SEQKIT_SPLIT2( ch_cat_fastq )
 
             // Temporarily change the meta object so that the id is present on the
@@ -262,7 +262,7 @@ workflow SCNANOSEQ {
         ch_versions = ch_versions.mix(CHOPPER.out.versions_chopper)
 
         // If the fastqs were split, combine them together
-        if (params.split_amount > 0){
+        if ((params.split_amount as Integer) > 0){
             CAT_CAT(ch_trimmed_reads.groupTuple())
             ch_trimmed_reads_combined = CAT_CAT.out.file_out
         } else {
