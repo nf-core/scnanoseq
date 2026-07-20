@@ -48,8 +48,6 @@ workflow DEMULTIPLEX_FLEXIPLEX {
                 reads
             )
 
-            ch_versions = ch_versions.mix(SEQKIT_SPLIT2.out.versions)
-
             // Transpose channel and add part to metadata
             flexiplex_input = SEQKIT_SPLIT2.out.reads
                 .map { meta, rds ->
