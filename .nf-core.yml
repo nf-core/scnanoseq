@@ -4,7 +4,11 @@ lint:
     - docs/images/nf-core-scnanoseq_logo_dark.png
     - docs/images/nf-core-scnanoseq_logo_light.png
     - .gitignore
+    - .github/workflows/branch.yml
+    - .github/workflows/linting.yml
   template_strings: false
+  files_exist:
+    - .github/workflows/linting_comment.yml
 nf_core_version: 3.5.1
 repository_type: pipeline
 template:
