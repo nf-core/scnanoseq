@@ -25,3 +25,8 @@ batch_qcs/multiqc/final_qc/multiqc_data/llms-full.txt
 **/genome/isoquant/*.mtx
 **/qc/seurat_isoquant/*/*.png
 **/qc/seurat_isoquant/*/*.rds
+reference/lrkallisto/*.idx
+**/lrkallisto/bus/output.bus
+**/lrkallisto/bus/run_info.json
+**/lrkallisto/qc/seurat/*/*.png
+**/lrkallisto/qc/seurat/*/*.rds

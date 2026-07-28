@@ -22,6 +22,7 @@ include { DEMULTIPLEX_FLEXIPLEX as DEMULTIPLEX_FLEXIPLEX_DNA          } from "..
 include { DEMULTIPLEX_BLAZE                                           } from "../subworkflows/local/demultiplex_blaze"
 include { PROCESS_LONGREAD_SCRNA as PROCESS_LONGREAD_SCRNA_GENOME     } from "../subworkflows/local/process_longread_scrna"
 include { PROCESS_LONGREAD_SCRNA as PROCESS_LONGREAD_SCRNA_TRANSCRIPT } from "../subworkflows/local/process_longread_scrna"
+include { QUANTIFY_SCRNA_LRKALLISTO                                   } from "../subworkflows/local/quantify_scrna_lrkallisto"
 include { ALIGN_DEDUPLICATE_DNA                                       } from "../subworkflows/local/align_deduplicate_dna"
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -109,10 +110,14 @@ workflow SCNANOSEQ {
     // Associate the quantifiers with the kind of alignment needed
     def GENOME_QUANT_OPTS     = [ 'isoquant' ]
     def TRANSCRIPT_QUANT_OPTS = [ 'oarfish' ]
+    // lr-kallisto pseudoaligns straight from the demultiplexed fastq, so it
+    // needs no alignment and no separate deduplication step
+    def FASTQ_QUANT_OPTS      = [ 'lrkallisto' ]
 
     def quantifier_list   = params.quantifier ? params.quantifier.split(',') as List : []
     def genome_quants     = quantifier_list.findAll { q -> q in GENOME_QUANT_OPTS }
     def transcript_quants = quantifier_list.findAll { q -> q in TRANSCRIPT_QUANT_OPTS }
+    def fastq_quants      = quantifier_list.findAll { q -> q in FASTQ_QUANT_OPTS }
 
     /*
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -512,6 +517,39 @@ workflow SCNANOSEQ {
         )
         ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
             PROCESS_LONGREAD_SCRNA_TRANSCRIPT.out.transcript_qc_stats
+                .map{ _meta, stats -> [stats]}
+                .collect()
+                .ifEmpty([])
+        )
+    }
+
+    //
+    // SUBWORKFLOW: Quantify cDNA with lr-kallisto, straight from the fastq
+    //
+
+    if (fastq_quants) {
+        QUANTIFY_SCRNA_LRKALLISTO (
+            ch_extracted_fastq_cdna,
+            ch_corrected_bc_info_cdna,
+            genome_fasta,
+            gtf,
+            params.skip_qc,
+            params.skip_seurat
+        )
+
+        ch_versions = ch_versions.mix(QUANTIFY_SCRNA_LRKALLISTO.out.versions)
+
+        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
+            ch_read_counts.collect().ifEmpty([])
+        )
+        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
+            QUANTIFY_SCRNA_LRKALLISTO.out.gene_qc_stats
+                .map{ _meta, stats -> [stats]}
+                .collect()
+                .ifEmpty([])
+        )
+        ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
+            QUANTIFY_SCRNA_LRKALLISTO.out.transcript_qc_stats
                 .map{ _meta, stats -> [stats]}
                 .collect()
                 .ifEmpty([])

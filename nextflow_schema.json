@@ -250,9 +250,38 @@
                 },
                 "quantifier": {
                     "type": "string",
-                    "description": "Provide a comma-delimited options of quantifiers for the pipeline to use. Available tools: isoquant, oarfish",
-                    "pattern": "^(oarfish|isoquant)(,(oarfish|isoquant))*$",
+                    "description": "Provide a comma-delimited options of quantifiers for the pipeline to use. Available tools: isoquant, oarfish, lrkallisto",
+                    "pattern": "^(oarfish|isoquant|lrkallisto)(,(oarfish|isoquant|lrkallisto))*$",
                     "fa_icon": "fas fa-chart-area"
+                },
+                "kallisto_kmer_size": {
+                    "type": "integer",
+                    "default": 63,
+                    "description": "K-mer length of the lr-kallisto index. Must be a positive odd integer.",
+                    "help_text": "lr-kallisto uses a longer k-mer than short-read kallisto (63 rather than 31), which improves transcript-to-gene mapping quality for long reads. Only used when `lrkallisto` is one of the `quantifier` options.",
+                    "fa_icon": "fas fa-ruler-horizontal"
+                },
+                "kallisto_threshold": {
+                    "type": "number",
+                    "default": 0.8,
+                    "description": "Maximum rate of unmapped k-mers per read for lr-kallisto to accept a pseudoalignment.",
+                    "help_text": "Passed to `kb count --threshold`. Must be between 0 and 1. Only used when `lrkallisto` is one of the `quantifier` options.",
+                    "fa_icon": "fas fa-filter"
+                },
+                "kallisto_platform": {
+                    "type": "string",
+                    "default": "ONT",
+                    "enum": ["ONT", "PacBio"],
+                    "description": "Sequencing platform used by the lr-kallisto expectation-maximisation step.",
+                    "help_text": "Passed to `kallisto quant-tcc --platform`. Only used when `lrkallisto` is one of the `quantifier` options.",
+                    "fa_icon": "fas fa-microchip"
+                },
+                "kallisto_dlist": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Use the genome as a kallisto d-list, so that reads originating outside the transcriptome are discarded rather than misassigned.",
+                    "help_text": "This is the lr-kallisto default and improves specificity, but it is markedly more punitive for long reads than for short reads: a long read only has to contain one genome-only k-mer to be rejected. On the chr21 test data it reduces the pseudoalignment rate roughly five-fold. Disable it to trade specificity for sensitivity. Only used when `lrkallisto` is one of the `quantifier` options.",
+                    "fa_icon": "fas fa-filter"
                 }
             },
             "description": "Options related to post-mapping analysis"

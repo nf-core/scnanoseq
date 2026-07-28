@@ -293,6 +293,35 @@ It should also be noted that IsoQuant can only accurately perform quantification
 
 It should also be noted that oarfish can only accurately perform quantification on a **transcript** aligned bam, and will only produce transcript level matrices. It's also recommended to ensure that the `--save_transcript_secondary_alignment` is enabled to produce the most accurate oarfish results (true by default for `oarfish` quantification). Notably, this can lead to much higher number of reads reported as aligned, however, this is expected behavior when secondary alignments are included in the analysis.
 
+### lr-kallisto
+
+<details markdown="1">
+<summary>Output files</summary>
+
+- `reference/`
+  - `lrkallisto/`
+    - `kallisto.idx` : The k=63 kallisto index.
+    - `*.t2g.tsv` : The transcript-to-gene mapping.
+    - `transcripts.fasta` : The transcript sequences extracted from the genome and GTF by `gffread`.
+- `<sample_identifier>/`
+  - `cdna/`
+    - `lrkallisto/`
+      - `gene/` : Gene-level feature-barcode matrix (`barcodes.tsv.gz`, `features.tsv.gz`, `matrix.mtx.gz`).
+      - `transcript/` : Transcript-level feature-barcode matrix (`barcodes.tsv.gz`, `features.tsv.gz`, `matrix.mtx.gz`).
+      - `quant/` : The raw `kallisto quant-tcc` output, including TPM-normalised matrices.
+      - `counts_unfiltered/` : The transcript compatibility count (TCC) matrix and its equivalence classes.
+      - `bus/` : The BUS file, equivalence class map, transcript names and `run_info.json` pseudoalignment statistics.
+
+</details>
+
+[lr-kallisto](https://kallisto.readthedocs.io/en/latest/lr/pseudoalignment.html) is the long-read mode of [kallisto](https://github.com/pachterlab/kallisto). Rather than aligning reads, it pseudoaligns them against an index built with a longer k-mer than short-read kallisto uses (63 rather than 31), then quantifies transcript abundances with an expectation-maximization algorithm adapted to long-read error profiles. Because it does not align, this branch of the pipeline produces no BAM file and therefore no alignment-derived QC.
+
+Barcodes and UMIs are taken from the flexiplex read names and written into a synthetic barcode read, so that kallisto can locate them positionally. UMI deduplication is performed by `bustools` during counting rather than by UMI-tools or Picard, so `--skip_dedup` and `--dedup_tool` do not apply to this path.
+
+Both gene and transcript matrices come from a single pseudoalignment pass. `kallisto bus --long` writes the BUS file, `bustools` corrects barcodes against the flexiplex known-barcode list and collapses UMIs into a transcript compatibility count matrix, and `kallisto quant-tcc --long` resolves that into transcript abundances which are also aggregated to genes. Because gene counts are derived from the equivalence classes rather than from reads assigned to a single gene, reads that are compatible with transcripts of more than one gene are distributed by the EM rather than discarded.
+
+`bus/run_info.json` is worth checking after a run: a low `p_pseudoaligned` usually indicates a barcode geometry or strandedness mismatch rather than poor data.
+
 ### Seurat
 
 <details markdown="1">

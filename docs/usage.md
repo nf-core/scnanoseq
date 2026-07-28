@@ -75,6 +75,60 @@ nextflow run nf-core/scnanoseq \
 Please note that while the above command specifies both transcriptome and genome fasta files, only one is needed for the pipeline and is dependent on which quantifier you wish to use. Isoquant requires a genome fasta, while oarfish requires a transcript fasta. Furthermore, if you have any DNA samples, the `genome_fasta` is required.
 Additionally, for the `quantifier` parameter in the above command, we've listed the quantifiers as a comma-delimited string. It is possible to only use one quantifier, and can be accomplished by just providing the name of the quantifying tool you wish to run as a single value, i.e. providing `oarfish` if you only wish to run `oarfish`.
 
+### Quantifiers
+
+Three quantifiers are available through `--quantifier`, and any combination of them can be requested as a comma-delimited string:
+
+| Quantifier   | Reference required             | Levels             | Notes                                                                             |
+| ------------ | ------------------------------ | ------------------ | --------------------------------------------------------------------------------- |
+| `isoquant`   | `genome_fasta` + `gtf`         | gene + transcript  | Quantifies from a genome alignment                                                |
+| `oarfish`    | `transcript_fasta`             | transcript         | Quantifies from a transcriptome alignment; always deduplicates                    |
+| `lrkallisto` | `genome_fasta` + `gtf`         | gene + transcript  | Pseudoaligns straight from the FASTQ; no alignment step                            |
+
+#### lr-kallisto
+
+[lr-kallisto](https://kallisto.readthedocs.io/en/latest/lr/pseudoalignment.html) is the long-read mode of kallisto (`kallisto --long`). Unlike the other two quantifiers, it does not align reads: it pseudoaligns them against a k=63 index and quantifies with a long-read expectation-maximisation step. That makes it considerably faster, at the cost of producing no BAM file and therefore no alignment-based QC for this branch of the pipeline.
+
+Because lr-kallisto locates the cell barcode and UMI positionally rather than by name, the pipeline moves them out of the flexiplex read name into a synthetic barcode read before handing the FASTQs to `kallisto bus`. This reuses the barcodes that flexiplex already corrected against the whitelist, so cell barcodes are directly comparable with the other quantifiers. UMI deduplication is performed by `bustools` while counting, so `--dedup_tool` and `--skip_dedup` have no effect on this path.
+
+This means lr-kallisto has some extra requirements:
+
+- `--genome_fasta` and `--gtf` must both be provided. The transcript sequences are extracted from them with `gffread`, the transcript-to-gene mapping is derived from the same GTF, and the genome is used as the kallisto d-list so that reads originating outside the transcriptome are discarded rather than misassigned. Deriving both from one GTF is what guarantees the index sequence names and the mapping agree.
+- `--demux_tool_cdna` must be `flexiplex`; the `blaze` path keeps barcodes in a separate per-read table rather than in the read name.
+- `--custom_flexiplex_barcode_cdna` cannot be used, because the barcode and UMI widths are needed in order to locate them. Use one of the `--barcode_format` presets instead.
+
+The k-mer length, mapping threshold, platform and d-list can be tuned with `--kallisto_kmer_size` (default 63), `--kallisto_threshold` (default 0.8), `--kallisto_platform` (`ONT` or `PacBio`, default `ONT`) and `--kallisto_dlist` (default `true`).
+
+> [!IMPORTANT]
+> Check `p_pseudoaligned` in `bus/run_info.json` after your first run. The two defaults below are both what lr-kallisto recommends, and on high-error reads each one costs sensitivity independently:
+>
+> | | `--kallisto_dlist false` | `--kallisto_dlist true` (default) |
+> | ------------------------------------ | ------------------------ | --------------------------------- |
+> | `--kallisto_kmer_size 31` | 20.3% | 4.1% |
+> | `--kallisto_kmer_size 63` (default) | 4.5% | **3.4%** |
+>
+> Measured on the chr21 `test_lrkallisto` data, where minimap2 aligns 21.7% of the same reads to the same transcriptome.
+>
+> - **k-mer length.** Pseudoalignment needs *exact* k-mer matches, so k interacts strongly with per-base error rate. A 63-mer survives only if all 63 bases are called correctly: at 1% error that is roughly half of all k-mers, at 8% error well under 1%. The lr-kallisto authors report high accuracy below roughly 10% error and reduced performance above it, so k=63 is the right default for modern high-accuracy basecalls but can collapse on legacy chemistries.
+> - **d-list.** Using the genome as a d-list discards reads containing k-mers that are in the genome but not the transcriptome, which is what stops intronic and genomic reads being force-assigned to a transcript. This is far more punitive for long reads than for short ones: a long read only has to contain a single genome-only k-mer to be rejected.
+>
+> `--kallisto_threshold` will not recover these reads. It bounds the fraction of unmapped k-mers per read, and reads lost here typically have no mapping k-mers at all — raising it from 0.8 to 0.99 changed nothing in the measurements above.
+>
+> The defaults are deliberately the upstream-recommended, higher-specificity ones. If your mapping rate is far below the rate you get from minimap2 on the same data, try relaxing them one at a time and compare against another quantifier before trusting the counts.
+
+Reads are pseudoaligned as non-strand-specific, because after flexiplex has trimmed the adapter, barcode, UMI and poly-T the remaining cDNA is not in a consistent orientation. `params.stranded` therefore does not apply to this path. If you do want to force a strand, override the `KALLISTO_BUS` arguments with a custom config:
+
+```groovy title="custom.config"
+process {
+    withName: '.*:QUANTIFY_SCRNA_LRKALLISTO:KALLISTO_BUS' {
+        ext.args = { "--threshold ${params.kallisto_threshold} --fr-stranded" }
+    }
+}
+```
+
+> [!NOTE]
+> Building a k=63 index is memory-hungry. For a human genome, expect the `KALLISTO_INDEX` process to need substantially more memory than the `process_high` default; see [tuning workflow resources](https://nf-co.re/docs/usage/configuration#tuning-workflow-resources).
+
 The pipeline supports barcode identification and extraction through both `flexiplex` and `blaze` and can be set through `demux_tool_dna` (only works with `flexiplex` for now) and `demux_tool_cdna` parameters. The barcode format can be specified through the `barcode_format` parameter. When working with completely custom barcode structures, you can additionally specify these with `custom_flexiplex_barcode_dna` and `custom_flexiplex_barcode_cdna` parameters. Note: ensure that you are using `flexiplex` as the barcode calling tool. This can be a string formatted as follows `"-x CTACACGACGCTCTTCCGATCT -b ???????????????? -u ?????????? -x TTTCTTATATGGG -f 8 -e 2"`, for more information check the documentation: https://davidsongroup.github.io/flexiplex/
 
 Note that the pipeline will create the following files in your working directory:
@@ -107,7 +161,7 @@ outdir: "./results/"
 genome_fasta: "/path/to/genome.fa"
 transcript_fasta: "/path/to/transcript.fa"
 gtf: "/path/to/file.gtf"
-quantifier: "isoquant|oarfish|isoquant,oarfish"
+quantifier: "isoquant|oarfish|lrkallisto|isoquant,oarfish"
 barcode_format: "10X_3v3"
 <...>
 ```

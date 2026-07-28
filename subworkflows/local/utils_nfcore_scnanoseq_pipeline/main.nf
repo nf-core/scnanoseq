@@ -182,17 +182,35 @@ def validateInputParameters() {
         .any { row -> row[3].toString().equalsIgnoreCase('cdna') }
 
     if (has_cdna_input && !params.quantifier) {
-        error("Input contains cDNA reads but --quantifier was not provided. Please set --quantifier to one or more of: isoquant,oarfish")
+        error("Input contains cDNA reads but --quantifier was not provided. Please set --quantifier to one or more of: isoquant,oarfish,lrkallisto")
     }
 
-    if (params.quantifier && (params.quantifier.equals('isoquant') || params.quantifier.equals('both')) && !params.genome_fasta) {
-        def error_string = "In order to quantify with isoquant, a genome fasta must be provided"
-        error(error_string)
+    def quantifiers = params.quantifier ? params.quantifier.split(',') as List : []
+
+    if (quantifiers.contains('isoquant') && !params.genome_fasta) {
+        error("In order to quantify with isoquant, a genome fasta must be provided")
     }
 
-    if (params.quantifier && (params.quantifier.equals('oarfish') || params.quantifier.equals('both')) && !params.transcript_fasta) {
-        def error_string = "In order to quantify with oarfish, a transcript fasta must be provided"
-        error(error_string)
+    if (quantifiers.contains('oarfish') && !params.transcript_fasta) {
+        error("In order to quantify with oarfish, a transcript fasta must be provided")
+    }
+
+    if (quantifiers.contains('lrkallisto')) {
+        if (!params.genome_fasta || !params.gtf) {
+            error("In order to quantify with lr-kallisto, a genome fasta and a gtf must be provided")
+        }
+
+        // lr-kallisto reads the barcode and umi out of the flexiplex read name;
+        // the blaze path keeps them in a separate per-read table instead.
+        if (params.demux_tool_cdna != 'flexiplex') {
+            error("lr-kallisto quantification requires --demux_tool_cdna flexiplex, but '${params.demux_tool_cdna}' was given")
+        }
+
+        // A custom flexiplex pattern can change the barcode and umi widths,
+        // which lr-kallisto needs in order to locate them positionally.
+        if (params.custom_flexiplex_barcode_cdna) {
+            error("lr-kallisto quantification cannot infer the barcode and umi widths from --custom_flexiplex_barcode_cdna. Please use one of the --barcode_format presets instead")
+        }
     }
 }
 

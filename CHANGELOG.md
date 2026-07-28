@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `demultiplex_flexiplex` and `demultiplex_blaze` subworkflows, replacing the previous inline demultiplexing steps in the main workflow
 - Added `align_deduplicate_dna` subworkflow (`minimap2` alignment, `picard MarkDuplicates`, `BAM_SORT_STATS_SAMTOOLS`) for DNA sample processing
 - Added `demux_tool_cdna`/`demux_tool_dna` parameters to select `flexiplex` or `blaze` for cDNA demultiplexing (DNA currently supports `flexiplex` only)
+- Added `lrkallisto` as a third `--quantifier` option: an alignment-free path that pseudoaligns the demultiplexed FASTQ with lr-kallisto (`kallisto bus --long`), collapses UMIs with `bustools`, and quantifies genes and transcripts with `kallisto quant-tcc --long`. Adds a `test_lrkallisto` profile and the `gffread` module for transcript sequence extraction
 - Bumped IsoQuant to v3.13.1
 
 ### Parameter changes
@@ -19,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `--whitelist` replaced by `--whitelist_dna` and `--whitelist_cdna`
 - Bundled whitelists in `assets/` changed from `.zip` to `.gz`
 - Added `--split_amount` parameter to control FASTQ/barcode splitting for parallelization
+- Added `--kallisto_kmer_size` (default: `63`), `--kallisto_threshold` (default: `0.8`), `--kallisto_platform` (default: `ONT`) and `--kallisto_dlist` (default: `true`) for the `lrkallisto` quantifier
 
 ### Fixes
 
