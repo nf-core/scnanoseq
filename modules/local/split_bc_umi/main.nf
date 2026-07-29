@@ -1,6 +1,7 @@
 process SPLIT_BC_UMI {
     tag "$meta.id"
-    label 'process_medium'
+    // A single-threaded pass over the fastq: ~20k reads/s, ~30 MB resident.
+    label 'process_single'
 
     conda "conda-forge::python=3.10.4"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?

@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixes
 
 - Fixed `split_amount` parameter type coercion so it is read as an integer under the Nextflow v2 strict syntax parser
+- Fixed the `10X_5v3` UMI width used by the `lrkallisto` quantifier (10, not 12), which otherwise caused every read to be dropped by `split_bc_umi.py`'s length check
 
 ## v1.3.0 [2026-06-26]
 
