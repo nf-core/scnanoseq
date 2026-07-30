@@ -99,10 +99,13 @@ This means lr-kallisto has some extra requirements:
 
 The k-mer length, mapping threshold, platform and d-list can be tuned with `--kallisto_kmer_size` (default 63), `--kallisto_threshold` (default 0.8), `--kallisto_platform` (`ONT` or `PacBio`, default `ONT`) and `--kallisto_dlist` (default `true`).
 
+> [!WARNING]
+> To turn the d-list off, write `--kallisto_dlist=false` with an equals sign. `params.kallisto_dlist` defaults to a boolean, so Nextflow treats the space-separated `--kallisto_dlist false` as a bare flag and drops the `false` as a positional argument: the d-list stays **on** and the only sign is a `positional argument` warning in the log. The same applies to any other boolean parameter you want to set to `false` on the command line.
+
 > [!IMPORTANT]
 > Check `p_pseudoaligned` in `bus/run_info.json` after your first run. The two defaults below are both what lr-kallisto recommends, and on high-error reads each one costs sensitivity independently:
 >
-> | | `--kallisto_dlist false` | `--kallisto_dlist true` (default) |
+> | | `--kallisto_dlist=false` | `--kallisto_dlist=true` (default) |
 > | ------------------------------------ | ------------------------ | --------------------------------- |
 > | `--kallisto_kmer_size 31` | 20.3% | 4.1% |
 > | `--kallisto_kmer_size 63` (default) | 4.5% | **3.4%** |
