@@ -130,7 +130,7 @@ process {
 ```
 
 > [!NOTE]
-> Building a k=63 index is memory-hungry. For a human genome, expect the `KALLISTO_INDEX` process to need substantially more memory than the `process_high` default; see [tuning workflow resources](https://nf-co.re/docs/usage/configuration#tuning-workflow-resources).
+> Building the index is cheaper than you might expect for a k=63 index with a whole-genome d-list. Measured on GRCh38 (CellRanger `refdata-gex-GRCh38-2020-A`, 199,138 transcripts, 345 MB of transcript sequence) with the 3.15 Gb genome as the d-list: **463 s wall on 24 cpus and 3.6 GB peak RSS**, producing a 222 MB index. The `process_high` default is comfortably sufficient — there is no need to route `KALLISTO_INDEX` to a high-memory queue. If you use a much larger reference, check `peak_rss` for that process in the execution trace before assuming these numbers carry over.
 
 The pipeline supports barcode identification and extraction through both `flexiplex` and `blaze` and can be set through `demux_tool_dna` (only works with `flexiplex` for now) and `demux_tool_cdna` parameters. The barcode format can be specified through the `barcode_format` parameter. When working with completely custom barcode structures, you can additionally specify these with `custom_flexiplex_barcode_dna` and `custom_flexiplex_barcode_cdna` parameters. Note: ensure that you are using `flexiplex` as the barcode calling tool. This can be a string formatted as follows `"-x CTACACGACGCTCTTCCGATCT -b ???????????????? -u ?????????? -x TTTCTTATATGGG -f 8 -e 2"`, for more information check the documentation: https://davidsongroup.github.io/flexiplex/
 
