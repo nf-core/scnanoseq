@@ -79,11 +79,11 @@ Additionally, for the `quantifier` parameter in the above command, we've listed 
 
 Three quantifiers are available through `--quantifier`, and any combination of them can be requested as a comma-delimited string:
 
-| Quantifier   | Reference required             | Levels             | Notes                                                                             |
-| ------------ | ------------------------------ | ------------------ | --------------------------------------------------------------------------------- |
-| `isoquant`   | `genome_fasta` + `gtf`         | gene + transcript  | Quantifies from a genome alignment                                                |
-| `oarfish`    | `transcript_fasta`             | transcript         | Quantifies from a transcriptome alignment; always deduplicates                    |
-| `lrkallisto` | `genome_fasta` + `gtf`         | gene + transcript  | Pseudoaligns straight from the FASTQ; no alignment step                            |
+| Quantifier   | Reference required     | Levels            | Notes                                                          |
+| ------------ | ---------------------- | ----------------- | -------------------------------------------------------------- |
+| `isoquant`   | `genome_fasta` + `gtf` | gene + transcript | Quantifies from a genome alignment                             |
+| `oarfish`    | `transcript_fasta`     | transcript        | Quantifies from a transcriptome alignment; always deduplicates |
+| `lrkallisto` | `genome_fasta` + `gtf` | gene + transcript | Pseudoaligns straight from the FASTQ; no alignment step        |
 
 #### lr-kallisto
 
@@ -97,27 +97,31 @@ This means lr-kallisto has some extra requirements:
 - `--demux_tool_cdna` must be `flexiplex`; the `blaze` path keeps barcodes in a separate per-read table rather than in the read name.
 - `--custom_flexiplex_barcode_cdna` cannot be used, because the barcode and UMI widths are needed in order to locate them. Use one of the `--barcode_format` presets instead.
 
-The k-mer length, mapping threshold, platform and d-list can be tuned with `--kallisto_kmer_size` (default 63), `--kallisto_threshold` (default 0.8), `--kallisto_platform` (`ONT` or `PacBio`, default `ONT`) and `--kallisto_dlist` (default `true`).
+The k-mer length, platform and d-list can be tuned with `--kallisto_kmer_size` (default 63), `--kallisto_platform` (`ONT` or `PacBio`, default `ONT`) and `--kallisto_dlist` (default `true`). `--kallisto_threshold` (default 0.8) is also accepted but has no effect — see the warning below.
 
 > [!WARNING]
 > To turn the d-list off, write `--kallisto_dlist=false` with an equals sign. `params.kallisto_dlist` defaults to a boolean, so Nextflow treats the space-separated `--kallisto_dlist false` as a bare flag and drops the `false` as a positional argument: the d-list stays **on** and the only sign is a `positional argument` warning in the log. The same applies to any other boolean parameter you want to set to `false` on the command line.
 
 > [!IMPORTANT]
-> Check `p_pseudoaligned` in `bus/run_info.json` after your first run. The two defaults below are both what lr-kallisto recommends, and on high-error reads each one costs sensitivity independently:
+> Check `p_pseudoaligned` in `bus/run_info.json` after your first run. `--kallisto_dlist` costs real sensitivity; `--kallisto_kmer_size` is already at its best value:
 >
-> | | `--kallisto_dlist=false` | `--kallisto_dlist=true` (default) |
-> | ------------------------------------ | ------------------------ | --------------------------------- |
-> | `--kallisto_kmer_size 31` | 20.3% | 4.1% |
-> | `--kallisto_kmer_size 63` (default) | 4.5% | **3.4%** |
+> |                                     | `--kallisto_dlist=false` | `--kallisto_dlist=true` (default) |
+> | ----------------------------------- | ------------------------ | --------------------------------- |
+> | `--kallisto_kmer_size 31`           | 31.5%                    | 18.8%                             |
+> | `--kallisto_kmer_size 63` (default) | **42.8%**                | 30.1%                             |
 >
-> Measured on the chr21 `test_lrkallisto` data, where minimap2 aligns 21.7% of the same reads to the same transcriptome.
+> Measured on 9,805,796 flexiplex-demultiplexed ONT reads against GRCh38 (CellRanger `refdata-gex-GRCh38-2020-A`). On the same reads minimap2 places 95% and isoquant then assigns 45.8% of them to a gene, so 42.8% is in the same range as the alignment-based path rather than an order of magnitude below it.
 >
-> - **k-mer length.** Pseudoalignment needs *exact* k-mer matches, so k interacts strongly with per-base error rate. A 63-mer survives only if all 63 bases are called correctly: at 1% error that is roughly half of all k-mers, at 8% error well under 1%. The lr-kallisto authors report high accuracy below roughly 10% error and reduced performance above it, so k=63 is the right default for modern high-accuracy basecalls but can collapse on legacy chemistries.
-> - **d-list.** Using the genome as a d-list discards reads containing k-mers that are in the genome but not the transcriptome, which is what stops intronic and genomic reads being force-assigned to a transcript. This is far more punitive for long reads than for short ones: a long read only has to contain a single genome-only k-mer to be rejected.
+> - **k-mer length.** Pseudoalignment needs _exact_ k-mer matches, so k interacts with per-base error rate — but **k=63 beats k=31 on real data at both d-list settings**, and it wins by most on the reads that matter: of the reads isoquant assigns confidently to a single gene, k=63 recovers 88.6% against k=31's 58.3% (d-list off). Do not lower k to chase a mapping rate. (An earlier version of this table reported the opposite ordering from the chr21 `test_lrkallisto` profile. That reference is too small for the comparison to carry: every rate there was under 21%, and the k ordering inverts on a whole transcriptome.)
+> - **d-list.** Using the genome as a d-list discards reads containing k-mers that are in the genome but not the transcriptome, which is what stops intronic and genomic reads being force-assigned to a transcript. This is far more punitive for long reads than for short ones: a long read only has to contain a single genome-only k-mer to be rejected. Turning it off recovered 1,253,671 extra reads. Classifying each of them by what isoquant made of the same read: 59% are reads isoquant also assigns to a gene, 22% are intronic reads isoquant places inside a gene but does not count, 14% are reads minimap2 never placed at all, and only **3% are intergenic** — the one class that is unambiguously spurious. On this data the d-list costs far more sensitivity than the specificity it buys, so `--kallisto_dlist=false` is worth trying for ONT cDNA. The pipeline default is still `true`, which is what lr-kallisto upstream recommends; this was one flow cell of one chemistry, so it is a reason to test the setting on your own data rather than to assume the default is wrong.
+> - **read length is not the limiting factor.** Only 1.1% of these reads were shorter than k=63, so reads too short to carry a single k-mer explain almost none of the loss.
 >
-> `--kallisto_threshold` will not recover these reads. It bounds the fraction of unmapped k-mers per read, and reads lost here typically have no mapping k-mers at all — raising it from 0.8 to 0.99 changed nothing in the measurements above.
+> `--kallisto_threshold` will not recover anything: it is **inert**. See the warning below.
 >
-> The defaults are deliberately the upstream-recommended, higher-specificity ones. If your mapping rate is far below the rate you get from minimap2 on the same data, try relaxing them one at a time and compare against another quantifier before trusting the counts.
+> The defaults are deliberately the upstream-recommended, higher-specificity ones. If your mapping rate is far below the rate you get from minimap2 on the same data, compare against another quantifier before trusting the counts.
+
+> [!WARNING]
+> `--kallisto_threshold` currently has no effect. `kallisto bus --long` accepts `--threshold` and silently ignores it: sweeping it over 0.0, 0.1, 0.2, 0.4, 0.6, 0.8 and 0.9 on 1,000,000 reads returned the identical set of 427,251 pseudoaligned reads **and** the identical resolved transcript set for every one of them — only the equivalence-class numbering moved. `--threshold` appears in no other kallisto subcommand, and the pipeline quantifies with `kallisto quant-tcc --long`, so the parameter cannot take effect anywhere on this path. It is retained only so that existing configs keep parsing; do not use it to tune sensitivity.
 
 Reads are pseudoaligned as non-strand-specific, because after flexiplex has trimmed the adapter, barcode, UMI and poly-T the remaining cDNA is not in a consistent orientation. `params.stranded` therefore does not apply to this path. If you do want to force a strand, override the `KALLISTO_BUS` arguments with a custom config:
 
