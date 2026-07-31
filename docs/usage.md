@@ -97,7 +97,7 @@ This means lr-kallisto has some extra requirements:
 - `--demux_tool_cdna` must be `flexiplex`; the `blaze` path keeps barcodes in a separate per-read table rather than in the read name.
 - `--custom_flexiplex_barcode_cdna` cannot be used, because the barcode and UMI widths are needed in order to locate them. Use one of the `--barcode_format` presets instead.
 
-The k-mer length, platform and d-list can be tuned with `--kallisto_kmer_size` (default 63), `--kallisto_platform` (`ONT` or `PacBio`, default `ONT`) and `--kallisto_dlist` (default `true`). `--kallisto_threshold` (default 0.8) is also accepted but has no effect — see the warning below.
+The k-mer length, platform and d-list can be tuned with `--kallisto_kmer_size` (default 63), `--kallisto_platform` (`ONT` or `PacBio`, default `ONT`) and `--kallisto_dlist` (default `true`). `--kallisto_threshold` (default 0.8) is also accepted, but it is inert — see the last warning in this section.
 
 > [!WARNING]
 > To turn the d-list off, write `--kallisto_dlist=false` with an equals sign. `params.kallisto_dlist` defaults to a boolean, so Nextflow treats the space-separated `--kallisto_dlist false` as a bare flag and drops the `false` as a positional argument: the d-list stays **on** and the only sign is a `positional argument` warning in the log. The same applies to any other boolean parameter you want to set to `false` on the command line.
@@ -116,7 +116,7 @@ The k-mer length, platform and d-list can be tuned with `--kallisto_kmer_size` (
 > - **d-list.** Using the genome as a d-list discards reads containing k-mers that are in the genome but not the transcriptome, which is what stops intronic and genomic reads being force-assigned to a transcript. This is far more punitive for long reads than for short ones: a long read only has to contain a single genome-only k-mer to be rejected. Turning it off recovered 1,253,671 extra reads. Classifying each of them by what isoquant made of the same read: 59% are reads isoquant also assigns to a gene, 22% are intronic reads isoquant places inside a gene but does not count, 14% are reads minimap2 never placed at all, and only **3% are intergenic** — the one class that is unambiguously spurious. On this data the d-list costs far more sensitivity than the specificity it buys, so `--kallisto_dlist=false` is worth trying for ONT cDNA. The pipeline default is still `true`, which is what lr-kallisto upstream recommends; this was one flow cell of one chemistry, so it is a reason to test the setting on your own data rather than to assume the default is wrong.
 > - **read length is not the limiting factor.** Only 1.1% of these reads were shorter than k=63, so reads too short to carry a single k-mer explain almost none of the loss.
 >
-> `--kallisto_threshold` will not recover anything: it is **inert**. See the warning below.
+> `--kallisto_threshold` will not recover anything: it is **inert**.
 >
 > The defaults are deliberately the upstream-recommended, higher-specificity ones. If your mapping rate is far below the rate you get from minimap2 on the same data, compare against another quantifier before trusting the counts.
 
