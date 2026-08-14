@@ -79,11 +79,11 @@ Additionally, for the `quantifier` parameter in the above command, we've listed 
 
 Three quantifiers are available through `--quantifier`, and any combination of them can be requested as a comma-delimited string:
 
-| Quantifier   | Reference required             | Levels             | Notes                                                                             |
-| ------------ | ------------------------------ | ------------------ | --------------------------------------------------------------------------------- |
-| `isoquant`   | `genome_fasta` + `gtf`         | gene + transcript  | Quantifies from a genome alignment                                                |
-| `oarfish`    | `transcript_fasta`             | transcript         | Quantifies from a transcriptome alignment; always deduplicates                    |
-| `lrkallisto` | `genome_fasta` + `gtf`         | gene + transcript  | Pseudoaligns straight from the FASTQ; no alignment step                            |
+| Quantifier   | Reference required     | Levels            | Notes                                                          |
+| ------------ | ---------------------- | ----------------- | -------------------------------------------------------------- |
+| `isoquant`   | `genome_fasta` + `gtf` | gene + transcript | Quantifies from a genome alignment                             |
+| `oarfish`    | `transcript_fasta`     | transcript        | Quantifies from a transcriptome alignment; always deduplicates |
+| `lrkallisto` | `genome_fasta` + `gtf` | gene + transcript | Pseudoaligns straight from the FASTQ; no alignment step        |
 
 #### lr-kallisto
 
@@ -102,14 +102,14 @@ The k-mer length, mapping threshold, platform and d-list can be tuned with `--ka
 > [!IMPORTANT]
 > Check `p_pseudoaligned` in `bus/run_info.json` after your first run. The two defaults below are both what lr-kallisto recommends, and on high-error reads each one costs sensitivity independently:
 >
-> | | `--kallisto_dlist false` | `--kallisto_dlist true` (default) |
-> | ------------------------------------ | ------------------------ | --------------------------------- |
-> | `--kallisto_kmer_size 31` | 20.3% | 4.1% |
-> | `--kallisto_kmer_size 63` (default) | 4.5% | **3.4%** |
+> |                                     | `--kallisto_dlist false` | `--kallisto_dlist true` (default) |
+> | ----------------------------------- | ------------------------ | --------------------------------- |
+> | `--kallisto_kmer_size 31`           | 20.3%                    | 4.1%                              |
+> | `--kallisto_kmer_size 63` (default) | 4.5%                     | **3.4%**                          |
 >
 > Measured on the chr21 `test_lrkallisto` data, where minimap2 aligns 21.7% of the same reads to the same transcriptome.
 >
-> - **k-mer length.** Pseudoalignment needs *exact* k-mer matches, so k interacts strongly with per-base error rate. A 63-mer survives only if all 63 bases are called correctly: at 1% error that is roughly half of all k-mers, at 8% error well under 1%. The lr-kallisto authors report high accuracy below roughly 10% error and reduced performance above it, so k=63 is the right default for modern high-accuracy basecalls but can collapse on legacy chemistries.
+> - **k-mer length.** Pseudoalignment needs _exact_ k-mer matches, so k interacts strongly with per-base error rate. A 63-mer survives only if all 63 bases are called correctly: at 1% error that is roughly half of all k-mers, at 8% error well under 1%. The lr-kallisto authors report high accuracy below roughly 10% error and reduced performance above it, so k=63 is the right default for modern high-accuracy basecalls but can collapse on legacy chemistries.
 > - **d-list.** Using the genome as a d-list discards reads containing k-mers that are in the genome but not the transcriptome, which is what stops intronic and genomic reads being force-assigned to a transcript. This is far more punitive for long reads than for short ones: a long read only has to contain a single genome-only k-mer to be rejected.
 >
 > `--kallisto_threshold` will not recover these reads. It bounds the fraction of unmapped k-mers per read, and reads lost here typically have no mapping k-mers at all — raising it from 0.8 to 0.99 changed nothing in the measurements above.
@@ -299,6 +299,10 @@ split_amount: 500000
 - We have seen a recurrent node failure on slurm clusters that does seem to be related to submission of Nextflow jobs. This issue is not related to this pipeline per se, but rather to Nextflow itself. We are currently working on a resolution. But we have two methods that appear to help overcome should this issue arise:
   1. Provide a custom config that increases the memory request for the job that failed. This may take a couple attempts to find the correct requests, but we have noted that there does appear to be a memory issue occasionally with these errors.
   2. Request an interactive session with a decent amount of time and memory and CPUs in order to run the pipeline on the single node. Note that this will take time as there will be minimal parallelization, but this does seem to resolve the issue.
+- By default the pipeline groups UMIs by feature rather than by alignment position: `--dedup_per_gene` (genome alignments) and `--dedup_per_contig` (transcriptome alignments), both `true`. This matters because `umi_tools` corrects its bundling position for soft clipping, and long reads carry variable amounts of untrimmed adapter and polyA, so reads from one PCR family end up in different position groups even when they align at an identical coordinate. Position-based grouping consequently leaves a large fraction of duplicates in place, and absolute molecule counts come out inflated.
+  - `--dedup_per_gene` tags every alignment with the gene whose body it overlaps most (`GX`/`GN`/`GS` tags, written by `TAG_GENES`) and groups on that gene. It requires `--gtf`. Reads whose gene call is ambiguous, or that overlap no gene at all, are deduplicated by position instead and merged back in, so no reads are dropped. The `GS` distribution is published under `qc/gene_assignment/`.
+  - `--dedup_per_contig` applies to transcriptome alignments only, where a contig is a transcript. It needs no gene tag and no fallback.
+  - Set either to `false` to restore position-based grouping. Note that these change absolute UMI counts substantially. Relative expression is essentially unaffected, but anything quoting UMIs per cell, library complexity or saturation will differ from earlier releases.
 - We note that umitools dedup can take a large amount of time in order to perform deduplication. One approach we have implemented to assist with speed is to split input files based on chromosome. However for the transcriptome aligned bams, there is some additional work required that involves grouping transcripts into appropriate chromosomes. In order to accomplish this, the pipeline needs to parse the transcript id from the transcriptome FASTA file. The transcript id is often nested in the sequence identifier with additional data and the data is delimited. We have included the delimiters used by reference files obtained from GENCODE, NCBI, and Ensembl. However in case you wish to explicitly control this or if the reference file source uses a different delimiter, you are able to manually set it via the `--fasta_delimiter` parameter.
 - We acknowledge that analyzing PromethION data is a common use case for this pipeline. Currently, the pipeline has been developed with defaults to analyze GridION and average sized PromethION data. For cases, where jobs have fail due for larger PromethION datasets, the defaults can be overwritten by a custom configuation file (provided by the `-c` Nextflow option) where resources can be increased (substantially in some cases). Below are some of the overrides we have used, and while these amounts may not work on every dataset, these will hopefully at least note which processes will need to have their resources increased:
 

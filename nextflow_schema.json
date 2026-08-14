@@ -199,6 +199,20 @@
                     "enum": ["umitools", "picard"],
                     "default": "umitools",
                     "fa_icon": "fas fa-align-justify"
+                },
+                "dedup_per_gene": {
+                    "type": "boolean",
+                    "description": "Group umis by gene instead of by alignment position when deduplicating a genome alignment.",
+                    "help_text": "Long reads carry variable amounts of untrimmed adapter and polyA, and umi_tools corrects its bundling position for soft clipping, so members of the same PCR family are split across position groups. Grouping by gene removes several times more duplicates without reshaping relative expression. Requires a gtf, since the alignments are tagged from gene-body overlap. Reads with an ambiguous gene call, or none, keep the positional result. Only applies to umitools and to genome alignments; set false to restore position-based grouping.",
+                    "default": true,
+                    "fa_icon": "fas fa-object-group"
+                },
+                "dedup_per_contig": {
+                    "type": "boolean",
+                    "description": "Group umis by transcript instead of by alignment position when deduplicating a transcriptome alignment.",
+                    "help_text": "On a transcriptome alignment each contig is a transcript, so umi_tools --per-contig groups by transcript. This is the transcriptome equivalent of dedup_per_gene and needs no gene tag, since every mapped read has a reference name. It is deliberately not applied to genome alignments, where a contig is a whole chromosome.",
+                    "default": true,
+                    "fa_icon": "fas fa-object-group"
                 }
             },
             "fa_icon": "fas fa-microscope",

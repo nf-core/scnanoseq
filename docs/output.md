@@ -208,6 +208,26 @@ UMI tag = "UR"
 
 Flexiplex barcodes are already corrected during the initial Flexiplex run and are thus not post-corrected.
 
+### Gene assignment
+
+<details markdown="1">
+<summary>Output files</summary>
+
+- `<sample>/<type>/genome/qc/gene_assignment/`
+  - `*.gene_assignment.tsv` : The distribution of gene assignment statuses, per contig.
+
+</details>
+
+When `--dedup_per_gene` is enabled (the default for genome alignments), every alignment is tagged with the gene whose body it overlaps most before deduplication:
+
+```
+gene id tag     = "GX"
+gene name tag   = "GN"
+gene status tag = "GS"    # unique | ambiguous | none
+```
+
+Assignment is by gene-body overlap and is strand-agnostic. `GX` always holds the winning gene, even when a second gene also covers a meaningful share of the read, in which case `GS` is `ambiguous`. Only `unique` alignments are grouped by gene; the rest are deduplicated by position and merged back, so the `GS` distribution in the summary tsv is the ceiling on what gene grouping can act on.
+
 ### UMI-tools Dedup
 
 <details markdown="1">

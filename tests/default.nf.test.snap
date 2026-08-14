@@ -69,13 +69,22 @@
                 "SAMTOOLS_STATS": {
                     "samtools": "1.22.1"
                 },
+                "SPLIT_GENE_STATUS": {
+                    "samtools": "1.22.1"
+                },
+                "TAG_GENES": {
+                    "python": "3.10.6"
+                },
                 "UCSC_GENEPREDTOBED": {
                     "ucsc": 447
                 },
                 "UCSC_GTFTOGENEPRED": {
                     "ucsc": 482
                 },
-                "UMITOOLS_DEDUP": {
+                "UMITOOLS_DEDUP_GENE": {
+                    "umitools": "1.1.6"
+                },
+                "UMITOOLS_DEDUP_MAIN": {
                     "umitools": "1.1.6"
                 },
                 "Workflow": {
@@ -109,6 +118,8 @@
                 "ERR9958133/cdna/genome/isoquant/ERR9958133.cdna/ERR9958133.cdna/ERR9958133.cdna.transcript_grouped_tag_CB_counts.features.tsv",
                 "ERR9958133/cdna/genome/isoquant/ERR9958133.cdna/ERR9958133.cdna/ERR9958133.cdna.transcript_grouped_tag_CB_counts.matrix.mtx",
                 "ERR9958133/cdna/genome/qc",
+                "ERR9958133/cdna/genome/qc/gene_assignment",
+                "ERR9958133/cdna/genome/qc/gene_assignment/ERR9958133.cdna.genome.gene_assignment.tsv",
                 "ERR9958133/cdna/genome/qc/rseqc",
                 "ERR9958133/cdna/genome/qc/rseqc/ERR9958133.read_distribution.txt",
                 "ERR9958133/cdna/genome/qc/samtools",
@@ -182,6 +193,8 @@
                 "ERR9958134/cdna/genome/isoquant/ERR9958134.cdna/ERR9958134.cdna/ERR9958134.cdna.transcript_grouped_tag_CB_counts.features.tsv",
                 "ERR9958134/cdna/genome/isoquant/ERR9958134.cdna/ERR9958134.cdna/ERR9958134.cdna.transcript_grouped_tag_CB_counts.matrix.mtx",
                 "ERR9958134/cdna/genome/qc",
+                "ERR9958134/cdna/genome/qc/gene_assignment",
+                "ERR9958134/cdna/genome/qc/gene_assignment/ERR9958134.cdna.genome.gene_assignment.tsv",
                 "ERR9958134/cdna/genome/qc/rseqc",
                 "ERR9958134/cdna/genome/qc/rseqc/ERR9958134.read_distribution.txt",
                 "ERR9958134/cdna/genome/qc/samtools",
@@ -299,14 +312,15 @@
                 "ERR9958133_barcodes_counts.txt:md5,6d5cb3d3688033996a2eb5f975e54351",
                 "ERR9958133.cdna.gene_grouped_tag_CB_counts.barcodes.tsv:md5,f94c3a51693e4f63e69dba073e1861ec",
                 "ERR9958133.cdna.gene_grouped_tag_CB_counts.features.tsv:md5,e0a2176ad75baba2480bd539cd349984",
-                "ERR9958133.cdna.gene_grouped_tag_CB_counts.matrix.mtx:md5,336217457d816e24491863c196ba45ed",
+                "ERR9958133.cdna.gene_grouped_tag_CB_counts.matrix.mtx:md5,12b316c0c8570f0458aa35b6f4c69e12",
                 "ERR9958133.cdna.transcript_grouped_tag_CB_counts.barcodes.tsv:md5,68088a1b3642c9907ce97e107a4994eb",
                 "ERR9958133.cdna.transcript_grouped_tag_CB_counts.features.tsv:md5,11ca69f0455ffcd89c6133e889bbbef0",
-                "ERR9958133.cdna.transcript_grouped_tag_CB_counts.matrix.mtx:md5,e988fd4fef7f06408579d9adb38380d8",
+                "ERR9958133.cdna.transcript_grouped_tag_CB_counts.matrix.mtx:md5,3bd895b98e89cbbec95add248be3cead",
+                "ERR9958133.cdna.genome.gene_assignment.tsv:md5,fe38f5ddf37d0f6e3780cb10f60961f4",
                 "ERR9958133.read_distribution.txt:md5,dea8a8b4ce34de43810efee784456191",
-                "ERR9958133.cdna.genome.umitools_dedup.flagstat:md5,0a5df1264f762b8c68fe100b066f1bac",
-                "ERR9958133.cdna.genome.umitools_dedup.idxstats:md5,a11cbfa291afb417a5e181cbda2ed709",
-                "ERR9958133.cdna.genome.umitools_dedup.stats:md5,98a2404b4eb55754ddd1d9720c501c42",
+                "ERR9958133.cdna.genome.umitools_dedup.flagstat:md5,c8857fce02aedfea89b58fa28d32f82b",
+                "ERR9958133.cdna.genome.umitools_dedup.idxstats:md5,1da8ee5398462f31c31da2b611895a1c",
+                "ERR9958133.cdna.genome.umitools_dedup.stats:md5,fee5c3954fcbadb431789225724cf9f3",
                 "ERR9958133.cdna.genome.mapped_only.flagstat:md5,8a62e66459abd3e6be5c281bdb46f004",
                 "ERR9958133.cdna.genome.mapped_only.idxstats:md5,1f4d53bc3361aafd56adc31d139012ca",
                 "ERR9958133.cdna.genome.mapped_only.stats:md5,325202e109339782ebb8852dabb4d8f5",
@@ -320,14 +334,15 @@
                 "ERR9958134_barcodes_counts.txt:md5,00beab69eb6da13133f4406c2826c062",
                 "ERR9958134.cdna.gene_grouped_tag_CB_counts.barcodes.tsv:md5,5028681536e1216bb67b6a2d0f776bbe",
                 "ERR9958134.cdna.gene_grouped_tag_CB_counts.features.tsv:md5,0735a3a9cb4acf02be06e17027d49b91",
-                "ERR9958134.cdna.gene_grouped_tag_CB_counts.matrix.mtx:md5,5284f237a80ee5594636e04abb7c09db",
+                "ERR9958134.cdna.gene_grouped_tag_CB_counts.matrix.mtx:md5,29867e42e28023a75cc0234122de1ab8",
                 "ERR9958134.cdna.transcript_grouped_tag_CB_counts.barcodes.tsv:md5,3e7374a80e362799f7718822aa3e1d60",
                 "ERR9958134.cdna.transcript_grouped_tag_CB_counts.features.tsv:md5,05b5c3c00e9c6f995096ad8d1d74e27e",
-                "ERR9958134.cdna.transcript_grouped_tag_CB_counts.matrix.mtx:md5,d47626194988c0b8a50c7928d4244b3c",
+                "ERR9958134.cdna.transcript_grouped_tag_CB_counts.matrix.mtx:md5,14f7a9e438a33f0260c389912d9a5657",
+                "ERR9958134.cdna.genome.gene_assignment.tsv:md5,cc61da27c72b0d95d1c6c2f6ee97dba6",
                 "ERR9958134.read_distribution.txt:md5,86c2337bb4a3f1582cf4740929b5f9ef",
-                "ERR9958134.cdna.genome.umitools_dedup.flagstat:md5,3a620b296c86b15cfedc6b5bfefa2560",
-                "ERR9958134.cdna.genome.umitools_dedup.idxstats:md5,83c19801f37e4a195f87e3acd614fb69",
-                "ERR9958134.cdna.genome.umitools_dedup.stats:md5,5ec6ea2eb761b658dc0c8a7409a35eb2",
+                "ERR9958134.cdna.genome.umitools_dedup.flagstat:md5,5fe50a2b8b9124f25552a8201cb03dfb",
+                "ERR9958134.cdna.genome.umitools_dedup.idxstats:md5,6a568b4a5b61e52ad267a431c7b4a438",
+                "ERR9958134.cdna.genome.umitools_dedup.stats:md5,fc722eb589a34a25164b7badb7219af3",
                 "ERR9958134.cdna.genome.mapped_only.flagstat:md5,3a620b296c86b15cfedc6b5bfefa2560",
                 "ERR9958134.cdna.genome.mapped_only.idxstats:md5,83c19801f37e4a195f87e3acd614fb69",
                 "ERR9958134.cdna.genome.mapped_only.stats:md5,934d5c40934161fb5329d268f4b8b30b",
@@ -338,21 +353,21 @@
                 "ERR9958134.cdna.trimmed_NanoStats.txt:md5,df1ce9b8bcee5e6f87a14266f7c773e8",
                 "ERR9958134.cdna.raw_NanoStats.txt:md5,df1ce9b8bcee5e6f87a14266f7c773e8",
                 "multiqc_citations.txt:md5,0cbf715762a381270e777a24df0d0c75",
-                "multiqc_general_stats.txt:md5,1cd08647f6c0e3a66c5db06b875346c1",
+                "multiqc_general_stats.txt:md5,fab9b2913f77e5e0c2ef32fe86291bf1",
                 "multiqc_read_counts_module.txt:md5,59a7c80f1b36aaa329a69e29ab777657",
                 "multiqc_rseqc_read_distribution.txt:md5,238ff57d149aa45cf517d5c9b3a1c21d",
-                "multiqc_samtools_flagstat.txt:md5,2ff3978bffb90abfe9217b260d1147b7",
+                "multiqc_samtools_flagstat.txt:md5,bbab7552c526f3103520e3f12100ea0e",
                 "multiqc_samtools_idxstats.txt:md5,03fcd4c9cc2026638f09431e8b42c425",
                 "rseqc_read_distribution_plot.txt:md5,82384599c90b54d245daa5361fa5f254",
-                "samtools-flagstat-pct-table.txt:md5,9c2b3779098a73f183c24fc9c816b1f4",
-                "samtools-flagstat-table.txt:md5,a8d4b5846120b1b587f4c084c6256136",
+                "samtools-flagstat-pct-table.txt:md5,71cd024324c933cd15b74bf3af204df0",
+                "samtools-flagstat-table.txt:md5,faa25ce46a84a0a94ba1a4215c7fb6d5",
                 "samtools-idxstats-mapped-reads-plot_Normalised_Counts.txt:md5,872d0a25e6a6910f8872931d19c38883",
                 "samtools-idxstats-mapped-reads-plot_Observed_over_Expected_Counts.txt:md5,872d0a25e6a6910f8872931d19c38883",
                 "samtools-idxstats-mapped-reads-plot_Raw_Counts.txt:md5,04e1aaee96fb6284e37423d3366318f4",
                 "read_counts.csv:md5,8aa2fa12b6656ebfd8de50c593a4a275"
             ]
         ],
-        "timestamp": "2026-07-16T18:52:17.38762756",
+        "timestamp": "2026-08-14T10:18:17.127705206",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.04.3"

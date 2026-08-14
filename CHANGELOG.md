@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `demux_tool_cdna`/`demux_tool_dna` parameters to select `flexiplex` or `blaze` for cDNA demultiplexing (DNA currently supports `flexiplex` only)
 - Added `lrkallisto` as a third `--quantifier` option: an alignment-free path that pseudoaligns the demultiplexed FASTQ with lr-kallisto (`kallisto bus --long`), collapses UMIs with `bustools`, and quantifies genes and transcripts with `kallisto quant-tcc --long`. Adds a `test_lrkallisto` profile and the `gffread` module for transcript sequence extraction
 - Bumped IsoQuant to v3.13.1
+- Deduplication now groups UMIs by feature rather than by alignment position. Genome alignments are tagged with a gene by gene-body overlap (new `tag_genes` and `split_gene_status` modules, `GX`/`GN`/`GS` tags) and grouped with `umi_tools --per-gene`; reads with an ambiguous gene call or none are deduplicated positionally and merged back, so no reads are dropped. Transcriptome alignments use `umi_tools --per-contig`, where a contig is a transcript. **This substantially changes absolute UMI counts** — on the data this was developed against, total duplicate removal rose from 6.5% to ~34%, i.e. previous counts were inflated by roughly 1.6x. Relative expression is essentially unchanged (Spearman 0.998, no genes lost), so clustering and ratio-based analyses are unaffected, but UMIs per cell, library complexity and saturation estimates will differ from earlier releases. Revert with `--dedup_per_gene=false` / `--dedup_per_contig=false`
+- `umi_tools dedup` now always takes the cell barcode from the corrected `CB` tag. Previously this applied only when `--demux_tool_cdna flexiplex` was set; the `blaze` path fell back to reading the raw, uncorrected barcode out of the read name, which fragmented cells and made the two demultiplexing paths incomparable
 
 ### Parameter changes
 
@@ -21,10 +23,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bundled whitelists in `assets/` changed from `.zip` to `.gz`
 - Added `--split_amount` parameter to control FASTQ/barcode splitting for parallelization
 - Added `--kallisto_kmer_size` (default: `63`), `--kallisto_threshold` (default: `0.8`), `--kallisto_platform` (default: `ONT`) and `--kallisto_dlist` (default: `true`) for the `lrkallisto` quantifier
+- Added `--dedup_per_gene` (default: `true`, genome alignments) and `--dedup_per_contig` (default: `true`, transcriptome alignments) to control UMI grouping. `--dedup_per_gene` requires `--gtf`
 
 ### Fixes
 
 - Fixed `split_amount` parameter type coercion so it is read as an integer under the Nextflow v2 strict syntax parser
+- Fixed `SAMTOOLS_INDEX_DEDUP` in the `dedup_umis` subworkflow indexing the `umi_tools` output channel unconditionally, which left the `--dedup_tool picard` branch indexing a channel that was never populated
 
 ## v1.3.0 [2026-06-26]
 
