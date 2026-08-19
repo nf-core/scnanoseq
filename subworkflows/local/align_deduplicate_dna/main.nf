@@ -32,6 +32,9 @@ workflow ALIGN_DEDUPLICATE_DNA {
         dedup_bam                = channel.empty()
         dedup_bai                = channel.empty()
 
+        // MarkDuplicates duplication metrics. Stays empty when dedup is skipped.
+        ch_dedup_metrics         = channel.empty()
+
         // SAMtool stats after dedup
         stats                    = channel.empty()
         flagstat                 = channel.empty()
@@ -91,6 +94,7 @@ workflow ALIGN_DEDUPLICATE_DNA {
                 fai.first()
             )
             final_bam = PICARD_MARKDUPLICATES.out.bam
+            ch_dedup_metrics = PICARD_MARKDUPLICATES.out.metrics
         }
 
 
@@ -133,6 +137,9 @@ workflow ALIGN_DEDUPLICATE_DNA {
         // Deduplicated bam file
         dedup_bam                = BAM_SORT_STATS_SAMTOOLS.out.bam
         dedup_bai                = BAM_SORT_STATS_SAMTOOLS.out.bai
+
+        // MarkDuplicates duplication metrics
+        dedup_metrics            = ch_dedup_metrics
 
         // SAMtool stats after dedup
         stats                    = BAM_SORT_STATS_SAMTOOLS.out.stats

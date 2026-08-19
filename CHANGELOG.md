@@ -29,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed `split_amount` parameter type coercion so it is read as an integer under the Nextflow v2 strict syntax parser
 - Fixed `SAMTOOLS_INDEX_DEDUP` in the `dedup_umis` subworkflow indexing the `umi_tools` output channel unconditionally, which left the `--dedup_tool picard` branch indexing a channel that was never populated
+- The `picard MarkDuplicates` duplication metrics are no longer discarded on the DNA branch. `PICARD_MARKDUPLICATES.out.metrics` was emitted by the module but published nowhere and never passed to MultiQC, so a DNA run reported no duplicate rate at all. The metrics are now published to `<sample>/dna/qc/dedup/*.metrics.txt` and summarised in the MultiQC report
+- Added `analysis/dna_dedup/`, a standalone QC script and write-up quantifying what MarkDuplicates keys on for ONT single-end reads. It confirms the soft-clip problem behind the per-gene UMI grouping change does not affect the DNA branch, because the variable adapter clip sits at the read's 3' end while MarkDuplicates anchors on the 5' end
 
 ## v1.3.0 [2026-06-26]
 

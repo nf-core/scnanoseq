@@ -576,6 +576,9 @@ workflow SCNANOSEQ {
         ALIGN_DEDUPLICATE_DNA.out.flagstat.collect{it[1]}.ifEmpty([])
     )
     ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
+        ALIGN_DEDUPLICATE_DNA.out.dedup_metrics.collect{it[1]}.ifEmpty([])
+    )
+    ch_multiqc_finalqc_files = ch_multiqc_finalqc_files.mix(
         ALIGN_DEDUPLICATE_DNA.out.nanocomp_bam_txt.collect{it[1]}.ifEmpty([])
     )
 
