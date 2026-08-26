@@ -184,31 +184,16 @@ Note that barcodes are corrected with the custom script, `correct_barcodes.py`.
 
 ### Barcode Tags Flexiplex
 
-<details markdown="1">
-<summary>Output files</summary>
-
-- `<sample_identifier>/`
-  - `genome/`
-    - `bam/`
-      - `all_reads/`
-        - `*.genome.all_reads.bam` : The deduplicated genome alignments with the reads that carry no barcode merged back in.
-  - `transcriptome/`
-    - `bam/`
-      - `all_reads/`
-        - `*.transcriptome.all_reads.bam` : The deduplicated transcriptome alignments with the reads that carry no barcode merged back in.
-
-</details>
-
 No separate tagging step is needed on the flexiplex path. Flexiplex writes the barcode
 and UMI into the FASTQ header comment, and the pipeline runs `minimap2 -y`, which copies
 that comment onto every alignment. The tags are:
 
 ```
 CB   corrected cell barcode, or "-" when no known barcode matched
-CR   cell barcode as observed in the read, or "-" when no barcode region was found
+CR   cell barcode as observed in the read
 UB   corrected UMI
 UR   UMI as observed in the read
-XB   CB when a barcode was called, otherwise CR, otherwise "-"
+XB   CB when a barcode was called, otherwise CR
 ```
 
 `XB` is derived by the pipeline rather than written by flexiplex. It is what
@@ -216,15 +201,13 @@ deduplication and the all-droplet quantification group on, so that a droplet whi
 below the knee — real barcode, just not on the known list — stays distinct instead of
 pooling with every other unassigned read under `CB:Z:-`.
 
-Since flexiplex is run with `-a true` it reports every read, so the alignments include
-reads it could not assign. Those with no barcode at all (`XB:Z:-`) are held out of
-deduplication, because they carry no UMI to group by, and merged back into the
-`all_reads` BAM afterwards. Barcodes are corrected during the flexiplex run itself and
-are not post-corrected.
-
-Note that on the cDNA path unmapped reads are already dropped before this point, so
-`all_reads` means every _mapped_ read. The DNA path applies no such filter, so its
-deduplicated BAM keeps unmapped reads as well.
+Since flexiplex is run with `-a true` it reports every read, not only the ones it could
+match to the known barcode list, which is what makes `CR` — and therefore the uncalled
+droplets — available at all. Reads where flexiplex found no barcode region whatsoever
+are dropped during assignment: they belong to no droplet, called or empty, and carry a
+one-character UMI placeholder rather than a real UMI. Every alignment downstream
+therefore has a real `CR`, a real `XB` and a full-width UMI. Barcodes are corrected
+during the flexiplex run itself and are not post-corrected.
 
 ### Gene assignment
 
@@ -325,7 +308,8 @@ When demultiplexing with flexiplex, IsoQuant is run twice off the same alignment
 - `isoquant_all_droplets/` groups on `XB`, which falls back to the uncorrected barcode.
   Droplets below the knee called by `flexiplex-filter` therefore appear here under their
   own barcode alongside the called cells, which is what makes ambient/empty-droplet
-  estimation possible. Reads with no barcode region at all still collect under `-`.
+  estimation possible. It has no `-` column: reads with no barcode region at all were
+  dropped during assignment.
 
 `oarfish` groups on `CB` too, so its transcript matrix gains the same droppable `-`
 column.
@@ -552,10 +536,12 @@ The FastQC plots displayed in the MultiQC report shows _untrimmed_ reads. They m
 
 ![Read Counts](images/read_counts.png)
 
-Since flexiplex is run with `-a true` it passes every read through, so
-`extracted_read_counts` now tracks `trimmed_read_counts` rather than dropping to the
-reads that were given a barcode. Read the barcode-calling rate from
-`corrected_read_counts`, which still counts only reads assigned a known barcode.
+Since flexiplex is run with `-a true` it passes through every read in which it found a
+barcode region, whether or not that barcode matched the known list. `extracted_read_counts`
+therefore no longer drops to the reads that were given a known barcode; it is
+`trimmed_read_counts` minus the reads with no barcode region at all, which are discarded
+during assignment. Read the barcode-calling rate from `corrected_read_counts`, which still
+counts only reads assigned a known barcode.
 
 This is a custom script written using BASH scripting. Its purpose is to report the amount of reads that are filtered out at steps in the pipeline that will result in filtered reads, such as barcode detection, barcode correction, alignment, etc. Elevated levels of filtering can be indicative of quality concerns.
 

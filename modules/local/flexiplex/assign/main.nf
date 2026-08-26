@@ -22,16 +22,24 @@ process FLEXIPLEX_ASSIGN {
     def args2 = task.ext.args2 ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}${meta.part ? "_part_${meta.part}" : ''}"
     // With -a, flexiplex reports every read and writes CB/CR/UB/UR into the header
-    // comment, leaving CB as "-" for reads it could not assign. Derive XB from those
-    // two barcodes so a single tag identifies the droplet a read came from:
+    // comment, leaving CB as "-" for a read it could not match to the known list and
+    // CR as "-" for a read where it found no barcode region at all. The awk below
+    // does two things:
     //
-    //   XB = CB   barcode called against the known list (a cell)
-    //   XB = CR   no known barcode, but a barcode region was found (an uncalled droplet)
-    //   XB = "-"  no barcode region at all
+    //   1. Drops the reads with no barcode region. They belong to no droplet, called
+    //      or empty, and flexiplex gives them a one-character UMI placeholder that
+    //      umi_tools would refuse to bundle alongside a full-width UMI.
+    //   2. Derives XB from the two barcodes, so a single tag identifies the droplet
+    //      a surviving read came from:
+    //
+    //        XB = CB   barcode called against the known list (a cell)
+    //        XB = CR   no known barcode, but a barcode region was found (a droplet
+    //                  below the knee flexiplex-filter called)
     //
     // Doing it here rather than over the aligned bam keeps it in a stream that is
-    // already being read and written, and minimap2 -y then carries XB into the bam
-    // along with the tags flexiplex wrote itself.
+    // already being read and written, spares minimap2 the reads that are about to be
+    // discarded, and lets minimap2 -y carry XB into the bam alongside the tags
+    // flexiplex wrote itself.
     """
     # Run in assignment mode
 
@@ -43,14 +51,22 @@ process FLEXIPLEX_ASSIGN {
             BEGIN { FS = "\\t"; OFS = "\\t" }
             # flexiplex repeats the whole header, tags and all, on the "+" line. Both
             # copies have to be rewritten or the two captions disagree and readers that
-            # check them (NanoPlot, via biopython) reject the file.
-            NR % 4 == 1 || NR % 4 == 3 {
-                cb = ""; cr = ""
+            # check them (NanoPlot, via biopython) reject the file. keep and xb are
+            # decided once, on the header, and reused on the "+" line so the two copies
+            # cannot drift; discarding a record discards all four of its lines.
+            NR % 4 == 1 {
+                cb = ""; cr = ""; keep = 0; xb = ""
                 for (i = 2; i <= NF; i++) {
                     if (substr(\$i, 1, 5) == "CB:Z:") cb = substr(\$i, 6)
                     else if (substr(\$i, 1, 5) == "CR:Z:") cr = substr(\$i, 6)
                 }
-                xb = (cb != "" && cb != "-") ? cb : (cr != "" ? cr : "-")
+                if (cr != "" && cr != "-") {
+                    keep = 1
+                    xb = (cb != "" && cb != "-") ? cb : cr
+                }
+            }
+            !keep { next }
+            NR % 4 == 1 || NR % 4 == 3 {
                 print \$0 "\\tXB:Z:" xb
                 next
             }
