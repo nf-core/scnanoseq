@@ -2,10 +2,10 @@ process FLEXIPLEX_FILTER {
     tag "$meta.id"
     label 'process_medium'
 
-    conda "${moduleDir}/environment.yml"
+    conda "${moduleDir}/environment.yaml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/flexiplex:1.02.5--py39h2de1943_0':
-        'biocontainers/flexiplex:1.02.5--py39h2de1943_0' }"
+        'https://depot.galaxyproject.org/singularity/flexiplex:1.02.7--py312h9b2995c_0':
+        'biocontainers/flexiplex:1.02.7--py312h9b2995c_0' }"
 
     input:
     tuple val(meta), path(barcodes)

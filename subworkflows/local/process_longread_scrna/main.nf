@@ -8,6 +8,12 @@ include { QUANTIFY_SCRNA_ISOQUANT } from '../../../subworkflows/local/quantify_s
 include { QUANTIFY_SCRNA_OARFISH  } from '../../../subworkflows/local/quantify_scrna_oarfish'
 include { DEDUP_UMIS              } from '../../../subworkflows/local/dedup_umis'
 
+// A second pass over the all-reads bam, grouping on XB so that droplets flexiplex
+// could not match to the known list are quantified alongside the called cells.
+// Keep the instance above unaliased: the QC_SCRNA selectors in conf/modules.config
+// are keyed on the literal '.*QUANTIFY_SCRNA_ISOQUANT:QC_SCRNA_...' path.
+include { QUANTIFY_SCRNA_ISOQUANT as QUANTIFY_SCRNA_ISOQUANT_ALL } from '../../../subworkflows/local/quantify_scrna_isoquant'
+
 // MODULES
 include { PICARD_MARKDUPLICATES                         } from '../../../modules/nf-core/picard/markduplicates'
 include { SAMTOOLS_FLAGSTAT as SAMTOOLS_FLAGSTAT_TAGGED } from '../../../modules/nf-core/samtools/flagstat'
@@ -15,9 +21,11 @@ include { SAMTOOLS_FLAGSTAT as SAMTOOLS_FLAGSTAT_DEDUP  } from '../../../modules
 include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_TAGGED       } from '../../../modules/nf-core/samtools/index'
 include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_DEDUP        } from '../../../modules/nf-core/samtools/index'
 include { SAMTOOLS_VIEW as SAMTOOLS_FILTER_DEDUP        } from '../../../modules/nf-core/samtools/view'
+include { SAMTOOLS_MERGE as SAMTOOLS_MERGE_ALL_READS    } from '../../../modules/nf-core/samtools/merge'
+include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_ALL_READS    } from '../../../modules/nf-core/samtools/index'
 
-include { TAG_BARCODES   } from '../../../modules/local/tag_barcodes'
-include { FLEXIFORMATTER } from '../../../modules/local/flexiformatter'
+include { TAG_BARCODES         } from '../../../modules/local/tag_barcodes'
+include { SPLIT_BARCODE_STATUS } from '../../../modules/local/split_barcode_status'
 
 
 workflow PROCESS_LONGREAD_SCRNA {
@@ -64,16 +72,31 @@ workflow PROCESS_LONGREAD_SCRNA {
         ch_tagged_bam = Channel.empty()
         ch_tagged_bai = Channel.empty()
 
+        // Alignments that skip deduplication and are merged back in afterwards.
+        ch_undedupable_bam = Channel.empty()
+
+        // Reads flexiplex could place in no droplet at all. Keep this in step with
+        // the XB rule in modules/local/flexiplex/assign: XB falls back to "-" only
+        // when neither a corrected nor an uncorrected barcode was found.
+        def barcode_status_filter = '[XB]!="-"'
+
         if (params.demux_tool_cdna == "flexiplex") {
-            FLEXIFORMATTER (
-                ALIGN_LONGREADS.out.sorted_bam,
-                "bai"
+            //
+            // MODULE: Split off the alignments UMI deduplication can act on
+            //
+            // No tagging step is needed: flexiplex wrote CB/CR/UB/UR into the fastq
+            // comment, the pipeline derived XB alongside them, and minimap2 -y carried
+            // all of it onto the alignments. What is needed is to keep the reads with
+            // no barcode away from umi_tools, which has no UMI to group them by.
+            //
+            SPLIT_BARCODE_STATUS (
+                ALIGN_LONGREADS.out.sorted_bam.join( ALIGN_LONGREADS.out.sorted_bai, by: 0 ),
+                barcode_status_filter
             )
 
-            ch_versions = ch_versions.mix(FLEXIFORMATTER.out.versions_flexiformatter)
-            ch_tagged_bam = FLEXIFORMATTER.out.bam
-            ch_tagged_bai = FLEXIFORMATTER.out.bai
-
+            ch_tagged_bam      = SPLIT_BARCODE_STATUS.out.barcoded_bam.map { meta, bam, _bai -> [ meta, bam ] }
+            ch_tagged_bai      = SPLIT_BARCODE_STATUS.out.barcoded_bam.map { meta, _bam, bai -> [ meta, bai ] }
+            ch_undedupable_bam = SPLIT_BARCODE_STATUS.out.nobarcode_bam.map { meta, bam, _bai -> [ meta, bam ] }
 
         } else if (params.demux_tool_cdna == "blaze") {
             TAG_BARCODES (
@@ -133,6 +156,46 @@ workflow PROCESS_LONGREAD_SCRNA {
                 }
 
         }
+
+        //
+        // MODULE: Merge the reads that bypassed deduplication back in
+        //
+        // The published bam is meant to hold every read, so the unbarcoded alignments
+        // rejoin the deduplicated ones here. They are merged rather than deduplicated
+        // because they carry no UMI to group on. ch_bam is deliberately left pointing
+        // at the deduplicated, barcoded alignments so that everything keyed on a called
+        // cell -- oarfish and the filtered isoquant run -- sees what it sees today.
+        //
+        ch_all_reads_bam      = ch_bam
+        ch_all_reads_bai      = ch_bai
+        ch_all_reads_flagstat = ch_flagstat
+
+        if (params.demux_tool_cdna == "flexiplex") {
+            SAMTOOLS_MERGE_ALL_READS (
+                ch_bam
+                    .mix( ch_undedupable_bam )
+                    .map { meta, bam ->
+                        [ meta.subMap('id', 'single_end', 'cell_count', 'type'), bam ] }
+                    .groupTuple()
+                    .map { meta, bams -> [ meta, bams, [] ] },
+                ch_fasta
+                    .join(ch_fai)
+                    .map { meta, fasta_file, fai_file ->
+                        [ meta, fasta_file, fai_file, [] ] }
+                    .first()
+            )
+
+            SAMTOOLS_INDEX_ALL_READS ( SAMTOOLS_MERGE_ALL_READS.out.bam )
+
+            SAMTOOLS_FLAGSTAT_DEDUP (
+                SAMTOOLS_MERGE_ALL_READS.out.bam.join( SAMTOOLS_INDEX_ALL_READS.out.bai )
+            )
+
+            ch_all_reads_bam      = SAMTOOLS_MERGE_ALL_READS.out.bam
+            ch_all_reads_bai      = SAMTOOLS_INDEX_ALL_READS.out.bai
+            ch_all_reads_flagstat = SAMTOOLS_FLAGSTAT_DEDUP.out.flagstat
+        }
+
         //
         // SUBWORKFLOW: Quantify Features
         //
@@ -153,6 +216,10 @@ workflow PROCESS_LONGREAD_SCRNA {
         }
 
         if (val_quant_list.contains("isoquant")) {
+            //
+            // Called cells only. Grouping on CB means the reads flexiplex could not
+            // match to the known list collect in a single "-" column to be dropped.
+            //
             QUANTIFY_SCRNA_ISOQUANT (
                 ch_bam,
                 ch_bai,
@@ -160,6 +227,7 @@ workflow PROCESS_LONGREAD_SCRNA {
                 ch_fasta,
                 ch_fai,
                 ch_gtf,
+                'tag:CB',
                 val_skip_qc,
                 val_skip_seurat
             )
@@ -167,6 +235,28 @@ workflow PROCESS_LONGREAD_SCRNA {
             ch_versions = ch_versions.mix(QUANTIFY_SCRNA_ISOQUANT.out.versions)
             ch_gene_qc_stats = QUANTIFY_SCRNA_ISOQUANT.out.gene_qc_stats
             ch_transcript_qc_stats = QUANTIFY_SCRNA_ISOQUANT.out.transcript_qc_stats
+
+            //
+            // Every droplet. XB holds the corrected barcode for a called cell and the
+            // uncorrected one for a droplet that fell below the knee, so both land in a
+            // single barcode space. Seurat QC is skipped here: it is a per-cell report,
+            // and the called cells already have one from the run above.
+            //
+            if (params.demux_tool_cdna == "flexiplex") {
+                QUANTIFY_SCRNA_ISOQUANT_ALL (
+                    ch_all_reads_bam,
+                    ch_all_reads_bai,
+                    ch_all_reads_flagstat,
+                    ch_fasta,
+                    ch_fai,
+                    ch_gtf,
+                    'tag:XB',
+                    val_skip_qc,
+                    true
+                )
+
+                ch_versions = ch_versions.mix(QUANTIFY_SCRNA_ISOQUANT_ALL.out.versions)
+            }
         }
 
     emit:

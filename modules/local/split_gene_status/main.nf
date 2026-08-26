@@ -20,8 +20,8 @@ process SPLIT_GENE_STATUS {
     val gene_status_filter
 
     output:
-    tuple val(meta), path("*.gene.bam"), path("*.gene.bam.bai"), emit: gene_bam
-    tuple val(meta), path("*.pos.bam") , path("*.pos.bam.bai") , emit: pos_bam
+    tuple val(meta), path("*.gene.bam"), path("*.gene.bam.bai"), optional: true, emit: gene_bam
+    tuple val(meta), path("*.pos.bam") , path("*.pos.bam.bai") , optional: true, emit: pos_bam
     path "versions.yml"                , emit: versions_split_gene_status, topic: versions
 
     when:
@@ -41,9 +41,6 @@ process SPLIT_GENE_STATUS {
         -U ${prefix}.pos.bam \\
         ${bam}
 
-    samtools index -@ ${task.cpus} ${prefix}.gene.bam
-    samtools index -@ ${task.cpus} ${prefix}.pos.bam
-
     # The two halves must add back up to the input. If they ever do not, reads
     # would be silently lost between here and the merge, which is the one
     # failure mode of this design that produces plausible-looking output.
@@ -54,6 +51,22 @@ process SPLIT_GENE_STATUS {
     if [ \$(( n_gene + n_pos )) -ne \$n_in ]; then
         echo "ERROR: gene (\$n_gene) + positional (\$n_pos) != input (\$n_in)" >&2
         exit 1
+    fi
+
+    # umi_tools aborts on an empty bam, and a contig with no annotation produces
+    # exactly that -- 50 of 85 contigs on a real GRCh38 run. Drop an empty half
+    # instead of emitting it; both outputs are optional and the caller mixes
+    # whatever arrives.
+    if [ "\$n_gene" -eq 0 ]; then
+        rm -f ${prefix}.gene.bam
+    else
+        samtools index -@ ${task.cpus} ${prefix}.gene.bam
+    fi
+
+    if [ "\$n_pos" -eq 0 ]; then
+        rm -f ${prefix}.pos.bam
+    else
+        samtools index -@ ${task.cpus} ${prefix}.pos.bam
     fi
 
     cat <<-END_VERSIONS > versions.yml

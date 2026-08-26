@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Enhancements
 
 - Added support for processing single-cell/nuclei DNA samples alongside cDNA samples in the same pipeline run, via a new optional `type` column (`dna`/`cdna`) in the input samplesheet
-- Added `flexiplex/discovery`, `flexiplex/filter` and `flexiplex/assign` modules and a `flexiformatter` module for barcode extraction, filtering, assignment and BAM-tag conversion
+- Added `flexiplex/discovery`, `flexiplex/filter` and `flexiplex/assign` modules for barcode extraction, filtering and assignment
 - Added `demultiplex_flexiplex` and `demultiplex_blaze` subworkflows, replacing the previous inline demultiplexing steps in the main workflow
 - Added `align_deduplicate_dna` subworkflow (`minimap2` alignment, `picard MarkDuplicates`, `BAM_SORT_STATS_SAMTOOLS`) for DNA sample processing
 - Added `demux_tool_cdna`/`demux_tool_dna` parameters to select `flexiplex` or `blaze` for cDNA demultiplexing (DNA currently supports `flexiplex` only)
@@ -16,6 +16,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bumped IsoQuant to v3.13.1
 - Deduplication now groups UMIs by feature rather than by alignment position. Genome alignments are tagged with a gene by gene-body overlap (new `tag_genes` and `split_gene_status` modules, `GX`/`GN`/`GS` tags) and grouped with `umi_tools --per-gene`; reads with an ambiguous gene call or none are deduplicated positionally and merged back, so no reads are dropped. Transcriptome alignments use `umi_tools --per-contig`, where a contig is a transcript. **This substantially changes absolute UMI counts** — on the data this was developed against, total duplicate removal rose from 6.5% to ~34%, i.e. previous counts were inflated by roughly 1.6x. Relative expression is essentially unchanged (Spearman 0.998, no genes lost), so clustering and ratio-based analyses are unaffected, but UMIs per cell, library complexity and saturation estimates will differ from earlier releases. Revert with `--dedup_per_gene=false` / `--dedup_per_contig=false`
 - `umi_tools dedup` now always takes the cell barcode from the corrected `CB` tag. Previously this applied only when `--demux_tool_cdna flexiplex` was set; the `blaze` path fell back to reading the raw, uncorrected barcode out of the read name, which fragmented cells and made the two demultiplexing paths incomparable
+- Bumped flexiplex to v1.02.7 and run it with `-a true`, so it reports every read rather than only the reads it could assign. Alignments are no longer dropped for want of a barcode, and the uncorrected barcode comes back in `CR`, which is what makes a droplet below the knee distinguishable from a read with no barcode region at all. v1.02.7 also fixes an out-of-bounds read in flexiplex's UMI handling that only triggers on UMI-less protocols, i.e. the DNA path
+- Removed the `flexiformatter` module. It existed to move the barcode and UMI from the read name into BAM tags, which is no longer needed: flexiplex writes `CB`/`CR`/`UB`/`UR` into the FASTQ comment itself, and `minimap2 -y` now carries them onto every alignment. `-y` is applied only when demultiplexing with flexiplex, since a basecaller comment on any other FASTQ would be copied in verbatim and produce unparseable records
+- Deduplication now groups on `XB`/`UB` rather than `CB`/`UR`. `XB` is a derived tag holding the corrected barcode for a called cell and the uncorrected one for a droplet flexiplex could not match to the known list, so uncalled droplets stay separate instead of pooling into a single `-` cell. `UB` is flexiplex's corrected UMI; `UR` holds the raw one. The `blaze` path writes both tags too, so the two demultiplexers stay comparable. DNA `picard MarkDuplicates` keys on `XB` for the same reason
+- The published cDNA BAM now contains every read. Alignments with no barcode at all are split off before `umi_tools` — they carry no UMI to group by, and their one-character placeholder would trip its equal-UMI-length assertion — and merged back afterwards into a new `bam/all_reads` output (new `split_barcode_status` module)
+- Added a second IsoQuant run, published to `isoquant_all_droplets/`, grouping on `XB` so that droplets below the knee are quantified alongside the called cells. The existing `isoquant/` run is unchanged and still groups on `CB`
 
 ### Parameter changes
 
@@ -27,6 +32,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixes
 
+- Fixed the three `flexiplex` modules declaring `conda "${moduleDir}/environment.yml"` when the file on disk is `environment.yaml`, which left them unresolvable under `-profile conda`
+- `split_gene_status` no longer emits an empty BAM. `umi_tools` aborts on one, and a contig with no annotation produces exactly that — 50 of 85 contigs on a real GRCh38 run
 - Fixed `split_amount` parameter type coercion so it is read as an integer under the Nextflow v2 strict syntax parser
 - Fixed `SAMTOOLS_INDEX_DEDUP` in the `dedup_umis` subworkflow indexing the `umi_tools` output channel unconditionally, which left the `--dedup_tool picard` branch indexing a channel that was never populated
 

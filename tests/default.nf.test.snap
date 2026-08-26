@@ -8,18 +8,14 @@
                 "CHOPPER": {
                     "chopper": "0.10.0"
                 },
-                "FLEXIFORMATTER": {
-                    "flexiformatter": "1.0.5",
-                    "samtools": "1.22.1"
-                },
                 "FLEXIPLEX_ASSIGN": {
-                    "flexiplex": "1.02.5"
+                    "flexiplex": "1.02.6.1"
                 },
                 "FLEXIPLEX_DISCOVERY": {
-                    "flexiplex": "1.02.5"
+                    "flexiplex": "1.02.6.1"
                 },
                 "FLEXIPLEX_FILTER": {
-                    "flexiplex": "1.02.5"
+                    "flexiplex": "1.02.6.1"
                 },
                 "GENOME_FAIDX": {
                     "samtools": "1.22.1"
@@ -45,6 +41,9 @@
                 "SAMTOOLS_FLAGSTAT": {
                     "samtools": "1.22.1"
                 },
+                "SAMTOOLS_FLAGSTAT_DEDUP": {
+                    "samtools": "1.22.1"
+                },
                 "SAMTOOLS_FLAGSTAT_TAGGED": {
                     "samtools": "1.22.1"
                 },
@@ -52,6 +51,9 @@
                     "samtools": "1.22.1"
                 },
                 "SAMTOOLS_INDEX": {
+                    "samtools": "1.22.1"
+                },
+                "SAMTOOLS_INDEX_ALL_READS": {
                     "samtools": "1.22.1"
                 },
                 "SAMTOOLS_INDEX_DEDUP": {
@@ -63,10 +65,16 @@
                 "SAMTOOLS_MERGE": {
                     "samtools": "1.22.1"
                 },
+                "SAMTOOLS_MERGE_ALL_READS": {
+                    "samtools": "1.22.1"
+                },
                 "SAMTOOLS_SORT": {
                     "samtools": "1.22.1"
                 },
                 "SAMTOOLS_STATS": {
+                    "samtools": "1.22.1"
+                },
+                "SPLIT_BARCODE_STATUS": {
                     "samtools": "1.22.1"
                 },
                 "SPLIT_GENE_STATUS": {
@@ -99,6 +107,9 @@
                 "ERR9958133/cdna/flexiplex/ERR9958133_barcodes_counts.txt",
                 "ERR9958133/cdna/genome",
                 "ERR9958133/cdna/genome/bam",
+                "ERR9958133/cdna/genome/bam/all_reads",
+                "ERR9958133/cdna/genome/bam/all_reads/ERR9958133.cdna.genome.all_reads.bam",
+                "ERR9958133/cdna/genome/bam/all_reads/ERR9958133.cdna.genome.all_reads.bam.bai",
                 "ERR9958133/cdna/genome/bam/dedup",
                 "ERR9958133/cdna/genome/bam/dedup/ERR9958133.cdna.genome.dedup.bam",
                 "ERR9958133/cdna/genome/bam/dedup/ERR9958133.cdna.genome.dedup.bam.bai",
@@ -117,6 +128,15 @@
                 "ERR9958133/cdna/genome/isoquant/ERR9958133.cdna/ERR9958133.cdna/ERR9958133.cdna.transcript_grouped_tag_CB_counts.barcodes.tsv",
                 "ERR9958133/cdna/genome/isoquant/ERR9958133.cdna/ERR9958133.cdna/ERR9958133.cdna.transcript_grouped_tag_CB_counts.features.tsv",
                 "ERR9958133/cdna/genome/isoquant/ERR9958133.cdna/ERR9958133.cdna/ERR9958133.cdna.transcript_grouped_tag_CB_counts.matrix.mtx",
+                "ERR9958133/cdna/genome/isoquant_all_droplets",
+                "ERR9958133/cdna/genome/isoquant_all_droplets/ERR9958133.cdna.all_droplets",
+                "ERR9958133/cdna/genome/isoquant_all_droplets/ERR9958133.cdna.all_droplets/ERR9958133.cdna.all_droplets",
+                "ERR9958133/cdna/genome/isoquant_all_droplets/ERR9958133.cdna.all_droplets/ERR9958133.cdna.all_droplets/ERR9958133.cdna.all_droplets.gene_grouped_tag_XB_counts.barcodes.tsv",
+                "ERR9958133/cdna/genome/isoquant_all_droplets/ERR9958133.cdna.all_droplets/ERR9958133.cdna.all_droplets/ERR9958133.cdna.all_droplets.gene_grouped_tag_XB_counts.features.tsv",
+                "ERR9958133/cdna/genome/isoquant_all_droplets/ERR9958133.cdna.all_droplets/ERR9958133.cdna.all_droplets/ERR9958133.cdna.all_droplets.gene_grouped_tag_XB_counts.matrix.mtx",
+                "ERR9958133/cdna/genome/isoquant_all_droplets/ERR9958133.cdna.all_droplets/ERR9958133.cdna.all_droplets/ERR9958133.cdna.all_droplets.transcript_grouped_tag_XB_counts.barcodes.tsv",
+                "ERR9958133/cdna/genome/isoquant_all_droplets/ERR9958133.cdna.all_droplets/ERR9958133.cdna.all_droplets/ERR9958133.cdna.all_droplets.transcript_grouped_tag_XB_counts.features.tsv",
+                "ERR9958133/cdna/genome/isoquant_all_droplets/ERR9958133.cdna.all_droplets/ERR9958133.cdna.all_droplets/ERR9958133.cdna.all_droplets.transcript_grouped_tag_XB_counts.matrix.mtx",
                 "ERR9958133/cdna/genome/qc",
                 "ERR9958133/cdna/genome/qc/gene_assignment",
                 "ERR9958133/cdna/genome/qc/gene_assignment/ERR9958133.cdna.genome.gene_assignment.tsv",
@@ -174,6 +194,9 @@
                 "ERR9958134/cdna/flexiplex/ERR9958134_barcodes_counts.txt",
                 "ERR9958134/cdna/genome",
                 "ERR9958134/cdna/genome/bam",
+                "ERR9958134/cdna/genome/bam/all_reads",
+                "ERR9958134/cdna/genome/bam/all_reads/ERR9958134.cdna.genome.all_reads.bam",
+                "ERR9958134/cdna/genome/bam/all_reads/ERR9958134.cdna.genome.all_reads.bam.bai",
                 "ERR9958134/cdna/genome/bam/dedup",
                 "ERR9958134/cdna/genome/bam/dedup/ERR9958134.cdna.genome.dedup.bam",
                 "ERR9958134/cdna/genome/bam/dedup/ERR9958134.cdna.genome.dedup.bam.bai",
@@ -192,6 +215,15 @@
                 "ERR9958134/cdna/genome/isoquant/ERR9958134.cdna/ERR9958134.cdna/ERR9958134.cdna.transcript_grouped_tag_CB_counts.barcodes.tsv",
                 "ERR9958134/cdna/genome/isoquant/ERR9958134.cdna/ERR9958134.cdna/ERR9958134.cdna.transcript_grouped_tag_CB_counts.features.tsv",
                 "ERR9958134/cdna/genome/isoquant/ERR9958134.cdna/ERR9958134.cdna/ERR9958134.cdna.transcript_grouped_tag_CB_counts.matrix.mtx",
+                "ERR9958134/cdna/genome/isoquant_all_droplets",
+                "ERR9958134/cdna/genome/isoquant_all_droplets/ERR9958134.cdna.all_droplets",
+                "ERR9958134/cdna/genome/isoquant_all_droplets/ERR9958134.cdna.all_droplets/ERR9958134.cdna.all_droplets",
+                "ERR9958134/cdna/genome/isoquant_all_droplets/ERR9958134.cdna.all_droplets/ERR9958134.cdna.all_droplets/ERR9958134.cdna.all_droplets.gene_grouped_tag_XB_counts.barcodes.tsv",
+                "ERR9958134/cdna/genome/isoquant_all_droplets/ERR9958134.cdna.all_droplets/ERR9958134.cdna.all_droplets/ERR9958134.cdna.all_droplets.gene_grouped_tag_XB_counts.features.tsv",
+                "ERR9958134/cdna/genome/isoquant_all_droplets/ERR9958134.cdna.all_droplets/ERR9958134.cdna.all_droplets/ERR9958134.cdna.all_droplets.gene_grouped_tag_XB_counts.matrix.mtx",
+                "ERR9958134/cdna/genome/isoquant_all_droplets/ERR9958134.cdna.all_droplets/ERR9958134.cdna.all_droplets/ERR9958134.cdna.all_droplets.transcript_grouped_tag_XB_counts.barcodes.tsv",
+                "ERR9958134/cdna/genome/isoquant_all_droplets/ERR9958134.cdna.all_droplets/ERR9958134.cdna.all_droplets/ERR9958134.cdna.all_droplets.transcript_grouped_tag_XB_counts.features.tsv",
+                "ERR9958134/cdna/genome/isoquant_all_droplets/ERR9958134.cdna.all_droplets/ERR9958134.cdna.all_droplets/ERR9958134.cdna.all_droplets.transcript_grouped_tag_XB_counts.matrix.mtx",
                 "ERR9958134/cdna/genome/qc",
                 "ERR9958134/cdna/genome/qc/gene_assignment",
                 "ERR9958134/cdna/genome/qc/gene_assignment/ERR9958134.cdna.genome.gene_assignment.tsv",
@@ -310,64 +342,76 @@
             [
                 "ERR9958133.cdna_known_barcodes.txt:md5,5066d9483f2a949505c22da29f5d7c5c",
                 "ERR9958133_barcodes_counts.txt:md5,6d5cb3d3688033996a2eb5f975e54351",
-                "ERR9958133.cdna.gene_grouped_tag_CB_counts.barcodes.tsv:md5,f94c3a51693e4f63e69dba073e1861ec",
-                "ERR9958133.cdna.gene_grouped_tag_CB_counts.features.tsv:md5,e0a2176ad75baba2480bd539cd349984",
-                "ERR9958133.cdna.gene_grouped_tag_CB_counts.matrix.mtx:md5,12b316c0c8570f0458aa35b6f4c69e12",
-                "ERR9958133.cdna.transcript_grouped_tag_CB_counts.barcodes.tsv:md5,68088a1b3642c9907ce97e107a4994eb",
-                "ERR9958133.cdna.transcript_grouped_tag_CB_counts.features.tsv:md5,11ca69f0455ffcd89c6133e889bbbef0",
-                "ERR9958133.cdna.transcript_grouped_tag_CB_counts.matrix.mtx:md5,3bd895b98e89cbbec95add248be3cead",
-                "ERR9958133.cdna.genome.gene_assignment.tsv:md5,fe38f5ddf37d0f6e3780cb10f60961f4",
-                "ERR9958133.read_distribution.txt:md5,dea8a8b4ce34de43810efee784456191",
-                "ERR9958133.cdna.genome.umitools_dedup.flagstat:md5,c8857fce02aedfea89b58fa28d32f82b",
-                "ERR9958133.cdna.genome.umitools_dedup.idxstats:md5,1da8ee5398462f31c31da2b611895a1c",
-                "ERR9958133.cdna.genome.umitools_dedup.stats:md5,fee5c3954fcbadb431789225724cf9f3",
-                "ERR9958133.cdna.genome.mapped_only.flagstat:md5,8a62e66459abd3e6be5c281bdb46f004",
-                "ERR9958133.cdna.genome.mapped_only.idxstats:md5,1f4d53bc3361aafd56adc31d139012ca",
-                "ERR9958133.cdna.genome.mapped_only.stats:md5,325202e109339782ebb8852dabb4d8f5",
-                "ERR9958133.cdna.genome.minimap.flagstat:md5,9b06b3d4fc870dca9e8f417c15876886",
-                "ERR9958133.cdna.genome.minimap.idxstats:md5,bba0bb057025e204ada561f1f3797e4e",
-                "ERR9958133.cdna.genome.minimap.stats:md5,903f20ef3048a73111349180bd8ee5fe",
-                "ERR9958133.cdna.extracted_NanoStats.txt:md5,78f1385b993486aeae0807d345249153",
+                "ERR9958133.cdna.gene_grouped_tag_CB_counts.barcodes.tsv:md5,63c354a462cbb4ddbc07e2f22de5a35e",
+                "ERR9958133.cdna.gene_grouped_tag_CB_counts.features.tsv:md5,b4a3bb4a4fadf487dab042cb1dd94f97",
+                "ERR9958133.cdna.gene_grouped_tag_CB_counts.matrix.mtx:md5,f1dc80d3dee7990f2161a5840e391bd6",
+                "ERR9958133.cdna.transcript_grouped_tag_CB_counts.barcodes.tsv:md5,4e28513020d2302e1a09e9eae25ad23e",
+                "ERR9958133.cdna.transcript_grouped_tag_CB_counts.features.tsv:md5,a7bad386720fb808c51ccb80603c11f4",
+                "ERR9958133.cdna.transcript_grouped_tag_CB_counts.matrix.mtx:md5,5af6789a18632197989d5f7428eb2226",
+                "ERR9958133.cdna.all_droplets.gene_grouped_tag_XB_counts.barcodes.tsv:md5,7bec541ccc6501610b9f9300aa5af7ad",
+                "ERR9958133.cdna.all_droplets.gene_grouped_tag_XB_counts.features.tsv:md5,b4a3bb4a4fadf487dab042cb1dd94f97",
+                "ERR9958133.cdna.all_droplets.gene_grouped_tag_XB_counts.matrix.mtx:md5,85411e8a213ab9f9235ce091ca17b510",
+                "ERR9958133.cdna.all_droplets.transcript_grouped_tag_XB_counts.barcodes.tsv:md5,a4524b32c35ad5b5513cefa28177e36b",
+                "ERR9958133.cdna.all_droplets.transcript_grouped_tag_XB_counts.features.tsv:md5,a7bad386720fb808c51ccb80603c11f4",
+                "ERR9958133.cdna.all_droplets.transcript_grouped_tag_XB_counts.matrix.mtx:md5,95fac75d809df5edfa8aaf83a9e98c99",
+                "ERR9958133.cdna.genome.gene_assignment.tsv:md5,2ae079e3da83876a68985fe21ae4e359",
+                "ERR9958133.read_distribution.txt:md5,d8828fa0f8ec399f5f70cd06543522de",
+                "ERR9958133.cdna.genome.umitools_dedup.flagstat:md5,902ca4dedf81e7b95475970201f9e954",
+                "ERR9958133.cdna.genome.umitools_dedup.idxstats:md5,1ac7adb7c098f989982cdebcb8e68eff",
+                "ERR9958133.cdna.genome.umitools_dedup.stats:md5,ac3e0ae5916d1dd1c913856becb860cd",
+                "ERR9958133.cdna.genome.mapped_only.flagstat:md5,7ea94ef33a5030cfdc7830e175c6b019",
+                "ERR9958133.cdna.genome.mapped_only.idxstats:md5,1a00d13c55d30825610cb363253f36bf",
+                "ERR9958133.cdna.genome.mapped_only.stats:md5,6fe3304f1d3c86dd899c261d978f667c",
+                "ERR9958133.cdna.genome.minimap.flagstat:md5,c9c1458e471456812f8f9d2bc60b1a45",
+                "ERR9958133.cdna.genome.minimap.idxstats:md5,a84318276de8e0653ce5bb6d4e560f22",
+                "ERR9958133.cdna.genome.minimap.stats:md5,f6b30f79b0b12889797d683aa9966354",
+                "ERR9958133.cdna.extracted_NanoStats.txt:md5,ae27934cb858fab77461af5598a5b5f3",
                 "ERR9958133.cdna.trimmed_NanoStats.txt:md5,acfd13fa4c8ed1cf20bfa544cb19804c",
                 "ERR9958133.cdna.raw_NanoStats.txt:md5,27e01d4465515b66f3a18cc1e585000d",
                 "ERR9958134.cdna_known_barcodes.txt:md5,7befaf7b86b5a100dcc2ac56a8828521",
                 "ERR9958134_barcodes_counts.txt:md5,00beab69eb6da13133f4406c2826c062",
-                "ERR9958134.cdna.gene_grouped_tag_CB_counts.barcodes.tsv:md5,5028681536e1216bb67b6a2d0f776bbe",
-                "ERR9958134.cdna.gene_grouped_tag_CB_counts.features.tsv:md5,0735a3a9cb4acf02be06e17027d49b91",
-                "ERR9958134.cdna.gene_grouped_tag_CB_counts.matrix.mtx:md5,29867e42e28023a75cc0234122de1ab8",
-                "ERR9958134.cdna.transcript_grouped_tag_CB_counts.barcodes.tsv:md5,3e7374a80e362799f7718822aa3e1d60",
-                "ERR9958134.cdna.transcript_grouped_tag_CB_counts.features.tsv:md5,05b5c3c00e9c6f995096ad8d1d74e27e",
-                "ERR9958134.cdna.transcript_grouped_tag_CB_counts.matrix.mtx:md5,14f7a9e438a33f0260c389912d9a5657",
-                "ERR9958134.cdna.genome.gene_assignment.tsv:md5,cc61da27c72b0d95d1c6c2f6ee97dba6",
-                "ERR9958134.read_distribution.txt:md5,86c2337bb4a3f1582cf4740929b5f9ef",
-                "ERR9958134.cdna.genome.umitools_dedup.flagstat:md5,5fe50a2b8b9124f25552a8201cb03dfb",
-                "ERR9958134.cdna.genome.umitools_dedup.idxstats:md5,6a568b4a5b61e52ad267a431c7b4a438",
-                "ERR9958134.cdna.genome.umitools_dedup.stats:md5,fc722eb589a34a25164b7badb7219af3",
-                "ERR9958134.cdna.genome.mapped_only.flagstat:md5,3a620b296c86b15cfedc6b5bfefa2560",
-                "ERR9958134.cdna.genome.mapped_only.idxstats:md5,83c19801f37e4a195f87e3acd614fb69",
-                "ERR9958134.cdna.genome.mapped_only.stats:md5,934d5c40934161fb5329d268f4b8b30b",
-                "ERR9958134.cdna.genome.minimap.flagstat:md5,36fe71608468e0ac7f358e0644791368",
-                "ERR9958134.cdna.genome.minimap.idxstats:md5,2a2efb11008698955eca4480373b8c9a",
-                "ERR9958134.cdna.genome.minimap.stats:md5,3a627137058054e59093dffa4517590b",
-                "ERR9958134.cdna.extracted_NanoStats.txt:md5,e1b8d90f885645afb8dd25a849d854e0",
+                "ERR9958134.cdna.gene_grouped_tag_CB_counts.barcodes.tsv:md5,f955ed53a5a0824b90c4024793f4dc60",
+                "ERR9958134.cdna.gene_grouped_tag_CB_counts.features.tsv:md5,4ed4028d4218554420a7f48211f4c2ab",
+                "ERR9958134.cdna.gene_grouped_tag_CB_counts.matrix.mtx:md5,c76cf55ef30c7fc33928e7de4416827c",
+                "ERR9958134.cdna.transcript_grouped_tag_CB_counts.barcodes.tsv:md5,29ec3f523cb0b055d9b8f36a6300b455",
+                "ERR9958134.cdna.transcript_grouped_tag_CB_counts.features.tsv:md5,a393fe1367e843d477507109fec844c4",
+                "ERR9958134.cdna.transcript_grouped_tag_CB_counts.matrix.mtx:md5,ed6a5351e3236628b9dbcf277313b6c8",
+                "ERR9958134.cdna.all_droplets.gene_grouped_tag_XB_counts.barcodes.tsv:md5,eecb3cca5dd47952ae72e236c5a01ee5",
+                "ERR9958134.cdna.all_droplets.gene_grouped_tag_XB_counts.features.tsv:md5,4ed4028d4218554420a7f48211f4c2ab",
+                "ERR9958134.cdna.all_droplets.gene_grouped_tag_XB_counts.matrix.mtx:md5,68620b37b8049564d8ad5404281e0fe9",
+                "ERR9958134.cdna.all_droplets.transcript_grouped_tag_XB_counts.barcodes.tsv:md5,2110e6ebbb4291d1f2a43958572c5f90",
+                "ERR9958134.cdna.all_droplets.transcript_grouped_tag_XB_counts.features.tsv:md5,a393fe1367e843d477507109fec844c4",
+                "ERR9958134.cdna.all_droplets.transcript_grouped_tag_XB_counts.matrix.mtx:md5,e8f7430262b2d4cede832e68b7c99406",
+                "ERR9958134.cdna.genome.gene_assignment.tsv:md5,39040005bac16ca5a80c2fc5f61c2cae",
+                "ERR9958134.read_distribution.txt:md5,425aa84c47e976c99a8fd8526efa169f",
+                "ERR9958134.cdna.genome.umitools_dedup.flagstat:md5,efb158d46fb2e37b39d97f45098ada91",
+                "ERR9958134.cdna.genome.umitools_dedup.idxstats:md5,98c1d5eac65b99278c1927ccdfe1e997",
+                "ERR9958134.cdna.genome.umitools_dedup.stats:md5,89ef7d15a8940864c6bb9f105cbba27f",
+                "ERR9958134.cdna.genome.mapped_only.flagstat:md5,eb779c6269eef2239746713b506162a5",
+                "ERR9958134.cdna.genome.mapped_only.idxstats:md5,c80a17951edea4a0b3f062c1fb977f79",
+                "ERR9958134.cdna.genome.mapped_only.stats:md5,ba5fbf6767e70cbb936192ed4e23e2f7",
+                "ERR9958134.cdna.genome.minimap.flagstat:md5,b91086e543ec88967bc9155fbd910354",
+                "ERR9958134.cdna.genome.minimap.idxstats:md5,e08d42c4f37c62525a6bf45183a1a588",
+                "ERR9958134.cdna.genome.minimap.stats:md5,e75548a935b8c63bff8c22952371fde6",
+                "ERR9958134.cdna.extracted_NanoStats.txt:md5,df67e60301267a2958c80f4d23810fb8",
                 "ERR9958134.cdna.trimmed_NanoStats.txt:md5,df1ce9b8bcee5e6f87a14266f7c773e8",
                 "ERR9958134.cdna.raw_NanoStats.txt:md5,df1ce9b8bcee5e6f87a14266f7c773e8",
                 "multiqc_citations.txt:md5,0cbf715762a381270e777a24df0d0c75",
-                "multiqc_general_stats.txt:md5,fab9b2913f77e5e0c2ef32fe86291bf1",
-                "multiqc_read_counts_module.txt:md5,59a7c80f1b36aaa329a69e29ab777657",
-                "multiqc_rseqc_read_distribution.txt:md5,238ff57d149aa45cf517d5c9b3a1c21d",
-                "multiqc_samtools_flagstat.txt:md5,bbab7552c526f3103520e3f12100ea0e",
-                "multiqc_samtools_idxstats.txt:md5,03fcd4c9cc2026638f09431e8b42c425",
-                "rseqc_read_distribution_plot.txt:md5,82384599c90b54d245daa5361fa5f254",
-                "samtools-flagstat-pct-table.txt:md5,71cd024324c933cd15b74bf3af204df0",
-                "samtools-flagstat-table.txt:md5,faa25ce46a84a0a94ba1a4215c7fb6d5",
+                "multiqc_general_stats.txt:md5,1e4ba45b254a0af1b4a1fa97b80a6df0",
+                "multiqc_read_counts_module.txt:md5,ec5f689e16f8ca46512e3af35e71c340",
+                "multiqc_rseqc_read_distribution.txt:md5,7d2ed3b9718786ec5c8ee22e776f59ea",
+                "multiqc_samtools_flagstat.txt:md5,c23bb8137d35f58a5e31883c56a2150b",
+                "multiqc_samtools_idxstats.txt:md5,5daeb377a65d21fd75fce0157294a540",
+                "rseqc_read_distribution_plot.txt:md5,9b6b5a3eca60a8682ad8f999d3066a78",
+                "samtools-flagstat-pct-table.txt:md5,63d66f81cbcba6a08c305488d1e11f9e",
+                "samtools-flagstat-table.txt:md5,344c9030e597ebfeddb6751870d649c6",
                 "samtools-idxstats-mapped-reads-plot_Normalised_Counts.txt:md5,872d0a25e6a6910f8872931d19c38883",
                 "samtools-idxstats-mapped-reads-plot_Observed_over_Expected_Counts.txt:md5,872d0a25e6a6910f8872931d19c38883",
-                "samtools-idxstats-mapped-reads-plot_Raw_Counts.txt:md5,04e1aaee96fb6284e37423d3366318f4",
-                "read_counts.csv:md5,8aa2fa12b6656ebfd8de50c593a4a275"
+                "samtools-idxstats-mapped-reads-plot_Raw_Counts.txt:md5,212bdfce817b60d47860298782409898",
+                "read_counts.csv:md5,4ab786a03d90257e8987139da59ecf4d"
             ]
         ],
-        "timestamp": "2026-08-14T10:18:17.127705206",
+        "timestamp": "2026-08-26T20:42:23.044585529",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.04.3"

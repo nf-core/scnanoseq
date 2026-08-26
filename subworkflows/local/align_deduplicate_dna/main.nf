@@ -7,7 +7,6 @@ include { MINIMAP2_INDEX                          } from '../../../modules/nf-co
 include { MINIMAP2_ALIGN                          } from '../../../modules/nf-core/minimap2/align'
 include { PICARD_MARKDUPLICATES                   } from '../../../modules/nf-core/picard/markduplicates'
 include { BAM_SORT_STATS_SAMTOOLS                 } from '../../../subworkflows/nf-core/bam_sort_stats_samtools'
-include { FLEXIFORMATTER                          } from '../../../modules/local/flexiformatter'
 include { NANOCOMP                                } from '../../../modules/nf-core/nanocomp/main'
 
 workflow ALIGN_DEDUPLICATE_DNA {
@@ -64,17 +63,11 @@ workflow ALIGN_DEDUPLICATE_DNA {
             ""
         )
 
-        //
-        // MODULE: Run FLEXIFORMATTER
-        //
-        FLEXIFORMATTER (
-            MINIMAP2_ALIGN.out.bam,
-            'bai'
-        )
-
-        ch_versions = ch_versions.mix(FLEXIFORMATTER.out.versions_flexiformatter)
-
-        FLEXIFORMATTER.out.bam
+        // Barcode tags need no separate step: flexiplex writes CB/CR/UB/UR (and the
+        // pipeline's derived XB) into the fastq comment, and minimap2 is run with -y,
+        // so they are already on every alignment. MINIMAP2_ALIGN was asked for a bam
+        // with a bai, so this is sorted and indexed too.
+        MINIMAP2_ALIGN.out.bam
             .set { ch_tagged_bam }
 
         //

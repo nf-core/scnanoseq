@@ -18,11 +18,14 @@ batch_qcs/multiqc/final_qc/multiqc_data/llms-full.txt
 **/genome/bam/mapped_only/*.sorted.bam.bai
 **/genome/bam/original/*.sorted.bam
 **/genome/bam/original/*.sorted.bam.bai
-**/genome/bam/barcode_tagged/*.tagged.bam
-**/genome/bam/barcode_tagged/*.tagged.bam.bai
 **/genome/bam/dedup/*.dedup.bam
 **/genome/bam/dedup/*.dedup.bam.bai
+**/genome/bam/all_reads/*.all_reads.bam
+**/genome/bam/all_reads/*.all_reads.bam.bai
+**/transcriptome/bam/all_reads/*.all_reads.bam
+**/transcriptome/bam/all_reads/*.all_reads.bam.bai
 **/genome/isoquant/*.mtx
+**/genome/isoquant_all_droplets/*.mtx
 **/qc/seurat_isoquant/*/*.png
 **/qc/seurat_isoquant/*/*.rds
 reference/lrkallisto/*.idx

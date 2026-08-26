@@ -75,6 +75,7 @@ def split_bc_umi(input_file, output_prefix, bc_length, umi_length):
     """
     written = 0
     skipped_unparsed = 0
+    skipped_unassigned = 0
     skipped_length = 0
     skipped_empty = 0
 
@@ -99,6 +100,14 @@ def split_bc_umi(input_file, output_prefix, bc_length, umi_length):
 
             barcode, umi, read_id = parsed
 
+            # flexiplex runs with -a, so it reports the reads it could not assign
+            # too, writing "-" in place of the barcode. kallisto has nothing to
+            # place these against; count them apart from malformed headers so the
+            # summary stays diagnostic.
+            if barcode == "-":
+                skipped_unassigned += 1
+                continue
+
             if len(barcode) != bc_length or len(umi) != umi_length:
                 skipped_length += 1
                 continue
@@ -120,6 +129,7 @@ def split_bc_umi(input_file, output_prefix, bc_length, umi_length):
 
     print(
         f"wrote {written} reads; skipped {skipped_unparsed} (unparseable read name), "
+        f"{skipped_unassigned} (no barcode assigned), "
         f"{skipped_length} (unexpected barcode/umi length), {skipped_empty} (empty sequence)",
         file=sys.stderr,
     )
