@@ -22,6 +22,7 @@ batch_qcs/multiqc/final_qc/multiqc_data/llms-full.txt
 **/genome/bam/dedup/*.dedup.bam.bai
 **/dna/bam/dedup/*.bam
 **/dna/bam/dedup/*.bam.bai
+**/dna/qc/dedup/*.metrics.txt
 **/genome/isoquant/**/*.mtx
 **/genome/isoquant_all_droplets/**/*.mtx
 **/qc/seurat_isoquant/*/*.png
