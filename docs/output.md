@@ -268,6 +268,9 @@ Users should note that `oarfish` requires input reads to be deduplicated. As a r
       - `dedup_picard/`
         - `*.dedup.bam` : The transcriptome aligned bam containing corrected barcodes and deduplicated umis.
         - `*.dedup.bam.bai` : The transcriptome aligned bam index for the bam containing corrected barcodes and deduplicated umis.
+  - `qc/`
+    - `dedup/`
+      - `*.metrics.txt` : The MarkDuplicates duplication metrics, also summarised in the MultiQC report. \*\*
 
 </details>
 
