@@ -278,8 +278,8 @@
                 "kallisto_threshold": {
                     "type": "number",
                     "default": 0.8,
-                    "description": "Maximum rate of unmapped k-mers per read for lr-kallisto to accept a pseudoalignment.",
-                    "help_text": "Passed to `kb count --threshold`. Must be between 0 and 1. Only used when `lrkallisto` is one of the `quantifier` options.",
+                    "description": "Maximum rate of unmapped k-mers per read for lr-kallisto to accept a pseudoalignment. Has no effect: kallisto accepts the option and ignores it.",
+                    "help_text": "Passed to `kallisto bus --threshold`. Must be between 0 and 1. Only used when `lrkallisto` is one of the `quantifier` options. NOTE: this parameter is inert. `kallisto bus --long` accepts `--threshold` and silently ignores it — sweeping 0.0 to 0.9 returns an identical set of pseudoaligned reads and identical per-read transcript sets. It is retained so existing configs keep parsing; do not use it to tune sensitivity.",
                     "fa_icon": "fas fa-filter"
                 },
                 "kallisto_platform": {
@@ -287,7 +287,7 @@
                     "default": "ONT",
                     "enum": ["ONT", "PacBio"],
                     "description": "Sequencing platform used by the lr-kallisto expectation-maximisation step.",
-                    "help_text": "Passed to `kallisto quant-tcc --platform`. Only used when `lrkallisto` is one of the `quantifier` options.",
+                    "help_text": "Passed to `kallisto quant-tcc -P`. Only used when `lrkallisto` is one of the `quantifier` options.",
                     "fa_icon": "fas fa-microchip"
                 },
                 "kallisto_dlist": {

@@ -34,7 +34,7 @@ workflow QUANTIFY_SCRNA_LRKALLISTO {
             '10X_3v3'     : [ 16, 12 ],
             '10X_3v4'     : [ 16, 12 ],
             '10X_5v2'     : [ 16, 10 ],
-            '10X_5v3'     : [ 16, 12 ],
+            '10X_5v3'     : [ 16, 10 ],
             '10X_multiome': [ 16, 12 ],
         ]
 
