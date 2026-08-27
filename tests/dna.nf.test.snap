@@ -1,0 +1,160 @@
+{
+    "-profile test_dna": {
+        "content": [
+            {
+                "CHOPPER": {
+                    "chopper": "0.10.0"
+                },
+                "FLEXIPLEX_ASSIGN": {
+                    "flexiplex": "1.02.6.1"
+                },
+                "FLEXIPLEX_DISCOVERY": {
+                    "flexiplex": "1.02.6.1"
+                },
+                "FLEXIPLEX_FILTER": {
+                    "flexiplex": "1.02.6.1"
+                },
+                "GENOME_FAIDX": {
+                    "samtools": "1.22.1"
+                },
+                "MINIMAP2_ALIGN": {
+                    "minimap2": "2.29-r1283"
+                },
+                "PICARD_MARKDUPLICATES": {
+                    "picard": "3.4.0"
+                },
+                "PIGZ_UNCOMPRESS": {
+                    "pigz": 2.8
+                },
+                "READ_COUNTS": {
+                    "perl": "5.26.2"
+                },
+                "SAMTOOLS_FLAGSTAT": {
+                    "samtools": "1.22.1"
+                },
+                "SAMTOOLS_IDXSTATS": {
+                    "samtools": "1.22.1"
+                },
+                "SAMTOOLS_INDEX": {
+                    "samtools": "1.22.1"
+                },
+                "SAMTOOLS_SORT": {
+                    "samtools": "1.22.1"
+                },
+                "SAMTOOLS_STATS": {
+                    "samtools": "1.22.1"
+                },
+                "UCSC_GENEPREDTOBED": {
+                    "ucsc": 447
+                },
+                "UCSC_GTFTOGENEPRED": {
+                    "ucsc": 482
+                },
+                "Workflow": {
+                    "nf-core/scnanoseq": "v1.3.0"
+                }
+            },
+            [
+                "RPMI8402",
+                "RPMI8402/dna",
+                "RPMI8402/dna/bam",
+                "RPMI8402/dna/bam/dedup",
+                "RPMI8402/dna/bam/dedup/RPMI8402.bam",
+                "RPMI8402/dna/bam/dedup/RPMI8402.bam.bai",
+                "RPMI8402/dna/flexiplex",
+                "RPMI8402/dna/flexiplex/RPMI8402.dna_known_barcodes.txt",
+                "RPMI8402/dna/flexiplex/RPMI8402_barcodes_counts.txt",
+                "RPMI8402/dna/qc",
+                "RPMI8402/dna/qc/nanoplot",
+                "RPMI8402/dna/qc/nanoplot/post_extract",
+                "RPMI8402/dna/qc/nanoplot/post_extract/RPMI8402.dna.extracted_LengthvsQualityScatterPlot_dot.html",
+                "RPMI8402/dna/qc/nanoplot/post_extract/RPMI8402.dna.extracted_LengthvsQualityScatterPlot_kde.html",
+                "RPMI8402/dna/qc/nanoplot/post_extract/RPMI8402.dna.extracted_NanoPlot-report.html",
+                "RPMI8402/dna/qc/nanoplot/post_extract/RPMI8402.dna.extracted_NanoStats.txt",
+                "RPMI8402/dna/qc/nanoplot/post_extract/RPMI8402.dna.extracted_Non_weightedHistogramReadlength.html",
+                "RPMI8402/dna/qc/nanoplot/post_extract/RPMI8402.dna.extracted_Non_weightedLogTransformed_HistogramReadlength.html",
+                "RPMI8402/dna/qc/nanoplot/post_extract/RPMI8402.dna.extracted_WeightedHistogramReadlength.html",
+                "RPMI8402/dna/qc/nanoplot/post_extract/RPMI8402.dna.extracted_WeightedLogTransformed_HistogramReadlength.html",
+                "RPMI8402/dna/qc/nanoplot/post_extract/RPMI8402.dna.extracted_Yield_By_Length.html",
+                "RPMI8402/dna/qc/nanoplot/post_trim",
+                "RPMI8402/dna/qc/nanoplot/post_trim/RPMI8402.dna.trimmed_LengthvsQualityScatterPlot_dot.html",
+                "RPMI8402/dna/qc/nanoplot/post_trim/RPMI8402.dna.trimmed_LengthvsQualityScatterPlot_kde.html",
+                "RPMI8402/dna/qc/nanoplot/post_trim/RPMI8402.dna.trimmed_NanoPlot-report.html",
+                "RPMI8402/dna/qc/nanoplot/post_trim/RPMI8402.dna.trimmed_NanoStats.txt",
+                "RPMI8402/dna/qc/nanoplot/post_trim/RPMI8402.dna.trimmed_Non_weightedHistogramReadlength.html",
+                "RPMI8402/dna/qc/nanoplot/post_trim/RPMI8402.dna.trimmed_Non_weightedLogTransformed_HistogramReadlength.html",
+                "RPMI8402/dna/qc/nanoplot/post_trim/RPMI8402.dna.trimmed_WeightedHistogramReadlength.html",
+                "RPMI8402/dna/qc/nanoplot/post_trim/RPMI8402.dna.trimmed_WeightedLogTransformed_HistogramReadlength.html",
+                "RPMI8402/dna/qc/nanoplot/post_trim/RPMI8402.dna.trimmed_Yield_By_Length.html",
+                "RPMI8402/dna/qc/nanoplot/pre_trim",
+                "RPMI8402/dna/qc/nanoplot/pre_trim/RPMI8402.dna.raw_LengthvsQualityScatterPlot_dot.html",
+                "RPMI8402/dna/qc/nanoplot/pre_trim/RPMI8402.dna.raw_LengthvsQualityScatterPlot_kde.html",
+                "RPMI8402/dna/qc/nanoplot/pre_trim/RPMI8402.dna.raw_NanoPlot-report.html",
+                "RPMI8402/dna/qc/nanoplot/pre_trim/RPMI8402.dna.raw_NanoStats.txt",
+                "RPMI8402/dna/qc/nanoplot/pre_trim/RPMI8402.dna.raw_Non_weightedHistogramReadlength.html",
+                "RPMI8402/dna/qc/nanoplot/pre_trim/RPMI8402.dna.raw_Non_weightedLogTransformed_HistogramReadlength.html",
+                "RPMI8402/dna/qc/nanoplot/pre_trim/RPMI8402.dna.raw_WeightedHistogramReadlength.html",
+                "RPMI8402/dna/qc/nanoplot/pre_trim/RPMI8402.dna.raw_WeightedLogTransformed_HistogramReadlength.html",
+                "RPMI8402/dna/qc/nanoplot/pre_trim/RPMI8402.dna.raw_Yield_By_Length.html",
+                "RPMI8402/dna/qc/samtools",
+                "RPMI8402/dna/qc/samtools/corrected",
+                "RPMI8402/dna/qc/samtools/corrected/RPMI8402.dna.dna.flagstat",
+                "RPMI8402/dna/qc/samtools/corrected/RPMI8402.dna.dna.idxstats",
+                "RPMI8402/dna/qc/samtools/corrected/RPMI8402.dna.dna.stats",
+                "batch_qcs",
+                "batch_qcs/multiqc",
+                "batch_qcs/multiqc/final_qc",
+                "batch_qcs/multiqc/final_qc/multiqc_data",
+                "batch_qcs/multiqc/final_qc/multiqc_data/llms-full.txt",
+                "batch_qcs/multiqc/final_qc/multiqc_data/multiqc.log",
+                "batch_qcs/multiqc/final_qc/multiqc_data/multiqc.parquet",
+                "batch_qcs/multiqc/final_qc/multiqc_data/multiqc_citations.txt",
+                "batch_qcs/multiqc/final_qc/multiqc_data/multiqc_data.json",
+                "batch_qcs/multiqc/final_qc/multiqc_data/multiqc_general_stats.txt",
+                "batch_qcs/multiqc/final_qc/multiqc_data/multiqc_samtools_flagstat.txt",
+                "batch_qcs/multiqc/final_qc/multiqc_data/multiqc_software_versions.txt",
+                "batch_qcs/multiqc/final_qc/multiqc_data/multiqc_sources.txt",
+                "batch_qcs/multiqc/final_qc/multiqc_data/samtools-flagstat-pct-table.txt",
+                "batch_qcs/multiqc/final_qc/multiqc_data/samtools-flagstat-table.txt",
+                "batch_qcs/multiqc/final_qc/multiqc_plots",
+                "batch_qcs/multiqc/final_qc/multiqc_plots/pdf",
+                "batch_qcs/multiqc/final_qc/multiqc_plots/pdf/samtools-flagstat-pct-table.pdf",
+                "batch_qcs/multiqc/final_qc/multiqc_plots/pdf/samtools-flagstat-table.pdf",
+                "batch_qcs/multiqc/final_qc/multiqc_plots/png",
+                "batch_qcs/multiqc/final_qc/multiqc_plots/png/samtools-flagstat-pct-table.png",
+                "batch_qcs/multiqc/final_qc/multiqc_plots/png/samtools-flagstat-table.png",
+                "batch_qcs/multiqc/final_qc/multiqc_plots/svg",
+                "batch_qcs/multiqc/final_qc/multiqc_plots/svg/samtools-flagstat-pct-table.svg",
+                "batch_qcs/multiqc/final_qc/multiqc_plots/svg/samtools-flagstat-table.svg",
+                "batch_qcs/multiqc/final_qc/multiqc_report.html",
+                "batch_qcs/read_counts",
+                "batch_qcs/read_counts/read_counts.csv",
+                "pipeline_info",
+                "pipeline_info/nf_core_scnanoseq_software_mqc_versions.yml"
+            ],
+            [
+                "RPMI8402.bam:md5,6456219f065cc1df3f0ffe871e4aeee1",
+                "RPMI8402.bam.bai:md5,97d666d490c2d8b3c00dff1709882edc",
+                "RPMI8402.dna_known_barcodes.txt:md5,a384c05cc091ce3774d09e0a89db3915",
+                "RPMI8402_barcodes_counts.txt:md5,7c5416330c4307844c125b43cef368c8",
+                "RPMI8402.dna.extracted_NanoStats.txt:md5,e457c4a262e125749ff94b644c4c8399",
+                "RPMI8402.dna.trimmed_NanoStats.txt:md5,e051410f92e1ebb86beea6d3d1d8b6da",
+                "RPMI8402.dna.raw_NanoStats.txt:md5,b979748a726c1c143e72bc2708cf18fb",
+                "RPMI8402.dna.dna.flagstat:md5,408e0e0ebf6c314dd2cf22441512261b",
+                "RPMI8402.dna.dna.idxstats:md5,93082632d306a4ee1b522dda067b6289",
+                "RPMI8402.dna.dna.stats:md5,d52e504216fe09f5c136c335eaa0f661",
+                "multiqc_citations.txt:md5,ee1baba4adea57b43a9ae59ce7e1dd7f",
+                "multiqc_general_stats.txt:md5,64b570f381a0c96458a2c7b5917a7447",
+                "multiqc_samtools_flagstat.txt:md5,54980b12fda7c6ae01142d7926d9e92b",
+                "samtools-flagstat-pct-table.txt:md5,57ff8b99edf16df967446f5e41484e76",
+                "samtools-flagstat-table.txt:md5,08a93ad8e3c9efa4fea7c30e861a4d04",
+                "read_counts.csv:md5,b0e4e0e53204b01bd64c8a4b16b057d3"
+            ]
+        ],
+        "timestamp": "2026-08-27T11:32:45.050963251",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "26.04.3"
+        }
+    }
+}

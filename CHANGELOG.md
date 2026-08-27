@@ -36,6 +36,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `split_gene_status` no longer emits an empty BAM. `umi_tools` aborts on one, and a contig with no annotation produces exactly that — 50 of 85 contigs on a real GRCh38 run
 - Fixed `split_amount` parameter type coercion so it is read as an integer under the Nextflow v2 strict syntax parser
 - Fixed `SAMTOOLS_INDEX_DEDUP` in the `dedup_umis` subworkflow indexing the `umi_tools` output channel unconditionally, which left the `--dedup_tool picard` branch indexing a channel that was never populated
+- `--quantifier` now defaults to `null` rather than an empty string. `--quantifier` has been optional since DNA support was added, since DNA samples are aligned and deduplicated but never quantified, but the empty default was still checked against the parameter's own regex and failed it. Every DNA-only run therefore aborted at parameter validation with `"" does not match regular expression`, `-profile test_dna` included. The samplesheet-aware check that errors only when a `cdna` row is present and no quantifier was given is now what actually reports the problem. Added `tests/dna.nf.test` so the DNA-only path is covered by nf-test
+- Removed four module includes from the `process_longread_scrna` subworkflow that were never invoked (`PICARD_MARKDUPLICATES`, `SAMTOOLS_FLAGSTAT_DEDUP`, `SAMTOOLS_INDEX_DEDUP`, `SAMTOOLS_FILTER_DEDUP`), along with the `conf/modules.config` selector for `SAMTOOLS_FILTER_DEDUP`, which matched no process. The underlying modules are all still used elsewhere; only the dead aliases are gone
 
 ## v1.3.0 [2026-06-26]
 

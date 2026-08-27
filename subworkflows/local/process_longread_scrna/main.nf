@@ -15,12 +15,8 @@ include { DEDUP_UMIS              } from '../../../subworkflows/local/dedup_umis
 include { QUANTIFY_SCRNA_ISOQUANT as QUANTIFY_SCRNA_ISOQUANT_ALL } from '../../../subworkflows/local/quantify_scrna_isoquant'
 
 // MODULES
-include { PICARD_MARKDUPLICATES                         } from '../../../modules/nf-core/picard/markduplicates'
 include { SAMTOOLS_FLAGSTAT as SAMTOOLS_FLAGSTAT_TAGGED } from '../../../modules/nf-core/samtools/flagstat'
-include { SAMTOOLS_FLAGSTAT as SAMTOOLS_FLAGSTAT_DEDUP  } from '../../../modules/nf-core/samtools/flagstat'
 include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_TAGGED       } from '../../../modules/nf-core/samtools/index'
-include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_DEDUP        } from '../../../modules/nf-core/samtools/index'
-include { SAMTOOLS_VIEW as SAMTOOLS_FILTER_DEDUP        } from '../../../modules/nf-core/samtools/view'
 
 include { TAG_BARCODES } from '../../../modules/local/tag_barcodes'
 
