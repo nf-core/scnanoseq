@@ -353,10 +353,28 @@ It should also be noted that oarfish can only accurately perform quantification 
       - `quant/` : The raw `kallisto quant-tcc` output, including TPM-normalised matrices.
       - `counts_unfiltered/` : The transcript compatibility count (TCC) matrix and its equivalence classes.
       - `bus/` : The BUS file, equivalence class map, transcript names and `run_info.json` pseudoalignment statistics.
+    - `lrkallisto_all_droplets/` : The same five outputs, over every droplet rather than the called cells.
 
 </details>
 
 [lr-kallisto](https://kallisto.readthedocs.io/en/latest/lr/pseudoalignment.html) is the long-read mode of [kallisto](https://github.com/pachterlab/kallisto). Rather than aligning reads, it pseudoaligns them against an index built with a longer k-mer than short-read kallisto uses (63 rather than 31), then quantifies transcript abundances with an expectation-maximization algorithm adapted to long-read error profiles. Because it does not align, this branch of the pipeline produces no BAM file and therefore no alignment-derived QC.
+
+lr-kallisto is run twice off the same reads and the same index, mirroring the two
+IsoQuant passes described above. It reads the barcode out of the flexiplex read, so this
+quantifier requires `--demux_tool_cdna flexiplex` and both passes always run:
+
+- `lrkallisto/` takes the barcode from the flexiplex read name, which is the one matched
+  to the known barcode list, and `bustools correct` then drops the reads that matched
+  nothing. This is the matrix to use for ordinary analysis, and the one Seurat QC is run
+  against.
+- `lrkallisto_all_droplets/` takes the barcode from the `XB` tag, which falls back to the
+  uncorrected barcode. Droplets below the knee called by `flexiplex-filter` therefore
+  appear here under their own barcode alongside the called cells, which is what makes
+  ambient/empty-droplet estimation possible. Barcodes are not corrected in this pass:
+  `XB` is already the final droplet identity, and correcting would discard the very
+  droplets the matrix exists to keep. Sequencing errors in the below-knee barcodes
+  therefore inflate the column count, which on a full sample can make this matrix much
+  wider than `lrkallisto/`.
 
 Barcodes and UMIs are taken from the flexiplex read names and written into a synthetic barcode read, so that kallisto can locate them positionally. UMI deduplication is performed by `bustools` during counting rather than by UMI-tools or Picard, so `--skip_dedup` and `--dedup_tool` do not apply to this path.
 

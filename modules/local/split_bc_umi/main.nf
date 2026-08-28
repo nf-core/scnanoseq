@@ -12,6 +12,7 @@ process SPLIT_BC_UMI {
     tuple val(meta), path(reads)
     val bc_length
     val umi_length
+    val barcode_tag
 
     output:
     tuple val(meta), path("*.bc_umi.fastq.gz"), path("*.cdna.fastq.gz"), emit: reads
@@ -23,12 +24,15 @@ process SPLIT_BC_UMI {
 
     script:
     def prefix = task.ext.prefix ?: "${meta.id}${meta.type ? ".${meta.type}" : ""}"
+    // An empty tag leaves the barcode where it always came from, the read name.
+    def tag_arg = barcode_tag ? "-t ${barcode_tag}" : ""
     """
     split_bc_umi.py \\
         -i ${reads} \\
         -o ${prefix} \\
         -b ${bc_length} \\
-        -u ${umi_length}
+        -u ${umi_length} \\
+        ${tag_arg}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

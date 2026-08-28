@@ -4,16 +4,21 @@
 // rather than from a bam, so this path needs no aligner and no separate
 // deduplication step: bustools deduplicates umis while counting.
 //
+// The reference is prepared once here; the counting itself lives in
+// LRKALLISTO_COUNT so it can be run twice over the same index.
+//
 
-include { GFFREAD                         } from '../../../modules/nf-core/gffread/main'
-include { GTF_TO_T2G                      } from '../../../modules/local/gtf_to_t2g'
-include { KALLISTO_INDEX                  } from '../../../modules/local/kallisto/index'
-include { SPLIT_BC_UMI                    } from '../../../modules/local/split_bc_umi'
-include { KALLISTO_BUS                    } from '../../../modules/local/kallisto/bus'
-include { BUSTOOLS_TCC                    } from '../../../modules/local/bustools/tcc'
-include { KALLISTO_QUANTTCC               } from '../../../modules/local/kallisto/quanttcc'
-include { QC_SCRNA as QC_SCRNA_GENE       } from '../../../subworkflows/local/qc_scrna'
-include { QC_SCRNA as QC_SCRNA_TRANSCRIPT } from '../../../subworkflows/local/qc_scrna'
+include { GFFREAD          } from '../../../modules/nf-core/gffread/main'
+include { GTF_TO_T2G       } from '../../../modules/local/gtf_to_t2g'
+include { KALLISTO_INDEX   } from '../../../modules/local/kallisto/index'
+include { LRKALLISTO_COUNT } from '../../../subworkflows/local/lrkallisto_count'
+
+// A second counting pass over the same reads, on XB rather than the assigned
+// barcode, so droplets flexiplex could not match to the known list are
+// quantified alongside the called cells. Keep the instance above unaliased: the
+// selectors in conf/modules.config are keyed on the literal
+// '.*:LRKALLISTO_COUNT:...' path.
+include { LRKALLISTO_COUNT as LRKALLISTO_COUNT_ALL } from '../../../subworkflows/local/lrkallisto_count'
 
 workflow QUANTIFY_SCRNA_LRKALLISTO {
     take:
@@ -82,87 +87,57 @@ workflow QUANTIFY_SCRNA_LRKALLISTO {
         ch_t2g = GTF_TO_T2G.out.t2g.first()
 
         //
-        // MODULE: Move the barcode and umi out of the read name into their own fastq
+        // SUBWORKFLOW: Called cells only. The barcode comes from the read name,
+        // which is the one flexiplex matched to the known list, and correcting
+        // against that list drops the reads that matched nothing.
         //
-        SPLIT_BC_UMI ( in_fastq, bc_length, umi_length )
-        ch_versions = ch_versions.mix(SPLIT_BC_UMI.out.versions_split_bc_umi)
-
-        //
-        // MODULE: Pseudoalign the reads
-        //
-        KALLISTO_BUS ( SPLIT_BC_UMI.out.reads, ch_index, technology )
-        ch_versions = ch_versions.mix(KALLISTO_BUS.out.versions_kallisto_bus)
-
-        // The demultiplexing subworkflow tags the reads and the known-barcode
-        // list with different metadata, so match on the sample id rather than
-        // joining on the whole map.
-        ch_tcc_input = KALLISTO_BUS.out.bus
-            .join( KALLISTO_BUS.out.ecmap, by: [0] )
-            .join( KALLISTO_BUS.out.txnames, by: [0] )
-            .combine( in_known_barcodes )
-            .filter { meta, _bus, _ec, _tx, meta2, _barcodes -> meta.id == meta2.id }
-            .map { meta, bus, ec, tx, _meta2, barcodes -> [ meta, bus, ec, tx, barcodes ] }
-
-        //
-        // MODULE: Correct barcodes, deduplicate umis and count equivalence classes
-        //
-        BUSTOOLS_TCC ( ch_tcc_input, ch_t2g )
-        ch_versions = ch_versions.mix(BUSTOOLS_TCC.out.versions_bustools_tcc)
-
-        //
-        // MODULE: Quantify transcript and gene abundances with the long read EM
-        //
-        KALLISTO_QUANTTCC (
-            BUSTOOLS_TCC.out.tcc_mtx
-                .join( BUSTOOLS_TCC.out.tcc_ec, by: [0] )
-                .join( BUSTOOLS_TCC.out.barcodes, by: [0] ),
+        LRKALLISTO_COUNT (
+            in_fastq,
+            in_known_barcodes,
             ch_index,
-            ch_t2g
+            ch_t2g,
+            technology,
+            bc_length,
+            umi_length,
+            '',
+            true,
+            skip_qc,
+            skip_seurat
         )
-        ch_versions = ch_versions.mix(KALLISTO_QUANTTCC.out.versions_kallisto_quanttcc)
+        ch_versions = ch_versions.mix(LRKALLISTO_COUNT.out.versions)
 
-        ch_gene_qc_stats = channel.empty()
-        ch_transcript_qc_stats = channel.empty()
-        if (!skip_qc && !skip_seurat) {
-
-            ch_flagstat = SPLIT_BC_UMI.out.flagstat
-                .map { meta, flagstat -> [ [ 'id': meta.id, 'type': meta.type ], flagstat ] }
-
-            QC_SCRNA_GENE (
-                KALLISTO_QUANTTCC.out.gene_features
-                    .join( KALLISTO_QUANTTCC.out.gene_barcodes, by: [0] )
-                    .join( KALLISTO_QUANTTCC.out.gene_mtx, by: [0] )
-                    .map { meta, features, barcodes, mtx ->
-                        [ [ 'id': meta.id, 'type': meta.type ], [ features, barcodes, mtx ] ]
-                    },
-                ch_flagstat,
-                "MEX"
-            )
-            ch_gene_qc_stats = QC_SCRNA_GENE.out.seurat_stats
-            ch_versions = ch_versions.mix(QC_SCRNA_GENE.out.versions)
-
-            QC_SCRNA_TRANSCRIPT (
-                KALLISTO_QUANTTCC.out.transcript_features
-                    .join( KALLISTO_QUANTTCC.out.transcript_barcodes, by: [0] )
-                    .join( KALLISTO_QUANTTCC.out.transcript_mtx, by: [0] )
-                    .map { meta, features, barcodes, mtx ->
-                        [ [ 'id': meta.id, 'type': meta.type ], [ features, barcodes, mtx ] ]
-                    },
-                ch_flagstat,
-                "MEX"
-            )
-            ch_transcript_qc_stats = QC_SCRNA_TRANSCRIPT.out.seurat_stats
-            ch_versions = ch_versions.mix(QC_SCRNA_TRANSCRIPT.out.versions)
-        }
+        //
+        // SUBWORKFLOW: Every droplet, off the same reads. XB holds the assigned
+        // barcode for a called cell and the uncorrected one for a droplet that
+        // fell below the knee, so both land in a single barcode space. Only the
+        // flexiplex assign module writes XB, which this path already requires:
+        // the pipeline refuses --demux_tool_cdna blaze with lr-kallisto. Seurat
+        // QC is skipped here, it is a per-cell report and the called cells
+        // already have one from the pass above.
+        //
+        LRKALLISTO_COUNT_ALL (
+            in_fastq,
+            in_known_barcodes,
+            ch_index,
+            ch_t2g,
+            technology,
+            bc_length,
+            umi_length,
+            'XB',
+            false,
+            skip_qc,
+            true
+        )
+        ch_versions = ch_versions.mix(LRKALLISTO_COUNT_ALL.out.versions)
 
     emit:
         versions                 = ch_versions
-        gene_features_file       = KALLISTO_QUANTTCC.out.gene_features
-        gene_barcodes_file       = KALLISTO_QUANTTCC.out.gene_barcodes
-        gene_mtx_file            = KALLISTO_QUANTTCC.out.gene_mtx
-        transcript_features_file = KALLISTO_QUANTTCC.out.transcript_features
-        transcript_barcodes_file = KALLISTO_QUANTTCC.out.transcript_barcodes
-        transcript_mtx_file      = KALLISTO_QUANTTCC.out.transcript_mtx
-        gene_qc_stats            = ch_gene_qc_stats
-        transcript_qc_stats      = ch_transcript_qc_stats
+        gene_features_file       = LRKALLISTO_COUNT.out.gene_features_file
+        gene_barcodes_file       = LRKALLISTO_COUNT.out.gene_barcodes_file
+        gene_mtx_file            = LRKALLISTO_COUNT.out.gene_mtx_file
+        transcript_features_file = LRKALLISTO_COUNT.out.transcript_features_file
+        transcript_barcodes_file = LRKALLISTO_COUNT.out.transcript_barcodes_file
+        transcript_mtx_file      = LRKALLISTO_COUNT.out.transcript_mtx_file
+        gene_qc_stats            = LRKALLISTO_COUNT.out.gene_qc_stats
+        transcript_qc_stats      = LRKALLISTO_COUNT.out.transcript_qc_stats
 }

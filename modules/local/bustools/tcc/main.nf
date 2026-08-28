@@ -10,6 +10,7 @@ process BUSTOOLS_TCC {
     input:
     tuple val(meta), path(bus), path(ecmap), path(txnames), path(known_barcodes)
     tuple val(meta2), path(t2g)
+    val correct
 
     output:
     tuple val(meta), path("counts_unfiltered/cells_x_tcc.mtx")         , emit: tcc_mtx
@@ -23,7 +24,11 @@ process BUSTOOLS_TCC {
     script:
     def args = task.ext.args ?: ''
     def memory = task.memory.toGiga() - 1
-    """
+    // Correcting against the known-barcode list is also what discards the reads
+    // that matched no known barcode, which is what makes the counts called-cells
+    // only. The all-droplet pass skips it: its barcodes come from XB, which is
+    // already the final droplet identity, and every one of them has to survive.
+    def correct_step = !correct ? "mv sorted.bus counted.bus" : """
     # Reduce the flexiplex known-barcode list to one barcode per line. The
     # barcodes are already corrected against the whitelist, so this on-list
     # stops bustools inventing one of its own.
@@ -32,6 +37,19 @@ process BUSTOOLS_TCC {
         | sort -u \\
         > onlist.txt
 
+    bustools correct \\
+        -o corrected.bus \\
+        -w onlist.txt \\
+        sorted.bus
+
+    bustools sort \\
+        -o counted.bus \\
+        -T tmp \\
+        -t ${task.cpus} \\
+        -m ${memory}G \\
+        corrected.bus
+    """
+    """
     mkdir -p tmp counts_unfiltered
 
     bustools sort \\
@@ -41,17 +59,7 @@ process BUSTOOLS_TCC {
         -m ${memory}G \\
         ${bus}
 
-    bustools correct \\
-        -o corrected.bus \\
-        -w onlist.txt \\
-        sorted.bus
-
-    bustools sort \\
-        -o corrected.sorted.bus \\
-        -T tmp \\
-        -t ${task.cpus} \\
-        -m ${memory}G \\
-        corrected.bus
+    ${correct_step}
 
     # Omitting --genecounts keeps this at the equivalence class level, which is
     # what kallisto quant-tcc consumes. --umi-gene deduplicates umis.
@@ -63,7 +71,7 @@ process BUSTOOLS_TCC {
         --umi-gene \\
         --multimapping \\
         ${args} \\
-        corrected.sorted.bus
+        counted.bus
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
