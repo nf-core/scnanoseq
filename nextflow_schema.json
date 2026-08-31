@@ -296,6 +296,20 @@
                     "description": "Use the genome as a kallisto d-list, so that reads originating outside the transcriptome are discarded rather than misassigned.",
                     "help_text": "This is the lr-kallisto default and improves specificity, but it is markedly more punitive for long reads than for short reads: a long read only has to contain one genome-only k-mer to be rejected. On the chr21 test data it reduces the pseudoalignment rate roughly five-fold. Disable it to trade specificity for sensitivity. Only used when `lrkallisto` is one of the `quantifier` options.",
                     "fa_icon": "fas fa-filter"
+                },
+                "lrkallisto_all_min_reads": {
+                    "type": "integer",
+                    "default": 100,
+                    "minimum": 0,
+                    "description": "Minimum number of reads a barcode must have to enter the lr-kallisto all-droplet matrix.",
+                    "help_text": "The all-droplet pass keys on the XB tag, which is the raw uncorrected barcode for any droplet below the knee, and it deliberately skips `bustools correct`. Nothing else bounds the column count, so sequencing error alone mints a barcode per read: on a full sample that is millions of near-singletons against a few thousand real cells, and the cost of the long-read EM scales with that count. This puts a floor under it, using the read counts flexiplex has already collected. Called cells sit far above any sensible value here. Set to 0 to keep every barcode, restoring the previous unbounded behaviour. Only used when `lrkallisto` is one of the `quantifier` options.",
+                    "fa_icon": "fas fa-filter"
+                },
+                "skip_lrkallisto_all_droplets": {
+                    "type": "boolean",
+                    "description": "Skip the lr-kallisto all-droplet (XB) counting pass entirely.",
+                    "help_text": "The all-droplet matrix exists for ambient and empty-droplet estimation, and nothing else in the pipeline consumes it. Skipping it halves the lr-kallisto counting work. Only used when `lrkallisto` is one of the `quantifier` options.",
+                    "fa_icon": "fas fa-forward"
                 }
             },
             "description": "Options related to post-mapping analysis"
@@ -356,6 +370,12 @@
                 "skip_dedup": {
                     "type": "boolean",
                     "description": "Skip umi dedup.",
+                    "fa_icon": "fas fa-forward"
+                },
+                "skip_cdna_dedup": {
+                    "type": "boolean",
+                    "description": "Skip umi dedup on the cDNA arm only.",
+                    "help_text": "The cDNA genome alignment is produced for every run, including runs whose quantifier reads the fastq directly, so its umi_tools deduplication chain (gene tagging, per-contig split, dedup, merge) is by far the most expensive part of that arm. This turns that chain off and publishes the mapped-only bam instead, without touching `skip_dedup`, which governs Picard MarkDuplicates on the DNA arm.",
                     "fa_icon": "fas fa-forward"
                 },
                 "skip_multiqc": {

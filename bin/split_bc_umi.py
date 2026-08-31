@@ -18,6 +18,13 @@
     one for a droplet below the knee, so both land in a single barcode space.
     The umi still comes from the read name either way -- flexiplex gives every
     read that keeps a barcode region a full width umi.
+
+    XB is the RAW, uncorrected barcode for any droplet below the knee, so
+    sequencing error alone mints a fresh droplet per read and nothing downstream
+    bounds the column count -- on a full sample that is millions of near
+    singletons against a few thousand real cells, and the lr-kallisto EM cost
+    scales with it. --allowlist restricts the run to a given set of barcodes,
+    which is how the all-droplet pass is kept to a sane width.
 """
 
 import argparse
@@ -47,6 +54,24 @@ def parse_args():
         type=str,
         help="Take the barcode from this fastq comment tag (e.g. 'XB') rather than from the read name",
     )
+    arg_parser.add_argument(
+        "-l",
+        "--allowlist",
+        required=False,
+        default=None,
+        type=str,
+        help="Only keep reads whose barcode appears in this file. Either a bare list or a "
+        "`barcode<TAB>count` file such as the flexiplex barcode counts",
+    )
+    arg_parser.add_argument(
+        "-m",
+        "--allowlist_min_reads",
+        required=False,
+        default=0,
+        type=int,
+        help="Only load allowlist barcodes seen at least this many times. Requires a "
+        "`barcode<TAB>count` allowlist. 0 keeps every barcode in the file",
+    )
 
     return arg_parser.parse_args()
 
@@ -56,6 +81,53 @@ def open_fastq(path):
     if path.endswith(".gz"):
         return gzip.open(path, "rt")
     return open(path, "r", encoding="utf-8")
+
+
+def read_allowlist(path, min_reads=0):
+    """Read an allowlist into a set, optionally thresholding on a read count
+
+    The file is either a bare list of barcodes or the `barcode<TAB>count` form
+    the flexiplex discovery/merge steps produce. Blank lines are ignored and
+    anything after the barcode is dropped, so both shapes work.
+
+    min_reads > 0 keeps only the barcodes seen at least that many times, which
+    is what bounds the all-droplet barcode space: the counts file lists every
+    barcode flexiplex ever saw, the overwhelming majority of them single-read
+    artefacts of sequencing error.
+
+    The filtering is done here rather than with an awk pre-step so the module
+    depends on nothing but python -- the container carries no guaranteed awk.
+    """
+    allowed = set()
+    with open(path, "r", encoding="utf-8") as allowlist_in:
+        for line_number, line in enumerate(allowlist_in, start=1):
+            fields = line.split()
+            if not fields:
+                continue
+
+            if min_reads > 0:
+                if len(fields) < 2:
+                    sys.exit(
+                        f"--allowlist_min_reads needs a `barcode<TAB>count` allowlist, but "
+                        f"{path} line {line_number} has no count column."
+                    )
+                try:
+                    count = int(fields[1])
+                except ValueError:
+                    sys.exit(f"Could not read a count from {path} line {line_number}: {line.strip()!r}")
+                if count < min_reads:
+                    continue
+
+            allowed.add(fields[0])
+
+    if not allowed:
+        sys.exit(
+            f"The allowlist {path} yielded no barcodes"
+            + (f" at --allowlist_min_reads {min_reads}." if min_reads > 0 else ".")
+        )
+
+    print(f"allowlist: {len(allowed)} barcodes from {path} (min reads {min_reads})", file=sys.stderr)
+    return allowed
 
 
 def parse_header(header, barcode_tag=None):
@@ -96,7 +168,7 @@ def parse_header(header, barcode_tag=None):
     return barcode, umi, read_id
 
 
-def split_bc_umi(input_file, output_prefix, bc_length, umi_length, barcode_tag=None):
+def split_bc_umi(input_file, output_prefix, bc_length, umi_length, barcode_tag=None, allowlist=None):
     """Split a flexiplex fastq into a barcode+umi fastq and a cdna fastq
 
     The two fastqs are written in lockstep from a single pass, which is what
@@ -108,6 +180,7 @@ def split_bc_umi(input_file, output_prefix, bc_length, umi_length, barcode_tag=N
     skipped_untagged = 0
     skipped_unassigned = 0
     skipped_length = 0
+    skipped_offlist = 0
     skipped_empty = 0
 
     # compresslevel=1 keeps this io-bound rather than cpu-bound; the files are
@@ -151,6 +224,13 @@ def split_bc_umi(input_file, output_prefix, bc_length, umi_length, barcode_tag=N
                 skipped_length += 1
                 continue
 
+            # Bound the barcode space. Checked after the length test so a
+            # malformed barcode is still reported as malformed rather than
+            # disappearing into the off-list count.
+            if allowlist is not None and barcode not in allowlist:
+                skipped_offlist += 1
+                continue
+
             if not seq:
                 skipped_empty += 1
                 continue
@@ -168,12 +248,15 @@ def split_bc_umi(input_file, output_prefix, bc_length, umi_length, barcode_tag=N
 
     source = f"the {barcode_tag} tag" if barcode_tag else "the read name"
     untagged = f"{skipped_untagged} (no {barcode_tag} tag), " if barcode_tag else ""
+    offlist = f"{skipped_offlist} (barcode not on the allowlist), " if allowlist is not None else ""
     print(
         f"wrote {written} reads, barcode from {source}; "
         f"skipped {skipped_unparsed} (unparseable read name), "
         f"{untagged}"
         f"{skipped_unassigned} (no barcode assigned), "
-        f"{skipped_length} (unexpected barcode/umi length), {skipped_empty} (empty sequence)",
+        f"{skipped_length} (unexpected barcode/umi length), "
+        f"{offlist}"
+        f"{skipped_empty} (empty sequence)",
         file=sys.stderr,
     )
 
@@ -187,7 +270,10 @@ def main():
     args = parse_args()
     # An empty --barcode_tag means the same thing as not passing one at all.
     barcode_tag = args.barcode_tag or None
-    split_bc_umi(args.input_file, args.output_prefix, args.bc_length, args.umi_length, barcode_tag)
+    allowlist = read_allowlist(args.allowlist, args.allowlist_min_reads) if args.allowlist else None
+    split_bc_umi(
+        args.input_file, args.output_prefix, args.bc_length, args.umi_length, barcode_tag, allowlist
+    )
 
 
 if __name__ == "__main__":

@@ -142,5 +142,9 @@ workflow DEMULTIPLEX_FLEXIPLEX {
     emit:
         flexiplex_fastq = ch_flexiplex_fastq
         flexiplex_barcodes = ch_corrected_bc_info
+        // Every barcode flexiplex saw, with its read count, before the knee call
+        // narrowed it to the called cells. lr-kallisto's all-droplet pass reads
+        // this to put a floor under its barcode space.
+        flexiplex_barcode_counts = ch_barcodes
         versions = ch_versions
 }

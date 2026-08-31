@@ -357,7 +357,7 @@ It should also be noted that oarfish can only accurately perform quantification 
 
 </details>
 
-[lr-kallisto](https://kallisto.readthedocs.io/en/latest/lr/pseudoalignment.html) is the long-read mode of [kallisto](https://github.com/pachterlab/kallisto). Rather than aligning reads, it pseudoaligns them against an index built with a longer k-mer than short-read kallisto uses (63 rather than 31), then quantifies transcript abundances with an expectation-maximization algorithm adapted to long-read error profiles. Because it does not align, this branch of the pipeline produces no BAM file and therefore no alignment-derived QC.
+[lr-kallisto](https://kallisto.readthedocs.io/en/latest/lr/pseudoalignment.html) is the long-read mode of [kallisto](https://github.com/pachterlab/kallisto). Rather than aligning reads, it pseudoaligns them against an index built with a longer k-mer than short-read kallisto uses (63 rather than 31), then quantifies transcript abundances with an expectation-maximization algorithm adapted to long-read error profiles. The quantifier itself consumes no alignment, but the cDNA genome alignment is produced for every run, so the BAMs and alignment-derived QC under `<sample>/cdna/genome/` are present here too.
 
 lr-kallisto is run twice off the same reads and the same index, mirroring the two
 IsoQuant passes described above. It reads the barcode out of the flexiplex read, so this
@@ -372,9 +372,17 @@ quantifier requires `--demux_tool_cdna flexiplex` and both passes always run:
   appear here under their own barcode alongside the called cells, which is what makes
   ambient/empty-droplet estimation possible. Barcodes are not corrected in this pass:
   `XB` is already the final droplet identity, and correcting would discard the very
-  droplets the matrix exists to keep. Sequencing errors in the below-knee barcodes
-  therefore inflate the column count, which on a full sample can make this matrix much
-  wider than `lrkallisto/`.
+  droplets the matrix exists to keep.
+
+  Because they are not corrected, sequencing errors in the below-knee barcodes would
+  otherwise inflate the column count without bound: on a full sample that is millions of
+  near-singleton barcodes against a few thousand real cells, and the cost of the EM
+  scales with it. `--lrkallisto_all_min_reads` (default `100`) puts a floor under this,
+  keeping only barcodes flexiplex saw at least that many times. On a full 10x Multiome
+  sample that reduces the matrix from ~14.1M columns to ~233k while retaining ~54% of the
+  below-knee reads; called cells sit far above the threshold and are unaffected. Set it
+  to `0` to keep every barcode, or use `--skip_lrkallisto_all_droplets` to skip the pass
+  altogether.
 
 Barcodes and UMIs are taken from the flexiplex read names and written into a synthetic barcode read, so that kallisto can locate them positionally. UMI deduplication is performed by `bustools` during counting rather than by UMI-tools or Picard, so `--skip_dedup` and `--dedup_tool` do not apply to this path.
 

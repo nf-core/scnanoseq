@@ -18,12 +18,14 @@ workflow LRKALLISTO_COUNT {
     take:
         in_fastq          // channel: [ val(meta), path(flexiplex_fastq) ]
         in_known_barcodes // channel: [ val(meta), path(known_barcodes) ]
+        in_barcode_counts // channel: [ val(meta), path(barcode_counts) ]
         in_index          // channel: [ val(meta), path(kallisto_index) ]
         in_t2g            // channel: [ val(meta), path(t2g) ]
         val_technology    // str: The kallisto -x geometry string
         val_bc_length     // int: Barcode width
         val_umi_length    // int: Umi width
         val_barcode_tag   // str: Fastq comment tag to take the barcode from, '' for the read name
+        val_min_reads     // int: Drop barcodes seen fewer times than this, 0 to keep every barcode
         val_correct       // bool: Correct barcodes against the known-barcode list
         skip_qc           // bool: Skip qc steps
         skip_seurat       // bool: Skip seurat qc steps
@@ -34,7 +36,24 @@ workflow LRKALLISTO_COUNT {
         //
         // MODULE: Move the barcode and umi out of the read name into their own fastq
         //
-        SPLIT_BC_UMI ( in_fastq, val_bc_length, val_umi_length, val_barcode_tag )
+        // With a minimum set, the flexiplex barcode counts are staged alongside the
+        // reads and every barcode below it is dropped. That is what bounds the
+        // all-droplet pass: XB is the raw uncorrected barcode, so without a floor
+        // the column count runs to millions of single-read sequencing artefacts and
+        // the EM cost runs with it. The called-cells pass passes 0 and stages
+        // nothing, leaving its behaviour untouched.
+        //
+        // Matched on the sample id rather than on the whole meta map, for the same
+        // reason as ch_tcc_input below: the demultiplexing subworkflow tags the
+        // reads and the barcode files with different metadata.
+        ch_split_input = val_min_reads > 0
+            ? in_fastq
+                .combine( in_barcode_counts )
+                .filter { meta, _reads, meta2, _counts -> meta.id == meta2.id }
+                .map { meta, reads, _meta2, counts -> [ meta, reads, counts ] }
+            : in_fastq.map { meta, reads -> [ meta, reads, [] ] }
+
+        SPLIT_BC_UMI ( ch_split_input, val_bc_length, val_umi_length, val_barcode_tag, val_min_reads )
         ch_versions = ch_versions.mix(SPLIT_BC_UMI.out.versions_split_bc_umi)
 
         //

@@ -24,6 +24,7 @@ workflow QUANTIFY_SCRNA_LRKALLISTO {
     take:
         in_fastq          // channel: [ val(meta), path(flexiplex_fastq) ]
         in_known_barcodes // channel: [ val(meta), path(known_barcodes) ]
+        in_barcode_counts // channel: [ val(meta), path(barcode_counts) ]
         in_fasta          // channel: [ val(meta), path(genome_fasta) ]
         in_gtf            // channel: [ val(meta), path(gtf) ]
         skip_qc           // bool: Skip qc steps
@@ -94,12 +95,14 @@ workflow QUANTIFY_SCRNA_LRKALLISTO {
         LRKALLISTO_COUNT (
             in_fastq,
             in_known_barcodes,
+            in_barcode_counts,
             ch_index,
             ch_t2g,
             technology,
             bc_length,
             umi_length,
             '',
+            0,
             true,
             skip_qc,
             skip_seurat
@@ -115,20 +118,28 @@ workflow QUANTIFY_SCRNA_LRKALLISTO {
         // QC is skipped here, it is a per-cell report and the called cells
         // already have one from the pass above.
         //
-        LRKALLISTO_COUNT_ALL (
-            in_fastq,
-            in_known_barcodes,
-            ch_index,
-            ch_t2g,
-            technology,
-            bc_length,
-            umi_length,
-            'XB',
-            false,
-            skip_qc,
-            true
-        )
-        ch_versions = ch_versions.mix(LRKALLISTO_COUNT_ALL.out.versions)
+        // XB is uncorrected below the knee, so --lrkallisto_all_min_reads puts a
+        // floor under the barcode space before the EM ever sees it. Left
+        // unbounded a full sample produces millions of single-read barcodes
+        // against a few thousand real cells and the EM does not finish.
+        if (!params.skip_lrkallisto_all_droplets) {
+            LRKALLISTO_COUNT_ALL (
+                in_fastq,
+                in_known_barcodes,
+                in_barcode_counts,
+                ch_index,
+                ch_t2g,
+                technology,
+                bc_length,
+                umi_length,
+                'XB',
+                params.lrkallisto_all_min_reads,
+                false,
+                skip_qc,
+                true
+            )
+            ch_versions = ch_versions.mix(LRKALLISTO_COUNT_ALL.out.versions)
+        }
 
     emit:
         versions                 = ch_versions

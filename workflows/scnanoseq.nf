@@ -322,6 +322,10 @@ workflow SCNANOSEQ {
 
     ch_extracted_fastq_cdna = channel.empty()
     ch_corrected_bc_info_cdna = channel.empty()
+    // Every barcode flexiplex saw with its read count, before the knee call.
+    // Only the flexiplex path produces it; blaze leaves it empty, which is fine
+    // because lr-kallisto refuses blaze anyway (see the pipeline validation).
+    ch_barcode_counts_cdna = channel.empty()
     if (params.demux_tool_cdna == "flexiplex") {
 
         //
@@ -337,6 +341,7 @@ workflow SCNANOSEQ {
 
         ch_extracted_fastq_cdna = DEMULTIPLEX_FLEXIPLEX_CDNA.out.flexiplex_fastq
         ch_corrected_bc_info_cdna = DEMULTIPLEX_FLEXIPLEX_CDNA.out.flexiplex_barcodes
+        ch_barcode_counts_cdna = DEMULTIPLEX_FLEXIPLEX_CDNA.out.flexiplex_barcode_counts
 
     } else if (params.demux_tool_cdna == "blaze") {
 
@@ -405,7 +410,14 @@ workflow SCNANOSEQ {
 
     ch_multiqc_finalqc_files = channel.empty()
 
-    if (genome_quants){
+    // The genome alignment is produced whenever there are cDNA reads to align,
+    // not only when a genome quantifier asked for one: the bam is a deliverable
+    // in its own right (coverage, igv, fusions, variants). lr-kallisto
+    // pseudoaligns from the fastq and consumes nothing from here, so with only
+    // fastq quantifiers requested this runs the aligner and the deduplication
+    // and no quantifier at all -- PROCESS_LONGREAD_SCRNA guards each of those on
+    // val_quant_list.contains(...), so an empty genome_quants is safe.
+    if (genome_quants || fastq_quants){
         PROCESS_LONGREAD_SCRNA_GENOME(
             genome_fasta,
             genome_fai,
@@ -422,7 +434,11 @@ workflow SCNANOSEQ {
             params.skip_rseqc,
             params.skip_bam_nanocomp,
             params.skip_seurat,
-            params.skip_dedup
+            // Deliberately NOT params.skip_dedup: that one also governs the DNA
+            // arm's Picard MarkDuplicates below, so a single flag could not turn
+            // the expensive cDNA umi_tools chain down without silently
+            // un-deduplicating the DNA bam too.
+            params.skip_cdna_dedup
         )
         ch_versions = ch_versions.mix(PROCESS_LONGREAD_SCRNA_GENOME.out.versions)
 
@@ -531,6 +547,7 @@ workflow SCNANOSEQ {
         QUANTIFY_SCRNA_LRKALLISTO (
             ch_extracted_fastq_cdna,
             ch_corrected_bc_info_cdna,
+            ch_barcode_counts_cdna,
             genome_fasta,
             gtf,
             params.skip_qc,
