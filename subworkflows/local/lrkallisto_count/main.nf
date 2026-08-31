@@ -46,14 +46,21 @@ workflow LRKALLISTO_COUNT {
         // Matched on the sample id rather than on the whole meta map, for the same
         // reason as ch_tcc_input below: the demultiplexing subworkflow tags the
         // reads and the barcode files with different metadata.
-        ch_split_input = val_min_reads > 0
+        // Coerced rather than compared directly: a value supplied on the command
+        // line arrives as a String, and Groovy refuses to compare String with
+        // Integer ("Cannot compare java.lang.String with value '100' and
+        // java.lang.Integer with value '0'"). The nextflow.config default is an
+        // Integer, so this only ever bit a run that passed the flag explicitly.
+        def min_reads = (val_min_reads ?: 0) as Integer
+
+        ch_split_input = min_reads > 0
             ? in_fastq
                 .combine( in_barcode_counts )
                 .filter { meta, _reads, meta2, _counts -> meta.id == meta2.id }
                 .map { meta, reads, _meta2, counts -> [ meta, reads, counts ] }
             : in_fastq.map { meta, reads -> [ meta, reads, [] ] }
 
-        SPLIT_BC_UMI ( ch_split_input, val_bc_length, val_umi_length, val_barcode_tag, val_min_reads )
+        SPLIT_BC_UMI ( ch_split_input, val_bc_length, val_umi_length, val_barcode_tag, min_reads )
         ch_versions = ch_versions.mix(SPLIT_BC_UMI.out.versions_split_bc_umi)
 
         //
