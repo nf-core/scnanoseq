@@ -25,7 +25,6 @@ process UMITOOLS_DEDUP {
     script:
     def args = task.ext.args ?: ''
     prefix = task.ext.prefix ?: "${meta.id}"
-    def paired = meta.single_end ? "" : "--paired"
     stats = get_output_stats ? "--output-stats ${prefix}" : ""
     if ("$bam" == "${prefix}.bam") error "Input and output names are the same, set prefix in module configuration to disambiguate!"
 
@@ -40,7 +39,6 @@ process UMITOOLS_DEDUP {
         -S ${prefix}.bam \\
         -L ${prefix}.log \\
         $stats \\
-        $paired \\
         $args
     """
 

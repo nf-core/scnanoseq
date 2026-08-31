@@ -6,7 +6,7 @@
 
 ## Samplesheet input
 
-You will need to create a samplesheet with information about the samples you would like to analyse before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row as shown in the examples below.
+You will need to create a samplesheet with information about the samples you would like to analyse before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 4 columns, and a header row as shown in the examples below.
 
 ```bash
 --input '[path to samplesheet file]'
@@ -17,20 +17,25 @@ You will need to create a samplesheet with information about the samples you wou
 The example `samplesheet.csv` below contains a single FASTQ file per biological replicate with sample specific cell counts.
 
 ```csv title="samplesheet.csv"
-sample,fastq,cell_count
-CONTROL_REP1,AEG588A1_S1.fastq.gz,5000
-CONTROL_REP2,AEG588A2_S1.fastq.gz,6000
-CONTROL_REP3,AEG588A3_S1.fastq.gz,5000
-TREATMENT_REP1,AEG588A4_S1.fastq.gz,5500
-TREATMENT_REP2,AEG588A5_S1.fastq.gz,6000
-TREATMENT_REP3,AEG588A6_S1.fastq.gz,5000
+sample,fastq,cell_count,type
+CONTROL_REP1,AEG588A1_S1.fastq.gz,5000,cdna
+CONTROL_REP2,AEG588A2_S1.fastq.gz,6000,cdna
+TREATMENT_REP1,AEG588A4_S1.fastq.gz,5500,cdna
+TREATMENT_REP2,AEG588A5_S1.fastq.gz,6000,cdna
+CONTROL_REP1,AEG588A1_S1.fastq.gz,5000,dna
+CONTROL_REP2,AEG588A2_S1.fastq.gz,6000,dna
+TREATMENT_REP1,AEG588A4_S1.fastq.gz,5500,dna
+TREATMENT_REP2,AEG588A5_S1.fastq.gz,6000,dna
 ```
 
 | Column       | Description                                                                                                                                                                            |
 | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `sample`     | Custom sample name. This entry will be identical for multiple sequencing libraries/runs from the same sample. Spaces in sample names are automatically converted to underscores (`_`). |
 | `fastq`      | Full path to FastQ file for Oxford Nanopore. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                                    |
-| `cell_count` | Expected number of cells/nuclei. This value is used by the barcode calling tool (BLAZE) as a baseline when determining an acceptable number of detected barcodes.                      |
+| `cell_count` | Expected number of cells/nuclei. This value is used by the barcode calling tool (BLAZE and/or Flexiplex) as a baseline when determining an acceptable number of detected barcodes.     |
+| `type`       | An optional column specifiying whether the sample is DNA or cDNA. If omitted, the default `cdna` is used.                                                                              |
+
+Note: DNA samples are only compatible with `flexiplex` demultiplexing.
 
 An [example samplesheet](../assets/samplesheet.csv) has been provided with the pipeline.
 
@@ -39,14 +44,14 @@ An [example samplesheet](../assets/samplesheet.csv) has been provided with the p
 The `sample` identifiers have to be the same when you have re-sequenced the same sample more than once e.g. to increase sequencing depth. The pipeline will concatenate the raw reads before performing any downstream analysis. Below is an example for the same sample sequenced across replicates 1 and 4 (`REP1` and `REP4` respectively):
 
 ```csv title="samplesheet.csv"
-sample,fastq,cell_count
-CONTROL_REP1,AEG588A1_S1.fastq.gz,5000
-CONTROL_REP1,AEG588A1_S2.fastq.gz,5000
-CONTROL_REP2,AEG588A2_S1.fastq.gz,2000
-CONTROL_REP3,AEG588A3_S1.fastq.gz,7500
-CONTROL_REP4,AEG588A4_S1.fastq.gz,9000
-CONTROL_REP4,AEG588A4_S2.fastq.gz,9000
-CONTROL_REP4,AEG588A4_S3.fastq.gz,9000
+sample,fastq,cell_count,type
+CONTROL_REP1,AEG588A1_S1.fastq.gz,5000,cdna
+CONTROL_REP1,AEG588A1_S2.fastq.gz,5000,cdna
+CONTROL_REP2,AEG588A2_S1.fastq.gz,2000,cdna
+CONTROL_REP3,AEG588A3_S1.fastq.gz,7500,cdna
+CONTROL_REP4,AEG588A4_S1.fastq.gz,9000,cdna
+CONTROL_REP4,AEG588A4_S2.fastq.gz,9000,cdna
+CONTROL_REP4,AEG588A4_S3.fastq.gz,9000,cdna
 ```
 
 ## Running the pipeline
@@ -61,12 +66,81 @@ nextflow run nf-core/scnanoseq \
   --transcript_fasta /path/to/transcriptome.fa \
   --gtf /path/to/file.gtf \
   --quantifier "isoquant,oarfish" \
+  --demux_tool_cdna flexiplex \
+  --demux_tool_dna flexiplex \
   --barcode_format 10X_3v3 \
   -profile <docker/singularity/institute>
 ```
 
-Please note that while the above command specifies both transcriptome and genome fasta files, only one is needed for the pipeline and is dependent on which quantifier you wish to use. Isoquant requires a genome fasta, while oarfish requires a transcript fasta.
+Please note that while the above command specifies both transcriptome and genome fasta files, only one is needed for the pipeline and is dependent on which quantifier you wish to use. Isoquant requires a genome fasta, while oarfish requires a transcript fasta. Furthermore, if you have any DNA samples, the `genome_fasta` is required.
 Additionally, for the `quantifier` parameter in the above command, we've listed the quantifiers as a comma-delimited string. It is possible to only use one quantifier, and can be accomplished by just providing the name of the quantifying tool you wish to run as a single value, i.e. providing `oarfish` if you only wish to run `oarfish`.
+
+### Quantifiers
+
+Three quantifiers are available through `--quantifier`, and any combination of them can be requested as a comma-delimited string:
+
+| Quantifier   | Reference required     | Levels            | Notes                                                          |
+| ------------ | ---------------------- | ----------------- | -------------------------------------------------------------- |
+| `isoquant`   | `genome_fasta` + `gtf` | gene + transcript | Quantifies from a genome alignment                             |
+| `oarfish`    | `transcript_fasta`     | transcript        | Quantifies from a transcriptome alignment; always deduplicates |
+| `lrkallisto` | `genome_fasta` + `gtf` | gene + transcript | Pseudoaligns straight from the FASTQ; quantification uses no alignment |
+
+`--quantifier` only applies to `cdna` samples. It is required whenever the samplesheet contains at least one `cdna` row, and can be omitted entirely for a DNA-only run: DNA samples are aligned and deduplicated but never quantified. If a DNA-only samplesheet is given without `--quantifier`, the pipeline runs the DNA path only; if a `cdna` row is present without `--quantifier`, the run stops with an error.
+
+#### lr-kallisto
+
+[lr-kallisto](https://kallisto.readthedocs.io/en/latest/lr/pseudoalignment.html) is the long-read mode of kallisto (`kallisto --long`). Unlike the other two quantifiers, it does not align reads: it pseudoaligns them against a k=63 index and quantifies with a long-read expectation-maximisation step. That makes the quantification itself considerably faster.
+
+The cDNA genome alignment is produced regardless of quantifier, so a BAM and its alignment-derived QC are still available under `<sample>/cdna/genome/` even on an lr-kallisto-only run. lr-kallisto does not read it. If you want lr-kallisto's speed and do not need the BAM, `--skip_cdna_dedup` drops the expensive `umi_tools` chain and publishes the mapped-only BAM instead.
+
+Because lr-kallisto locates the cell barcode and UMI positionally rather than by name, the pipeline moves them out of the flexiplex read name into a synthetic barcode read before handing the FASTQs to `kallisto bus`. This reuses the barcodes that flexiplex already corrected against the whitelist, so cell barcodes are directly comparable with the other quantifiers. UMI deduplication is performed by `bustools` while counting, so `--dedup_tool` and `--skip_dedup` have no effect on this path.
+
+This means lr-kallisto has some extra requirements:
+
+- `--genome_fasta` and `--gtf` must both be provided. The transcript sequences are extracted from them with `gffread`, the transcript-to-gene mapping is derived from the same GTF, and the genome is used as the kallisto d-list so that reads originating outside the transcriptome are discarded rather than misassigned. Deriving both from one GTF is what guarantees the index sequence names and the mapping agree.
+- `--demux_tool_cdna` must be `flexiplex`; the `blaze` path keeps barcodes in a separate per-read table rather than in the read name.
+- `--custom_flexiplex_barcode_cdna` cannot be used, because the barcode and UMI widths are needed in order to locate them. Use one of the `--barcode_format` presets instead.
+
+The k-mer length, platform and d-list can be tuned with `--kallisto_kmer_size` (default 63), `--kallisto_platform` (`ONT` or `PacBio`, default `ONT`) and `--kallisto_dlist` (default `true`). `--kallisto_threshold` (default 0.8) is also accepted, but it is inert — see the last warning in this section.
+
+> [!WARNING]
+> To turn the d-list off, write `--kallisto_dlist=false` with an equals sign. `params.kallisto_dlist` defaults to a boolean, so Nextflow treats the space-separated `--kallisto_dlist false` as a bare flag and drops the `false` as a positional argument: the d-list stays **on** and the only sign is a `positional argument` warning in the log. The same applies to any other boolean parameter you want to set to `false` on the command line.
+
+> [!IMPORTANT]
+> Check `p_pseudoaligned` in `bus/run_info.json` after your first run. `--kallisto_dlist` costs real sensitivity; `--kallisto_kmer_size` is already at its best value:
+>
+> |                                     | `--kallisto_dlist=false` | `--kallisto_dlist=true` (default) |
+> | ----------------------------------- | ------------------------ | --------------------------------- |
+> | `--kallisto_kmer_size 31`           | 31.5%                    | 18.8%                             |
+> | `--kallisto_kmer_size 63` (default) | **42.8%**                | 30.1%                             |
+>
+> Measured on 9,805,796 flexiplex-demultiplexed ONT reads against GRCh38 (CellRanger `refdata-gex-GRCh38-2020-A`). On the same reads minimap2 places 95% and isoquant then assigns 45.8% of them to a gene, so 42.8% is in the same range as the alignment-based path rather than an order of magnitude below it.
+>
+> - **k-mer length.** Pseudoalignment needs _exact_ k-mer matches, so k interacts with per-base error rate — but **k=63 beats k=31 on real data at both d-list settings**, and it wins by most on the reads that matter: of the reads isoquant assigns confidently to a single gene, k=63 recovers 88.6% against k=31's 58.3% (d-list off). Do not lower k to chase a mapping rate. (An earlier version of this table reported the opposite ordering from the chr21 `test_lrkallisto` profile. That reference is too small for the comparison to carry: every rate there was under 21%, and the k ordering inverts on a whole transcriptome.)
+> - **d-list.** Using the genome as a d-list discards reads containing k-mers that are in the genome but not the transcriptome, which is what stops intronic and genomic reads being force-assigned to a transcript. This is far more punitive for long reads than for short ones: a long read only has to contain a single genome-only k-mer to be rejected. Turning it off recovered 1,253,671 extra reads. Classifying each of them by what isoquant made of the same read: 59% are reads isoquant also assigns to a gene, 22% are intronic reads isoquant places inside a gene but does not count, 14% are reads minimap2 never placed at all, and only **3% are intergenic** — the one class that is unambiguously spurious. On this data the d-list costs far more sensitivity than the specificity it buys, so `--kallisto_dlist=false` is worth trying for ONT cDNA. The pipeline default is still `true`, which is what lr-kallisto upstream recommends; this was one flow cell of one chemistry, so it is a reason to test the setting on your own data rather than to assume the default is wrong.
+> - **read length is not the limiting factor.** Only 1.1% of these reads were shorter than k=63, so reads too short to carry a single k-mer explain almost none of the loss.
+>
+> `--kallisto_threshold` will not recover anything: it is **inert**.
+>
+> The defaults are deliberately the upstream-recommended, higher-specificity ones. If your mapping rate is far below the rate you get from minimap2 on the same data, compare against another quantifier before trusting the counts.
+
+> [!WARNING]
+> `--kallisto_threshold` currently has no effect. `kallisto bus --long` accepts `--threshold` and silently ignores it: sweeping it over 0.0, 0.1, 0.2, 0.4, 0.6, 0.8 and 0.9 on 1,000,000 reads returned the identical set of 427,251 pseudoaligned reads **and** the identical resolved transcript set for every one of them — only the equivalence-class numbering moved. `--threshold` appears in no other kallisto subcommand, and the pipeline quantifies with `kallisto quant-tcc --long`, so the parameter cannot take effect anywhere on this path. It is retained only so that existing configs keep parsing; do not use it to tune sensitivity.
+
+Reads are pseudoaligned as non-strand-specific, because after flexiplex has trimmed the adapter, barcode, UMI and poly-T the remaining cDNA is not in a consistent orientation. `params.stranded` therefore does not apply to this path. If you do want to force a strand, override the `KALLISTO_BUS` arguments with a custom config:
+
+```groovy title="custom.config"
+process {
+    withName: '.*:QUANTIFY_SCRNA_LRKALLISTO:KALLISTO_BUS' {
+        ext.args = { "--threshold ${params.kallisto_threshold} --fr-stranded" }
+    }
+}
+```
+
+> [!NOTE]
+> Building the index is cheaper than you might expect for a k=63 index with a whole-genome d-list. Measured on GRCh38 (CellRanger `refdata-gex-GRCh38-2020-A`, 199,138 transcripts, 345 MB of transcript sequence) with the 3.15 Gb genome as the d-list: **463 s wall on 24 cpus and 3.6 GB peak RSS**, producing a 222 MB index. The `process_high` default is comfortably sufficient — there is no need to route `KALLISTO_INDEX` to a high-memory queue. If you use a much larger reference, check `peak_rss` for that process in the execution trace before assuming these numbers carry over.
+
+The pipeline supports barcode identification and extraction through both `flexiplex` and `blaze` and can be set through `demux_tool_dna` (only works with `flexiplex` for now) and `demux_tool_cdna` parameters. The barcode format can be specified through the `barcode_format` parameter. When working with completely custom barcode structures, you can additionally specify these with `custom_flexiplex_barcode_dna` and `custom_flexiplex_barcode_cdna` parameters. Note: ensure that you are using `flexiplex` as the barcode calling tool. This can be a string formatted as follows `"-x CTACACGACGCTCTTCCGATCT -b ???????????????? -u ?????????? -x TTTCTTATATGGG -f 8 -e 2"`, for more information check the documentation: https://davidsongroup.github.io/flexiplex/
 
 Note that the pipeline will create the following files in your working directory:
 
@@ -98,7 +172,7 @@ outdir: "./results/"
 genome_fasta: "/path/to/genome.fa"
 transcript_fasta: "/path/to/transcript.fa"
 gtf: "/path/to/file.gtf"
-quantifier: "isoquant|oarfish|isoquant,oarfish"
+quantifier: "isoquant|oarfish|lrkallisto|isoquant,oarfish"
 barcode_format: "10X_3v3"
 <...>
 ```
@@ -236,6 +310,10 @@ split_amount: 500000
 - We have seen a recurrent node failure on slurm clusters that does seem to be related to submission of Nextflow jobs. This issue is not related to this pipeline per se, but rather to Nextflow itself. We are currently working on a resolution. But we have two methods that appear to help overcome should this issue arise:
   1. Provide a custom config that increases the memory request for the job that failed. This may take a couple attempts to find the correct requests, but we have noted that there does appear to be a memory issue occasionally with these errors.
   2. Request an interactive session with a decent amount of time and memory and CPUs in order to run the pipeline on the single node. Note that this will take time as there will be minimal parallelization, but this does seem to resolve the issue.
+- By default the pipeline groups UMIs by feature rather than by alignment position: `--dedup_per_gene` (genome alignments) and `--dedup_per_contig` (transcriptome alignments), both `true`. This matters because `umi_tools` corrects its bundling position for soft clipping, and long reads carry variable amounts of untrimmed adapter and polyA, so reads from one PCR family end up in different position groups even when they align at an identical coordinate. Position-based grouping consequently leaves a large fraction of duplicates in place, and absolute molecule counts come out inflated.
+  - `--dedup_per_gene` tags every alignment with the gene whose body it overlaps most (`GX`/`GN`/`GS` tags, written by `TAG_GENES`) and groups on that gene. It requires `--gtf`. Reads whose gene call is ambiguous, or that overlap no gene at all, are deduplicated by position instead and merged back in, so no reads are dropped. The `GS` distribution is published under `qc/gene_assignment/`.
+  - `--dedup_per_contig` applies to transcriptome alignments only, where a contig is a transcript. It needs no gene tag and no fallback.
+  - Set either to `false` to restore position-based grouping. Note that these change absolute UMI counts substantially. Relative expression is essentially unaffected, but anything quoting UMIs per cell, library complexity or saturation will differ from earlier releases.
 - We note that umitools dedup can take a large amount of time in order to perform deduplication. One approach we have implemented to assist with speed is to split input files based on chromosome. However for the transcriptome aligned bams, there is some additional work required that involves grouping transcripts into appropriate chromosomes. In order to accomplish this, the pipeline needs to parse the transcript id from the transcriptome FASTA file. The transcript id is often nested in the sequence identifier with additional data and the data is delimited. We have included the delimiters used by reference files obtained from GENCODE, NCBI, and Ensembl. However in case you wish to explicitly control this or if the reference file source uses a different delimiter, you are able to manually set it via the `--fasta_delimiter` parameter.
 - We acknowledge that analyzing PromethION data is a common use case for this pipeline. Currently, the pipeline has been developed with defaults to analyze GridION and average sized PromethION data. For cases, where jobs have fail due for larger PromethION datasets, the defaults can be overwritten by a custom configuation file (provided by the `-c` Nextflow option) where resources can be increased (substantially in some cases). Below are some of the overrides we have used, and while these amounts may not work on every dataset, these will hopefully at least note which processes will need to have their resources increased:
 
