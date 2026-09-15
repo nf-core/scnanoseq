@@ -35,20 +35,16 @@ process KALLISTO_QUANTTCC {
         ${args} \\
         ${tcc_mtx}
 
-    mkdir -p transcript
-
-    # quant-tcc writes cells x features; Read10X wants features x cells, so
-    # transpose the header dimensions and every entry. Only the transcript
-    # matrix is published in MEX form: the gene matrix comes from bustools
-    # count --genecounts in BUSTOOLS_TCC, because the EM gene abundances here
-    # are fractional. They remain available as quant/matrix.abundance.gene.mtx.
-    grep '^%' quant/matrix.abundance.mtx > transcript/matrix.mtx
-    grep -v '^%' quant/matrix.abundance.mtx | awk '{print \$2" "\$1" "\$3}' >> transcript/matrix.mtx
-
-    cp quant/transcripts.txt transcript/features.tsv
-    cp ${barcodes} transcript/barcodes.tsv
-
-    gzip transcript/matrix.mtx transcript/features.tsv transcript/barcodes.tsv
+    # quant-tcc writes cells x features; Read10X wants features x cells. Only
+    # the transcript matrix is published in MEX form: the gene matrix comes
+    # from bustools count --genecounts in BUSTOOLS_TCC, because the EM
+    # abundances here are fractional (which is also why there is no --integer).
+    # The EM gene abundances remain available as quant/matrix.abundance.gene.mtx.
+    mtx_transpose_to_mex.sh \\
+        --mtx quant/matrix.abundance.mtx \\
+        --features quant/transcripts.txt \\
+        --barcodes ${barcodes} \\
+        --outdir transcript
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
