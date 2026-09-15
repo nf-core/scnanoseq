@@ -86,7 +86,7 @@ workflow LRKALLISTO_COUNT {
         ch_versions = ch_versions.mix(BUSTOOLS_TCC.out.versions_bustools_tcc)
 
         //
-        // MODULE: Quantify transcript and gene abundances with the long read EM
+        // MODULE: Quantify transcript abundances with the long read EM
         //
         KALLISTO_QUANTTCC (
             BUSTOOLS_TCC.out.tcc_mtx
@@ -105,9 +105,9 @@ workflow LRKALLISTO_COUNT {
                 .map { meta, flagstat -> [ [ 'id': meta.id, 'type': meta.type ], flagstat ] }
 
             QC_SCRNA_GENE (
-                KALLISTO_QUANTTCC.out.gene_features
-                    .join( KALLISTO_QUANTTCC.out.gene_barcodes, by: [0] )
-                    .join( KALLISTO_QUANTTCC.out.gene_mtx, by: [0] )
+                BUSTOOLS_TCC.out.gene_features
+                    .join( BUSTOOLS_TCC.out.gene_barcodes, by: [0] )
+                    .join( BUSTOOLS_TCC.out.gene_mtx, by: [0] )
                     .map { meta, features, barcodes, mtx ->
                         [ [ 'id': meta.id, 'type': meta.type ], [ features, barcodes, mtx ] ]
                     },
@@ -133,9 +133,9 @@ workflow LRKALLISTO_COUNT {
 
     emit:
         versions                 = ch_versions
-        gene_features_file       = KALLISTO_QUANTTCC.out.gene_features
-        gene_barcodes_file       = KALLISTO_QUANTTCC.out.gene_barcodes
-        gene_mtx_file            = KALLISTO_QUANTTCC.out.gene_mtx
+        gene_features_file       = BUSTOOLS_TCC.out.gene_features
+        gene_barcodes_file       = BUSTOOLS_TCC.out.gene_barcodes
+        gene_mtx_file            = BUSTOOLS_TCC.out.gene_mtx
         transcript_features_file = KALLISTO_QUANTTCC.out.transcript_features
         transcript_barcodes_file = KALLISTO_QUANTTCC.out.transcript_barcodes
         transcript_mtx_file      = KALLISTO_QUANTTCC.out.transcript_mtx

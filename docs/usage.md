@@ -79,10 +79,10 @@ Additionally, for the `quantifier` parameter in the above command, we've listed 
 
 Three quantifiers are available through `--quantifier`, and any combination of them can be requested as a comma-delimited string:
 
-| Quantifier   | Reference required     | Levels            | Notes                                                          |
-| ------------ | ---------------------- | ----------------- | -------------------------------------------------------------- |
-| `isoquant`   | `genome_fasta` + `gtf` | gene + transcript | Quantifies from a genome alignment                             |
-| `oarfish`    | `transcript_fasta`     | transcript        | Quantifies from a transcriptome alignment; always deduplicates |
+| Quantifier   | Reference required     | Levels            | Notes                                                                  |
+| ------------ | ---------------------- | ----------------- | ---------------------------------------------------------------------- |
+| `isoquant`   | `genome_fasta` + `gtf` | gene + transcript | Quantifies from a genome alignment                                     |
+| `oarfish`    | `transcript_fasta`     | transcript        | Quantifies from a transcriptome alignment; always deduplicates         |
 | `lrkallisto` | `genome_fasta` + `gtf` | gene + transcript | Pseudoaligns straight from the FASTQ; quantification uses no alignment |
 
 `--quantifier` only applies to `cdna` samples. It is required whenever the samplesheet contains at least one `cdna` row, and can be omitted entirely for a DNA-only run: DNA samples are aligned and deduplicated but never quantified. If a DNA-only samplesheet is given without `--quantifier`, the pipeline runs the DNA path only; if a `cdna` row is present without `--quantifier`, the run stops with an error.
@@ -93,7 +93,7 @@ Three quantifiers are available through `--quantifier`, and any combination of t
 
 The cDNA genome alignment is produced regardless of quantifier, so a BAM and its alignment-derived QC are still available under `<sample>/cdna/genome/` even on an lr-kallisto-only run. lr-kallisto does not read it. If you want lr-kallisto's speed and do not need the BAM, `--skip_cdna_dedup` drops the expensive `umi_tools` chain and publishes the mapped-only BAM instead.
 
-Because lr-kallisto locates the cell barcode and UMI positionally rather than by name, the pipeline moves them out of the flexiplex read name into a synthetic barcode read before handing the FASTQs to `kallisto bus`. This reuses the barcodes that flexiplex already corrected against the whitelist, so cell barcodes are directly comparable with the other quantifiers. UMI deduplication is performed by `bustools` while counting, so `--dedup_tool` and `--skip_dedup` have no effect on this path.
+Because lr-kallisto locates the cell barcode and UMI positionally rather than by name, the pipeline moves them out of the flexiplex read name into a synthetic barcode read before handing the FASTQs to `kallisto bus`. This reuses the barcodes that flexiplex already corrected against the whitelist, so cell barcodes are directly comparable with the other quantifiers. UMI deduplication is performed by `bustools` while counting, so `--dedup_tool` and `--skip_dedup` have no effect on this path. The published `gene/` matrix is an integer UMI count matrix (`bustools count --genecounts`) and can be given directly to CellBender or any other tool that expects counts; the `transcript/` matrix and the gene abundances under `quant/` are `kallisto quant-tcc` EM estimates and are fractional. See [`docs/output.md`](output.md#lr-kallisto) for the difference.
 
 This means lr-kallisto has some extra requirements:
 
