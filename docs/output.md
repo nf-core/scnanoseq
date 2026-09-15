@@ -358,9 +358,9 @@ It should also be noted that oarfish can only accurately perform quantification 
 - `<sample_identifier>/`
   - `cdna/`
     - `lrkallisto/`
-      - `gene/` : Gene-level feature-barcode matrix (`barcodes.tsv.gz`, `features.tsv.gz`, `matrix.mtx.gz`).
-      - `transcript/` : Transcript-level feature-barcode matrix (`barcodes.tsv.gz`, `features.tsv.gz`, `matrix.mtx.gz`).
-      - `quant/` : The raw `kallisto quant-tcc` output, including TPM-normalised matrices.
+      - `gene/` : Gene-level UMI count matrix (`barcodes.tsv.gz`, `features.tsv.gz`, `matrix.mtx.gz`) from `bustools count --genecounts`. Integer counts; a UMI compatible with more than one gene is discarded rather than split.
+      - `transcript/` : Transcript-level abundance matrix (`barcodes.tsv.gz`, `features.tsv.gz`, `matrix.mtx.gz`) from the `kallisto quant-tcc` EM. Estimated abundances, not integer counts.
+      - `quant/` : The raw `kallisto quant-tcc` output, including the EM gene abundance matrix (`matrix.abundance.gene.mtx`, which distributes gene-ambiguous UMIs instead of discarding them) and TPM-normalised matrices.
       - `counts_unfiltered/` : The transcript compatibility count (TCC) matrix and its equivalence classes.
       - `bus/` : The BUS file, equivalence class map, transcript names and `run_info.json` pseudoalignment statistics.
     - `lrkallisto_all_droplets/` : The same five outputs, over every droplet rather than the called cells.
@@ -396,7 +396,12 @@ quantifier requires `--demux_tool_cdna flexiplex` and both passes always run:
 
 Barcodes and UMIs are taken from the flexiplex read names and written into a synthetic barcode read, so that kallisto can locate them positionally. UMI deduplication is performed by `bustools` during counting rather than by UMI-tools or Picard, so `--skip_dedup` and `--dedup_tool` do not apply to this path.
 
-Both gene and transcript matrices come from a single pseudoalignment pass. `kallisto bus --long` writes the BUS file, `bustools` corrects barcodes against the flexiplex known-barcode list and collapses UMIs into a transcript compatibility count matrix, and `kallisto quant-tcc --long` resolves that into transcript abundances which are also aggregated to genes. Because gene counts are derived from the equivalence classes rather than from reads assigned to a single gene, reads that are compatible with transcripts of more than one gene are distributed by the EM rather than discarded.
+Both gene and transcript matrices come from a single pseudoalignment pass, but they are counted differently. `kallisto bus --long` writes the BUS file and `bustools` corrects barcodes against the flexiplex known-barcode list and collapses UMIs. The deduplicated BUS file is then counted twice:
+
+- `gene/` is `bustools count --genecounts`, the standard kb-python gene matrix. Every entry is a whole UMI. A UMI whose equivalence class is compatible with more than one gene is discarded rather than split, so the matrix is a genuine count matrix and is the one to use with Seurat, scran, DESeq2 or any other tool that assumes integer counts. On the chr21 `test_lrkallisto` data that discards 28% of UMIs, which is a worst case for a reference that small; expect much less on a whole transcriptome, but check it on your own data by comparing the column sums of `gene/matrix.mtx.gz` with those of `quant/matrix.abundance.gene.mtx`.
+- `transcript/` is the transcript compatibility count matrix resolved into transcript abundances by `kallisto quant-tcc --long`. The EM distributes each UMI across the transcripts it is compatible with, so the entries are fractional estimates rather than counts. The same EM aggregated to genes is in `quant/matrix.abundance.gene.mtx`; it keeps the gene-ambiguous UMIs that `gene/` drops, and it is fractional for the same reason, so `gene/` and the per-gene sum of `transcript/` do not agree.
+
+Ambient RNA and empty-droplet tools such as CellBender fit a count likelihood and cannot use the EM output. Give them `lrkallisto_all_droplets/gene/`.
 
 `bus/run_info.json` is worth checking after a run: a low `p_pseudoaligned` usually indicates a barcode geometry or strandedness mismatch rather than poor data.
 

@@ -16,6 +16,9 @@ process BUSTOOLS_TCC {
     tuple val(meta), path("counts_unfiltered/cells_x_tcc.mtx")         , emit: tcc_mtx
     tuple val(meta), path("counts_unfiltered/cells_x_tcc.ec.txt")      , emit: tcc_ec
     tuple val(meta), path("counts_unfiltered/cells_x_tcc.barcodes.txt"), emit: barcodes
+    tuple val(meta), path("gene/matrix.mtx.gz")                        , emit: gene_mtx
+    tuple val(meta), path("gene/features.tsv.gz")                      , emit: gene_features
+    tuple val(meta), path("gene/barcodes.tsv.gz")                      , emit: gene_barcodes
     path "versions.yml"                                                , emit: versions_bustools_tcc, topic: versions
 
     when:
@@ -50,7 +53,7 @@ process BUSTOOLS_TCC {
         corrected.bus
     """
     """
-    mkdir -p tmp counts_unfiltered
+    mkdir -p tmp counts_unfiltered genecounts gene
 
     bustools sort \\
         -o sorted.bus \\
@@ -61,8 +64,12 @@ process BUSTOOLS_TCC {
 
     ${correct_step}
 
-    # Omitting --genecounts keeps this at the equivalence class level, which is
-    # what kallisto quant-tcc consumes. --umi-gene deduplicates umis.
+    # The same deduplicated BUS file is counted twice.
+    #
+    # First at the equivalence class level, which is what kallisto quant-tcc
+    # consumes for the transcript EM: no --genecounts, and --multimapping so
+    # that records compatible with more than one gene reach the EM rather than
+    # being dropped. --umi-gene deduplicates UMIs per gene.
     bustools count \\
         -o counts_unfiltered/cells_x_tcc \\
         -g ${t2g} \\
@@ -73,6 +80,32 @@ process BUSTOOLS_TCC {
         ${args} \\
         counted.bus
 
+    # Then at the gene level for the published gene matrix. Without
+    # --multimapping a UMI compatible with more than one gene is discarded
+    # rather than split, so every entry is a whole UMI. This is the standard
+    # kb-python gene matrix and the one to feed to CellBender or any other tool
+    # with a count likelihood. The quant-tcc EM gene abundances, which
+    # distribute those UMIs instead, are fractional and stay available in
+    # quant/matrix.abundance.gene.mtx.
+    bustools count \\
+        -o genecounts/cells_x_genes \\
+        -g ${t2g} \\
+        -e ${ecmap} \\
+        -t ${txnames} \\
+        --genecounts \\
+        --umi-gene \\
+        ${args} \\
+        counted.bus
+
+    # bustools writes cells x genes; Read10X and CellBender want features x
+    # cells, so transpose the header dimensions and every entry. The values are
+    # whole UMIs, so declare the matrix integer.
+    grep '^%' genecounts/cells_x_genes.mtx | sed 's/ real / integer /' > gene/matrix.mtx
+    grep -v '^%' genecounts/cells_x_genes.mtx | awk '{print \$2" "\$1" "\$3}' >> gene/matrix.mtx
+    cp genecounts/cells_x_genes.genes.txt gene/features.tsv
+    cp genecounts/cells_x_genes.barcodes.txt gene/barcodes.tsv
+    gzip gene/matrix.mtx gene/features.tsv gene/barcodes.tsv
+
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         bustools: \$(bustools version | sed 's/^bustools, version //')
@@ -81,10 +114,13 @@ process BUSTOOLS_TCC {
 
     stub:
     """
-    mkdir -p counts_unfiltered
+    mkdir -p counts_unfiltered gene
     touch counts_unfiltered/cells_x_tcc.mtx
     touch counts_unfiltered/cells_x_tcc.ec.txt
     touch counts_unfiltered/cells_x_tcc.barcodes.txt
+    echo "" | gzip -c > gene/matrix.mtx.gz
+    echo "" | gzip -c > gene/features.tsv.gz
+    echo "" | gzip -c > gene/barcodes.tsv.gz
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

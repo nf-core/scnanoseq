@@ -308,7 +308,7 @@
                 "skip_lrkallisto_all_droplets": {
                     "type": "boolean",
                     "description": "Skip the lr-kallisto all-droplet (XB) counting pass entirely.",
-                    "help_text": "The all-droplet matrix exists for ambient and empty-droplet estimation, and nothing else in the pipeline consumes it. Skipping it halves the lr-kallisto counting work. Only used when `lrkallisto` is one of the `quantifier` options.",
+                    "help_text": "The all-droplet matrix exists for ambient and empty-droplet estimation, and nothing else in the pipeline consumes it. `lrkallisto_all_droplets/gene/` is an integer UMI count matrix and is the input intended for CellBender. Skipping it halves the lr-kallisto counting work. Only used when `lrkallisto` is one of the `quantifier` options.",
                     "fa_icon": "fas fa-forward"
                 }
             },
