@@ -5,7 +5,7 @@
 // MODULES
 include { MINIMAP2_INDEX                          } from '../../../modules/nf-core/minimap2/index'
 include { MINIMAP2_ALIGN                          } from '../../../modules/nf-core/minimap2/align'
-include { PICARD_MARKDUPLICATES                   } from '../../../modules/nf-core/picard/markduplicates'
+include { MARK_DUPLICATES_DNA                     } from '../../../modules/local/mark_duplicates_dna'
 include { BAM_SORT_STATS_SAMTOOLS                 } from '../../../subworkflows/nf-core/bam_sort_stats_samtools'
 include { NANOCOMP                                } from '../../../modules/nf-core/nanocomp/main'
 
@@ -31,8 +31,10 @@ workflow ALIGN_DEDUPLICATE_DNA {
         dedup_bam                = channel.empty()
         dedup_bai                = channel.empty()
 
-        // MarkDuplicates duplication metrics. Stays empty when dedup is skipped.
+        // Duplication metrics (Picard format, for MultiQC) and the per-rule summary.
+        // Both stay empty when dedup is skipped.
         ch_dedup_metrics         = channel.empty()
+        ch_dedup_summary         = channel.empty()
 
         // SAMtool stats after dedup
         stats                    = channel.empty()
@@ -74,20 +76,21 @@ workflow ALIGN_DEDUPLICATE_DNA {
             .set { ch_tagged_bam }
 
         //
-        // MODULE: MarkDuplicates
+        // MODULE: MARK_DUPLICATES_DNA
         //
+        // Replaces Picard MarkDuplicates. Picard keys single-end reads on the 5' anchor
+        // and strand only; this also merges records of one raw read that flexiplex wrote
+        // out twice, 5' jitter of up to 10 bp between reads that read through to the
+        // far adapter, and A-A fragments read from the other end, and it propagates the
+        // duplicate flag to secondary and supplementary records. See the script header.
         final_bam = ch_tagged_bam
         if( !skip_dedup ) {
-            //
-            // MODULE: Picard Mark Duplicates
-            //
-            PICARD_MARKDUPLICATES (
-                ch_tagged_bam,
-                fasta.first(),
-                fai.first()
+            MARK_DUPLICATES_DNA (
+                ch_tagged_bam.join(MINIMAP2_ALIGN.out.index, by: [0])
             )
-            final_bam = PICARD_MARKDUPLICATES.out.bam
-            ch_dedup_metrics = PICARD_MARKDUPLICATES.out.metrics
+            final_bam = MARK_DUPLICATES_DNA.out.bam
+            ch_dedup_metrics = MARK_DUPLICATES_DNA.out.metrics
+            ch_dedup_summary = MARK_DUPLICATES_DNA.out.summary
         }
 
 
@@ -131,8 +134,9 @@ workflow ALIGN_DEDUPLICATE_DNA {
         dedup_bam                = BAM_SORT_STATS_SAMTOOLS.out.bam
         dedup_bai                = BAM_SORT_STATS_SAMTOOLS.out.bai
 
-        // MarkDuplicates duplication metrics
+        // Duplication metrics (Picard format) and per-rule summary
         dedup_metrics            = ch_dedup_metrics
+        dedup_summary            = ch_dedup_summary
 
         // SAMtool stats after dedup
         stats                    = BAM_SORT_STATS_SAMTOOLS.out.stats

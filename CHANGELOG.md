@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Enhancements
 
+- DNA samples are now deduplicated by `mark_dna_duplicates.py` instead of `picard MarkDuplicates`. Picard's single-end key (barcode, 5' unclipped anchor, strand) is kept, and three more relations are merged within a barcode: records of one raw read that flexiplex wrote out twice (4-5% of records, on opposite strands at one locus), 5' jitter of up to 10 bp between reads that read through to the far adapter, and A-A fragments read from the other end. The duplicate flag now also reaches the secondary and supplementary alignments of a duplicate, so `-F 0x400` alone gives a clean BAM. On three libraries this finds 99% of the same-molecule read pairs Picard missed, judged by heterozygous-SNP haplotypes, without adding false merges; the DNA duplicate rate rises by 1-2.5 points. Metrics are still written in Picard format for MultiQC, plus a per-rule `*.dedup_summary.tsv`. `--skip_dedup` still turns the step off
 - Added support for processing single-cell/nuclei DNA samples alongside cDNA samples in the same pipeline run, via a new optional `type` column (`dna`/`cdna`) in the input samplesheet
 - Added `flexiplex/discovery`, `flexiplex/filter` and `flexiplex/assign` modules for barcode extraction, filtering and assignment
 - Added `demultiplex_flexiplex` and `demultiplex_blaze` subworkflows, replacing the previous inline demultiplexing steps in the main workflow

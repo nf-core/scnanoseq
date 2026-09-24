@@ -24,6 +24,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
   - [Barcode Tags Flexiplex](#barcode-tags-flexiplex) - The barcode and UMI tags flexiplex puts on every alignment
   - [UMI-tools Dedup](#umi-tools-dedup) - UMI-based Read deduplication
   - [Picard MarkDuplicates](#picard-markduplicates) - Read deduplication
+  - [DNA duplicate marking](#dna-duplicate-marking) - Tn5 fragment deduplication for DNA samples \*\*
 - [Feature-Barcode Quantification](#feature-barcode-quantification)\*
   - [IsoQuant](#isoquant) - Feature-barcode quantification (gene and transcript level)
   - [oarfish](#oarfish) - Feature-barcode quantification (transcript-level only)
@@ -278,15 +279,34 @@ Users should note that `oarfish` requires input reads to be deduplicated. As a r
       - `dedup/`
         - `*.dedup.bam` : The transcriptome aligned bam containing corrected barcodes and deduplicated umis.
         - `*.dedup.bam.bai` : The transcriptome aligned bam index for the bam containing corrected barcodes and deduplicated umis.
-  - `qc/`
-    - `dedup/`
-      - `*.metrics.txt` : The MarkDuplicates duplication metrics, also summarised in the MultiQC report. \*\*
 
 </details>
 
 [Picard MarkDuplicates](https://gatk.broadinstitute.org/hc/en-us/articles/360037052812-MarkDuplicates-Picard) locates and tags duplicate reads in a BAM or SAM file.
 
 Users should note that `oarfish` requires input reads to be deduplicated. As a result, the `skip_dedup` option is only applicable to `IsoQuant`. By default, `scnanoseq` will perform deduplication for IsoQuant unless the `skip_dedup` option is explicitly enabled, while deduplication will always be executed for `oarfish` quantification.
+
+### DNA duplicate marking
+
+<details markdown="1">
+<summary>Output files</summary>
+
+- `<sample_identifier>/`
+  - `dna/`
+    - `bam/`
+      - `dedup/`
+        - `*.bam` : The DNA alignment with duplicates flagged (`0x400`), not removed.
+        - `*.bam.bai` : Its index.
+    - `qc/`
+      - `dedup/`
+        - `*.dedup.metrics.txt` : Duplication metrics in Picard's `DuplicationMetrics` format, summarised in the MultiQC report.
+        - `*.dedup.dedup_summary.tsv` : Molecules and duplicates, the duplicates each rule added, secondary/supplementary records flagged, and the 3' adapter classes seen.
+
+</details>
+
+DNA samples (Tn5 tagmentation, no UMI) are deduplicated by `bin/mark_dna_duplicates.py` rather than Picard. Within one barcode (`XB`), two primary alignments are one molecule when they share the 5' unclipped anchor and strand (Picard's key), when their 5' anchors are within 10 bp and the far ends within 20 bp of reads that read through into the far adapter, when they are two records of one raw read (flexiplex writes a read out once per barcode it finds, so a read with the barcode pattern at both ends appears twice, on opposite strands), or when one is an A-A fragment read from the other end. One read per molecule stays unflagged, and the duplicate flag is propagated to the secondary and supplementary alignments of every duplicate, so `samtools view -F 0x400` alone gives a deduplicated BAM. Members of a duplicate set carry `DS` (set size) and `DI` (set index, unique within a reference sequence).
+
+These rules were chosen against a heterozygous-SNP ground truth: reads of one molecule share an allele at every het site they both cover. On three libraries, 5'-identical reads remain one molecule even when their far ends are more than 1 kb apart, 1-10 bp of 5' jitter is at most 4% distinct molecules while 11-20 bp is 12-52%, and the two records of one raw read are always the same molecule.
 
 ## Feature-Barcode Quantification
 
