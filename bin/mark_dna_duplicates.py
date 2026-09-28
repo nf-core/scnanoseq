@@ -27,6 +27,12 @@
       R4  an A-A fragment (Read1/barcode adapter at the 3' end too) read from the other
           end: opposite strand, fragment interval within --d5 on both ends.
 
+    On the reference sequences given by --exact-only-contig (default chrM and MT) only
+    R1 and R3 are applied. Mitochondrial coverage is so dense that chance 5'/far-end
+    coincidences between distinct molecules dominate the tolerance rules (on one
+    library chrM made 14.4M of 18.3M R2 merges and 101k of 109k R4 merges), and with
+    no heterozygous sites there is nothing to validate them against.
+
     One representative per molecule stays unflagged: a read-through read if there is
     one, then the highest sum of base qualities >= 15 (Picard's default score).
     Duplicate status is propagated to the secondary and supplementary records of every
@@ -203,6 +209,7 @@ def as_array(idx):
 def decide_contig(job):
     bam_path, contig, args_d, outdir = job
     d5, d3, bc_tag = args_d["d5"], args_d["d3"], args_d["barcode_tag"]
+    exact_only = contig in args_d["exact_only"]
     stats = collections.Counter()
 
     qhash = array.array("Q")
@@ -313,9 +320,10 @@ def decide_contig(job):
                 merged += dsu.union(i, j)
     stats["dup_raw_read"] = merged
 
-    # R2: 5' jitter with the far end agreeing, read-through reads only
+    # R2: 5' jitter with the far end agreeing, read-through reads only. R2 and R4 both
+    # iterate the read-through reads, so an empty set switches both off.
     merged = 0
-    idx_rt = np.flatnonzero(rt_a)
+    idx_rt = np.zeros(0, dtype=np.int64) if exact_only else np.flatnonzero(rt_a)
     o2 = idx_rt[np.lexsort((p5u_a[idx_rt], rev_a[idx_rt], bc_a[idx_rt]))]
     heads = []
     prev_group = None
@@ -372,6 +380,9 @@ def decide_contig(job):
              ds=size[mem][mo].astype(np.int64))
     stats["duplicates"] = int((~is_rep).sum())
     stats["molecules"] = int(len(uniq))
+    if exact_only:
+        stats["primary_exact_only"] = n
+        stats["duplicates_exact_only"] = stats["duplicates"]
     return contig, out, stats
 
 
@@ -452,11 +463,18 @@ def write_metrics(path, input_name, argv, st):
 
 
 def write_summary(path, st, args):
+    nuc_primary = st["primary"] - st["primary_exact_only"]
+    nuc_dups = st["duplicates"] - st["duplicates_exact_only"]
     rows = [
         ("primary_reads", st["primary"]),
         ("molecules", st["molecules"]),
         ("duplicates", st["duplicates"]),
         ("duplicate_rate", f"{st['duplicates'] / st['primary']:.6f}" if st["primary"] else "0"),
+        # the rate without the exact-only (mitochondrial) contigs, which otherwise
+        # dominate the headline in libraries with a high chrM fraction
+        ("nuclear_duplicate_rate", f"{nuc_dups / nuc_primary:.6f}" if nuc_primary else "0"),
+        ("exact_only_contigs_primary_reads", st["primary_exact_only"]),
+        ("exact_only_contigs_duplicates", st["duplicates_exact_only"]),
         ("dup_by_key_5prime_strand", st["dup_key"]),
         ("dup_added_by_same_raw_read", st["dup_raw_read"]),
         ("dup_added_by_5prime_jitter", st["dup_jitter"]),
@@ -466,7 +484,8 @@ def write_summary(path, st, args):
         ("secondary_or_supplementary", st["secondary_or_supplementary"]),
         ("unmapped", st["unmapped"]),
     ] + [(f"clip3_class_{c}", st["class_" + c]) for c in CLASS_NAMES] + [
-        ("param_barcode_tag", args.barcode_tag), ("param_d5", args.d5), ("param_d3", args.d3)]
+        ("param_barcode_tag", args.barcode_tag), ("param_d5", args.d5), ("param_d3", args.d3),
+        ("param_exact_only_contigs", ",".join(args.exact_only_contig))]
     with open(path, "w") as fh:
         fh.write("metric\tvalue\n")
         for k, v in rows:
@@ -482,9 +501,14 @@ def main():
     ap.add_argument("--barcode-tag", default="XB")
     ap.add_argument("--d5", type=int, default=10, help="5' anchor tolerance for read-through reads (bp)")
     ap.add_argument("--d3", type=int, default=20, help="far-end tolerance for read-through reads (bp)")
+    ap.add_argument("--exact-only-contig", action="append", metavar="NAME",
+                    help="reference sequence on which only R1 and R3 apply (repeatable; "
+                         "default: chrM and MT)")
     ap.add_argument("-t", "--threads", type=int, default=1)
     ap.add_argument("--tmpdir", default=".")
     args = ap.parse_args()
+    if args.exact_only_contig is None:
+        args.exact_only_contig = ["chrM", "MT"]
 
     tmp = tempfile.mkdtemp(prefix="markdup_dna.", dir=args.tmpdir)
     with pysam.AlignmentFile(args.input) as bam:
@@ -497,7 +521,8 @@ def main():
         mapped = {s.contig: s.mapped for s in bam.get_index_statistics()}
     work = [c for c in refs if mapped.get(c, 0) > 0]
     work.sort(key=lambda c: -mapped[c])     # largest first, for load balance
-    args_d = {"d5": args.d5, "d3": args.d3, "barcode_tag": args.barcode_tag}
+    args_d = {"d5": args.d5, "d3": args.d3, "barcode_tag": args.barcode_tag,
+              "exact_only": frozenset(args.exact_only_contig)}
 
     total = collections.Counter()
     npz = {}
