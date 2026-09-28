@@ -17,7 +17,6 @@ process MARK_DUPLICATES_DNA {
 
     output:
     tuple val(meta), path("${prefix}.bam")        , emit: bam
-    tuple val(meta), path("${prefix}.bam.bai")    , emit: bai
     tuple val(meta), path("*.metrics.txt")        , emit: metrics
     tuple val(meta), path("*.dedup_summary.tsv")  , emit: summary
     path "versions.yml"                           , emit: versions_mark_duplicates_dna, topic: versions
@@ -51,7 +50,6 @@ process MARK_DUPLICATES_DNA {
     prefix = task.ext.prefix ?: "${meta.id}.dedup"
     """
     touch ${prefix}.bam
-    touch ${prefix}.bam.bai
     touch ${prefix}.metrics.txt
     touch ${prefix}.dedup_summary.tsv
 

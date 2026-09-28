@@ -40,9 +40,6 @@
                 "SAMTOOLS_INDEX": {
                     "samtools": "1.22.1"
                 },
-                "SAMTOOLS_SORT": {
-                    "samtools": "1.22.1"
-                },
                 "SAMTOOLS_STATS": {
                     "samtools": "1.22.1"
                 },
@@ -152,13 +149,13 @@
             [
                 "RPMI8402.dna_known_barcodes.txt:md5,a384c05cc091ce3774d09e0a89db3915",
                 "RPMI8402_barcodes_counts.txt:md5,7c5416330c4307844c125b43cef368c8",
-                "RPMI8402.dna.dedup.dedup_summary.tsv:md5,fbbc742864bca498d9f108e2d3834c27",
+                "RPMI8402.dna.dedup.dedup_summary.tsv:md5,9dcc6644f56af593d3d2deadadb96e6c",
                 "RPMI8402.dna.extracted_NanoStats.txt:md5,e457c4a262e125749ff94b644c4c8399",
                 "RPMI8402.dna.trimmed_NanoStats.txt:md5,e051410f92e1ebb86beea6d3d1d8b6da",
                 "RPMI8402.dna.raw_NanoStats.txt:md5,b979748a726c1c143e72bc2708cf18fb",
                 "RPMI8402.dna.flagstat:md5,cafbca4e461a65c58f8628129c6f45d4",
                 "RPMI8402.dna.idxstats:md5,93082632d306a4ee1b522dda067b6289",
-                "RPMI8402.dna.stats:md5,ffcfb65ed503602902977322a2575d28",
+                "RPMI8402.dna.stats:md5,bf8f3d4700685b6a493bf383a4c5a579",
                 "multiqc_citations.txt:md5,ee1baba4adea57b43a9ae59ce7e1dd7f",
                 "multiqc_general_stats.txt:md5,04baa42d6b7f5f9a0454ac4f0570a93e",
                 "multiqc_picard_dups.txt:md5,2ae0c922d8c60f38be46ff8c6d3faaf6",
@@ -173,7 +170,7 @@
                 "read_counts.csv:md5,b0e4e0e53204b01bd64c8a4b16b057d3"
             ]
         ],
-        "timestamp": "2026-09-24T16:32:11.478847128",
+        "timestamp": "2026-09-28T19:53:49.288808488",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.04.3"

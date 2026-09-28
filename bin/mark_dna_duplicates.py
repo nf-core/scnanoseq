@@ -495,7 +495,8 @@ def write_summary(path, st, args):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("-i", "--input", required=True, help="coordinate-sorted, indexed bam")
-    ap.add_argument("-o", "--output", required=True, help="output bam (coordinate-sorted, indexed)")
+    ap.add_argument("-o", "--output", required=True,
+                    help="output bam (coordinate-sorted, not indexed: index it with samtools index -@)")
     ap.add_argument("-m", "--metrics", required=True, help="Picard-format DuplicationMetrics file")
     ap.add_argument("-s", "--summary", required=True, help="per-rule summary tsv")
     ap.add_argument("--barcode-tag", default="XB")
@@ -554,8 +555,10 @@ def main():
             parts[path] = True
             total.update(st)
     ordered = [j[4] for j in jobs]
+    # Parts are concatenated in header order with the unmapped reads last, so the result
+    # is coordinate-sorted. It is not indexed here: a single-threaded index took over a
+    # third of the run on a full library, and samtools index -@ does it downstream.
     pysam.cat("-o", args.output, *ordered)
-    pysam.index(args.output)
 
     write_metrics(args.metrics, os.path.basename(args.input), sys.argv, total)
     write_summary(args.summary, total, args)
