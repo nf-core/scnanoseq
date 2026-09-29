@@ -3,7 +3,10 @@ process MARK_DUPLICATES_DNA {
     // One worker per reference sequence (chr1 and chrM are the critical path). Measured
     // with 12 workers on whole-genome libraries of ~1.1B mapped records / ~860M
     // primaries: 1.5-2 h and a 38-43 GB peak (CCS15M, CCS6P), so process_high's 72 GB
-    // has headroom.
+    // has headroom. --threads is task.cpus and peak memory grows with the number of
+    // contigs held at once, so raising cpus without memory can run out of memory. The
+    // temporary per-contig parts are a second copy of the bam until they are
+    // concatenated, so the work directory needs about twice the bam size free.
     label 'process_high'
 
     // Same environment as SPLIT_BAM: the script needs pysam and numpy only, and numpy
