@@ -37,7 +37,7 @@
     one, then the highest sum of base qualities >= 15 (Picard's default score).
     Duplicate status is propagated to the secondary and supplementary records of every
     duplicate primary, so `-F 0x400` alone gives a clean bam. Members of a duplicate set
-    carry DS:i (set size) and DI:i (set index, unique within a reference sequence).
+    carry DS:i (set size) and DI:i (set index, unique across the bam).
 
     The far end of a read is only used when the read reads through into the adapter,
     i.e. when its aligned 3' end is a Tn5 insertion site. That is decided by finding
@@ -45,6 +45,11 @@
 
     Also writes a Picard-format DuplicationMetrics file, so MultiQC's picard module
     keeps reporting the rate, and a per-rule summary.
+
+    Records are matched between the two passes by a 64-bit hash of the read name. On a
+    library of ~10^9 primaries there is a ~2% chance that two names collide at all, and a
+    collision can only mis-flag the records of one read, so the hash is not checked.
+    --exact-only-contig names are matched exactly, as they appear in the bam header.
 """
 
 import argparse
@@ -375,11 +380,15 @@ def decide_contig(job):
     hashes = np.frombuffer(qhash, dtype=np.uint64)
     dup_h = np.sort(hashes[~is_rep])
     mem = size > 1
+    # DI numbers the duplicate sets of this contig from 0; pass 2 adds an offset so the
+    # index is unique across the bam
+    set_ids, di = np.unique(inv[mem], return_inverse=True)
     mo = np.argsort(hashes[mem])
-    np.savez(out, dup=dup_h, mem=hashes[mem][mo], di=inv[mem][mo].astype(np.int64),
+    np.savez(out, dup=dup_h, mem=hashes[mem][mo], di=di[mo].astype(np.int64),
              ds=size[mem][mo].astype(np.int64))
     stats["duplicates"] = int((~is_rep).sum())
     stats["molecules"] = int(len(uniq))
+    stats["duplicate_sets"] = int(len(set_ids))
     if exact_only:
         stats["primary_exact_only"] = n
         stats["duplicates_exact_only"] = stats["duplicates"]
@@ -391,7 +400,7 @@ def decide_contig(job):
 # ---------------------------------------------------------------------------------------
 
 def write_contig(job):
-    bam_path, contig, dup_path, npz_path, out_path, header = job
+    bam_path, contig, dup_path, npz_path, di_offset, out_path, header = job
     dup = np.load(dup_path, mmap_mode="r")
     own = np.load(npz_path) if npz_path else None
     mem, di, ds = (own["mem"], own["di"], own["ds"]) if own is not None else (None, None, None)
@@ -425,7 +434,7 @@ def write_contig(job):
                     stats["flag_primary" if primary else
                           ("flag_secondary" if r.is_secondary else "flag_supplementary")] += 1
                 if primary and ismem[x] and not r.is_unmapped:
-                    r.set_tag("DI", int(di[km[x]]), "i")
+                    r.set_tag("DI", di_offset + int(di[km[x]]), "i")
                     r.set_tag("DS", int(ds[km[x]]), "i")
                 if r.is_unmapped:
                     stats["unmapped"] += 1
@@ -468,6 +477,7 @@ def write_summary(path, st, args):
     rows = [
         ("primary_reads", st["primary"]),
         ("molecules", st["molecules"]),
+        ("duplicate_sets", st["duplicate_sets"]),
         ("duplicates", st["duplicates"]),
         ("duplicate_rate", f"{st['duplicates'] / st['primary']:.6f}" if st["primary"] else "0"),
         # the rate without the exact-only (mitochondrial) contigs, which otherwise
@@ -519,17 +529,20 @@ def main():
         if hdr.get("HD", {}).get("SO") != "coordinate":
             sys.exit(f"{args.input} is not coordinate-sorted")
         refs = list(bam.references)
-        mapped = {s.contig: s.mapped for s in bam.get_index_statistics()}
-    work = [c for c in refs if mapped.get(c, 0) > 0]
-    work.sort(key=lambda c: -mapped[c])     # largest first, for load balance
+        # all records placed on a contig, so a placed unmapped read is never dropped
+        n_records = {s.contig: s.total for s in bam.get_index_statistics()}
+    work = [c for c in refs if n_records.get(c, 0) > 0]
+    work.sort(key=lambda c: -n_records[c])     # largest first, for load balance
     args_d = {"d5": args.d5, "d3": args.d3, "barcode_tag": args.barcode_tag,
               "exact_only": frozenset(args.exact_only_contig)}
 
     total = collections.Counter()
     npz = {}
+    n_sets = {}
     with mp.Pool(max(1, args.threads)) as pool:
         for contig, path, st in pool.imap_unordered(decide_contig, [(args.input, c, args_d, tmp) for c in work]):
             npz[contig] = path
+            n_sets[contig] = st["duplicate_sets"]
             total.update(st)
             print(f"[decide] {contig}: {st['primary']:,} primary, {st['duplicates']:,} duplicates", file=sys.stderr, flush=True)
 
@@ -546,15 +559,17 @@ def main():
     while pg["ID"] in ids:
         pg["ID"] += ".1"
     hdr.setdefault("PG", []).append(pg)
-    jobs = [(args.input, c, dup_path, npz.get(c), os.path.join(tmp, f"out.{i:05d}.bam"), hdr)
-            for i, c in enumerate(refs) if mapped.get(c, 0) > 0]
-    jobs.append((args.input, "*", dup_path, None, os.path.join(tmp, "out.99999.unmapped.bam"), hdr))
-    parts = {}
+    jobs = []
+    di_offset = 0
+    for i, c in enumerate(refs):
+        if n_records.get(c, 0) > 0:
+            jobs.append((args.input, c, dup_path, npz.get(c), di_offset, os.path.join(tmp, f"out.{i:05d}.bam"), hdr))
+            di_offset += n_sets[c]
+    jobs.append((args.input, "*", dup_path, None, 0, os.path.join(tmp, "out.99999.unmapped.bam"), hdr))
     with mp.Pool(max(1, args.threads)) as pool:
-        for contig, path, st in pool.imap_unordered(write_contig, sorted(jobs, key=lambda j: -mapped.get(j[1], 0))):
-            parts[path] = True
+        for contig, path, st in pool.imap_unordered(write_contig, sorted(jobs, key=lambda j: -n_records.get(j[1], 0))):
             total.update(st)
-    ordered = [j[4] for j in jobs]
+    ordered = [j[5] for j in jobs]
     # Parts are concatenated in header order with the unmapped reads last, so the result
     # is coordinate-sorted. It is not indexed here: a single-threaded index took over a
     # third of the run on a full library, and samtools index -@ does it downstream.

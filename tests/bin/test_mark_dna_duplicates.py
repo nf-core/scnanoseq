@@ -2,8 +2,9 @@
 
 """ Unit test for bin/mark_dna_duplicates.py on a toy bam with one case per rule.
 
-    Not run by nf-test (which only collects *.nf.test). Run it in the module's container,
-    which has pysam and numpy but no pytest:
+    Not run by nf-test (which only collects *.nf.test); .github/workflows/bin-tests.yml
+    runs it on pull requests. Locally, run it in the module's container, which has pysam
+    and numpy but no pytest:
 
         apptainer exec <mulled-v2-bb96c7354781ab52d8e69ccff89587598dc87fea image> \
             python -m unittest tests/bin/test_mark_dna_duplicates.py
@@ -175,6 +176,10 @@ class MarkDnaDuplicatesTest(unittest.TestCase):
         self.assertEqual((recs["r1a"].get_tag("DS"), recs["r1b"].get_tag("DS")), (2, 2))
         self.assertEqual(recs["r1a"].get_tag("DI"), recs["r1b"].get_tag("DI"))
         self.assertNotEqual(recs["r1a"].get_tag("DI"), recs["r2a"].get_tag("DI"))
+        # DI is unique across the bam, not only within a reference sequence
+        self.assertEqual(recs["m1a"].get_tag("DI"), recs["m1b"].get_tag("DI"))
+        di = {recs[n].get_tag("DI") for n in ("r1a", "r1c", "r2a", "x_+1of1", "aa1", "m1a", "mx_+1of1")}
+        self.assertEqual(len(di), 7)
         self.assertFalse(recs["bcx"].has_tag("DS"))
         self.assertFalse(recs["y_+1of2"].has_tag("DS"))
 
@@ -182,6 +187,8 @@ class MarkDnaDuplicatesTest(unittest.TestCase):
         s = read_summary(self.default["summary"])
         self.assertEqual(s["primary_reads"], str(len(PRIMARIES)))
         self.assertEqual(s["duplicates"], str(len(DUPS_DEFAULT)))
+        # every default duplicate set is a pair: 5 on chr1, 2 on chrM
+        self.assertEqual(s["duplicate_sets"], "7")
         self.assertEqual(s["dup_by_key_5prime_strand"], "3")
         self.assertEqual(s["dup_added_by_same_raw_read"], "2")
         self.assertEqual(s["dup_added_by_5prime_jitter"], "1")
