@@ -369,13 +369,13 @@
                 },
                 "skip_dedup": {
                     "type": "boolean",
-                    "description": "Skip umi dedup.",
+                    "description": "Skip deduplication: UMI dedup on the cDNA arm and duplicate marking on the DNA arm.",
                     "fa_icon": "fas fa-forward"
                 },
                 "skip_cdna_dedup": {
                     "type": "boolean",
                     "description": "Skip umi dedup on the cDNA arm only.",
-                    "help_text": "The cDNA genome alignment is produced for every run, including runs whose quantifier reads the fastq directly, so its umi_tools deduplication chain (gene tagging, per-contig split, dedup, merge) is by far the most expensive part of that arm. This turns that chain off and publishes the mapped-only bam instead, without touching `skip_dedup`, which governs Picard MarkDuplicates on the DNA arm.",
+                    "help_text": "The cDNA genome alignment is produced for every run, including runs whose quantifier reads the fastq directly, so its umi_tools deduplication chain (gene tagging, per-contig split, dedup, merge) is by far the most expensive part of that arm. This turns that chain off and publishes the mapped-only bam instead, without touching `skip_dedup`, which also governs DNA duplicate marking (`mark_dna_duplicates.py`).",
                     "fa_icon": "fas fa-forward"
                 },
                 "skip_multiqc": {

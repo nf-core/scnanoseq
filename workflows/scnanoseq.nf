@@ -435,7 +435,7 @@ workflow SCNANOSEQ {
             params.skip_bam_nanocomp,
             params.skip_seurat,
             // Deliberately NOT params.skip_dedup: that one also governs the DNA
-            // arm's Picard MarkDuplicates below, so a single flag could not turn
+            // arm's duplicate marking below, so a single flag could not turn
             // the expensive cDNA umi_tools chain down without silently
             // un-deduplicating the DNA bam too.
             params.skip_cdna_dedup
