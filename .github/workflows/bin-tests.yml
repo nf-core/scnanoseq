@@ -1,0 +1,33 @@
+name: Unit-test bin scripts
+# nf-test only collects *.nf.test, so the stdlib unittest suites under tests/bin run
+# here, in the container of the module that calls the script.
+on:
+  pull_request:
+    paths:
+      - "bin/mark_dna_duplicates.py"
+      - "tests/bin/**"
+      - ".github/workflows/bin-tests.yml"
+  workflow_dispatch: null
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  # same image as modules/local/mark_duplicates_dna
+  IMAGE: quay.io/biocontainers/mulled-v2-bb96c7354781ab52d8e69ccff89587598dc87fea:ad24cd6a9acfe3ff51beb4c454076e18e778f7c0-0
+
+jobs:
+  mark-dna-duplicates:
+    name: mark_dna_duplicates.py
+    runs-on: ubuntu-latest
+    steps:
+      # checked out on the runner: the biocontainers image is busybox-based and has no
+      # libstdc++, so JavaScript actions cannot run inside it as a job container
+      - name: Check out pipeline code
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+
+      - name: Run unit tests
+        run: |
+          docker run --rm -v "$GITHUB_WORKSPACE:/work" -w /work "$IMAGE" \
+            python -m unittest -v tests/bin/test_mark_dna_duplicates.py

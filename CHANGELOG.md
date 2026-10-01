@@ -7,10 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Enhancements
 
+- DNA samples are now deduplicated by `mark_dna_duplicates.py` instead of `picard MarkDuplicates`. Within a barcode it keeps Picard's single-end key and also merges the two records flexiplex writes for one raw read, up to 10 bp of 5' jitter between reads that read through to the far adapter, and A-A fragments read from the other end; on `chrM`/`MT` only the exact relations apply. On three libraries this recovers 99% of the same-molecule pairs Picard missed (judged by heterozygous-SNP haplotypes) without adding false merges, raising the DNA duplicate rate by 1-2.5 points. The duplicate flag now also reaches secondary and supplementary alignments, and the marked BAM is published as written, without a second sort. Metrics stay in Picard format for MultiQC, next to a per-rule `*.dedup_summary.tsv`; see [`docs/output.md`](docs/output.md#dna-duplicate-marking)
 - Added support for processing single-cell/nuclei DNA samples alongside cDNA samples in the same pipeline run, via a new optional `type` column (`dna`/`cdna`) in the input samplesheet
 - Added `flexiplex/discovery`, `flexiplex/filter` and `flexiplex/assign` modules for barcode extraction, filtering and assignment
 - Added `demultiplex_flexiplex` and `demultiplex_blaze` subworkflows, replacing the previous inline demultiplexing steps in the main workflow
-- Added `align_deduplicate_dna` subworkflow (`minimap2` alignment, `picard MarkDuplicates`, `BAM_SORT_STATS_SAMTOOLS`) for DNA sample processing
+- Added `align_deduplicate_dna` subworkflow (`minimap2` alignment, `mark_dna_duplicates.py`, `BAM_STATS_SAMTOOLS`) for DNA sample processing
 - Added `demux_tool_cdna`/`demux_tool_dna` parameters to select `flexiplex` or `blaze` for cDNA demultiplexing (DNA currently supports `flexiplex` only)
 - Added `lrkallisto` as a third `--quantifier` option: an alignment-free path that pseudoaligns the demultiplexed FASTQ with lr-kallisto (`kallisto bus --long`), counts genes with `bustools count --genecounts` and quantifies transcripts with `kallisto quant-tcc --long`, deduplicating UMIs with `bustools` in both cases. Adds a `test_lrkallisto` profile and the `gffread` module for transcript sequence extraction
 - Bumped IsoQuant to v3.13.1

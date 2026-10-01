@@ -17,11 +17,13 @@
                 "GENOME_FAIDX": {
                     "samtools": "1.22.1"
                 },
+                "MARK_DUPLICATES_DNA": {
+                    "numpy": "1.24.1",
+                    "pysam": "0.19.1",
+                    "python": "3.10.8"
+                },
                 "MINIMAP2_ALIGN": {
                     "minimap2": "2.29-r1283"
-                },
-                "PICARD_MARKDUPLICATES": {
-                    "picard": "3.4.0"
                 },
                 "PIGZ_UNCOMPRESS": {
                     "pigz": 2.8
@@ -36,9 +38,6 @@
                     "samtools": "1.22.1"
                 },
                 "SAMTOOLS_INDEX": {
-                    "samtools": "1.22.1"
-                },
-                "SAMTOOLS_SORT": {
                     "samtools": "1.22.1"
                 },
                 "SAMTOOLS_STATS": {
@@ -65,6 +64,9 @@
                 "RPMI8402/dna/flexiplex/RPMI8402.dna_known_barcodes.txt",
                 "RPMI8402/dna/flexiplex/RPMI8402_barcodes_counts.txt",
                 "RPMI8402/dna/qc",
+                "RPMI8402/dna/qc/dedup",
+                "RPMI8402/dna/qc/dedup/RPMI8402.dna.dedup.dedup_summary.tsv",
+                "RPMI8402/dna/qc/dedup/RPMI8402.dna.dedup.metrics.txt",
                 "RPMI8402/dna/qc/nanoplot",
                 "RPMI8402/dna/qc/nanoplot/post_extract",
                 "RPMI8402/dna/qc/nanoplot/post_extract/RPMI8402.dna.extracted_LengthvsQualityScatterPlot_dot.html",
@@ -111,19 +113,31 @@
                 "batch_qcs/multiqc/final_qc/multiqc_data/multiqc_citations.txt",
                 "batch_qcs/multiqc/final_qc/multiqc_data/multiqc_data.json",
                 "batch_qcs/multiqc/final_qc/multiqc_data/multiqc_general_stats.txt",
+                "batch_qcs/multiqc/final_qc/multiqc_data/multiqc_picard_dups.txt",
                 "batch_qcs/multiqc/final_qc/multiqc_data/multiqc_samtools_flagstat.txt",
                 "batch_qcs/multiqc/final_qc/multiqc_data/multiqc_software_versions.txt",
                 "batch_qcs/multiqc/final_qc/multiqc_data/multiqc_sources.txt",
+                "batch_qcs/multiqc/final_qc/multiqc_data/picard_MarkIlluminaAdapters_histogram.txt",
+                "batch_qcs/multiqc/final_qc/multiqc_data/picard_MeanQualityByCycle_histogram.txt",
+                "batch_qcs/multiqc/final_qc/multiqc_data/picard_MeanQualityByCycle_histogram_1.txt",
+                "batch_qcs/multiqc/final_qc/multiqc_data/picard_QualityScoreDistribution_histogram.txt",
+                "batch_qcs/multiqc/final_qc/multiqc_data/picard_deduplication.txt",
                 "batch_qcs/multiqc/final_qc/multiqc_data/samtools-flagstat-pct-table.txt",
                 "batch_qcs/multiqc/final_qc/multiqc_data/samtools-flagstat-table.txt",
                 "batch_qcs/multiqc/final_qc/multiqc_plots",
                 "batch_qcs/multiqc/final_qc/multiqc_plots/pdf",
+                "batch_qcs/multiqc/final_qc/multiqc_plots/pdf/picard_deduplication-cnt.pdf",
+                "batch_qcs/multiqc/final_qc/multiqc_plots/pdf/picard_deduplication-pct.pdf",
                 "batch_qcs/multiqc/final_qc/multiqc_plots/pdf/samtools-flagstat-pct-table.pdf",
                 "batch_qcs/multiqc/final_qc/multiqc_plots/pdf/samtools-flagstat-table.pdf",
                 "batch_qcs/multiqc/final_qc/multiqc_plots/png",
+                "batch_qcs/multiqc/final_qc/multiqc_plots/png/picard_deduplication-cnt.png",
+                "batch_qcs/multiqc/final_qc/multiqc_plots/png/picard_deduplication-pct.png",
                 "batch_qcs/multiqc/final_qc/multiqc_plots/png/samtools-flagstat-pct-table.png",
                 "batch_qcs/multiqc/final_qc/multiqc_plots/png/samtools-flagstat-table.png",
                 "batch_qcs/multiqc/final_qc/multiqc_plots/svg",
+                "batch_qcs/multiqc/final_qc/multiqc_plots/svg/picard_deduplication-cnt.svg",
+                "batch_qcs/multiqc/final_qc/multiqc_plots/svg/picard_deduplication-pct.svg",
                 "batch_qcs/multiqc/final_qc/multiqc_plots/svg/samtools-flagstat-pct-table.svg",
                 "batch_qcs/multiqc/final_qc/multiqc_plots/svg/samtools-flagstat-table.svg",
                 "batch_qcs/multiqc/final_qc/multiqc_report.html",
@@ -135,21 +149,28 @@
             [
                 "RPMI8402.dna_known_barcodes.txt:md5,a384c05cc091ce3774d09e0a89db3915",
                 "RPMI8402_barcodes_counts.txt:md5,7c5416330c4307844c125b43cef368c8",
+                "RPMI8402.dna.dedup.dedup_summary.tsv:md5,e656158bf81fecfadb3dae798aee864e",
                 "RPMI8402.dna.extracted_NanoStats.txt:md5,e457c4a262e125749ff94b644c4c8399",
                 "RPMI8402.dna.trimmed_NanoStats.txt:md5,e051410f92e1ebb86beea6d3d1d8b6da",
                 "RPMI8402.dna.raw_NanoStats.txt:md5,b979748a726c1c143e72bc2708cf18fb",
-                "RPMI8402.dna.flagstat:md5,408e0e0ebf6c314dd2cf22441512261b",
+                "RPMI8402.dna.flagstat:md5,cafbca4e461a65c58f8628129c6f45d4",
                 "RPMI8402.dna.idxstats:md5,93082632d306a4ee1b522dda067b6289",
-                "RPMI8402.dna.stats:md5,d52e504216fe09f5c136c335eaa0f661",
+                "RPMI8402.dna.stats:md5,bf8f3d4700685b6a493bf383a4c5a579",
                 "multiqc_citations.txt:md5,ee1baba4adea57b43a9ae59ce7e1dd7f",
-                "multiqc_general_stats.txt:md5,e11a88dd79c20bc34f72d073f4800b39",
-                "multiqc_samtools_flagstat.txt:md5,53ad27658e493872cee10ee288b99334",
-                "samtools-flagstat-pct-table.txt:md5,7d36bc319bd088cef504928519c86287",
-                "samtools-flagstat-table.txt:md5,d554e00f44c0ff382f65d35dedb6b041",
+                "multiqc_general_stats.txt:md5,04baa42d6b7f5f9a0454ac4f0570a93e",
+                "multiqc_picard_dups.txt:md5,2ae0c922d8c60f38be46ff8c6d3faaf6",
+                "multiqc_samtools_flagstat.txt:md5,7896ce6cddeb9214c1b4f08cc77768e9",
+                "picard_MarkIlluminaAdapters_histogram.txt:md5,d41d8cd98f00b204e9800998ecf8427e",
+                "picard_MeanQualityByCycle_histogram.txt:md5,d41d8cd98f00b204e9800998ecf8427e",
+                "picard_MeanQualityByCycle_histogram_1.txt:md5,d41d8cd98f00b204e9800998ecf8427e",
+                "picard_QualityScoreDistribution_histogram.txt:md5,d41d8cd98f00b204e9800998ecf8427e",
+                "picard_deduplication.txt:md5,190e3d847b2d8bb17f0b03b325963dfa",
+                "samtools-flagstat-pct-table.txt:md5,cfc73592fed4137557da0764cca84cb8",
+                "samtools-flagstat-table.txt:md5,1713614e91252c6f9ed33d7262801ae8",
                 "read_counts.csv:md5,b0e4e0e53204b01bd64c8a4b16b057d3"
             ]
         ],
-        "timestamp": "2026-08-27T13:41:00.139543265",
+        "timestamp": "2026-09-29T15:03:32.759192228",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.04.3"
