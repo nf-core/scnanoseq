@@ -15,8 +15,9 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
         ch_fai      // channel: [ val(meta), path(fai) ]
         ch_gtf      // channel: [ val(meta), path(gtf) ]
 
-        val_skip_qc     // bool: Skip qc steps
-        val_skip_seurat // bool: Skip seurat qc steps
+        val_group_category // str: Isoquant --read_group, e.g. 'tag:CB' or 'tag:XB'
+        val_skip_qc        // bool: Skip qc steps
+        val_skip_seurat    // bool: Skip seurat qc steps
 
     main:
         ch_versions = channel.empty()
@@ -32,7 +33,7 @@ workflow QUANTIFY_SCRNA_ISOQUANT {
         //
         ISOQUANT (
             isoquant_input,
-            'tag:CB'
+            val_group_category
         )
         ch_versions = ch_versions.mix(ISOQUANT.out.versions_isoquant)
 

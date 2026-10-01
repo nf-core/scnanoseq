@@ -10,7 +10,6 @@ process PREEXTRACT_FASTQ {
 
     input:
     tuple val(meta), path(reads), path(bc_list)
-    val bc_format
 
     output:
     tuple val(meta), path("*.putative_bc_umi.tsv"), emit: barcode_info
@@ -29,7 +28,6 @@ process PREEXTRACT_FASTQ {
         -i ${reads} \\
         -b ${bc_list} \\
         -o ${prefix}.extracted \\
-        -f ${bc_format} \\
         -t ${task.cpus} \\
         ${args}
 

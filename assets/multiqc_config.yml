@@ -28,6 +28,7 @@ top_modules:
   - general_stats
   - custom_content
   - samtools
+  - picard
   - nanostat
   - rseqc
   - fastqc:
@@ -54,6 +55,10 @@ custom_content:
     parent_id: read_counts_section
     order: read_counts_module
 
+  dedup_section:
+    parent_id: dedup_section
+    order: umitools_dedup_summary_module
+
   seurat_section:
     parent_id: seurat_section
     order:
@@ -69,6 +74,40 @@ custom_data:
     section_name: "Read Counts"
     file_format: "csv"
     plot_type: "table"
+
+  umitools_dedup_summary_module:
+    parent_id: dedup_section
+    parent_name: "Deduplication Section"
+    parent_description: "UMI deduplication summary per sample and alignment (genome / transcriptome). Deduplication runs per chromosome or transcript group, so the read counts are summed over all chunks of a sample."
+    section_name: "UMI-tools Deduplication"
+    file_format: "tsv"
+    plot_type: "table"
+    pconfig:
+      id: "umitools_dedup_summary_table"
+      title: "UMI-tools deduplication summary"
+    headers:
+      input_reads:
+        title: "Input reads"
+        description: "Reads entering umi_tools dedup, summed over all chunks"
+        format: "{:,.0f}"
+      output_reads:
+        title: "Output reads"
+        description: "Reads kept after deduplication, summed over all chunks"
+        format: "{:,.0f}"
+      duplicate_reads:
+        title: "Duplicate reads"
+        description: "Reads removed as UMI duplicates"
+        format: "{:,.0f}"
+      duplication_rate:
+        title: "Duplication rate"
+        description: "duplicate_reads / input_reads"
+        min: 0
+        max: 1
+        format: "{:.4f}"
+      n_dedup_runs:
+        title: "Dedup runs"
+        description: "Number of umi_tools dedup runs summed for this sample"
+        format: "{:,.0f}"
 
   isoquant_gene_seurat_stats_module:
     parent_id: seurat_section
@@ -103,3 +142,5 @@ sp:
     fn: "oarfish_transcript.tsv"
   read_counts_module:
     fn: "read_counts.csv"
+  umitools_dedup_summary_module:
+    fn: "*.umi_dedup_summary.tsv"

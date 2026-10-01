@@ -45,16 +45,17 @@ process NANOPLOT {
     """
 
     stub:
+    def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    touch LengthvsQualityScatterPlot_dot.html
-    touch LengthvsQualityScatterPlot_kde.html
-    touch NanoPlot-report.html
-    touch NanoStats.txt
-    touch Non_weightedHistogramReadlength.html
-    touch Non_weightedLogTransformed_HistogramReadlength.html
-    touch WeightedHistogramReadlength.html
-    touch WeightedLogTransformed_HistogramReadlength.html
-    touch Yield_By_Length.html
+    touch ${prefix}_LengthvsQualityScatterPlot_dot.html
+    touch ${prefix}_LengthvsQualityScatterPlot_kde.html
+    touch ${prefix}_NanoPlot-report.html
+    touch ${prefix}_NanoStats.txt
+    touch ${prefix}_Non_weightedHistogramReadlength.html
+    touch ${prefix}_Non_weightedLogTransformed_HistogramReadlength.html
+    touch ${prefix}_WeightedHistogramReadlength.html
+    touch ${prefix}_WeightedLogTransformed_HistogramReadlength.html
+    touch ${prefix}_Yield_By_Length.html
 
 
     cat <<-END_VERSIONS > versions.yml

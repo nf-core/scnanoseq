@@ -16,6 +16,10 @@
 
 ## Pipeline tools
 
+- [Flexiplex](https://pubmed.ncbi.nlm.nih.gov/38379414/)
+
+  > Cheng O, Ling MH, Wang C, Wu S, Ritchie ME, Göke J, Amin N, Davidson NM. Flexiplex: a versatile demultiplexer and search tool for omics data. Bioinformatics. 2024 Mar 4;40(3):btae102. doi: 10.1093/bioinformatics/btae102. PMID: 38379414; PMCID: PMC10914444.
+
 - [BLAZE](https://pubmed.ncbi.nlm.nih.gov/37024980/)
 
   > You Y, Prawer YDJ, De Paoli-Iseppi R, Hunt CPJ, Parish CL, Shim H, Clark MB. Identification of cell barcodes from long-read single-cell RNA-seq with BLAZE. Genome Biol. 2023 Apr 6;24(1):66. doi: 10.1186/s13059-023-02907-y. PMID: 37024980; PMCID: PMC10077662.
@@ -27,6 +31,22 @@
 - [IsoQuant](https://pubmed.ncbi.nlm.nih.gov/36593406/)
 
   > Prjibelski AD, Mikheenko A, Joglekar A, Smetanin A, Jarroux J, Lapidus AL, Tilgner HU. Accurate isoform discovery with IsoQuant using long reads. Nat Biotechnol. 2023 Jul;41(7):915-918. doi: 10.1038/s41587-022-01565-y. Epub 2023 Jan 2. PMID: 36593406; PMCID: PMC10344776.
+
+- [gffread](https://pubmed.ncbi.nlm.nih.gov/32489650/)
+
+  > Pertea G, Pertea M. GFF Utilities: GffRead and GffCompare. F1000Res. 2020 Apr 28;9:ISCB Comm J-304. doi: 10.12688/f1000research.23297.2. PMID: 32489650; PMCID: PMC7222033.
+
+- [kallisto](https://pubmed.ncbi.nlm.nih.gov/27043002/)
+
+  > Bray NL, Pimentel H, Melsted P, Pachter L. Near-optimal probabilistic RNA-seq quantification. Nat Biotechnol. 2016 May;34(5):525-7. doi: 10.1038/nbt.3519. Epub 2016 Apr 4. Erratum in: Nat Biotechnol. 2016 Aug 9;34(8):888. PMID: 27043002.
+
+- [lr-kallisto](https://doi.org/10.1371/journal.pcbi.1013692)
+
+  > Loving RK, Sullivan DK, Reese F, Rebboah E, Sakr J, Rezaie N, Liang HY, Filimban G, Kawauchi S, Booeshaghi AS, Melsted P, Oakes C, Trout D, Williams BA, MacGregor GR, Wold BJ, Mortazavi A, Pachter L. Long-read sequencing transcriptome quantification with lr-kallisto. PLoS Comput Biol. 2025 Dec 1;21(12):e1013692. doi: 10.1371/journal.pcbi.1013692.
+
+- [bustools](https://pubmed.ncbi.nlm.nih.gov/33795888/)
+
+  > Melsted P, Booeshaghi AS, Liu L, Gao F, Lu L, Min KHJ, da Veiga Beltrame E, Hjörleifsson KE, Gehring J, Pachter L. Modular, efficient and constant-memory single-cell RNA-seq preprocessing. Nat Biotechnol. 2021 Jul;39(7):813-818. doi: 10.1038/s41587-021-00870-2. Epub 2021 Apr 1. PMID: 33795888.
 
 - [Minimap2](https://pubmed.ncbi.nlm.nih.gov/29750242/)
 

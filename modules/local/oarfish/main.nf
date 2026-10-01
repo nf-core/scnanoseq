@@ -31,16 +31,13 @@ process OARFISH {
         --threads ${task.cpus} \\
         ${args}
 
-    mv *features.txt features.tsv
-    mv *barcodes.txt barcodes.tsv
-
-    grep '^%' *count.mtx > matrix.mtx
-    grep -v '^%' *count.mtx | awk '{print \$2" "\$1" "\$3}' >> matrix.mtx
-
-    for tsv_file in *features.tsv *barcodes.tsv *matrix.mtx
-    do
-        gzip \$tsv_file
-    done
+    # oarfish writes cells x transcripts; Read10X wants transcripts x cells.
+    # The EM estimates are fractional, so no --integer here.
+    mtx_transpose_to_mex.sh \\
+        --mtx *count.mtx \\
+        --features *features.txt \\
+        --barcodes *barcodes.txt \\
+        --outdir .
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

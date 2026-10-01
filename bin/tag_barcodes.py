@@ -16,6 +16,14 @@ CORRECTED_TAG = "CB"
 UMI_TAG = "UR"
 UMI_QUAL_TAG = "UY"
 
+# Deduplication groups on XB/UB so that it behaves the same whichever demultiplexer
+# produced the bam. On the flexiplex path those come from flexiplex itself, where XB
+# falls back to the uncorrected barcode for a droplet that matched no known barcode
+# and UB is the corrected UMI. Blaze only ever writes reads it could assign and does
+# not correct UMIs, so here both are just copies.
+GROUPING_BC_TAG = "XB"
+GROUPING_UMI_TAG = "UB"
+
 
 class UmiBcRead:
     """This class holds and parses out the barcode and umi from a fastq
@@ -109,6 +117,13 @@ def tag_bams(in_bam, bc_info, out_bam):
                 # Add the corrected_bc tag
                 if not read.has_tag(CORRECTED_TAG):
                     read.tags += [(CORRECTED_TAG, umi_bc_info.corrected_bc)]
+
+                # Add the tags deduplication groups on
+                if not read.has_tag(GROUPING_BC_TAG):
+                    read.tags += [(GROUPING_BC_TAG, umi_bc_info.corrected_bc)]
+
+                if not read.has_tag(GROUPING_UMI_TAG):
+                    read.tags += [(GROUPING_UMI_TAG, umi_bc_info.umi)]
 
                 read.query_name = "_".join([parsed_read_name, umi_bc_info.bc, umi_bc_info.umi])
 

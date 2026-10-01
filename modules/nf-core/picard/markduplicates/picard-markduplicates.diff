@@ -1,0 +1,19 @@
+Changes in component 'nf-core/picard/markduplicates'
+'modules/nf-core/picard/markduplicates/meta.yml' is unchanged
+Changes in 'picard/markduplicates/main.nf':
+--- modules/nf-core/picard/markduplicates/main.nf
++++ modules/nf-core/picard/markduplicates/main.nf
+@@ -1,6 +1,7 @@
+ process PICARD_MARKDUPLICATES {
+     tag "${meta.id}"
+     label 'process_medium'
++    label 'process_long'
+ 
+     conda "${moduleDir}/environment.yml"
+     container "${workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container
+
+'modules/nf-core/picard/markduplicates/environment.yml' is unchanged
+'modules/nf-core/picard/markduplicates/tests/main.nf.test' is unchanged
+'modules/nf-core/picard/markduplicates/tests/main.nf.test.snap' is unchanged
+'modules/nf-core/picard/markduplicates/tests/nextflow.config' is unchanged
+************************************************************

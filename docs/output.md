@@ -6,36 +6,60 @@ This document describes the output produced by the pipeline. Most of the plots a
 
 The directories listed below will be created in the results directory after the pipeline has finished. All paths are relative to the top-level results directory.
 
+TODO: Should here be added which output is cDNA/DNA specific?
+TODO: Go over entire output section and remove/add flexiplex etc where needed.
+
 ## Pipeline overview
 
 The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes data using the following steps:
 
 - [Barcode Calling](#barcode-calling)
+  - [Flexiplex](#flexiplex) - Barcode caller
   - [BLAZE](#blaze) - Barcode caller
 - [Alignment](#alignment)
   - [Minimap2](#minimap2) - Long read alignment
 - [Alignment Post-processing](#alignment-post-processing)
   - [Samtools](#samtools) - Sort and index alignments and make alignment qc
-  - [Barcode Tagging](#barcode-tagging) - Barcode tagging with quality metrics and barcode information
+  - [Barcode Tagging Blaze](#barcode-tagging-blaze) - Barcode tagging with quality metrics and barcode information
+  - [Barcode Tags Flexiplex](#barcode-tags-flexiplex) - The barcode and UMI tags flexiplex puts on every alignment
   - [UMI-tools Dedup](#umi-tools-dedup) - UMI-based Read deduplication
   - [Picard MarkDuplicates](#picard-markduplicates) - Read deduplication
-- [Feature-Barcode Quantification](#feature-barcode-quantification)
+  - [DNA duplicate marking](#dna-duplicate-marking) - Tn5 fragment deduplication for DNA samples \*\*
+- [Feature-Barcode Quantification](#feature-barcode-quantification)\*
   - [IsoQuant](#isoquant) - Feature-barcode quantification (gene and transcript level)
   - [oarfish](#oarfish) - Feature-barcode quantification (transcript-level only)
   - [Seurat](#seurat) - Feature-barcode matrix QC
-- [Other steps](#other-steps)
+- [Other steps](#other-steps)\*
   - [UCSC](#ucsc) - Annotation BED file
 - [Quality Control](#quality-control)
   - [FastQC](#fastqc) - FASTQ QC
   - [NanoComp](#nanocomp) - Long Read FASTQ QC
   - [NanoPlot](#nanoplot) - Long Read FASTQ QC
   - [ToulligQC](#toulligqc) - Long Read FASTQ QC
-  - [RSeQC](#rseqc) - Various RNA-seq QC metrics
+  - [RSeQC](#rseqc) - Various RNA-seq QC metrics\*
   - [Read Counts](#read-counts) - Read Counts QC
   - [MultiQC](#multiqc) - Aggregate report describing results and QC from the whole pipeline
 - [Pipeline information](#pipeline-information) - Report metrics generated during the workflow execution
 
+\* Indicates RNA only output
+
+\*\* Indicates DNA only output
+
 ## Barcode Calling
+
+### Flexiplex
+
+<details markdown="1">
+<summary>Output files</summary>
+
+- `<sample_identifier>/`
+  - `flexiplex/`
+    - `*.barcodes_counts.txt` : This is a file containing each barcode and the counts of how many reads support it.
+    - `*.known_barcodes` : This file is a list of all "true" barcodes and the counts associated to it in the sample. Can be used as whitelist for downstream tools.
+
+</details>
+
+[Flexiplex](https://github.com/DavidsonGroup/flexiplex/) is a fast, multithreaded, and user-configurable demultiplexer. Given a set of reads as either FASTQ or FASTA, it will demultiplex and/or identify a sequence of interest, reporting matching reads and read-barcode assignment. Flexiplex works in two modes: (i) when one or more sequences of interest are known, such as barcodes, and (ii) discovery mode—when only the sequence which flanks the region of interest is known.
 
 ### BLAZE
 
@@ -130,7 +154,7 @@ The knee plot (an example is listed above) that is provided by BLAZE shows all b
 
 [Samtools](https://www.htslib.org/) is a suite of programs for reading, writing, editing, indexing, and viewing files that are in SAM, BAM, or CRAM format
 
-### Barcode Tagging
+### Barcode Tagging Blaze
 
 <details markdown="1">
 <summary>Output files</summary>
@@ -159,6 +183,53 @@ UMI quality tag = "UY"
 
 Note that barcodes are corrected with the custom script, `correct_barcodes.py`.
 
+### Barcode Tags Flexiplex
+
+No separate tagging step is needed on the flexiplex path. Flexiplex writes the barcode
+and UMI into the FASTQ header comment, and the pipeline runs `minimap2 -y`, which copies
+that comment onto every alignment. The tags are:
+
+```
+CB   corrected cell barcode, or "-" when no known barcode matched
+CR   cell barcode as observed in the read
+UB   corrected UMI
+UR   UMI as observed in the read
+XB   CB when a barcode was called, otherwise CR
+```
+
+`XB` is derived by the pipeline rather than written by flexiplex. It is what
+deduplication and the all-droplet quantification group on, so that a droplet which fell
+below the knee — real barcode, just not on the known list — stays distinct instead of
+pooling with every other unassigned read under `CB:Z:-`.
+
+Since flexiplex is run with `-a true` it reports every read, not only the ones it could
+match to the known barcode list, which is what makes `CR` — and therefore the uncalled
+droplets — available at all. Reads where flexiplex found no barcode region whatsoever
+are dropped during assignment: they belong to no droplet, called or empty, and carry a
+one-character UMI placeholder rather than a real UMI. Every alignment downstream
+therefore has a real `CR`, a real `XB` and a full-width UMI. Barcodes are corrected
+during the flexiplex run itself and are not post-corrected.
+
+### Gene assignment
+
+<details markdown="1">
+<summary>Output files</summary>
+
+- `<sample>/<type>/genome/qc/gene_assignment/`
+  - `*.gene_assignment.tsv` : The distribution of gene assignment statuses, per contig.
+
+</details>
+
+When `--dedup_per_gene` is enabled (the default for genome alignments), every alignment is tagged with the gene whose body it overlaps most before deduplication:
+
+```
+gene id tag     = "GX"
+gene name tag   = "GN"
+gene status tag = "GS"    # unique | ambiguous | none
+```
+
+Assignment is by gene-body overlap and is strand-agnostic. `GX` always holds the winning gene, even when a second gene also covers a meaningful share of the read, in which case `GS` is `ambiguous`. Only `unique` alignments are grouped by gene; the rest are deduplicated by position and merged back, so the `GS` distribution in the summary tsv is the ceiling on what gene grouping can act on.
+
 ### UMI-tools Dedup
 
 <details markdown="1">
@@ -167,18 +238,28 @@ Note that barcodes are corrected with the custom script, `correct_barcodes.py`.
 - `<sample_identifier>/`
   - `genome/`
     - `bam/`
-      - `dedup_umitools/`
+      - `dedup/`
         - `*.dedup.bam` : The genome aligned bam containing corrected barcodes and deduplicated umis.
         - `*.dedup.bam.bai` : The genome aligned bam index for the bam containing corrected barcodes and deduplicated umis.
+    - `qc/`
+      - `umitools/`
+        - `dedup/`
+          - `*.umi_dedup_summary.tsv` : Sample-level deduplication summary (input reads, output reads, duplicate reads, duplication rate, number of dedup runs summed).
   - `transcriptome/`
     - `bam/`
-      - `dedup_umitools/`
+      - `dedup/`
         - `*.dedup.bam` : The transcriptome aligned bam containing corrected barcodes and deduplicated umis.
         - `*.dedup.bam.bai` : The transcriptome aligned bam index for the bam containing corrected barcodes and deduplicated umis.
+    - `qc/`
+      - `umitools/`
+        - `dedup/`
+          - `*.umi_dedup_summary.tsv` : Sample-level deduplication summary (input reads, output reads, duplicate reads, duplication rate, number of dedup runs summed).
 
 </details>
 
 [UMI-Tools](https://umi-tools.readthedocs.io/en/latest/reference/dedup.html) deduplicate reads based on the mapping co-ordinate and the UMI attached to the read. The identification of duplicate reads is performed in an error-aware manner by building networks of related UMIs.
+
+Deduplication is run in parallel on one chunk per chromosome (genome alignment) or per transcript group (transcriptome alignment), and with `--dedup_per_gene` each genome chunk is additionally split into a gene-grouped and a positional run. The per-chunk `umi_tools dedup` logs therefore only hold chunk-level counts and are not published. Instead their `Input Reads` and `Number of reads out` figures are summed into the `*.umi_dedup_summary.tsv` file, which is also shown as the "UMI-tools Deduplication" table in the MultiQC report. The `duplication_rate` column is `duplicate_reads / input_reads`.
 
 Users should note that `oarfish` requires input reads to be deduplicated. As a result, the `skip_dedup` option is only applicable to `IsoQuant`. By default, `scnanoseq` will perform deduplication for IsoQuant unless the `skip_dedup` option is explicitly enabled, while deduplication will always be executed for `oarfish` quantification.
 
@@ -190,12 +271,12 @@ Users should note that `oarfish` requires input reads to be deduplicated. As a r
 - `<sample_identifier>/`
   - `genome/`
     - `bam/`
-      - `dedup_picard/`
+      - `dedup/`
         - `*.dedup.bam` : The genome aligned bam containing corrected barcodes and deduplicated umis.
         - `*.dedup.bam.bai` : The genome aligned bam index for the bam containing corrected barcodes and deduplicated umis.
   - `transcriptome/`
     - `bam/`
-      - `dedup_picard/`
+      - `dedup/`
         - `*.dedup.bam` : The transcriptome aligned bam containing corrected barcodes and deduplicated umis.
         - `*.dedup.bam.bai` : The transcriptome aligned bam index for the bam containing corrected barcodes and deduplicated umis.
 
@@ -204,6 +285,32 @@ Users should note that `oarfish` requires input reads to be deduplicated. As a r
 [Picard MarkDuplicates](https://gatk.broadinstitute.org/hc/en-us/articles/360037052812-MarkDuplicates-Picard) locates and tags duplicate reads in a BAM or SAM file.
 
 Users should note that `oarfish` requires input reads to be deduplicated. As a result, the `skip_dedup` option is only applicable to `IsoQuant`. By default, `scnanoseq` will perform deduplication for IsoQuant unless the `skip_dedup` option is explicitly enabled, while deduplication will always be executed for `oarfish` quantification.
+
+### DNA duplicate marking
+
+<details markdown="1">
+<summary>Output files</summary>
+
+- `<sample_identifier>/`
+  - `dna/`
+    - `bam/`
+      - `dedup/`
+        - `*.bam` : The DNA alignment with duplicates flagged (`0x400`), not removed. The duplicate marker writes it coordinate-sorted and it is published as is.
+        - `*.bam.bai` : Its index, from `samtools index`.
+      - `mapped_only/`
+        - `*.bam`, `*.bam.bai` : With `--skip_dedup`, the sorted minimap2 alignment and its index instead.
+    - `qc/`
+      - `dedup/`
+        - `*.dedup.metrics.txt` : Duplication metrics in Picard's `DuplicationMetrics` format, summarised in the MultiQC report.
+        - `*.dedup.dedup_summary.tsv` : Molecules, duplicates and duplicate sets, the duplicate rate without the mitochondrial genome (`nuclear_duplicate_rate`), the duplicates each rule added, secondary/supplementary records flagged, and the 3' adapter classes seen.
+
+</details>
+
+DNA samples (Tn5 tagmentation, no UMI) are deduplicated by `bin/mark_dna_duplicates.py` rather than Picard. Within one barcode (`XB`), two primary alignments are one molecule when they share the 5' unclipped anchor and strand (Picard's key), when their 5' anchors are within 10 bp and the far ends within 20 bp of reads that read through into the far adapter, when they are two records of one raw read (flexiplex writes a read out once per barcode it finds, so a read with the barcode pattern at both ends appears twice, on opposite strands), or when one is an A-A fragment read from the other end. One read per molecule stays unflagged, and the duplicate flag is propagated to the secondary and supplementary alignments of every duplicate, so `samtools view -F 0x400` alone gives a deduplicated BAM. Members of a duplicate set carry `DS` (set size) and `DI` (set index, unique across the BAM).
+
+On the mitochondrial genome (`chrM` and `MT`, set with `--exact-only-contig` and matched exactly, so a reference that names it differently needs its own entry in `ext.args`) only the exact relations apply: the shared 5' anchor and strand, and the two records of one raw read. Its coverage is dense enough that the 10/20 bp tolerances merge distinct molecules by chance (on one library they took the chrM duplicate rate from 42% to 63%), and mtDNA has no heterozygous sites to check them against. Because chrM can hold a large share of the reads, the summary also reports the duplicate rate without it as `nuclear_duplicate_rate`; the Picard-format metrics, and so MultiQC, keep the whole-genome rate.
+
+These rules were chosen against a heterozygous-SNP ground truth: reads of one molecule share an allele at every het site they both cover. On three libraries, 5'-identical reads remain one molecule even when their far ends are more than 1 kb apart, 1-10 bp of 5' jitter is at most 4% distinct molecules while 11-20 bp is 12-52%, and the two records of one raw read are always the same molecule.
 
 ## Feature-Barcode Quantification
 
@@ -217,6 +324,9 @@ Users should note that `oarfish` requires input reads to be deduplicated. As a r
     - `isoquant/`
       - `*.gene_counts.tsv` : The feature-barcode matrix from gene quantification.
       - `*.transcript_counts.tsv` : The feature-barcode matrix from transcript quantification.
+    - `isoquant_all_droplets/` (flexiplex only)
+      - `*.all_droplets.gene_counts.tsv` : As above, over every droplet rather than the called cells.
+      - `*.all_droplets.transcript_counts.tsv` : As above, over every droplet rather than the called cells.
 
 </details>
 
@@ -225,6 +335,21 @@ Users should note that `oarfish` requires input reads to be deduplicated. As a r
 In order to assist with the performance of IsoQuant, the inputs are split by chromosome to add a further degree of parallelization.
 
 It should also be noted that IsoQuant can only accurately perform quantification on a **genome** aligned bam, and will produce both gene and transcript level matrices
+
+When demultiplexing with flexiplex, IsoQuant is run twice off the same alignments:
+
+- `isoquant/` groups on `CB`, so it covers the cells flexiplex matched to the known
+  barcode list. This is the matrix to use for ordinary analysis, and the one Seurat QC
+  is run against. Reads that matched no known barcode collect in a single `-` column,
+  which should be dropped.
+- `isoquant_all_droplets/` groups on `XB`, which falls back to the uncorrected barcode.
+  Droplets below the knee called by `flexiplex-filter` therefore appear here under their
+  own barcode alongside the called cells, which is what makes ambient/empty-droplet
+  estimation possible. It has no `-` column: reads with no barcode region at all were
+  dropped during assignment.
+
+`oarfish` groups on `CB` too, so its transcript matrix gains the same droppable `-`
+column.
 
 ### oarfish
 
@@ -243,6 +368,66 @@ It should also be noted that IsoQuant can only accurately perform quantification
 [oarfish](https://github.com/COMBINE-lab/oarfish) is a program, written in Rust (https://www.rust-lang.org/), for quantifying transcript-level expression from long-read (i.e. Oxford nanopore cDNA and direct RNA and PacBio) sequencing technologies. oarfish requires a sample of sequencing reads aligned to the transcriptome (currently not to the genome). It handles multi-mapping reads through the use of probabilistic allocation via an expectation-maximization (EM) algorithm.
 
 It should also be noted that oarfish can only accurately perform quantification on a **transcript** aligned bam, and will only produce transcript level matrices. It's also recommended to ensure that the `--save_transcript_secondary_alignment` is enabled to produce the most accurate oarfish results (true by default for `oarfish` quantification). Notably, this can lead to much higher number of reads reported as aligned, however, this is expected behavior when secondary alignments are included in the analysis.
+
+### lr-kallisto
+
+<details markdown="1">
+<summary>Output files</summary>
+
+- `reference/`
+  - `lrkallisto/`
+    - `kallisto.idx` : The k=63 kallisto index.
+    - `*.t2g.tsv` : The transcript-to-gene mapping.
+    - `transcripts.fasta` : The transcript sequences extracted from the genome and GTF by `gffread`.
+- `<sample_identifier>/`
+  - `cdna/`
+    - `lrkallisto/`
+      - `gene/` : Gene-level UMI count matrix (`barcodes.tsv.gz`, `features.tsv.gz`, `matrix.mtx.gz`) from `bustools count --genecounts`. Integer counts; a UMI compatible with more than one gene is discarded rather than split.
+      - `transcript/` : Transcript-level abundance matrix (`barcodes.tsv.gz`, `features.tsv.gz`, `matrix.mtx.gz`) from the `kallisto quant-tcc` EM. Estimated abundances, not integer counts.
+      - `quant/` : The raw `kallisto quant-tcc` output, including the EM gene abundance matrix (`matrix.abundance.gene.mtx`, which distributes gene-ambiguous UMIs instead of discarding them) and TPM-normalised matrices.
+      - `counts_unfiltered/` : The transcript compatibility count (TCC) matrix and its equivalence classes.
+      - `bus/` : The BUS file, equivalence class map, transcript names and `run_info.json` pseudoalignment statistics.
+    - `lrkallisto_all_droplets/` : The same five outputs, over every droplet rather than the called cells.
+
+</details>
+
+[lr-kallisto](https://kallisto.readthedocs.io/en/latest/lr/pseudoalignment.html) is the long-read mode of [kallisto](https://github.com/pachterlab/kallisto). Rather than aligning reads, it pseudoaligns them against an index built with a longer k-mer than short-read kallisto uses (63 rather than 31), then quantifies transcript abundances with an expectation-maximization algorithm adapted to long-read error profiles. The quantifier itself consumes no alignment, but the cDNA genome alignment is produced for every run, so the BAMs and alignment-derived QC under `<sample>/cdna/genome/` are present here too.
+
+lr-kallisto is run twice off the same reads and the same index, mirroring the two
+IsoQuant passes described above. It reads the barcode out of the flexiplex read, so this
+quantifier requires `--demux_tool_cdna flexiplex` and both passes always run:
+
+- `lrkallisto/` takes the barcode from the flexiplex read name, which is the one matched
+  to the known barcode list, and `bustools correct` then drops the reads that matched
+  nothing. This is the matrix to use for ordinary analysis, and the one Seurat QC is run
+  against.
+- `lrkallisto_all_droplets/` takes the barcode from the `XB` tag, which falls back to the
+  uncorrected barcode. Droplets below the knee called by `flexiplex-filter` therefore
+  appear here under their own barcode alongside the called cells, which is what makes
+  ambient/empty-droplet estimation possible. Barcodes are not corrected in this pass:
+  `XB` is already the final droplet identity, and correcting would discard the very
+  droplets the matrix exists to keep.
+
+  Because they are not corrected, sequencing errors in the below-knee barcodes would
+  otherwise inflate the column count without bound: on a full sample that is millions of
+  near-singleton barcodes against a few thousand real cells, and the cost of the EM
+  scales with it. `--lrkallisto_all_min_reads` (default `100`) puts a floor under this,
+  keeping only barcodes flexiplex saw at least that many times. On a full 10x Multiome
+  sample that reduces the matrix from ~14.1M columns to ~233k while retaining ~54% of the
+  below-knee reads; called cells sit far above the threshold and are unaffected. Set it
+  to `0` to keep every barcode, or use `--skip_lrkallisto_all_droplets` to skip the pass
+  altogether.
+
+Barcodes and UMIs are taken from the flexiplex read names and written into a synthetic barcode read, so that kallisto can locate them positionally. UMI deduplication is performed by `bustools` during counting rather than by UMI-tools or Picard, so `--skip_dedup` and `--dedup_tool` do not apply to this path.
+
+Both gene and transcript matrices come from a single pseudoalignment pass, but they are counted differently. `kallisto bus --long` writes the BUS file, `bustools` sorts it and, in the `lrkallisto/` pass, corrects barcodes against the flexiplex known-barcode list. The sorted BUS file is then counted twice, and each count collapses UMIs per gene (`--umi-gene`) as it goes:
+
+- `gene/` is `bustools count --genecounts`, the standard kb-python gene matrix. Every entry is a whole UMI. A UMI whose equivalence class is compatible with more than one gene is discarded rather than split, so the matrix is a genuine count matrix and is the one to use with Seurat, scran, DESeq2 or any other tool that assumes integer counts. On the chr21 `test_lrkallisto` data that discards 28% of UMIs, which is a worst case for a reference that small; expect much less on a whole transcriptome, but check it on your own data by comparing the grand total of `gene/matrix.mtx.gz` with that of `quant/matrix.abundance.gene.mtx` (the two are stored in opposite orientations, so compare totals rather than per-column sums). `gene/features.tsv.gz` carries the three Cell Ranger v3 columns (gene id, gene name, `Gene Expression`), so the directory loads as-is in Seurat, Scanpy and CellBender.
+- `transcript/` is the transcript compatibility count matrix resolved into transcript abundances by `kallisto quant-tcc --long`. The EM distributes each UMI across the transcripts it is compatible with, so the entries are fractional estimates rather than counts. The same EM aggregated to genes is in `quant/matrix.abundance.gene.mtx`; it keeps the gene-ambiguous UMIs that `gene/` drops, and it is fractional for the same reason, so `gene/` and the per-gene sum of `transcript/` do not agree.
+
+Ambient RNA and empty-droplet tools such as CellBender fit a count likelihood and cannot use the EM output. Give them `lrkallisto_all_droplets/gene/`.
+
+`bus/run_info.json` is worth checking after a run: a low `p_pseudoaligned` usually indicates a barcode geometry or strandedness mismatch rather than poor data.
 
 ### Seurat
 
@@ -418,6 +603,13 @@ The FastQC plots displayed in the MultiQC report shows _untrimmed_ reads. They m
 </details>
 
 ![Read Counts](images/read_counts.png)
+
+Since flexiplex is run with `-a true` it passes through every read in which it found a
+barcode region, whether or not that barcode matched the known list. `extracted_read_counts`
+therefore no longer drops to the reads that were given a known barcode; it is
+`trimmed_read_counts` minus the reads with no barcode region at all, which are discarded
+during assignment. Read the barcode-calling rate from `corrected_read_counts`, which still
+counts only reads assigned a known barcode.
 
 This is a custom script written using BASH scripting. Its purpose is to report the amount of reads that are filtered out at steps in the pipeline that will result in filtered reads, such as barcode detection, barcode correction, alignment, etc. Elevated levels of filtering can be indicative of quality concerns.
 
