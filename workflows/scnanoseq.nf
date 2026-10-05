@@ -443,8 +443,8 @@ workflow SCNANOSEQ {
             genome_quants,
             params.dedup_tool,
             true, // Used to indicate the bam is genome aligned
-            params.gpu_align,
             params.fasta_delimiter,
+            params.gpu_align,
             params.skip_save_minimap2_index,
             params.skip_qc,
             params.skip_rseqc,
